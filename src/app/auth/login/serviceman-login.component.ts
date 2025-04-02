@@ -39,6 +39,10 @@ import { AuthService } from '../auth.service';
         >
           Zaloguj się
         </button>
+        
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
       </form>
     </div>
   `,
@@ -51,6 +55,10 @@ import { AuthService } from '../auth.service';
     .form-group {
       margin-bottom: 15px;
     }
+    .error-message {
+      color: red;
+      margin-top: 10px;
+    }
   `]
 })
 export class ServicemanLoginComponent {
@@ -59,6 +67,7 @@ export class ServicemanLoginComponent {
   private router = inject(Router);
   
   loginForm: FormGroup;
+  errorMessage: string = '';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -71,13 +80,14 @@ export class ServicemanLoginComponent {
     if (this.loginForm.valid) {
       const credentials = this.loginForm.value;
       
-      this.authService.loginServiceman(credentials).subscribe({
+      this.authService.loginService(credentials).subscribe({
         next: (response) => {
           this.authService.setToken(response.token);
-          this.router.navigate(['/serviceman-dashboard']);
+          this.router.navigate(['/welcome']);
         },
         error: (error) => {
           console.error('Logowanie nie powiodło się', error);
+          this.errorMessage = 'Logowanie nie powiodło się. Sprawdź dane logowania.';
         }
       });
     }

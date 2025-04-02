@@ -13,15 +13,44 @@ import { AuthService } from '../auth.service';
       <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
         <h2>{{ isServiceman ? 'Rejestracja Serwisanta' : 'Rejestracja Klienta' }}</h2>
         
-        <div class="form-group">
-          <label for="firstName">Imię</label>
-          <input type="text" id="firstName" formControlName="firstName" required>
-        </div>
+        <ng-container *ngIf="!isServiceman">
+          <div class="form-group">
+            <label for="firstName">Imię</label>
+            <input type="text" id="firstName" formControlName="firstName" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="lastName">Nazwisko</label>
+            <input type="text" id="lastName" formControlName="lastName" required>
+          </div>
+        </ng-container>
         
-        <div class="form-group">
-          <label for="lastName">Nazwisko</label>
-          <input type="text" id="lastName" formControlName="lastName" required>
-        </div>
+        <ng-container *ngIf="isServiceman">
+          <div class="form-group">
+            <label for="name">Nazwa serwisu</label>
+            <input type="text" id="name" formControlName="name" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="address">Adres</label>
+            <input type="text" id="address" formControlName="address" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="postalCode">Kod pocztowy</label>
+            <input type="text" id="postalCode" formControlName="postalCode" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="city">Miasto</label>
+            <input type="text" id="city" formControlName="city" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="description">Opis serwisu</label>
+            <textarea id="description" formControlName="description" rows="3"></textarea>
+          </div>
+        </ng-container>
         
         <div class="form-group">
           <label for="email">Email</label>
@@ -41,6 +70,10 @@ import { AuthService } from '../auth.service';
         <button type="submit" [disabled]="registrationForm.invalid">
           Zarejestruj się
         </button>
+        
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
       </form>
     </div>
   `,
@@ -53,6 +86,10 @@ import { AuthService } from '../auth.service';
     .form-group {
       margin-bottom: 15px;
     }
+    .error-message {
+      color: red;
+      margin-top: 10px;
+    }
   `]
 })
 export class RegistrationComponent implements OnInit {
@@ -63,11 +100,10 @@ export class RegistrationComponent implements OnInit {
   
   registrationForm: FormGroup;
   isServiceman: boolean = false;
+  errorMessage: string = '';
 
   constructor() {
     this.registrationForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(6)]]
@@ -78,6 +114,17 @@ export class RegistrationComponent implements OnInit {
     // Determine user type based on route data
     this.route.data.subscribe(data => {
       this.isServiceman = data['userType'] === 'serviceman';
+      
+      if (this.isServiceman) {
+        this.registrationForm.addControl('name', this.fb.control('', Validators.required));
+        this.registrationForm.addControl('address', this.fb.control('', Validators.required));
+        this.registrationForm.addControl('postalCode', this.fb.control(''));
+        this.registrationForm.addControl('city', this.fb.control(''));
+        this.registrationForm.addControl('description', this.fb.control(''));
+      } else {
+        this.registrationForm.addControl('firstName', this.fb.control('', Validators.required));
+        this.registrationForm.addControl('lastName', this.fb.control('', Validators.required));
+      }
     });
   }
 
@@ -85,19 +132,27 @@ export class RegistrationComponent implements OnInit {
     if (this.registrationForm.valid) {
       const userData = this.registrationForm.value;
       
-      const registrationMethod = this.isServiceman
-        ? this.authService.registerServiceman(userData)
-        : this.authService.registerClient(userData);
-      
-      registrationMethod.subscribe({
-        next: (response) => {
-          // Przekierowanie do strony logowania po udanej rejestracji
-          this.router.navigate(['/login']);
-        },
-        error: (error) => {
-          console.error('Rejestracja nie powiodła się', error);
-        }
-      });
+      if (this.isServiceman) {
+        this.authService.registerService(userData).subscribe({
+          next: (response) => {
+            this.router.navigate(['/login-serviceman']);
+          },
+          error: (error) => {
+            console.error('Rejestracja nie powiodła się', error);
+            this.errorMessage = 'Rejestracja nie powiodła się. Spróbuj ponownie.';
+          }
+        });
+      } else {
+        this.authService.registerClient(userData).subscribe({
+          next: (response) => {
+            this.router.navigate(['/login']);
+          },
+          error: (error) => {
+            console.error('Rejestracja nie powiodła się', error);
+            this.errorMessage = 'Rejestracja nie powiodła się. Spróbuj ponownie.';
+          }
+        });
+      }
     }
   }
 }

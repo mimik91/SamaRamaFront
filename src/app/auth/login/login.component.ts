@@ -48,6 +48,14 @@ import { AuthService } from '../auth.service';
         >
           Zaloguj się
         </button>
+        
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+        
+        <div *ngIf="successMessage" class="success-message">
+          {{ successMessage }}
+        </div>
       </form>
     </div>
   `,
@@ -60,6 +68,14 @@ import { AuthService } from '../auth.service';
     .form-group {
       margin-bottom: 15px;
     }
+    .error-message {
+      color: red;
+      margin-top: 10px;
+    }
+    .success-message {
+      color: green;
+      margin-top: 10px;
+    }
   `]
 })
 export class LoginComponent {
@@ -68,6 +84,8 @@ export class LoginComponent {
   private router = inject(Router);
   
   loginForm: FormGroup;
+  errorMessage: string = '';
+  successMessage: string = '';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -84,13 +102,28 @@ export class LoginComponent {
     if (this.loginForm.valid) {
       const credentials = this.loginForm.value;
       
+      this.successMessage = 'Próba logowania...';
+      
       this.authService.loginClient(credentials).subscribe({
         next: (response) => {
+          console.log('Login successful', response);
+          this.successMessage = 'Logowanie udane!';
+          
+          // Store the token
           this.authService.setToken(response.token);
-          this.router.navigate(['/client-dashboard']);
+          
+          // Add a delay to see the success message
+          setTimeout(() => {
+            console.log('Navigating to welcome page');
+            this.router.navigate(['/welcome']).then(success => {
+              console.log('Navigation result:', success);
+            });
+          }, 1000);
         },
         error: (error) => {
           console.error('Logowanie nie powiodło się', error);
+          this.errorMessage = 'Logowanie nie powiodło się. Sprawdź dane logowania.';
+          this.successMessage = '';
         }
       });
     }

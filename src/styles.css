@@ -1,1 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+@import "leaflet/dist/leaflet.css";
+
+.leaflet-default-icon-path {
+  background-image: url(https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png);
+}
+
+.leaflet-marker-shadow {
+  background-image: url(https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png);
+}

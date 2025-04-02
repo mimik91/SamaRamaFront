@@ -5,13 +5,13 @@ import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-serviceman-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="login-container">
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <h2>Logowanie Klienta</h2>
+        <h2>Logowanie Serwisanta</h2>
         
         <div class="form-group">
           <label for="email">Email</label>
@@ -31,15 +31,6 @@ import { AuthService } from '../auth.service';
             formControlName="password" 
             required
           >
-        </div>
-        
-        <div class="login-options">
-          <button 
-            type="button" 
-            (click)="goToRegistration()"
-          >
-            Stwórz nowe konto
-          </button>
         </div>
         
         <button 
@@ -62,7 +53,7 @@ import { AuthService } from '../auth.service';
     }
   `]
 })
-export class LoginComponent {
+export class ServicemanLoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -76,18 +67,14 @@ export class LoginComponent {
     });
   }
 
-  goToRegistration() {
-    this.router.navigate(['/register']);
-  }
-
   onSubmit() {
     if (this.loginForm.valid) {
       const credentials = this.loginForm.value;
       
-      this.authService.loginClient(credentials).subscribe({
+      this.authService.loginServiceman(credentials).subscribe({
         next: (response) => {
           this.authService.setToken(response.token);
-          this.router.navigate(['/client-dashboard']);
+          this.router.navigate(['/serviceman-dashboard']);
         },
         error: (error) => {
           console.error('Logowanie nie powiodło się', error);

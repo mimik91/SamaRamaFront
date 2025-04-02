@@ -19,9 +19,11 @@ export interface AuthResponse {
   token: string;
   id: number;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: 'CLIENT' | 'SERVICEMAN';
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  role: 'CLIENT' | 'SERVICE';
+  redirectUrl?: string;
 }
 
 @Injectable({
@@ -35,8 +37,8 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/signin/client`, credentials);
   }
 
-  loginServiceman(credentials: LoginCredentials): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/signin/serviceman`, credentials);
+  loginService(credentials: LoginCredentials): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/signin/service`, credentials);
   }
 
   registerClient(userData: UserRegistrationData): Observable<any> {
@@ -44,7 +46,7 @@ export class AuthService {
   }
 
   registerServiceman(userData: UserRegistrationData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/signup/serviceman`, userData);
+    return this.http.post(`${this.apiUrl}/signup/service`, userData);
   }
 
   setToken(token: string): void {

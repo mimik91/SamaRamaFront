@@ -11,15 +11,15 @@ import { AuthService } from '../auth.service';
   template: `
     <div class="register-container">
       <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
-        <h2>{{ isServiceman ? 'Serviceman Registration' : 'Client Registration' }}</h2>
+        <h2>{{ isServiceman ? 'Rejestracja Serwisanta' : 'Rejestracja Klienta' }}</h2>
         
         <div class="form-group">
-          <label for="firstName">First Name</label>
+          <label for="firstName">Imię</label>
           <input type="text" id="firstName" formControlName="firstName" required>
         </div>
         
         <div class="form-group">
-          <label for="lastName">Last Name</label>
+          <label for="lastName">Nazwisko</label>
           <input type="text" id="lastName" formControlName="lastName" required>
         </div>
         
@@ -29,23 +29,17 @@ import { AuthService } from '../auth.service';
         </div>
         
         <div class="form-group">
-          <label for="phoneNumber">Phone Number</label>
+          <label for="phoneNumber">Numer Telefonu</label>
           <input type="tel" id="phoneNumber" formControlName="phoneNumber" required>
         </div>
         
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">Hasło</label>
           <input type="password" id="password" formControlName="password" required>
         </div>
         
-        <div class="register-options">
-          <button type="button" (click)="switchRegistrationType()">
-            Switch to {{ isServiceman ? 'Client' : 'Serviceman' }} Registration
-          </button>
-        </div>
-        
         <button type="submit" [disabled]="registrationForm.invalid">
-          Register
+          Zarejestruj się
         </button>
       </form>
     </div>
@@ -87,14 +81,6 @@ export class RegistrationComponent implements OnInit {
     });
   }
 
-  switchRegistrationType() {
-    if (this.isServiceman) {
-      this.router.navigate(['/register']); // Go to client registration
-    } else {
-      this.router.navigate(['/register-serviceman']); // Go to serviceman registration
-    }
-  }
-
   onSubmit() {
     if (this.registrationForm.valid) {
       const userData = this.registrationForm.value;
@@ -105,11 +91,11 @@ export class RegistrationComponent implements OnInit {
       
       registrationMethod.subscribe({
         next: (response) => {
-          // Navigate to login page after successful registration
+          // Przekierowanie do strony logowania po udanej rejestracji
           this.router.navigate(['/login']);
         },
         error: (error) => {
-          console.error('Registration failed', error);
+          console.error('Rejestracja nie powiodła się', error);
         }
       });
     }

@@ -39,7 +39,7 @@ export interface AuthResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
@@ -48,28 +48,28 @@ export class AuthService {
   private memoryToken: string | null = null;
 
   loginClient(credentials: LoginCredentials): Observable<AuthResponse> {
-    console.log('Attempting client login with:', credentials);
-    return this.http.post<AuthResponse>(`${this.apiUrl}/signin/client`, credentials)
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/signin/client`, credentials)
       .pipe(
-        tap(response => {
+        tap((response) => {
           console.log('Received login response:', response);
           if (response.token) {
             this.setToken(response.token);
           }
-        })
+        }),
       );
   }
 
   loginService(credentials: LoginCredentials): Observable<AuthResponse> {
-    console.log('Attempting service login with:', credentials);
-    return this.http.post<AuthResponse>(`${this.apiUrl}/signin/service`, credentials)
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/signin/service`, credentials)
       .pipe(
-        tap(response => {
+        tap((response) => {
           console.log('Received service login response:', response);
           if (response.token) {
             this.setToken(response.token);
           }
-        })
+        }),
       );
   }
 
@@ -84,7 +84,7 @@ export class AuthService {
   setToken(token: string): void {
     console.log('Setting auth token:', token);
     this.memoryToken = token;
-    
+
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('auth_token', token);
     }
@@ -93,10 +93,13 @@ export class AuthService {
   getToken(): string | null {
     if (isPlatformBrowser(this.platformId)) {
       const token = localStorage.getItem('auth_token');
-      console.log('Retrieved token from storage:', token ? 'Token exists' : 'No token');
+      console.log(
+        'Retrieved token from storage:',
+        token ? 'Token exists' : 'No token',
+      );
       return token;
     }
-    
+
     // Return memory token for server-side
     return this.memoryToken;
   }
@@ -104,7 +107,7 @@ export class AuthService {
   removeToken(): void {
     console.log('Removing auth token');
     this.memoryToken = null;
-    
+
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('auth_token');
     }

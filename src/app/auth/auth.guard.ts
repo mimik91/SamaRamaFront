@@ -7,9 +7,9 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
-  
+
   console.log('Auth Guard checking if user is logged in');
-  
+
   // During SSR, always allow access to simplify rendering
   if (!isPlatformBrowser(platformId)) {
     console.log('Server-side rendering, allowing access');
@@ -20,7 +20,7 @@ export const authGuard: CanActivateFn = (route, state) => {
     console.log('Auth Guard: User is logged in, allowing access to', state.url);
     return true;
   }
-  
+
   // Redirect to login page if not authenticated
   console.log('Auth Guard: User is NOT logged in, redirecting to login page');
   router.navigate(['/login']);

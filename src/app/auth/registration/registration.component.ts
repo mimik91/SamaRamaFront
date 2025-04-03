@@ -1,6 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth.service';
 
@@ -11,93 +16,131 @@ import { AuthService } from '../auth.service';
   template: `
     <div class="register-container">
       <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
-        <h2>{{ isServiceman ? 'Rejestracja Serwisanta' : 'Rejestracja Klienta' }}</h2>
-        
+        <h2>
+          {{ isServiceman ? 'Rejestracja Serwisanta' : 'Rejestracja Klienta' }}
+        </h2>
+
         <ng-container *ngIf="!isServiceman">
           <div class="form-group">
             <label for="firstName">Imię</label>
-            <input type="text" id="firstName" formControlName="firstName" required>
+            <input
+              type="text"
+              id="firstName"
+              formControlName="firstName"
+              required
+            />
           </div>
-          
+
           <div class="form-group">
             <label for="lastName">Nazwisko</label>
-            <input type="text" id="lastName" formControlName="lastName" required>
+            <input
+              type="text"
+              id="lastName"
+              formControlName="lastName"
+              required
+            />
           </div>
         </ng-container>
-        
+
         <ng-container *ngIf="isServiceman">
           <div class="form-group">
             <label for="name">Nazwa serwisu</label>
-            <input type="text" id="name" formControlName="name" required>
+            <input type="text" id="name" formControlName="name" required />
           </div>
-          
+
           <div class="form-group">
             <label for="address">Adres</label>
-            <input type="text" id="address" formControlName="address" required>
+            <input
+              type="text"
+              id="address"
+              formControlName="address"
+              required
+            />
           </div>
-          
+
           <div class="form-group">
             <label for="postalCode">Kod pocztowy</label>
-            <input type="text" id="postalCode" formControlName="postalCode" required>
+            <input
+              type="text"
+              id="postalCode"
+              formControlName="postalCode"
+              required
+            />
           </div>
-          
+
           <div class="form-group">
             <label for="city">Miasto</label>
-            <input type="text" id="city" formControlName="city" required>
+            <input type="text" id="city" formControlName="city" required />
           </div>
-          
+
           <div class="form-group">
             <label for="description">Opis serwisu</label>
-            <textarea id="description" formControlName="description" rows="3"></textarea>
+            <textarea
+              id="description"
+              formControlName="description"
+              rows="3"
+            ></textarea>
           </div>
         </ng-container>
-        
+
         <div class="form-group">
           <label for="email">Email</label>
-          <input type="email" id="email" formControlName="email" required>
+          <input type="email" id="email" formControlName="email" required />
         </div>
-        
+
         <div class="form-group">
           <label for="phoneNumber">Numer Telefonu</label>
-          <input type="tel" id="phoneNumber" formControlName="phoneNumber" required>
+          <input
+            type="tel"
+            id="phoneNumber"
+            formControlName="phoneNumber"
+            required
+          />
         </div>
-        
+
         <div class="form-group">
           <label for="password">Hasło</label>
-          <input type="password" id="password" formControlName="password" required>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            required
+          />
         </div>
-        
+
         <button type="submit" [disabled]="registrationForm.invalid">
           Zarejestruj się
         </button>
-        
+
         <div *ngIf="errorMessage" class="error-message">
           {{ errorMessage }}
         </div>
       </form>
     </div>
   `,
-  styles: [`
-    .register-container {
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .error-message {
-      color: red;
-      margin-top: 10px;
-    }
-  `]
+  styles: [
+    `
+      .register-container {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .error-message {
+        color: red;
+        margin-top: 10px;
+      }
+    `,
+  ],
 })
 export class RegistrationComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  
+
   registrationForm: FormGroup;
   isServiceman: boolean = false;
   errorMessage: string = '';
@@ -106,24 +149,36 @@ export class RegistrationComponent implements OnInit {
     this.registrationForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
   ngOnInit() {
     // Determine user type based on route data
-    this.route.data.subscribe(data => {
+    this.route.data.subscribe((data) => {
       this.isServiceman = data['userType'] === 'serviceman';
-      
+
       if (this.isServiceman) {
-        this.registrationForm.addControl('name', this.fb.control('', Validators.required));
-        this.registrationForm.addControl('address', this.fb.control('', Validators.required));
+        this.registrationForm.addControl(
+          'name',
+          this.fb.control('', Validators.required),
+        );
+        this.registrationForm.addControl(
+          'address',
+          this.fb.control('', Validators.required),
+        );
         this.registrationForm.addControl('postalCode', this.fb.control(''));
         this.registrationForm.addControl('city', this.fb.control(''));
         this.registrationForm.addControl('description', this.fb.control(''));
       } else {
-        this.registrationForm.addControl('firstName', this.fb.control('', Validators.required));
-        this.registrationForm.addControl('lastName', this.fb.control('', Validators.required));
+        this.registrationForm.addControl(
+          'firstName',
+          this.fb.control('', Validators.required),
+        );
+        this.registrationForm.addControl(
+          'lastName',
+          this.fb.control('', Validators.required),
+        );
       }
     });
   }
@@ -131,7 +186,7 @@ export class RegistrationComponent implements OnInit {
   onSubmit() {
     if (this.registrationForm.valid) {
       const userData = this.registrationForm.value;
-      
+
       if (this.isServiceman) {
         this.authService.registerService(userData).subscribe({
           next: (response) => {
@@ -139,8 +194,9 @@ export class RegistrationComponent implements OnInit {
           },
           error: (error) => {
             console.error('Rejestracja nie powiodła się', error);
-            this.errorMessage = 'Rejestracja nie powiodła się. Spróbuj ponownie.';
-          }
+            this.errorMessage =
+              'Rejestracja nie powiodła się. Spróbuj ponownie.';
+          },
         });
       } else {
         this.authService.registerClient(userData).subscribe({
@@ -149,8 +205,9 @@ export class RegistrationComponent implements OnInit {
           },
           error: (error) => {
             console.error('Rejestracja nie powiodła się', error);
-            this.errorMessage = 'Rejestracja nie powiodła się. Spróbuj ponownie.';
-          }
+            this.errorMessage =
+              'Rejestracja nie powiodła się. Spróbuj ponownie.';
+          },
         });
       }
     }

@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { ServicemanLoginComponent } from './auth/login/serviceman-login.component';
 import { RegistrationComponent } from './auth/registration/registration.component';
-import { WelcomePage } from './welcome/welcome-page';
+import { WelcomeComponent } from './welcome/welcome.component';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
@@ -18,6 +18,6 @@ export const routes: Routes = [
     component: RegistrationComponent,
     data: { userType: 'serviceman' },
   },
-  { path: 'welcome', component: WelcomePage, canActivate: [authGuard] },
+  { path: 'welcome', component: WelcomeComponent, canActivate: [authGuard] },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 ];

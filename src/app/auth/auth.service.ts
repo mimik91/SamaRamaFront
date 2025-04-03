@@ -1,7 +1,6 @@
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { isPlatformBrowser } from '@angular/common';
 
 export interface LoginCredentials {
   email: string;
@@ -20,11 +19,17 @@ export interface ServiceRegistrationData {
   email: string;
   password: string;
   name: string;
-  address: string;
-  postalCode: string;
+  street: string;
+  building: string;
+  flat?: string;
   city: string;
+  postalCode?: string;
   phoneNumber: string;
+  businessPhone?: string;
   description: string;
+  latitude: number;
+  longitude: number;
+  openingHours: Record<string, string>;
 }
 
 export interface AuthResponse {
@@ -39,37 +44,25 @@ export interface AuthResponse {
 }
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
   private http = inject(HttpClient);
-  private platformId = inject(PLATFORM_ID);
-  private memoryToken: string | null = null;
 
   loginClient(credentials: LoginCredentials): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/signin/client`, credentials)
+    console.log('Attempting client login with:', credentials);
+    return this.http.post<AuthResponse>(`${this.apiUrl}/signin/client`, credentials)
       .pipe(
-        tap((response) => {
-          console.log('Received login response:', response);
-          if (response.token) {
-            this.setToken(response.token);
-          }
-        }),
+        tap(response => console.log('Received login response:', response))
       );
   }
 
   loginService(credentials: LoginCredentials): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/signin/service`, credentials)
+    console.log('Attempting service login with:', credentials);
+    return this.http.post<AuthResponse>(`${this.apiUrl}/signin/service`, credentials)
       .pipe(
-        tap((response) => {
-          console.log('Received service login response:', response);
-          if (response.token) {
-            this.setToken(response.token);
-          }
-        }),
+        tap(response => console.log('Received service login response:', response))
       );
   }
 
@@ -83,34 +76,18 @@ export class AuthService {
 
   setToken(token: string): void {
     console.log('Setting auth token:', token);
-    this.memoryToken = token;
-
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('auth_token', token);
-    }
+    localStorage.setItem('auth_token', token);
   }
 
   getToken(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      const token = localStorage.getItem('auth_token');
-      console.log(
-        'Retrieved token from storage:',
-        token ? 'Token exists' : 'No token',
-      );
-      return token;
-    }
-
-    // Return memory token for server-side
-    return this.memoryToken;
+    const token = localStorage.getItem('auth_token');
+    console.log('Retrieved token from storage:', token ? 'Token exists' : 'No token');
+    return token;
   }
 
   removeToken(): void {
     console.log('Removing auth token');
-    this.memoryToken = null;
-
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('auth_token');
-    }
+    localStorage.removeItem('auth_token');
   }
 
   isLoggedIn(): boolean {

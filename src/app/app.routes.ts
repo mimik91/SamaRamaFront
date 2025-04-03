@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { ServicemanLoginComponent } from './auth/login/serviceman-login.component';
 import { RegistrationComponent } from './auth/registration/registration.component';
+import { BikeServiceRegistrationComponent } from './auth/registration/bike-service-registration.component';
 import { WelcomeComponent } from './welcome/welcome.component';
 import { authGuard } from './auth/auth.guard';
 
@@ -15,8 +16,7 @@ export const routes: Routes = [
   },
   {
     path: 'register-serviceman',
-    component: RegistrationComponent,
-    data: { userType: 'serviceman' },
+    component: BikeServiceRegistrationComponent,
   },
   { path: 'welcome', component: WelcomeComponent, canActivate: [authGuard] },
   { path: '', redirectTo: 'login', pathMatch: 'full' },

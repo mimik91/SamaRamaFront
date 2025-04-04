@@ -2,7 +2,7 @@ import { Component, OnInit, inject, AfterViewInit, Inject, PLATFORM_ID } from '@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../auth.service';
+import { AuthService, ServiceRegistrationData } from '../auth.service';
 
 @Component({
   selector: 'app-bike-service-registration',
@@ -61,16 +61,16 @@ import { AuthService } from '../auth.service';
             </div>
             
             <div class="form-group">
-              <label for="customerPhone">Telefon kontaktowy dla klientów *</label>
+              <label for="phoneNumber">Telefon kontaktowy dla klientów *</label>
               <input 
                 type="tel" 
-                id="customerPhone" 
-                formControlName="customerPhone" 
+                id="phoneNumber" 
+                formControlName="phoneNumber" 
                 class="form-control"
-                [class.is-invalid]="isFieldInvalid('customerPhone')"
+                [class.is-invalid]="isFieldInvalid('phoneNumber')"
                 placeholder="123456789"
               >
-              <div class="error-message" *ngIf="isFieldInvalid('customerPhone')">
+              <div class="error-message" *ngIf="isFieldInvalid('phoneNumber')">
                 Wprowadź poprawny numer telefonu (9 cyfr)
               </div>
             </div>
@@ -107,25 +107,25 @@ import { AuthService } from '../auth.service';
               </div>
               
               <div class="form-group col-md-2">
-                <label for="buildingNumber">Numer budynku *</label>
+                <label for="building">Numer budynku *</label>
                 <input 
                   type="text" 
-                  id="buildingNumber" 
-                  formControlName="buildingNumber" 
+                  id="building" 
+                  formControlName="building" 
                   class="form-control"
-                  [class.is-invalid]="isFieldInvalid('buildingNumber')"
+                  [class.is-invalid]="isFieldInvalid('building')"
                 >
-                <div class="error-message" *ngIf="isFieldInvalid('buildingNumber')">
+                <div class="error-message" *ngIf="isFieldInvalid('building')">
                   Wymagane
                 </div>
               </div>
               
               <div class="form-group col-md-2">
-                <label for="apartmentNumber">Nr lokalu</label>
+                <label for="flat">Nr lokalu</label>
                 <input 
                   type="text" 
-                  id="apartmentNumber" 
-                  formControlName="apartmentNumber" 
+                  id="flat" 
+                  formControlName="flat" 
                   class="form-control"
                 >
               </div>
@@ -433,15 +433,16 @@ export class BikeServiceRegistrationComponent implements OnInit, AfterViewInit {
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      customerPhone: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
+      phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
       businessPhone: ['', Validators.pattern('^[0-9]{9}$')],
       street: ['', Validators.required],
-      buildingNumber: ['', Validators.required],
-      apartmentNumber: [''],
+      building: ['', Validators.required],
+      flat: [''],
       city: ['Kraków', Validators.required],
       postalCode: [''],
       latitude: ['50.061', Validators.required],
-      longitude: ['19.937', Validators.required]
+      longitude: ['19.937', Validators.required],
+      description: [''] // Added description field
     });
   }
 
@@ -558,24 +559,25 @@ export class BikeServiceRegistrationComponent implements OnInit, AfterViewInit {
       
       const formData = this.registrationForm.value;
       
-      const serviceData = {
+      const serviceData: ServiceRegistrationData = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        phoneNumber: formData.customerPhone,
+        phoneNumber: formData.phoneNumber,
         businessPhone: formData.businessPhone || '',
         street: formData.street,
-        building: formData.buildingNumber,
-        flat: formData.apartmentNumber || '',
+        building: formData.building,
+        flat: formData.flat || '',
         city: formData.city,
         postalCode: formData.postalCode || '',
-        description: '',  // Empty description as per requirements
+        description: formData.description || '',
         latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
-        // Empty opening hours
-        openingHours: {}
+        longitude: parseFloat(formData.longitude)
       };
       
+      console.log('Submitting service data:', serviceData);
+      
+      // Cast to ServiceRegistrationData type
       this.authService.registerService(serviceData).subscribe({
         next: () => {
           this.successMessage = 'Rejestracja zakończona sukcesem! Za chwilę zostaniesz przekierowany na stronę logowania.';
@@ -583,7 +585,7 @@ export class BikeServiceRegistrationComponent implements OnInit, AfterViewInit {
             this.router.navigate(['/login-serviceman']);
           }, 2000);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Registration error:', error);
           this.errorMessage = error.error?.message || 'Wystąpił błąd podczas rejestracji. Spróbuj ponownie później.';
           this.isSubmitting = false;
@@ -598,6 +600,8 @@ export class BikeServiceRegistrationComponent implements OnInit, AfterViewInit {
         const control = this.registrationForm.get(key);
         control?.markAsTouched();
       });
+      
+      this.errorMessage = 'Wypełnij wszystkie wymagane pola formularza.';
     }
   }
 }

@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AuthService } from '../auth.service';
+import { AuthService, UserRegistrationData, ServiceRegistrationData } from '../auth.service';
 
 @Component({
   selector: 'app-registration',
@@ -49,12 +49,31 @@ import { AuthService } from '../auth.service';
           </div>
 
           <div class="form-group">
-            <label for="address">Adres</label>
+            <label for="street">Ulica</label>
             <input
               type="text"
-              id="address"
-              formControlName="address"
+              id="street"
+              formControlName="street"
               required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="building">Numer budynku</label>
+            <input
+              type="text"
+              id="building"
+              formControlName="building"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="flat">Numer lokalu</label>
+            <input
+              type="text"
+              id="flat"
+              formControlName="flat"
             />
           </div>
 
@@ -64,7 +83,6 @@ import { AuthService } from '../auth.service';
               type="text"
               id="postalCode"
               formControlName="postalCode"
-              required
             />
           </div>
 
@@ -153,7 +171,7 @@ export class RegistrationComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     // Determine user type based on route data
     this.route.data.subscribe(data => {
       this.isServiceman = data['userType'] === 'serviceman';
@@ -169,7 +187,6 @@ export class RegistrationComponent implements OnInit {
         this.registrationForm.addControl('latitude', this.fb.control(null));
         this.registrationForm.addControl('longitude', this.fb.control(null));
         this.registrationForm.addControl('description', this.fb.control(''));
-        // We no longer add the openingHours field to the form
       } else {
         this.registrationForm.addControl('firstName', this.fb.control('', Validators.required));
         this.registrationForm.addControl('lastName', this.fb.control('', Validators.required));
@@ -177,13 +194,13 @@ export class RegistrationComponent implements OnInit {
     });
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.registrationForm.valid) {
       const userData = this.registrationForm.value;
       
       if (this.isServiceman) {
         // Create data structure matching BikeServiceDto
-        const serviceData = {
+        const serviceData: ServiceRegistrationData = {
           name: userData.name,
           street: userData.street,
           building: userData.building,
@@ -203,14 +220,14 @@ export class RegistrationComponent implements OnInit {
           next: (response) => {
             this.router.navigate(['/login-serviceman']);
           },
-          error: (error) => {
+          error: (error: any) => {
             console.error('Registration failed', error);
             this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
           }
         });
       } else {
         // Create data structure matching UserRegistrationDto
-        const clientData = {
+        const clientData: UserRegistrationData = {
           email: userData.email,
           firstName: userData.firstName,
           lastName: userData.lastName,
@@ -222,7 +239,7 @@ export class RegistrationComponent implements OnInit {
           next: (response) => {
             this.router.navigate(['/login']);
           },
-          error: (error) => {
+          error: (error: any) => {
             console.error('Registration failed', error);
             this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
           }

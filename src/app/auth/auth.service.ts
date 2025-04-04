@@ -71,6 +71,10 @@ export class AuthService {
   }
   
   private loadSession(): void {
+    if (typeof window === 'undefined') {
+      return; // Skip during SSR
+    }
+    
     const sessionData = sessionStorage.getItem('auth_session');
     if (sessionData) {
       try {
@@ -91,9 +95,13 @@ export class AuthService {
   }
   
   loginClient(credentials: LoginCredentials): Observable<AuthResponse> {
+    console.log('Attempting client login:', credentials.email);
     return this.http.post<AuthResponse>(`${this.apiUrl}/signin/client`, credentials)
       .pipe(
-        tap(response => this.handleAuthResponse(response, 'CLIENT')),
+        tap(response => {
+          console.log('Login response:', response);
+          this.handleAuthResponse(response, 'CLIENT');
+        }),
         catchError(error => {
           console.error('Login failed:', error);
           return throwError(() => error);
@@ -102,9 +110,13 @@ export class AuthService {
   }
 
   loginService(credentials: LoginCredentials): Observable<AuthResponse> {
+    console.log('Attempting service login:', credentials.email);
     return this.http.post<AuthResponse>(`${this.apiUrl}/signin/service`, credentials)
       .pipe(
-        tap(response => this.handleAuthResponse(response, 'SERVICE')),
+        tap(response => {
+          console.log('Service login response:', response);
+          this.handleAuthResponse(response, 'SERVICE');
+        }),
         catchError(error => {
           console.error('Service login failed:', error);
           return throwError(() => error);
@@ -113,6 +125,7 @@ export class AuthService {
   }
 
   registerClient(userData: UserRegistrationData): Observable<any> {
+    console.log('Registering client:', userData.email);
     return this.http.post(`${this.apiUrl}/signup/client`, userData)
       .pipe(
         catchError(error => {
@@ -123,6 +136,7 @@ export class AuthService {
   }
 
   registerService(serviceData: ServiceRegistrationData): Observable<any> {
+    console.log('Registering service:', serviceData.email);
     return this.http.post(`${this.apiUrl}/signup/service`, serviceData)
       .pipe(
         catchError(error => {
@@ -145,7 +159,9 @@ export class AuthService {
       
       // Save session in memory and storage
       this.currentUserSubject.next(session);
-      sessionStorage.setItem('auth_session', JSON.stringify(session));
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('auth_session', JSON.stringify(session));
+      }
     }
   }
 
@@ -170,7 +186,9 @@ export class AuthService {
   
   private clearSession(): void {
     this.currentUserSubject.next(null);
-    sessionStorage.removeItem('auth_session');
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('auth_session');
+    }
   }
 
   isLoggedIn(): boolean {

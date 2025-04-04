@@ -155,30 +155,24 @@ export class RegistrationComponent implements OnInit {
 
   ngOnInit() {
     // Determine user type based on route data
-    this.route.data.subscribe((data) => {
+    this.route.data.subscribe(data => {
       this.isServiceman = data['userType'] === 'serviceman';
-
+      
       if (this.isServiceman) {
-        this.registrationForm.addControl(
-          'name',
-          this.fb.control('', Validators.required),
-        );
-        this.registrationForm.addControl(
-          'address',
-          this.fb.control('', Validators.required),
-        );
+        this.registrationForm.addControl('name', this.fb.control('', Validators.required));
+        this.registrationForm.addControl('street', this.fb.control('', Validators.required));
+        this.registrationForm.addControl('building', this.fb.control('', Validators.required));
+        this.registrationForm.addControl('flat', this.fb.control(''));
         this.registrationForm.addControl('postalCode', this.fb.control(''));
-        this.registrationForm.addControl('city', this.fb.control(''));
+        this.registrationForm.addControl('city', this.fb.control('', Validators.required));
+        this.registrationForm.addControl('businessPhone', this.fb.control(''));
+        this.registrationForm.addControl('latitude', this.fb.control(null));
+        this.registrationForm.addControl('longitude', this.fb.control(null));
         this.registrationForm.addControl('description', this.fb.control(''));
+        // We no longer add the openingHours field to the form
       } else {
-        this.registrationForm.addControl(
-          'firstName',
-          this.fb.control('', Validators.required),
-        );
-        this.registrationForm.addControl(
-          'lastName',
-          this.fb.control('', Validators.required),
-        );
+        this.registrationForm.addControl('firstName', this.fb.control('', Validators.required));
+        this.registrationForm.addControl('lastName', this.fb.control('', Validators.required));
       }
     });
   }
@@ -186,17 +180,21 @@ export class RegistrationComponent implements OnInit {
   onSubmit() {
     if (this.registrationForm.valid) {
       const userData = this.registrationForm.value;
-
+      
       if (this.isServiceman) {
+        // Make sure openingHours is not included
+        if ('openingHours' in userData) {
+          delete userData.openingHours;
+        }
+        
         this.authService.registerService(userData).subscribe({
           next: (response) => {
             this.router.navigate(['/login-serviceman']);
           },
           error: (error) => {
-            console.error('Rejestracja nie powiodła się', error);
-            this.errorMessage =
-              'Rejestracja nie powiodła się. Spróbuj ponownie.';
-          },
+            console.error('Registration failed', error);
+            this.errorMessage = 'Registration failed. Please try again.';
+          }
         });
       } else {
         this.authService.registerClient(userData).subscribe({
@@ -204,10 +202,9 @@ export class RegistrationComponent implements OnInit {
             this.router.navigate(['/login']);
           },
           error: (error) => {
-            console.error('Rejestracja nie powiodła się', error);
-            this.errorMessage =
-              'Rejestracja nie powiodła się. Spróbuj ponownie.';
-          },
+            console.error('Registration failed', error);
+            this.errorMessage = 'Registration failed. Please try again.';
+          }
         });
       }
     }

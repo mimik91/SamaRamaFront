@@ -22,14 +22,13 @@ export interface ServiceRegistrationData {
   street: string;
   building: string;
   flat?: string;
-  city: string;
   postalCode?: string;
+  city: string;
   phoneNumber: string;
   businessPhone?: string;
-  description: string;
-  latitude: number;
-  longitude: number;
-  openingHours: Record<string, string>;
+  latitude?: number;
+  longitude?: number;
+  description?: string;
 }
 
 export interface AuthResponse {

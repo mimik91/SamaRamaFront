@@ -182,28 +182,49 @@ export class RegistrationComponent implements OnInit {
       const userData = this.registrationForm.value;
       
       if (this.isServiceman) {
-        // Make sure openingHours is not included
-        if ('openingHours' in userData) {
-          delete userData.openingHours;
-        }
+        // Create data structure matching BikeServiceDto
+        const serviceData = {
+          name: userData.name,
+          street: userData.street,
+          building: userData.building,
+          flat: userData.flat || '',
+          postalCode: userData.postalCode || '',
+          city: userData.city,
+          phoneNumber: userData.phoneNumber,
+          businessPhone: userData.businessPhone || '',
+          email: userData.email,
+          latitude: userData.latitude,
+          longitude: userData.longitude,
+          description: userData.description || '',
+          password: userData.password
+        };
         
-        this.authService.registerService(userData).subscribe({
+        this.authService.registerService(serviceData).subscribe({
           next: (response) => {
             this.router.navigate(['/login-serviceman']);
           },
           error: (error) => {
             console.error('Registration failed', error);
-            this.errorMessage = 'Registration failed. Please try again.';
+            this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
           }
         });
       } else {
-        this.authService.registerClient(userData).subscribe({
+        // Create data structure matching UserRegistrationDto
+        const clientData = {
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          phoneNumber: userData.phoneNumber,
+          password: userData.password
+        };
+        
+        this.authService.registerClient(clientData).subscribe({
           next: (response) => {
             this.router.navigate(['/login']);
           },
           error: (error) => {
             console.error('Registration failed', error);
-            this.errorMessage = 'Registration failed. Please try again.';
+            this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
           }
         });
       }

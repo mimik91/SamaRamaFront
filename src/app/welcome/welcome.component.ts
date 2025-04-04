@@ -1,6 +1,7 @@
-import { Component, OnInit, AfterViewInit, inject, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MapService, Coordinate } from '../map.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-welcome',
@@ -80,12 +81,13 @@ import { MapService, Coordinate } from '../map.service';
     }
   `]
 })
-export class WelcomeComponent implements OnInit, AfterViewInit {
+export class WelcomeComponent implements OnInit, OnDestroy {
   loading = true;
   error: string | null = null;
-  isBrowser: boolean; // Changed to public
+  isBrowser: boolean;
   private coordinates: Coordinate[] = [];
   private map: any;
+  private subscriptions: Subscription[] = [];
   
   constructor(
     private mapService: MapService,
@@ -95,76 +97,35 @@ export class WelcomeComponent implements OnInit, AfterViewInit {
   }
   
   ngOnInit(): void {
-    this.fetchServicePins();
-    
-    if (this.isBrowser) {
-      this.loadMapScript();
-    }
-  }
-  
-  ngAfterViewInit(): void {
-    if (this.isBrowser) {
-      this.initializeMapWhenReady();
-    }
-  }
-  
-  private loadMapScript(): void {
     if (!this.isBrowser) return;
-    
-    if (!document.getElementById('leaflet-script')) {
-      // Load Leaflet CSS
-      const leafletCss = document.createElement('link');
-      leafletCss.rel = 'stylesheet';
-      leafletCss.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      leafletCss.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-      leafletCss.crossOrigin = '';
-      document.head.appendChild(leafletCss);
-      
-      // Load Leaflet JS
-      const leafletScript = document.createElement('script');
-      leafletScript.id = 'leaflet-script';
-      leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      leafletScript.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
-      leafletScript.crossOrigin = '';
-      document.body.appendChild(leafletScript);
-    }
+
+    // Subscribe to Leaflet loaded status
+    this.subscriptions.push(
+      this.mapService.leafletLoaded$.subscribe(loaded => {
+        if (loaded) {
+          this.initializeMap();
+        }
+      })
+    );
+
+    // Get service pins
+    this.fetchServiceLocations();
   }
   
-  private initializeMapWhenReady(): void {
-    if (!this.isBrowser) return;
-    
-    const checkLeaflet = setInterval(() => {
-      // @ts-ignore
-      if (window.L) {
-        clearInterval(checkLeaflet);
-        this.initializeMap();
-      }
-    }, 100);
-    
-    // Safety timeout after 5 seconds
-    setTimeout(() => {
-      clearInterval(checkLeaflet);
-      if (!this.map) {
-        this.error = 'Nie udało się załadować mapy. Odśwież stronę.';
-        this.loading = false;
-      }
-    }, 5000);
+  ngOnDestroy(): void {
+    // Clean up subscriptions to prevent memory leaks
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
   
   private initializeMap(): void {
-    if (!this.isBrowser) return;
-    
     try {
-      // @ts-ignore
-      this.map = L.map('map').setView([50.0647, 19.9450], 12); // Center on Kraków
+      // Create the map using our service
+      this.map = this.mapService.createMap('map');
       
-      // @ts-ignore
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      }).addTo(this.map);
+      if (this.coordinates.length > 0) {
+        this.mapService.addServicePinsToMap(this.map, this.coordinates);
+      }
       
-      this.addPinsToMap();
       this.loading = false;
     } catch (err) {
       console.error('Error initializing map:', err);
@@ -173,34 +134,28 @@ export class WelcomeComponent implements OnInit, AfterViewInit {
     }
   }
   
-  private fetchServicePins(): void {
-    this.mapService.getServicePins().subscribe({
-      next: (data) => {
-        this.coordinates = data;
-        if (this.map) {
-          this.addPinsToMap();
+  private fetchServiceLocations(): void {
+    this.subscriptions.push(
+      this.mapService.getServicePins().subscribe({
+        next: (services) => {
+          // Transform BikeService data to Coordinate format for map display
+          this.coordinates = services.map(service => ({
+            serviceId: service.id,
+            latitude: service.latitude,
+            longitude: service.longitude,
+            name: service.name
+          }));
+          
+          if (this.map) {
+            this.mapService.addServicePinsToMap(this.map, this.coordinates);
+          }
+        },
+        error: (err) => {
+          console.error('Error fetching service locations:', err);
+          this.error = 'Nie udało się pobrać lokalizacji serwisów.';
+          this.loading = false;
         }
-      },
-      error: (err) => {
-        console.error('Error fetching service pins:', err);
-        this.error = 'Nie udało się pobrać lokalizacji serwisów.';
-        this.loading = false;
-      }
-    });
-  }
-  
-  private addPinsToMap(): void {
-    if (!this.isBrowser || !this.map || this.coordinates.length === 0) return;
-    
-    this.coordinates.forEach(coord => {
-      try {
-        // @ts-ignore
-        L.marker([coord.latitude, coord.longitude])
-          .addTo(this.map)
-          .bindPopup('Serwis rowerowy');
-      } catch (err) {
-        console.error('Error adding marker:', err);
-      }
-    });
+      })
+    );
   }
 }

@@ -105,8 +105,8 @@ export class LoginComponent {
           console.log('Login successful', response);
           this.successMessage = 'Logowanie udane!';
 
-          // Store the token
-          this.authService.setToken(response.token);
+          // No need to manually call setToken anymore
+          // Authentication is handled internally by the service
 
           // Add a delay to see the success message
           setTimeout(() => {

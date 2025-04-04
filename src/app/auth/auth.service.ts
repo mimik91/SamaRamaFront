@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
 
 export interface LoginCredentials {
   email: string;
@@ -42,56 +42,148 @@ export interface AuthResponse {
   redirectUrl?: string;
 }
 
+interface UserSession {
+  token: string;
+  role: 'CLIENT' | 'SERVICE';
+  userId: number;
+  email: string;
+  name?: string;
+  expiresAt: number; // Timestamp
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
   private http = inject(HttpClient);
-
+  
+  // Use BehaviorSubject to track authentication state
+  private currentUserSubject = new BehaviorSubject<UserSession | null>(null);
+  currentUser$ = this.currentUserSubject.asObservable();
+  
+  // Token expiration time in milliseconds (24 hours)
+  private tokenExpirationTime = 24 * 60 * 60 * 1000;
+  
+  constructor() {
+    // Load session from storage on service initialization
+    this.loadSession();
+  }
+  
+  private loadSession(): void {
+    const sessionData = sessionStorage.getItem('auth_session');
+    if (sessionData) {
+      try {
+        const session = JSON.parse(sessionData) as UserSession;
+        
+        // Check if token is expired
+        if (session.expiresAt > Date.now()) {
+          this.currentUserSubject.next(session);
+        } else {
+          // Clear expired session
+          this.clearSession();
+        }
+      } catch (e) {
+        console.error('Error parsing session data', e);
+        this.clearSession();
+      }
+    }
+  }
+  
   loginClient(credentials: LoginCredentials): Observable<AuthResponse> {
-    console.log('Attempting client login with:', credentials);
     return this.http.post<AuthResponse>(`${this.apiUrl}/signin/client`, credentials)
       .pipe(
-        tap(response => console.log('Received login response:', response))
+        tap(response => this.handleAuthResponse(response, 'CLIENT')),
+        catchError(error => {
+          console.error('Login failed:', error);
+          return throwError(() => error);
+        })
       );
   }
 
   loginService(credentials: LoginCredentials): Observable<AuthResponse> {
-    console.log('Attempting service login with:', credentials);
     return this.http.post<AuthResponse>(`${this.apiUrl}/signin/service`, credentials)
       .pipe(
-        tap(response => console.log('Received service login response:', response))
+        tap(response => this.handleAuthResponse(response, 'SERVICE')),
+        catchError(error => {
+          console.error('Service login failed:', error);
+          return throwError(() => error);
+        })
       );
   }
 
   registerClient(userData: UserRegistrationData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/signup/client`, userData);
+    return this.http.post(`${this.apiUrl}/signup/client`, userData)
+      .pipe(
+        catchError(error => {
+          console.error('Client registration failed:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   registerService(serviceData: ServiceRegistrationData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/signup/service`, serviceData);
+    return this.http.post(`${this.apiUrl}/signup/service`, serviceData)
+      .pipe(
+        catchError(error => {
+          console.error('Service registration failed:', error);
+          return throwError(() => error);
+        })
+      );
   }
-
-  setToken(token: string): void {
-    console.log('Setting auth token:', token);
-    localStorage.setItem('auth_token', token);
+  
+  private handleAuthResponse(response: AuthResponse, role: 'CLIENT' | 'SERVICE'): void {
+    if (response && response.token) {
+      const session: UserSession = {
+        token: response.token,
+        role: role,
+        userId: response.id,
+        email: response.email,
+        name: response.firstName ? `${response.firstName} ${response.lastName}` : response.name,
+        expiresAt: Date.now() + this.tokenExpirationTime
+      };
+      
+      // Save session in memory and storage
+      this.currentUserSubject.next(session);
+      sessionStorage.setItem('auth_session', JSON.stringify(session));
+    }
   }
 
   getToken(): string | null {
-    const token = localStorage.getItem('auth_token');
-    console.log('Retrieved token from storage:', token ? 'Token exists' : 'No token');
-    return token;
+    const currentUser = this.currentUserSubject.value;
+    return currentUser ? currentUser.token : null;
+  }
+  
+  getUserRole(): string | null {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser ? currentUser.role : null;
+  }
+  
+  getUserId(): number | null {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser ? currentUser.userId : null;
   }
 
-  removeToken(): void {
-    console.log('Removing auth token');
-    localStorage.removeItem('auth_token');
+  logout(): void {
+    this.clearSession();
+  }
+  
+  private clearSession(): void {
+    this.currentUserSubject.next(null);
+    sessionStorage.removeItem('auth_session');
   }
 
   isLoggedIn(): boolean {
-    const isLoggedIn = !!this.getToken();
-    console.log('User is logged in:', isLoggedIn);
-    return isLoggedIn;
+    return !!this.currentUserSubject.value;
+  }
+  
+  isClient(): boolean {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser?.role === 'CLIENT';
+  }
+  
+  isService(): boolean {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser?.role === 'SERVICE';
   }
 }

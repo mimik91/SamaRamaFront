@@ -126,7 +126,6 @@ export class ServicemanLoginComponent {
       
       this.authService.loginService(credentials).subscribe({
         next: (response) => {
-          this.authService.setToken(response.token);
           this.router.navigate(['/service-panel']);
         },
         error: (error) => {

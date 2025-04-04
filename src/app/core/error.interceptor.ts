@@ -2,30 +2,38 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { ErrorHandlerService } from './error-handler.service';
+import { AuthService } from '../auth/auth.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
+  const errorHandler = inject(ErrorHandlerService);
+  const authService = inject(AuthService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      // Let the error handler service handle the notification
+      errorHandler.handleError(error);
+      
+      // Special handling for authentication errors
       if (error.status === 401) {
-        // Nieautoryzowany dostęp - przekieruj do logowania
         console.error('Unauthorized access attempt - redirecting to login');
+        authService.logout(); // Clear auth state
         router.navigate(['/login']);
       } else if (error.status === 403) {
-        // Brak uprawnień
         console.error('Forbidden access attempt');
-      } else if (error.status === 404) {
-        // Nie znaleziono zasobu
-        console.error('Resource not found');
-      } else if (error.status >= 500) {
-        // Błąd serwera
-        console.error('Server error occurred');
+        
+        // Redirect based on user role
+        if (authService.isClient()) {
+          router.navigate(['/welcome']);
+        } else if (authService.isService()) {
+          router.navigate(['/service-panel']);
+        } else {
+          router.navigate(['/login']);
+        }
       }
 
-      // Możesz dodać wyświetlanie komunikatów błędów dla użytkownika
-      // np. przez usługę powiadomień
-
+      // Re-throw the error for components to handle specific logic
       return throwError(() => error);
     }),
   );

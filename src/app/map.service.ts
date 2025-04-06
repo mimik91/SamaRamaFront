@@ -1,26 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, NgZone } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, tap } from 'rxjs';
 
-// Interface for the bike service from API
-export interface BikeService {
-  id: number;
+// Interface dla koordynatów serwisu
+export interface Coordinate {
+  serviceId: number;
   name: string;
   latitude: number;
   longitude: number;
-  // Other properties from your backend model
-  street?: string;
-  building?: string;
-  city?: string;
-  description?: string;
-}
-
-// Interface for map coordinates
-export interface Coordinate {
-  serviceId?: number;
-  latitude: number;
-  longitude: number;
-  name?: string;
 }
 
 declare global {
@@ -33,7 +20,7 @@ declare global {
   providedIn: 'root'
 })
 export class MapService {
-  private apiUrl = 'http://localhost:8080/api/bike-services';
+  private apiUrl = 'http://localhost:8080/api';
   private http = inject(HttpClient);
   private zone = inject(NgZone);
   
@@ -45,15 +32,15 @@ export class MapService {
   }
 
   private initLeaflet(): void {
-    // Check if Leaflet is already loaded
+    // Sprawdź, czy Leaflet jest już załadowany
     if (typeof window !== 'undefined' && window.L) {
       this.leafletLoadedSubject.next(true);
       return;
     }
 
-    // If not loaded and in browser environment
+    // Jeśli nie załadowany i w środowisku przeglądarki
     if (typeof document !== 'undefined') {
-      // Load Leaflet CSS if not already loaded
+      // Załaduj CSS Leaflet jeśli jeszcze nie załadowano
       if (!document.getElementById('leaflet-css')) {
         const leafletCss = document.createElement('link');
         leafletCss.id = 'leaflet-css';
@@ -64,7 +51,7 @@ export class MapService {
         document.head.appendChild(leafletCss);
       }
 
-      // Load Leaflet JS if not already loaded
+      // Załaduj JS Leaflet jeśli jeszcze nie załadowano
       if (!document.getElementById('leaflet-script')) {
         const leafletScript = document.createElement('script');
         leafletScript.id = 'leaflet-script';
@@ -73,9 +60,10 @@ export class MapService {
         leafletScript.crossOrigin = '';
         
         leafletScript.onload = () => {
-          // Use NgZone to ensure Angular detects the change
+          // Użyj NgZone aby Angular wykrył zmianę
           this.zone.run(() => {
             this.leafletLoadedSubject.next(true);
+            console.log('Leaflet załadowany pomyślnie');
           });
         };
         
@@ -84,16 +72,28 @@ export class MapService {
     }
   }
 
-  getServicePins(): Observable<BikeService[]> {
-    // Fetches all bike services from the API
-    return this.http.get<BikeService[]>(`${this.apiUrl}`);
+  // Nowa metoda korzystająca z dedykowanego endpointu
+  getServicePins(): Observable<Coordinate[]> {
+    console.log('Pobieranie koordynatów serwisów z:', `${this.apiUrl}/map/service-pins`);
+    return this.http.get<Coordinate[]>(`${this.apiUrl}/map/service-pins`)
+      .pipe(
+        tap(coordinates => {
+          console.log('Pobrane koordynaty serwisów:', coordinates);
+        }),
+        catchError(error => {
+          console.error('Błąd podczas pobierania koordynatów serwisów:', error);
+          return throwError(() => error);
+        })
+      );
   }
   
   createMap(elementId: string, center: [number, number] = [50.0647, 19.9450], zoom: number = 12): any {
     if (typeof window === 'undefined' || !window.L) {
+      console.error('Leaflet nie jest załadowany');
       return null;
     }
     
+    console.log(`Tworzenie mapy w elemencie: ${elementId} z centrum: [${center}], zoom: ${zoom}`);
     const map = window.L.map(elementId).setView(center, zoom);
     
     window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -106,9 +106,11 @@ export class MapService {
   
   addMarker(map: any, position: [number, number], popupText?: string, draggable: boolean = false): any {
     if (!map || typeof window === 'undefined' || !window.L) {
+      console.error('Nie można dodać znacznika: mapa lub Leaflet nie są dostępne');
       return null;
     }
     
+    console.log(`Dodawanie znacznika na pozycji: [${position}], popupText: ${popupText}`);
     const marker = window.L.marker(position, { draggable }).addTo(map);
     
     if (popupText) {
@@ -120,12 +122,19 @@ export class MapService {
   
   addServicePinsToMap(map: any, coordinates: Coordinate[]): void {
     if (!map || !coordinates || !coordinates.length) {
+      console.error('Nie można dodać znaczników: mapa lub współrzędne nie są dostępne', { map, coordinates });
       return;
     }
     
+    console.log(`Dodawanie ${coordinates.length} znaczników serwisów na mapę`);
     coordinates.forEach(coord => {
-      const popupText = coord.name ? `Serwis: ${coord.name}` : 'Serwis rowerowy';
-      this.addMarker(map, [coord.latitude, coord.longitude], popupText);
+      if (coord.latitude && coord.longitude) {
+        const popupText = coord.name ? `Serwis: ${coord.name}` : 'Serwis rowerowy';
+        this.addMarker(map, [coord.latitude, coord.longitude], popupText);
+        console.log(`Dodano znacznik dla serwisu ID=${coord.serviceId}: [${coord.latitude}, ${coord.longitude}]`);
+      } else {
+        console.warn(`Brak poprawnych współrzędnych dla serwisu:`, coord);
+      }
     });
   }
 }

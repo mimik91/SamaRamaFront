@@ -10,7 +10,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         // Nieautoryzowany dostęp - przekieruj do logowania
-        console.error('Unauthorized access attempt - redirecting to login');
+        console.error('Unauthorized access attempt - redirecting to login', error);
+        setTimeout(() => {
+          router.navigate(['/login']);
+        }, 100);
         router.navigate(['/login']);
       } else if (error.status === 403) {
         // Brak uprawnień

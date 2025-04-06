@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, throwError, of } from 'rxjs';
 
 export interface LoginCredentials {
   email: string;
@@ -75,7 +75,7 @@ export class AuthService {
       return; // Skip during SSR
     }
     
-    const sessionData = sessionStorage.getItem('auth_session');
+    const sessionData = localStorage.getItem('auth_session'); // Zmiana z sessionStorage na localStorage
     if (sessionData) {
       try {
         const session = JSON.parse(sessionData) as UserSession;
@@ -83,8 +83,10 @@ export class AuthService {
         // Check if token is expired
         if (session.expiresAt > Date.now()) {
           this.currentUserSubject.next(session);
+          console.log('Loaded session:', session);
         } else {
           // Clear expired session
+          console.log('Session expired, clearing');
           this.clearSession();
         }
       } catch (e) {
@@ -100,7 +102,12 @@ export class AuthService {
       .pipe(
         tap(response => {
           console.log('Login response:', response);
-          this.handleAuthResponse(response, 'CLIENT');
+          // Upewnij się, że response.role jest ustawione na 'CLIENT'
+          const authResponse = {
+            ...response,
+            role: 'CLIENT' as const
+          };
+          this.handleAuthResponse(authResponse);
         }),
         catchError(error => {
           console.error('Login failed:', error);
@@ -115,7 +122,12 @@ export class AuthService {
       .pipe(
         tap(response => {
           console.log('Service login response:', response);
-          this.handleAuthResponse(response, 'SERVICE');
+          // Upewnij się, że response.role jest ustawione na 'SERVICE'
+          const authResponse = {
+            ...response,
+            role: 'SERVICE' as const
+          };
+          this.handleAuthResponse(authResponse);
         }),
         catchError(error => {
           console.error('Service login failed:', error);
@@ -146,12 +158,13 @@ export class AuthService {
       );
   }
   
-  private handleAuthResponse(response: AuthResponse, role: 'CLIENT' | 'SERVICE'): void {
+  private handleAuthResponse(response: AuthResponse): void {
     if (response && response.token) {
-      console.log('Saving auth token:', response.token); // Add for debugging
+      console.log('Saving auth token:', response.token);
+      
       const session: UserSession = {
         token: response.token,
-        role: role,
+        role: response.role,
         userId: response.id,
         email: response.email,
         name: response.firstName ? `${response.firstName} ${response.lastName}` : response.name,
@@ -160,15 +173,20 @@ export class AuthService {
       
       // Save session in memory and storage
       this.currentUserSubject.next(session);
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem('auth_session', JSON.stringify(session));
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('auth_session', JSON.stringify(session));
+        console.log('Session saved to localStorage');
       }
     }
   }
 
   getToken(): string | null {
     const currentUser = this.currentUserSubject.value;
-    return currentUser ? currentUser.token : null;
+    if (!currentUser) {
+      // Try to load from storage in case it wasn't loaded yet
+      this.loadSession();
+    }
+    return this.currentUserSubject.value?.token || null;
   }
   
   getUserRole(): string | null {
@@ -187,8 +205,8 @@ export class AuthService {
   
   private clearSession(): void {
     this.currentUserSubject.next(null);
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.removeItem('auth_session');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('auth_session');
     }
   }
 

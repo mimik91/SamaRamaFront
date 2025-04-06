@@ -34,7 +34,15 @@ export class BicycleService {
   }
   
   addBicycle(bicycleData: Omit<Bicycle, 'id'>): Observable<any> {
-    return this.http.post(this.apiUrl, bicycleData)
+    // Upewniamy się, że frameNumber jest null, a nie pustym stringiem
+    const payload = {
+      ...bicycleData, 
+      frameNumber: bicycleData.frameNumber || null
+    };
+    
+    console.log('Sending bicycle data to API:', payload);
+    
+    return this.http.post(this.apiUrl, payload)
       .pipe(
         catchError(error => {
           console.error('Error adding bicycle:', error);

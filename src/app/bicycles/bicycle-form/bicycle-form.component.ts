@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router } from '@angular/router';
 import { BicycleService } from '../bicycle.service';
 import { NotificationService } from '../../core/notification.service';
+import { Bicycle } from '../bicycle.model';
 
 @Component({
   selector: 'app-bicycle-form',
@@ -92,7 +93,8 @@ import { NotificationService } from '../../core/notification.service';
         
         <div class="note-container">
           <div class="note-message">
-            <strong>Uwaga:</strong> System automatycznie wygeneruje unikalny numer ramy dla Twojego roweru.
+            <strong>Informacja:</strong> Numer ramy może zostać dodany później przez serwis rowerowy. 
+            Podczas dodawania roweru nie musisz podawać numeru ramy.
           </div>
         </div>
         
@@ -291,8 +293,8 @@ export class BicycleFormComponent {
     
     this.isSubmitting = true;
     
-    const bicycleData = {
-      frameNumber: '', // Empty string - backend will generate a random frame number
+    const bicycleData: Omit<Bicycle, 'id'> = {
+      frameNumber: null, // Teraz pole jest nullem
       brand: this.bicycleForm.get('brand')?.value,
       model: this.bicycleForm.get('model')?.value || null,
       type: this.bicycleForm.get('type')?.value || null,
@@ -303,12 +305,10 @@ export class BicycleFormComponent {
     this.bicycleService.addBicycle(bicycleData).subscribe({
       next: (response: any) => {
         const bicycleId = response.bicycleId;
-        const frameNumber = response.frameNumber; // Get the generated frame number from response
-        
-        let successMessage = `Rower został dodany pomyślnie. Numer ramy: ${frameNumber}`;
+        const successMessage = 'Rower został dodany pomyślnie.';
         
         if (this.selectedFile && bicycleId) {
-          // Bicycle added, now add photo
+          // Rower dodany, teraz dodaj zdjęcie
           this.bicycleService.uploadBicyclePhoto(bicycleId, this.selectedFile).subscribe({
             next: () => {
               this.notificationService.success(successMessage);
@@ -321,7 +321,7 @@ export class BicycleFormComponent {
             }
           });
         } else {
-          // Bicycle added without photo
+          // Dodano rower bez zdjęcia
           this.notificationService.success(successMessage);
           this.router.navigate(['/bicycles']);
         }

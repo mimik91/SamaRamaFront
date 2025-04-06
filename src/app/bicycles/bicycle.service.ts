@@ -1,8 +1,8 @@
-// src/app/bicycles/bicycle.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { Bicycle, BicycleForm } from './bicycle.model';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,10 +10,13 @@ import { Bicycle, BicycleForm } from './bicycle.model';
 export class BicycleService {
   private apiUrl = 'http://localhost:8080/api/bicycles';
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
+
   
   constructor() {}
   
   getUserBicycles(): Observable<Bicycle[]> {
+    console.log('Fetching bicycles with auth token:', this.authService.getToken()); // Add this for debugging
     return this.http.get<Bicycle[]>(this.apiUrl)
       .pipe(
         catchError(error => {

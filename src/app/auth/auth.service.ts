@@ -148,6 +148,7 @@ export class AuthService {
   
   private handleAuthResponse(response: AuthResponse, role: 'CLIENT' | 'SERVICE'): void {
     if (response && response.token) {
+      console.log('Saving auth token:', response.token); // Add for debugging
       const session: UserSession = {
         token: response.token,
         role: role,

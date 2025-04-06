@@ -7,13 +7,24 @@ import { BikeServiceRegistrationComponent } from './auth/registration/bike-servi
 import { WelcomeComponent } from './welcome/welcome.component';
 import { ServicePanelComponent } from './service-panel/service-panel.component';
 import { authGuard, clientGuard, serviceGuard } from './auth/auth.guard';
+import { BicyclesListComponent } from './bicycles/bicycles-list/bicycles-list.component';
+import { BicycleFormComponent } from './bicycles/bicycle-form/bicycle-form.component';
 
 export const routes: Routes = [
+    // Auth routes
     {path: 'login', component: LoginComponent},
     {path: 'login-serviceman', component: ServicemanLoginComponent},
     {path: 'register', component: RegistrationComponent, data: { userType: 'client' }},
     {path: 'register-serviceman', component: BikeServiceRegistrationComponent},
+    
+    // Client routes
     {path: 'welcome', component: WelcomeComponent, canActivate: [clientGuard]},
+    {path: 'bicycles', component: BicyclesListComponent, canActivate: [clientGuard]},
+    {path: 'bicycles/add', component: BicycleFormComponent, canActivate: [clientGuard]},
+    
+    // Service routes
     {path: 'service-panel', component: ServicePanelComponent, canActivate: [serviceGuard]},
+    
+    // Default route
     {path: '', redirectTo: 'login', pathMatch: 'full'}
 ];

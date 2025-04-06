@@ -16,19 +16,6 @@ import { NotificationService } from '../../core/notification.service';
       
       <form [formGroup]="bicycleForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
-          <label for="frameNumber">Numer ramy*</label>
-          <input 
-            type="text" 
-            id="frameNumber" 
-            formControlName="frameNumber" 
-            [class.is-invalid]="isFieldInvalid('frameNumber')"
-          >
-          <div *ngIf="isFieldInvalid('frameNumber')" class="error-message">
-            Numer ramy jest wymagany
-          </div>
-        </div>
-        
-        <div class="form-group">
           <label for="brand">Marka*</label>
           <input 
             type="text" 
@@ -103,6 +90,12 @@ import { NotificationService } from '../../core/notification.service';
           </div>
         </div>
         
+        <div class="note-container">
+          <div class="note-message">
+            <strong>Uwaga:</strong> System automatycznie wygeneruje unikalny numer ramy dla Twojego roweru.
+          </div>
+        </div>
+        
         <div class="form-actions">
           <button type="button" class="cancel-btn" (click)="goBack()">Anuluj</button>
           <button 
@@ -168,6 +161,19 @@ import { NotificationService } from '../../core/notification.service';
       margin-top: 5px;
     }
     
+    .note-container {
+      margin-bottom: 20px;
+      padding: 12px;
+      background-color: #edf8ff;
+      border: 1px solid #c8e4fb;
+      border-radius: 4px;
+    }
+    
+    .note-message {
+      color: #0c5683;
+      font-size: 0.9rem;
+    }
+    
     .form-actions {
       display: flex;
       justify-content: space-between;
@@ -227,7 +233,6 @@ export class BicycleFormComponent {
   
   constructor() {
     this.bicycleForm = this.fb.group({
-      frameNumber: ['', Validators.required],
       brand: ['', Validators.required],
       model: [''],
       type: [''],
@@ -248,7 +253,7 @@ export class BicycleFormComponent {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       
-      // Sprawdź rozmiar pliku (max 1MB)
+      // Check file size (max 1MB)
       if (file.size > 1024 * 1024) {
         this.photoError = 'Zdjęcie nie może przekraczać 1MB';
         this.selectedFile = null;
@@ -256,7 +261,7 @@ export class BicycleFormComponent {
         return;
       }
       
-      // Sprawdź typ pliku
+      // Check file type
       if (!file.type.match('image.*')) {
         this.photoError = 'Wybierz plik graficzny';
         this.selectedFile = null;
@@ -266,7 +271,7 @@ export class BicycleFormComponent {
       
       this.selectedFile = file;
       
-      // Utwórz podgląd
+      // Create preview
       const reader = new FileReader();
       reader.onload = () => {
         this.previewUrl = reader.result as string;
@@ -287,7 +292,7 @@ export class BicycleFormComponent {
     this.isSubmitting = true;
     
     const bicycleData = {
-      frameNumber: this.bicycleForm.get('frameNumber')?.value,
+      frameNumber: '', // Empty string - backend will generate a random frame number
       brand: this.bicycleForm.get('brand')?.value,
       model: this.bicycleForm.get('model')?.value || null,
       type: this.bicycleForm.get('type')?.value || null,
@@ -298,23 +303,26 @@ export class BicycleFormComponent {
     this.bicycleService.addBicycle(bicycleData).subscribe({
       next: (response: any) => {
         const bicycleId = response.bicycleId;
+        const frameNumber = response.frameNumber; // Get the generated frame number from response
+        
+        let successMessage = `Rower został dodany pomyślnie. Numer ramy: ${frameNumber}`;
         
         if (this.selectedFile && bicycleId) {
-          // Dodano rower, teraz dodaj zdjęcie
+          // Bicycle added, now add photo
           this.bicycleService.uploadBicyclePhoto(bicycleId, this.selectedFile).subscribe({
             next: () => {
-              this.notificationService.success('Rower został dodany pomyślnie');
+              this.notificationService.success(successMessage);
               this.router.navigate(['/bicycles']);
             },
             error: (error) => {
               console.error('Error uploading photo:', error);
-              this.notificationService.success('Rower został dodany, ale wystąpił błąd przy dodawaniu zdjęcia');
+              this.notificationService.success(successMessage + ' (nie udało się dodać zdjęcia)');
               this.router.navigate(['/bicycles']);
             }
           });
         } else {
-          // Dodano rower bez zdjęcia
-          this.notificationService.success('Rower został dodany pomyślnie');
+          // Bicycle added without photo
+          this.notificationService.success(successMessage);
           this.router.navigate(['/bicycles']);
         }
       },
@@ -322,12 +330,6 @@ export class BicycleFormComponent {
         this.isSubmitting = false;
         this.notificationService.error('Wystąpił błąd podczas dodawania roweru');
         console.error('Error adding bicycle:', error);
-        
-        if (error.error && error.error.message) {
-          if (error.error.message.includes('frame number already exists')) {
-            this.notificationService.error('Rower o podanym numerze ramy już istnieje');
-          }
-        }
       }
     });
   }

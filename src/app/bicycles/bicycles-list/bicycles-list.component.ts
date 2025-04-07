@@ -159,6 +159,27 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
       object-fit: contain;
     }
     
+    .bicycle-image.no-image {
+      background-color: #e9ecef;
+      color: #6c757d;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    
+    .bicycle-image .placeholder-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
+    }
+    
+    .bicycle-image .placeholder-content span {
+      padding: 8px;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+    }
+    
     .bicycle-details {
       flex-grow: 1;
     }
@@ -251,7 +272,12 @@ export class BicyclesListComponent implements OnInit {
   
   handleImageError(event: Event): void {
     const imgElement = event.target as HTMLImageElement;
-    imgElement.src = 'assets/no-image.png';
+    // Zamiast próbować ładować obrazek, od razu zastąpmy element tekstem
+    const parent = imgElement.parentElement;
+    if (parent) {
+      parent.classList.add('no-image');
+      parent.innerHTML = '<div class="placeholder-content"><span>Brak zdjęcia</span></div>';
+    }
   }
   
   goToAddBicycle(): void {

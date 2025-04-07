@@ -1,5 +1,4 @@
-// src/app/bicycles/bicycles-list/bicycles-list.component.ts
-import { Component, OnInit, inject, ViewChild, ViewContainerRef, ComponentRef } from '@angular/core';
+import { Component, OnInit, inject, ViewContainerRef, ComponentRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { BicycleService } from '../bicycle.service';
@@ -40,7 +39,7 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
               </div>
               <div class="bicycle-details">
                 <h3>{{ bicycle.brand }} {{ bicycle.model || '' }}</h3>
-                <p class="frame-number">Numer ramy: {{ bicycle.frameNumber }}</p>
+                <p class="frame-number">Numer ramy: {{ bicycle.frameNumber || 'Nie podano' }}</p>
                 <p *ngIf="bicycle.type">Typ: {{ bicycle.type }}</p>
                 <p *ngIf="bicycle.frameMaterial">Materiał ramy: {{ bicycle.frameMaterial }}</p>
                 <p *ngIf="bicycle.productionDate">Data produkcji: {{ bicycle.productionDate | date:'yyyy' }}</p>
@@ -84,6 +83,7 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
       padding: 8px 16px;
       border-radius: 4px;
       font-weight: 500;
+      cursor: pointer;
     }
     
     .add-btn {
@@ -215,6 +215,7 @@ export class BicyclesListComponent implements OnInit {
   bicycles: Bicycle[] = [];
   loading = true;
   error: string | null = null;
+  timestamp = Date.now();
   
   private deleteDialogRef: ComponentRef<DeleteDialogComponent> | null = null;
   
@@ -225,6 +226,7 @@ export class BicyclesListComponent implements OnInit {
   loadBicycles(): void {
     this.loading = true;
     this.error = null;
+    this.timestamp = Date.now(); // Odśwież timestamp przy każdym ładowaniu
     
     this.bicycleService.getUserBicycles().subscribe({
       next: (bicycles) => {
@@ -243,7 +245,8 @@ export class BicyclesListComponent implements OnInit {
   }
   
   getBicyclePhotoUrl(bicycleId: number): string {
-    return this.bicycleService.getBicyclePhotoUrl(bicycleId);
+    // Dodaj timestamp jako parametr zapytania, aby uniknąć cache'owania
+    return `${this.bicycleService.getBicyclePhotoUrl(bicycleId)}?t=${this.timestamp}`;
   }
   
   handleImageError(event: Event): void {

@@ -55,11 +55,26 @@ export class BicycleService {
   }
   
   uploadBicyclePhoto(bicycleId: number, photoFile: File): Observable<any> {
+    if (!photoFile) {
+      return throwError(() => new Error('No file selected'));
+    }
+    
+    // Sprawdź typ pliku
+    if (!photoFile.type.match('image.*')) {
+      return throwError(() => new Error('Only image files are allowed'));
+    }
+    
     const formData = new FormData();
     formData.append('photo', photoFile);
     
+    // Używamy odpowiednich opcji, nie ustawiamy ręcznie Content-Type,
+    // ponieważ FormData automatycznie ustawia poprawny multipart/form-data
     return this.http.post(`${this.apiUrl}/${bicycleId}/photo`, formData)
       .pipe(
+        map(response => {
+          console.log('Photo upload success:', response);
+          return response;
+        }),
         catchError(error => {
           console.error('Error uploading bicycle photo:', error);
           return throwError(() => error);

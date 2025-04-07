@@ -1,15 +1,16 @@
 // src/app/bicycles/bicycles-list/bicycles-list.component.ts
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ViewContainerRef, ComponentRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { BicycleService } from '../bicycle.service';
 import { Bicycle } from '../bicycle.model';
 import { NotificationService } from '../../core/notification.service';
+import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-bicycles-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, DeleteDialogComponent],
   template: `
     <div class="bicycles-container">
       <h1>Twoje rowery</h1>
@@ -45,7 +46,7 @@ import { NotificationService } from '../../core/notification.service';
                 <p *ngIf="bicycle.productionDate">Data produkcji: {{ bicycle.productionDate | date:'yyyy' }}</p>
               </div>
               <div class="bicycle-actions">
-                <button class="delete-btn" disabled>Usuń</button>
+                <button class="delete-btn" (click)="deleteBicycle(bicycle.id)">Usuń</button>
               </div>
             </div>
           </div>
@@ -100,8 +101,12 @@ import { NotificationService } from '../../core/notification.service';
       background-color: #e74c3c;
       color: white;
       border: none;
-      cursor: not-allowed;
-      opacity: 0.7;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .delete-btn:hover {
+      background-color: #c0392b;
     }
     
     .loading-message, .error-message {
@@ -205,10 +210,13 @@ export class BicyclesListComponent implements OnInit {
   private bicycleService = inject(BicycleService);
   private notificationService = inject(NotificationService);
   private router = inject(Router);
+  private viewContainerRef = inject(ViewContainerRef);
   
   bicycles: Bicycle[] = [];
   loading = true;
   error: string | null = null;
+  
+  private deleteDialogRef: ComponentRef<DeleteDialogComponent> | null = null;
   
   ngOnInit(): void {
     this.loadBicycles();
@@ -245,5 +253,37 @@ export class BicyclesListComponent implements OnInit {
   
   goToAddBicycle(): void {
     this.router.navigate(['/bicycles/add']);
+  }
+  
+  deleteBicycle(bicycleId: number): void {
+    if (!bicycleId) {
+      this.notificationService.error('Nie można usunąć roweru: nieprawidłowe ID');
+      return;
+    }
+    
+    // Stwórz i pokaż dialog potwierdzający
+    this.deleteDialogRef = this.viewContainerRef.createComponent(DeleteDialogComponent);
+    
+    this.deleteDialogRef.instance.show().then((confirmed: boolean) => {
+      if (confirmed) {
+        this.bicycleService.deleteBicycle(bicycleId).subscribe({
+          next: () => {
+            this.notificationService.success('Rower został usunięty');
+            // Odśwież listę rowerów
+            this.loadBicycles();
+          },
+          error: (error) => {
+            console.error('Błąd podczas usuwania roweru:', error);
+            this.notificationService.error('Nie udało się usunąć roweru. Spróbuj ponownie później.');
+          }
+        });
+      }
+      
+      // Zawsze usuń dialog z widoku po zakończeniu
+      if (this.deleteDialogRef) {
+        this.deleteDialogRef.destroy();
+        this.deleteDialogRef = null;
+      }
+    });
   }
 }

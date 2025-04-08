@@ -1,0 +1,107 @@
+.bicycle-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+  
+  h1 {
+    margin-bottom: 30px;
+    color: #2c3e50;
+    text-align: center;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #34495e;
+  }
+  
+  input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  select {
+    background-color: white;
+  }
+  
+  input:focus, select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
+  
+  .is-invalid {
+    border-color: #e74c3c !important;
+  }
+  
+  .error-message {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 5px;
+  }
+  
+  .note-container {
+    margin-bottom: 20px;
+    padding: 12px;
+    background-color: #edf8ff;
+    border: 1px solid #c8e4fb;
+    border-radius: 4px;
+  }
+  
+  .note-message {
+    color: #0c5683;
+    font-size: 0.9rem;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+  }
+  
+  .cancel-btn, .submit-btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .cancel-btn {
+    background-color: #ecf0f1;
+    border: 1px solid #bdc3c7;
+    color: #7f8c8d;
+  }
+  
+  .submit-btn {
+    background-color: #3498db;
+    border: none;
+    color: white;
+  }
+  
+  .submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .photo-preview {
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .photo-preview img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+  }

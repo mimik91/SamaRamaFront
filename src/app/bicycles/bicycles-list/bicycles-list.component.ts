@@ -29,7 +29,7 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
       <ng-container *ngIf="!loading && !error">
         <ng-container *ngIf="bicycles.length > 0; else noBicycles">
           <div class="bicycles-list">
-            <div *ngFor="let bicycle of bicycles" class="bicycle-card">
+            <div *ngFor="let bicycle of bicycles" class="bicycle-card" (click)="viewBicycleDetails(bicycle.id)">
               <div class="bicycle-image" *ngIf="bicycle.id">
                 <img 
                   [src]="getBicyclePhotoUrl(bicycle.id)" 
@@ -45,7 +45,8 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
                 <p *ngIf="bicycle.productionDate">Data produkcji: {{ bicycle.productionDate | date:'yyyy' }}</p>
               </div>
               <div class="bicycle-actions">
-                <button class="delete-btn" (click)="deleteBicycle(bicycle.id)">Usuń</button>
+                <button class="view-btn" (click)="viewBicycleDetails(bicycle.id); $event.stopPropagation()">Szczegóły</button>
+                <button class="delete-btn" (click)="deleteBicycle(bicycle.id); $event.stopPropagation()">Usuń</button>
               </div>
             </div>
           </div>
@@ -79,7 +80,7 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
       margin-bottom: 20px;
     }
     
-    .add-btn, .delete-btn {
+    .add-btn, .delete-btn, .view-btn {
       padding: 8px 16px;
       border-radius: 4px;
       font-weight: 500;
@@ -95,6 +96,17 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
     
     .add-btn:hover {
       background-color: #2980b9;
+    }
+    
+    .view-btn {
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      margin-right: 8px;
+    }
+    
+    .view-btn:hover {
+      background-color: #27ae60;
     }
     
     .delete-btn {
@@ -139,6 +151,13 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
       background-color: white;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .bicycle-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
     
     .bicycle-image {
@@ -197,6 +216,10 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
     .bicycle-details p {
       margin: 5px 0;
       color: #34495e;
+    }
+    
+    .bicycle-actions {
+      display: flex;
     }
     
     .no-bicycles {
@@ -278,6 +301,10 @@ export class BicyclesListComponent implements OnInit {
       parent.classList.add('no-image');
       parent.innerHTML = '<div class="placeholder-content"><span>Brak zdjęcia</span></div>';
     }
+  }
+  
+  viewBicycleDetails(bicycleId: number): void {
+    this.router.navigate(['/bicycles', bicycleId]);
   }
   
   goToAddBicycle(): void {

@@ -95,4 +95,14 @@ export class BicycleService {
         })
       );
   }
+  
+  updateBicycle(id: number, bicycleData: Omit<Bicycle, 'id'>): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, bicycleData)
+      .pipe(
+        catchError(error => {
+          console.error(`Error updating bicycle with id ${id}:`, error);
+          return throwError(() => error);
+        })
+      );
+  }
 }

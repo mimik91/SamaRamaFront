@@ -636,8 +636,8 @@ export class BicycleDetailsComponent implements OnInit {
     
     this.isSubmitting = true;
     
-    const bicycleData: Partial<Bicycle> = {
-      id: this.bicycle.id,
+    // Tworzymy nowy obiekt zawierający TYLKO te pola, które są w BicycleDto
+    const bicycleData = {
       brand: this.bicycleForm.value.brand,
       model: this.bicycleForm.value.model,
       type: this.bicycleForm.value.type,
@@ -646,7 +646,9 @@ export class BicycleDetailsComponent implements OnInit {
       frameNumber: this.bicycle.frameNumber // Zachowujemy oryginalny numer ramy
     };
     
-    // Zamiast używać metody updateBicycle (której nie ma), użyjmy istniejącego endpointu PUT
+    console.log('Wysyłanie danych:', bicycleData); // Dodajemy log dla celów diagnostycznych
+    
+    // Użyj HttpClient do wywołania PUT
     this.http.put<any>(`${this.bicycleService['apiUrl']}/${this.bicycle!.id}`, bicycleData).subscribe({
       next: () => {
         // Jeśli mamy nowe zdjęcie, załaduj je

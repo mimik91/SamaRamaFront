@@ -1,0 +1,214 @@
+<div class="bicycle-details-container">
+    <div class="header-section">
+      <h1>Szczegóły roweru</h1>
+      <button class="back-btn" (click)="goBack()">
+        Powrót do listy
+      </button>
+    </div>
+    
+    <div class="content-container" *ngIf="bicycle">
+      <div class="bicycle-info-container">
+        <div class="bicycle-image-container">
+          <ng-container *ngIf="bicycle.hasPhoto; else noImageTemplate">
+            <img 
+              [src]="getBicyclePhotoUrl(bicycle.id)" 
+              (error)="handleImageError()"
+              alt="Zdjęcie roweru"
+              class="bicycle-image"
+            >
+          </ng-container>
+          <ng-template #noImageTemplate>
+            <div class="no-image">
+              <div class="placeholder-content">
+                <span>Brak zdjęcia</span>
+              </div>
+            </div>
+          </ng-template>
+        </div>
+        
+        <div class="bicycle-info">
+          <h2>{{ bicycle.brand }} {{ bicycle.model || '' }}</h2>
+          <p *ngIf="bicycle.frameNumber" class="frame-number">
+            <strong>Numer ramy:</strong> {{ bicycle.frameNumber }}
+          </p>
+          <p *ngIf="bicycle.type">
+            <strong>Typ roweru:</strong> {{ getTranslatedType(bicycle.type) }}
+          </p>
+          <p *ngIf="bicycle.frameMaterial">
+            <strong>Materiał ramy:</strong> {{ getTranslatedMaterial(bicycle.frameMaterial) }}
+          </p>
+          <p *ngIf="bicycle.productionDate">
+            <strong>Rok produkcji:</strong> {{ bicycle.productionDate | date:'yyyy' }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="photo-actions" *ngIf="!isEditing">
+        <button 
+          *ngIf="bicycle.hasPhoto" 
+          class="delete-photo-btn" 
+          (click)="deletePhoto()"
+          [disabled]="isPhotoDeleting"
+        >
+          {{ isPhotoDeleting ? 'Usuwanie zdjęcia...' : 'Usuń zdjęcie' }}
+        </button>
+        <button 
+          *ngIf="!bicycle.hasPhoto" 
+          class="add-photo-btn" 
+          (click)="openPhotoUpload()"
+        >
+          Dodaj zdjęcie
+        </button>
+        <input 
+          #photoInput
+          type="file" 
+          id="photoInput"
+          accept="image/*" 
+          style="display: none;" 
+          (change)="onPhotoSelected($event)"
+        >
+      </div>
+      
+      <div class="edit-section" *ngIf="!isEditing">
+        <button class="edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
+      </div>
+  
+      <form *ngIf="isEditing" [formGroup]="bicycleForm" (ngSubmit)="onSubmit()" class="edit-form">
+        <h3>Edycja danych roweru</h3>
+        
+        <div class="form-group">
+          <label for="brand">Marka*</label>
+          <input 
+            type="text" 
+            id="brand" 
+            formControlName="brand" 
+            [class.is-invalid]="isFieldInvalid('brand')"
+          >
+          <div *ngIf="isFieldInvalid('brand')" class="error-message">
+            Marka jest wymagana
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="model">Model</label>
+          <input 
+            type="text" 
+            id="model" 
+            formControlName="model"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="type">Typ roweru</label>
+          <select id="type" formControlName="type">
+            <option value="">-- Wybierz typ --</option>
+            <option value="MOUNTAIN">Górski</option>
+            <option value="ROAD">Szosowy</option>
+            <option value="CITY">Miejski</option>
+            <option value="TREKKING">Trekkingowy</option>
+            <option value="BMX">BMX</option>
+            <option value="KIDS">Dziecięcy</option>
+            <option value="ELECTRIC">Elektryczny</option>
+            <option value="OTHER">Inny</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="frameMaterial">Materiał ramy</label>
+          <select id="frameMaterial" formControlName="frameMaterial">
+            <option value="">-- Wybierz materiał --</option>
+            <option value="ALUMINUM">Aluminium</option>
+            <option value="CARBON">Karbon</option>
+            <option value="STEEL">Stal</option>
+            <option value="TITANIUM">Tytan</option>
+            <option value="OTHER">Inny</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="productionDate">Rok produkcji</label>
+          <input 
+            type="date" 
+            id="productionDate" 
+            formControlName="productionDate"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="photo">Zmień zdjęcie roweru (maks. 1MB)</label>
+          <input 
+            type="file" 
+            id="photo" 
+            accept="image/*"
+            (change)="onFileSelected($event)"
+          >
+          <div *ngIf="photoError" class="error-message">
+            {{ photoError }}
+          </div>
+          
+          <div *ngIf="selectedFile" class="photo-preview">
+            <img [src]="previewUrl" alt="Podgląd zdjęcia roweru">
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" (click)="cancelEditing()">
+            Anuluj
+          </button>
+          <button 
+            type="submit" 
+            class="submit-btn" 
+            [disabled]="bicycleForm.invalid || isSubmitting"
+          >
+            {{ isSubmitting ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+          </button>
+        </div>
+      </form>
+      
+      <div class="service-records-section">
+        <h3>Historia serwisowa</h3>
+        
+        <div *ngIf="loading" class="loading-message">
+          Ładowanie historii serwisowej...
+        </div>
+        
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+        
+        <div *ngIf="!loading && !errorMessage">
+          <div *ngIf="serviceRecords.length > 0; else noRecords" class="service-records-list">
+            <div *ngFor="let record of serviceRecords" class="service-record-card">
+              <div class="service-record-header">
+                <h4>{{ record.name }}</h4>
+                <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+              </div>
+              <p class="service-description">{{ record.description }}</p>
+              <div class="service-footer">
+                <span *ngIf="record.price" class="service-price">
+                  Koszt: {{ record.price | currency:'PLN':'symbol':'1.2-2' }}
+                </span>
+                <span class="service-name">
+                  Wykonane przez: {{ record.service?.name || 'Nieznany serwis' }}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <ng-template #noRecords>
+            <div class="no-records-message">
+              Brak historii serwisowej dla tego roweru.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="!bicycle && !loading" class="not-found-message">
+      Nie znaleziono roweru o podanym ID.
+    </div>
+    
+    <div *ngIf="loading && !bicycle" class="loading-container">
+      Ładowanie danych roweru...
+    </div>
+  </div>

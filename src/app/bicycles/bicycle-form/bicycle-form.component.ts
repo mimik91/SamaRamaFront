@@ -293,7 +293,7 @@ export class BicycleFormComponent {
     
     this.isSubmitting = true;
     
-    const bicycleData: Omit<Bicycle, 'id'> = {
+    const bicycleData = {
       frameNumber: null, // Teraz pole jest nullem
       brand: this.bicycleForm.get('brand')?.value,
       model: this.bicycleForm.get('model')?.value || null,

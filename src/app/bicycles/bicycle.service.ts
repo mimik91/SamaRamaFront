@@ -16,7 +16,6 @@ export class BicycleService {
   constructor() {}
   
   getUserBicycles(): Observable<Bicycle[]> {
-    console.log('Fetching bicycles with auth token:', this.authService.getToken()); // Add this for debugging
     return this.http.get<Bicycle[]>(this.apiUrl)
       .pipe(
         catchError(error => {
@@ -36,7 +35,7 @@ export class BicycleService {
       );
   }
   
-  addBicycle(bicycleData: Omit<Bicycle, 'id'>): Observable<any> {
+  addBicycle(bicycleData: Omit<Bicycle, 'id' | 'hasPhoto'>): Observable<any> {
     // Upewniamy się, że frameNumber jest null, a nie pustym stringiem
     const payload = {
       ...bicycleData, 
@@ -67,8 +66,6 @@ export class BicycleService {
     const formData = new FormData();
     formData.append('photo', photoFile);
     
-    // Używamy odpowiednich opcji, nie ustawiamy ręcznie Content-Type,
-    // ponieważ FormData automatycznie ustawia poprawny multipart/form-data
     return this.http.post(`${this.apiUrl}/${bicycleId}/photo`, formData)
       .pipe(
         map(response => {
@@ -86,6 +83,16 @@ export class BicycleService {
     return `${this.apiUrl}/${bicycleId}/photo`;
   }
   
+  deleteBicyclePhoto(bicycleId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${bicycleId}/photo`)
+      .pipe(
+        catchError(error => {
+          console.error('Error deleting bicycle photo:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+  
   deleteBicycle(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`)
       .pipe(
@@ -96,7 +103,7 @@ export class BicycleService {
       );
   }
   
-  updateBicycle(id: number, bicycleData: Omit<Bicycle, 'id'>): Observable<any> {
+  updateBicycle(id: number, bicycleData: Omit<Bicycle, 'id' | 'hasPhoto'>): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, bicycleData)
       .pipe(
         catchError(error => {

@@ -1,0 +1,326 @@
+.bicycle-details-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+  
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  h1 {
+    margin: 0;
+    color: #2c3e50;
+  }
+  
+  .back-btn {
+    padding: 8px 16px;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .back-btn:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .content-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .bicycle-info-container {
+    display: flex;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .bicycle-image-container {
+    width: 250px;
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-right: 30px;
+  }
+  
+  .bicycle-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  
+  .no-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #adb5bd;
+  }
+  
+  .placeholder-content {
+    padding: 15px;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+  
+  .bicycle-info {
+    flex-grow: 1;
+  }
+  
+  .bicycle-info h2 {
+    margin-top: 0;
+    color: #2c3e50;
+    font-size: 1.8rem;
+  }
+  
+  .frame-number {
+    font-weight: 500;
+    color: #7f8c8d;
+  }
+  
+  .photo-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+  }
+  
+  .delete-photo-btn, .add-photo-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .delete-photo-btn {
+    background-color: #e74c3c;
+    border: none;
+    color: white;
+  }
+  
+  .delete-photo-btn:hover:not(:disabled) {
+    background-color: #c0392b;
+  }
+  
+  .delete-photo-btn:disabled {
+    background-color: #f5aca6;
+    cursor: not-allowed;
+  }
+  
+  .add-photo-btn {
+    background-color: #3498db;
+    border: none;
+    color: white;
+  }
+  
+  .add-photo-btn:hover {
+    background-color: #2980b9;
+  }
+  
+  .edit-section {
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .edit-btn {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .edit-btn:hover {
+    background-color: #2980b9;
+  }
+  
+  .edit-form {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+  }
+  
+  .edit-form h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #34495e;
+  }
+  
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
+  
+  .is-invalid {
+    border-color: #e74c3c !important;
+  }
+  
+  .error-message {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 5px;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .cancel-btn {
+    padding: 10px 20px;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #333;
+    cursor: pointer;
+  }
+  
+  .submit-btn {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .submit-btn:disabled {
+    background-color: #80bdff;
+    cursor: not-allowed;
+  }
+  
+  .photo-preview {
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+  }
+  
+  .photo-preview img {
+    max-width: 100%;
+    max-height: 200px;
+  }
+  
+  .service-records-section {
+    margin-top: 40px;
+  }
+  
+  .service-records-section h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+  }
+  
+  .service-records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .service-record-card {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+  }
+  
+  .service-record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .service-record-header h4 {
+    margin: 0;
+    color: #2c3e50;
+  }
+  
+  .service-date {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+  }
+  
+  .service-description {
+    margin-bottom: 15px;
+    color: #34495e;
+    white-space: pre-line;
+  }
+  
+  .service-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+  }
+  
+  .no-records-message {
+    background-color: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    color: #7f8c8d;
+  }
+  
+  .loading-message,
+  .loading-container {
+    background-color: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    color: #7f8c8d;
+  }
+  
+  .not-found-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+  }

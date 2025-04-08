@@ -9,7 +9,7 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
 @Component({
   selector: 'app-bicycles-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, DeleteDialogComponent],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="bicycles-container">
       <h1>Twoje rowery</h1>
@@ -30,12 +30,19 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
         <ng-container *ngIf="bicycles.length > 0; else noBicycles">
           <div class="bicycles-list">
             <div *ngFor="let bicycle of bicycles" class="bicycle-card" (click)="viewBicycleDetails(bicycle.id)">
-              <div class="bicycle-image" *ngIf="bicycle.id">
-                <img 
-                  [src]="getBicyclePhotoUrl(bicycle.id)" 
-                  alt="Zdjęcie roweru"
-                  (error)="handleImageError($event)"
-                >
+              <div class="bicycle-image" [ngClass]="{'has-photo': bicycle.hasPhoto, 'no-image': !bicycle.hasPhoto}">
+                <ng-container *ngIf="bicycle.hasPhoto; else noImageTemplate">
+                  <img 
+                    [src]="getBicyclePhotoUrl(bicycle.id)" 
+                    alt="Zdjęcie roweru"
+                    (error)="handleImageError($event, bicycle)"
+                  >
+                </ng-container>
+                <ng-template #noImageTemplate>
+                  <div class="placeholder-content">
+                    <span>Brak zdjęcia</span>
+                  </div>
+                </ng-template>
               </div>
               <div class="bicycle-details">
                 <h3>{{ bicycle.brand }} {{ bicycle.model || '' }}</h3>
@@ -172,7 +179,7 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
       background-color: #f8f9fa;
     }
     
-    .bicycle-image img {
+    .bicycle-image.has-photo img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
@@ -293,14 +300,9 @@ export class BicyclesListComponent implements OnInit {
     return `${this.bicycleService.getBicyclePhotoUrl(bicycleId)}?t=${this.timestamp}`;
   }
   
-  handleImageError(event: Event): void {
-    const imgElement = event.target as HTMLImageElement;
-    // Zamiast próbować ładować obrazek, od razu zastąpmy element tekstem
-    const parent = imgElement.parentElement;
-    if (parent) {
-      parent.classList.add('no-image');
-      parent.innerHTML = '<div class="placeholder-content"><span>Brak zdjęcia</span></div>';
-    }
+  handleImageError(event: Event, bicycle: Bicycle): void {
+    // Jeśli obraz się nie załadował, oznaczamy rower jako niemający zdjęcia
+    bicycle.hasPhoto = false;
   }
   
   viewBicycleDetails(bicycleId: number): void {
@@ -317,29 +319,19 @@ export class BicyclesListComponent implements OnInit {
       return;
     }
     
-    // Stwórz i pokaż dialog potwierdzający
-    this.deleteDialogRef = this.viewContainerRef.createComponent(DeleteDialogComponent);
-    
-    this.deleteDialogRef.instance.show().then((confirmed: boolean) => {
-      if (confirmed) {
-        this.bicycleService.deleteBicycle(bicycleId).subscribe({
-          next: () => {
-            this.notificationService.success('Rower został usunięty');
-            // Odśwież listę rowerów
-            this.loadBicycles();
-          },
-          error: (error) => {
-            console.error('Błąd podczas usuwania roweru:', error);
-            this.notificationService.error('Nie udało się usunąć roweru. Spróbuj ponownie później.');
-          }
-        });
-      }
-      
-      // Zawsze usuń dialog z widoku po zakończeniu
-      if (this.deleteDialogRef) {
-        this.deleteDialogRef.destroy();
-        this.deleteDialogRef = null;
-      }
-    });
+    // Zamiast używać komponentu, potwierdzamy z użytkownikiem używając window.confirm
+    if (window.confirm('Czy na pewno chcesz usunąć ten rower? Tej operacji nie można cofnąć.')) {
+      this.bicycleService.deleteBicycle(bicycleId).subscribe({
+        next: () => {
+          this.notificationService.success('Rower został usunięty');
+          // Odśwież listę rowerów
+          this.loadBicycles();
+        },
+        error: (error) => {
+          console.error('Błąd podczas usuwania roweru:', error);
+          this.notificationService.error('Nie udało się usunąć roweru. Spróbuj ponownie później.');
+        }
+      });
+    }
   }
 }

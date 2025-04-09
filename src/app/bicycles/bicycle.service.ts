@@ -53,7 +53,7 @@ export class BicycleService {
       );
   }
   
-  uploadBicyclePhoto(bicycleId: number, photoFile: File): Observable<any> {
+  uploadBicyclePhoto(bicycleId: number, photoFile: File, isComplete: boolean = false): Observable<any> {
     if (!photoFile) {
       return throwError(() => new Error('No file selected'));
     }
@@ -65,6 +65,7 @@ export class BicycleService {
     
     const formData = new FormData();
     formData.append('photo', photoFile);
+    formData.append('isComplete', isComplete.toString());
     
     return this.http.post(`${this.apiUrl}/${bicycleId}/photo`, formData)
       .pipe(

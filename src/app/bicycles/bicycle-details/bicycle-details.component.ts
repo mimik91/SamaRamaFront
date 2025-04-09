@@ -18,7 +18,8 @@ import { ServiceRecordService } from '../../service-records/service-record.servi
 })
 export class BicycleDetailsComponent implements OnInit {
   @ViewChild('photoInput') photoInput!: ElementRef<HTMLInputElement>;
-  
+  @ViewChild('editForm') editFormElement!: ElementRef;
+    
   private bicycleService = inject(BicycleService);
   private serviceRecordService = inject(ServiceRecordService);
   private route = inject(ActivatedRoute);
@@ -110,6 +111,16 @@ export class BicycleDetailsComponent implements OnInit {
   startEditing(): void {
     this.isEditing = true;
     this.initForm();
+    
+    // Po renderowaniu formularza, przewiń do niego
+    setTimeout(() => {
+      if (this.editFormElement) {
+        this.editFormElement.nativeElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    }, 100); // Mały delay, aby poczekać na renderowanie DOM
   }
 
   cancelEditing(): void {

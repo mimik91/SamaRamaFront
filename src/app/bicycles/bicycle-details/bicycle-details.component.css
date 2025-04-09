@@ -1,20 +1,20 @@
+/* Wspólne style */
 .bicycle-details-container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 30px 20px;
 }
 
 .header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 h1 {
   margin: 0;
   color: #2c3e50;
-  font-size: 1.8rem;
 }
 
 .back-btn {
@@ -24,28 +24,35 @@ h1 {
   border-radius: 4px;
   color: #333;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+  background-color: #e0e0e0;
 }
 
 .content-container {
-  background-color: white;
+  background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
+  margin-bottom: 30px;
 }
 
-/* Wersja mobilna domyślnie ukryta */
-.mobile-layout {
-  display: none;
-}
-
-/* Podstawowy layout desktopowy */
+/* Style dla układu desktop - domyślne */
 .desktop-layout {
   display: block;
 }
 
+.mobile-layout {
+  display: none;
+}
+
 .bicycle-info-container {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
 }
 
 .bicycle-image-container {
@@ -72,6 +79,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #f8f9fa;
   color: #adb5bd;
 }
 
@@ -89,18 +97,15 @@ h1 {
 .bicycle-info h2 {
   margin-top: 0;
   color: #2c3e50;
-  margin-bottom: 15px;
+  font-size: 1.8rem;
 }
 
-.bicycle-details p {
-  margin: 8px 0;
-  color: #34495e;
-}
-
+/* Desktop action buttons */
 .desktop-action-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 30px;
+  margin-top: 20px;
 }
 
 .desktop-action-btn {
@@ -109,38 +114,52 @@ h1 {
   border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
   color: white;
 }
 
-.edit-btn {
+.desktop-action-btn.edit-btn {
   background-color: #3498db;
 }
 
-.service-btn {
+.desktop-action-btn.edit-btn:hover {
+  background-color: #2980b9;
+}
+
+.desktop-action-btn.service-btn {
   background-color: #2ecc71;
 }
 
-.report-btn {
+.desktop-action-btn.service-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.desktop-action-btn.report-btn {
   background-color: #f39c12;
 }
 
-.delete-btn {
+.desktop-action-btn.report-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.desktop-action-btn.delete-btn {
   background-color: #e74c3c;
 }
 
-.desktop-action-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+.desktop-action-btn.delete-btn:hover {
+  background-color: #c0392b;
 }
 
 .photo-actions {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .delete-photo-btn, .add-photo-btn {
-  padding: 8px 12px;
+  padding: 10px 16px;
   border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
@@ -152,26 +171,33 @@ h1 {
   background-color: #e74c3c;
 }
 
+.delete-photo-btn:hover:not(:disabled) {
+  background-color: #c0392b;
+}
+
+.delete-photo-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .add-photo-btn {
   background-color: #3498db;
 }
 
-/* Formularz edycji */
-.edit-form {
-  background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  margin-top: 20px;
+.add-photo-btn:hover {
+  background-color: #2980b9;
 }
 
+/* Formularz edycji */
 .edit-form h3 {
   margin-top: 0;
   color: #2c3e50;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
@@ -188,6 +214,13 @@ h1 {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 .is-invalid {
@@ -226,7 +259,7 @@ h1 {
 }
 
 .submit-btn:disabled {
-  opacity: 0.7;
+  background-color: #80bdff;
   cursor: not-allowed;
 }
 
@@ -245,14 +278,14 @@ h1 {
 
 /* Historia serwisowa */
 .service-records-section {
-  margin-top: 30px;
+  margin-top: 40px;
 }
 
 .service-records-section h3 {
   color: #2c3e50;
-  margin-bottom: 15px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eee;
 }
 
 .service-records-list {
@@ -271,6 +304,7 @@ h1 {
 .service-record-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 10px;
 }
 
@@ -285,8 +319,9 @@ h1 {
 }
 
 .service-description {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   color: #34495e;
+  white-space: pre-line;
 }
 
 .service-footer {
@@ -297,18 +332,18 @@ h1 {
 }
 
 .no-records-message {
+  background-color: #f8f9fa;
   padding: 20px;
   text-align: center;
-  background-color: #f8f9fa;
   border-radius: 8px;
   color: #7f8c8d;
 }
 
 .loading-message,
 .loading-container {
+  background-color: #f8f9fa;
   padding: 20px;
   text-align: center;
-  background-color: #f8f9fa;
   border-radius: 8px;
   color: #7f8c8d;
 }
@@ -321,69 +356,10 @@ h1 {
   border-radius: 8px;
 }
 
-/* Style dla wersji mobilnej - aktywowane przez media query */
-.mobile-layout .bicycle-title {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-}
-
-.mobile-layout .brand, 
-.mobile-layout .model {
-  font-size: 1.2rem;
-  font-weight: 500;
-}
-
-.mobile-layout .bicycle-image-container {
-  width: 100%;
-  margin: 0 0 15px 0;
-}
-
-.mobile-action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.mobile-action-btn {
-  padding: 12px 0;
-  width: 100%;
-  text-align: center;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  color: white;
-  cursor: pointer;
-}
-
-.mobile-edit-btn {
-  background-color: #3498db;
-}
-
-.mobile-service-btn {
-  background-color: #2ecc71;
-}
-
-.mobile-report-btn {
-  background-color: #f39c12;
-}
-
-.mobile-delete-btn {
-  background-color: #e74c3c;
-}
-
-.mobile-action-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Media query dla urządzeń mobilnych */
+/* Media queries dla widoku mobilnego */
 @media screen and (max-width: 768px) {
   .bicycle-details-container {
-    padding: 15px;
+    padding: 15;
   }
   
   .header-section {
@@ -406,6 +382,94 @@ h1 {
   }
   
   .mobile-layout {
-    display: block;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Style dla układu mobilnego zgodnie z mockupem */
+  .bicycle-title {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .brand, .model {
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+  
+  .bicycle-image-container {
+    width: 100%;
+    max-height: 250px;
+    margin: 0 0 15px 0;
+  }
+  
+  /* Przyciski akcji */
+  .mobile-action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .mobile-action-btn {
+    padding: 12px 0;
+    width: 100%;
+    text-align: center;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .mobile-edit-btn {
+    background-color: #3498db;
+  }
+  
+  .mobile-service-btn {
+    background-color: #2ecc71;
+  }
+  
+  .mobile-report-btn {
+    background-color: #f39c12;
+  }
+  
+  .mobile-delete-btn {
+    background-color: #e74c3c;
+  }
+  
+  .mobile-action-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  /* Szczegóły roweru pod przyciskami */
+  .bicycle-details {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .bicycle-details p {
+    margin: 8px 0;
+    font-size: 0.95rem;
+  }
+  
+  /* Historia serwisowa - widoczna po przewinięciu */
+  .service-records-section {
+    margin-top: 30px;
+  }
+  
+  .service-records-section h3 {
+    font-size: 1.2rem;
+    padding-bottom: 8px;
+  }
+  
+  .service-record-card {
+    padding: 12px;
+    margin-bottom: 10px;
   }
 }

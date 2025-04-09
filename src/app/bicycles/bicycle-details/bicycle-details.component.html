@@ -232,7 +232,7 @@
     </div>
 
     <!-- Formularz edycji (wspólny dla obu wersji) -->
-    <form *ngIf="isEditing" [formGroup]="bicycleForm" (ngSubmit)="onSubmit()" class="edit-form">
+    <form *ngIf="isEditing" #editForm [formGroup]="bicycleForm" (ngSubmit)="onSubmit()" class="edit-form">
       <h3>Edycja danych roweru</h3>
       
       <div class="form-group">

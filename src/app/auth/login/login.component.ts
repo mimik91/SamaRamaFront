@@ -13,66 +13,8 @@ import { AuthService } from '../auth.service';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  template: `
-    <div class="login-container">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <h2>Logowanie Klienta</h2>
-
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" formControlName="email" required />
-        </div>
-
-        <div class="form-group">
-          <label for="password">Hasło</label>
-          <input
-            type="password"
-            id="password"
-            formControlName="password"
-            required
-          />
-        </div>
-
-        <div class="login-options">
-          <button type="button" (click)="goToRegistration()">
-            Stwórz nowe konto
-          </button>
-        </div>
-
-        <button type="submit" [disabled]="loginForm.invalid">
-          Zaloguj się
-        </button>
-
-        <div *ngIf="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-
-        <div *ngIf="successMessage" class="success-message">
-          {{ successMessage }}
-        </div>
-      </form>
-    </div>
-  `,
-  styles: [
-    `
-      .login-container {
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-      .form-group {
-        margin-bottom: 15px;
-      }
-      .error-message {
-        color: red;
-        margin-top: 10px;
-      }
-      .success-message {
-        color: green;
-        margin-top: 10px;
-      }
-    `,
-  ],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css'],
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
@@ -82,6 +24,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   errorMessage: string = '';
   successMessage: string = '';
+  isSubmitting: boolean = false;
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -96,17 +39,16 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      const credentials = this.loginForm.value;
-
+      this.isSubmitting = true;
+      this.errorMessage = '';
       this.successMessage = 'Próba logowania...';
+      
+      const credentials = this.loginForm.value;
 
       this.authService.loginClient(credentials).subscribe({
         next: (response) => {
           console.log('Login successful', response);
           this.successMessage = 'Logowanie udane!';
-
-          // No need to manually call setToken anymore
-          // Authentication is handled internally by the service
 
           // Add a delay to see the success message
           setTimeout(() => {
@@ -121,8 +63,21 @@ export class LoginComponent {
           this.errorMessage =
             'Logowanie nie powiodło się. Sprawdź dane logowania.';
           this.successMessage = '';
+          this.isSubmitting = false;
         },
       });
+    } else {
+      this.markFormGroupTouched(this.loginForm);
     }
+  }
+
+  // Pomocnicza funkcja do zaznaczenia wszystkich pól jako dotknięte
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
 }

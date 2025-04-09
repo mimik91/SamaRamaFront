@@ -8,98 +8,8 @@ import { AuthService } from '../auth.service';
   selector: 'app-serviceman-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  template: `
-    <div class="login-container">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <h2>Logowanie Serwisanta</h2>
-        
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input 
-            type="email" 
-            id="email" 
-            formControlName="email" 
-            required
-          >
-        </div>
-        
-        <div class="form-group">
-          <label for="password">Hasło</label>
-          <input 
-            type="password" 
-            id="password" 
-            formControlName="password" 
-            required
-          >
-        </div>
-        
-        <div class="login-options">
-          <button 
-            type="button" 
-            (click)="goToRegistration()"
-            class="register-button"
-          >
-            Zarejestruj swój serwis
-          </button>
-        </div>
-        
-        <button 
-          type="submit" 
-          [disabled]="loginForm.invalid"
-          class="login-button"
-        >
-          Zaloguj się
-        </button>
-        
-        <div *ngIf="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-      </form>
-    </div>
-  `,
-  styles: [`
-    .login-container {
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .error-message {
-      color: red;
-      margin-top: 10px;
-    }
-    .login-options {
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: center;
-    }
-    .register-button {
-      background-color: #f0f0f0;
-      border: 1px solid #ccc;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      color: #333;
-    }
-    .register-button:hover {
-      background-color: #e0e0e0;
-    }
-    .login-button {
-      width: 100%;
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .login-button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
-  `]
+  templateUrl: './serviceman-login.component.html',
+  styleUrls: ['../login/login.component.css'] // Reużywamy style z komponentu logowania klienta
 })
 export class ServicemanLoginComponent {
   private fb = inject(FormBuilder);
@@ -108,6 +18,8 @@ export class ServicemanLoginComponent {
   
   loginForm: FormGroup;
   errorMessage: string = '';
+  successMessage: string = '';
+  isSubmitting: boolean = false;
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -122,17 +34,41 @@ export class ServicemanLoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
+      this.isSubmitting = true;
+      this.errorMessage = '';
+      this.successMessage = 'Próba logowania...';
+      
       const credentials = this.loginForm.value;
       
       this.authService.loginService(credentials).subscribe({
         next: (response) => {
-          this.router.navigate(['/service-panel']);
+          console.log('Login successful', response);
+          this.successMessage = 'Logowanie udane!';
+          
+          // Dodaj opóźnienie, aby użytkownik zobaczył komunikat o powodzeniu
+          setTimeout(() => {
+            this.router.navigate(['/service-panel']);
+          }, 1000);
         },
         error: (error) => {
           console.error('Logowanie nie powiodło się', error);
           this.errorMessage = 'Logowanie nie powiodło się. Sprawdź dane logowania.';
+          this.successMessage = '';
+          this.isSubmitting = false;
         }
       });
+    } else {
+      this.markFormGroupTouched(this.loginForm);
     }
+  }
+
+  // Pomocnicza funkcja do zaznaczenia wszystkich pól jako dotknięte
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
 }

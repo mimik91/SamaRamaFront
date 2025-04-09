@@ -1,0 +1,53 @@
+<div class="login-container">
+    <div class="login-form-container">
+      <h2>Logowanie Serwisanta</h2>
+      
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            required
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Hasło</label>
+          <input 
+            type="password" 
+            id="password" 
+            formControlName="password" 
+            required
+          />
+        </div>
+        
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="secondary-btn" 
+            (click)="goToRegistration()"
+          >
+            Zarejestruj swój serwis
+          </button>
+          
+          <button 
+            type="submit" 
+            class="primary-btn" 
+            [disabled]="loginForm.invalid || isSubmitting"
+          >
+            {{ isSubmitting ? 'Logowanie...' : 'Zaloguj się' }}
+          </button>
+        </div>
+        
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+        
+        <div *ngIf="successMessage" class="success-message">
+          {{ successMessage }}
+        </div>
+      </form>
+    </div>
+  </div>

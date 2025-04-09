@@ -14,6 +14,19 @@
     z-index: 1000;
   }
   
+  /* Specjalny styl dla paska na stronach auth */
+  .auth-navbar {
+    height: 60px;
+  }
+  
+  .navbar-container, .auth-navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+  
   .navbar-brand {
     display: flex;
     align-items: center;
@@ -26,6 +39,7 @@
     text-decoration: none;
   }
   
+  /* Style dla standardowego menu */
   .navbar-menu {
     display: flex;
     gap: 20px;
@@ -44,6 +58,25 @@
     color: white;
   }
   
+  /* Style dla menu na stronach auth */
+  .auth-links {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .auth-links a {
+    color: #ecf0f1;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+  
+  .auth-links a:hover, .auth-links a.active {
+    background-color: #34495e;
+    color: white;
+  }
+  
   /* Mobile menu button */
   .mobile-menu-btn {
     display: none;
@@ -51,7 +84,7 @@
     border: none;
     padding: 10px;
     cursor: pointer;
-    margin-left: auto; /* Przesuwa do prawej strony */
+    margin-left: auto;
   }
   
   .hamburger-icon {
@@ -99,12 +132,11 @@
   /* Media queries for responsive design */
   @media screen and (max-width: 768px) {
     .navbar {
-      justify-content: space-between;
+      padding: 0 15px;
     }
     
     .mobile-menu-btn {
       display: block;
-      order: 3; /* Upewnia się, że przycisk jest po prawej stronie */
     }
     
     .navbar-menu {
@@ -142,6 +174,29 @@
     }
     
     .menu-overlay {
+      display: block;
+    }
+    
+    /* Style mobilne dla menu auth */
+    .auth-links {
+      flex-direction: column;
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      background-color: #2c3e50;
+      padding: 15px;
+      display: none;
+    }
+    
+    .auth-links a {
+      width: 100%;
+      padding: 10px;
+      text-align: center;
+    }
+    
+    /* Przycisk mobilny dla menu auth */
+    .auth-menu-toggle {
       display: block;
     }
   }

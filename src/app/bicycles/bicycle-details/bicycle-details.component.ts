@@ -1,4 +1,3 @@
-// src/app/bicycles/bicycle-details/bicycle-details.component.ts
 import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -219,8 +218,6 @@ export class BicycleDetailsComponent implements OnInit {
     });
   }
 
-  
-
   onSubmit(): void {
     if (this.bicycleForm.invalid || !this.bicycle) {
       return;
@@ -237,8 +234,6 @@ export class BicycleDetailsComponent implements OnInit {
       productionDate: this.bicycleForm.value.productionDate,
       frameNumber: this.bicycle.frameNumber // Zachowujemy oryginalny numer ramy
     };
-    
-    console.log('Wysyłanie danych:', bicycleData); // Dodajemy log dla celów diagnostycznych
     
     // Użyj HttpClient do wywołania PUT
     this.http.put<any>(`${this.bicycleService['apiUrl']}/${this.bicycle!.id}`, bicycleData).subscribe({

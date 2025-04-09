@@ -1,8 +1,9 @@
 import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { NotificationService } from '../notification.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navigation',
@@ -17,9 +18,19 @@ export class NavigationComponent implements OnInit {
   notification = inject(NotificationService);
   
   mobileMenuOpen = false;
+  currentUrl: string = '';
   
   ngOnInit(): void {
-    // Inicjalizacja komponentu
+    // Monitorowanie zmian adresu URL
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.currentUrl = event.url;
+      this.closeMobileMenu();
+    });
+
+    // Pobierz aktualny URL
+    this.currentUrl = this.router.url;
   }
   
   // Zamknij menu mobilne gdy rozmiar ekranu przekracza 768px
@@ -54,5 +65,33 @@ export class NavigationComponent implements OnInit {
     this.notification.success('Zostałeś wylogowany');
     this.router.navigate(['/login']);
     this.closeMobileMenu();
+  }
+
+  // Sprawdza, czy jesteśmy na stronie logowania lub rejestracji
+  isAuthPage(): boolean {
+    return this.currentUrl.includes('/login') || 
+           this.currentUrl.includes('/register') ||
+           this.currentUrl.includes('/login-serviceman') ||
+           this.currentUrl.includes('/register-serviceman');
+  }
+
+  // Sprawdza, czy jesteśmy na stronie logowania klienta
+  isLoginPage(): boolean {
+    return this.currentUrl === '/login';
+  }
+
+  // Sprawdza, czy jesteśmy na stronie logowania serwisu
+  isServiceLoginPage(): boolean {
+    return this.currentUrl === '/login-serviceman';
+  }
+
+  // Sprawdza, czy jesteśmy na stronie rejestracji klienta
+  isRegisterPage(): boolean {
+    return this.currentUrl === '/register';
+  }
+
+  // Sprawdza, czy jesteśmy na stronie rejestracji serwisu
+  isServiceRegisterPage(): boolean {
+    return this.currentUrl === '/register-serviceman';
   }
 }

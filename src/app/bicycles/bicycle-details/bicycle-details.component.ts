@@ -219,6 +219,8 @@ export class BicycleDetailsComponent implements OnInit {
     });
   }
 
+  
+
   onSubmit(): void {
     if (this.bicycleForm.invalid || !this.bicycle) {
       return;
@@ -294,6 +296,27 @@ export class BicycleDetailsComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/bicycles']);
+  }
+  
+  confirmDelete(): void {
+    if (confirm('Czy na pewno chcesz usunąć ten rower? Tej operacji nie można cofnąć.')) {
+      this.deleteBicycle();
+    }
+  }
+  
+  deleteBicycle(): void {
+    if (!this.bicycle) return;
+    
+    this.bicycleService.deleteBicycle(this.bicycle.id).subscribe({
+      next: () => {
+        this.notificationService.success('Rower został pomyślnie usunięty');
+        this.router.navigate(['/bicycles']);
+      },
+      error: (error) => {
+        console.error('Błąd podczas usuwania roweru:', error);
+        this.notificationService.error('Wystąpił błąd podczas usuwania roweru');
+      }
+    });
   }
 
   getTranslatedType(type: string): string {

@@ -1,0 +1,105 @@
+<div class="container">
+    <div class="registration-card">
+      <h1 class="title">Rejestracja Klienta</h1>
+      
+      <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+        <!-- Basic Information -->
+        <div class="section">
+          <h2 class="section-title">Informacje podstawowe</h2>
+          
+          <div class="form-group">
+            <label for="firstName">Imię *</label>
+            <input 
+              type="text" 
+              id="firstName" 
+              formControlName="firstName" 
+              class="form-control" 
+              [class.is-invalid]="isFieldInvalid('firstName')"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+              Imię jest wymagane
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="lastName">Nazwisko *</label>
+            <input 
+              type="text" 
+              id="lastName" 
+              formControlName="lastName" 
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('lastName')"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+              Nazwisko jest wymagane
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email" 
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('email')"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('email')">
+              Wprowadź poprawny adres email
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Hasło *</label>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password" 
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('password')"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('password')">
+              Hasło musi mieć co najmniej 6 znaków
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="phoneNumber">Telefon kontaktowy *</label>
+            <input 
+              type="tel" 
+              id="phoneNumber" 
+              formControlName="phoneNumber" 
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('phoneNumber')"
+              placeholder="123456789"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('phoneNumber')">
+              Wprowadź poprawny numer telefonu (9 cyfr)
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="goToLogin()">
+            Masz już konto? Zaloguj się
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="registrationForm.invalid || isSubmitting"
+          >
+            {{ isSubmitting ? 'Rejestracja w toku...' : 'Zarejestruj się' }}
+          </button>
+        </div>
+        
+        <div class="message-container">
+          <div *ngIf="errorMessage" class="error-alert">
+            {{ errorMessage }}
+          </div>
+          <div *ngIf="successMessage" class="success-alert">
+            {{ successMessage }}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>

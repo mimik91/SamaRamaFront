@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { NotificationsComponent } from './core/notifications.component';
 import { NavigationComponent } from './core/navigation/navigation.component';
 
@@ -8,7 +9,7 @@ import { NavigationComponent } from './core/navigation/navigation.component';
   standalone: true,
   imports: [RouterOutlet, NotificationsComponent, NavigationComponent],
   template: `
-    <app-navigation></app-navigation>
+    <app-navigation #navigation></app-navigation>
     <div class="content-container">
       <app-notifications></app-notifications>
       <router-outlet></router-outlet>
@@ -16,10 +17,24 @@ import { NavigationComponent } from './core/navigation/navigation.component';
   `,
   styles: [`
     .content-container {
-      padding-top: 60px; /* Match the height of the navbar */
+      padding-top: 60px; 
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'SamaRama';
+  @ViewChild('navigation') navigationComponent!: NavigationComponent;
+
+  constructor(private router: Router) {}
+
+  ngOnInit() {
+    // Zamykaj menu mobilne po każdej nawigacji
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      if (this.navigationComponent) {
+        this.navigationComponent.closeMobileMenu();
+      }
+    });
+  }
 }

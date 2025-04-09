@@ -1,0 +1,41 @@
+<nav class="navbar">
+    <div class="navbar-brand">
+      <a routerLink="/welcome">SamaRama</a>
+    </div>
+    
+    <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+      <span class="hamburger-icon" [class.open]="mobileMenuOpen">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+    
+    <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
+      <!-- Menu for logged in clients -->
+      <ng-container *ngIf="authService.isLoggedIn() && authService.isClient()">
+        <a routerLink="/welcome" routerLinkActive="active" (click)="closeMobileMenu()">Mapa serwisów</a>
+        <a routerLink="/bicycles" routerLinkActive="active" (click)="closeMobileMenu()">Moje rowery</a>
+        <a routerLink="/services" routerLinkActive="active" (click)="closeMobileMenu()">Usługi</a>
+        <a href="#" (click)="logout($event)">Wyloguj się</a>
+      </ng-container>
+      
+      <!-- Menu for logged in bike services -->
+      <ng-container *ngIf="authService.isLoggedIn() && authService.isService()">
+        <a routerLink="/service-panel" routerLinkActive="active" (click)="closeMobileMenu()">Panel serwisu</a>
+        <a routerLink="/customers" routerLinkActive="active" (click)="closeMobileMenu()">Klienci</a>
+        <a routerLink="/orders" routerLinkActive="active" (click)="closeMobileMenu()">Zlecenia</a>
+        <a href="#" (click)="logout($event)">Wyloguj się</a>
+      </ng-container>
+      
+      <!-- Menu for not logged in users -->
+      <ng-container *ngIf="!authService.isLoggedIn()">
+        <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Logowanie klienta</a>
+        <a routerLink="/login-serviceman" routerLinkActive="active" (click)="closeMobileMenu()">Logowanie serwisu</a>
+        <a routerLink="/register" routerLinkActive="active" (click)="closeMobileMenu()">Rejestracja</a>
+      </ng-container>
+    </div>
+    
+    <!-- Mobile menu overlay -->
+    <div class="menu-overlay" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+  </nav>

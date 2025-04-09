@@ -8,3 +8,28 @@
 .leaflet-marker-shadow {
   background-image: url(https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png);
 }
+
+/* Dodatkowe style do zarządzania nawigacją mobilną */
+body.overflow-hidden {
+  overflow: hidden;
+}
+
+/* Ogólne style responsywne */
+@media screen and (max-width: 768px) {
+  .content-container {
+    padding-top: 60px; /* Dopasowanie do wysokości nawbara */
+  }
+  
+  h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  .container {
+    padding: 15px 10px !important;
+  }
+  
+  /* Dostosowanie przycisków */
+  button {
+    padding: 8px 16px !important;
+  }
+}

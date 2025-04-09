@@ -1,0 +1,55 @@
+<div class="bicycles-container">
+    <h1>Twoje rowery</h1>
+    
+    <div class="action-bar">
+      <button class="add-btn" (click)="goToAddBicycle()">Dodaj rower</button>
+    </div>
+    
+    <div *ngIf="loading" class="loading-message">
+      Ładowanie rowerów...
+    </div>
+    
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+    
+    <ng-container *ngIf="!loading && !error">
+      <ng-container *ngIf="bicycles.length >
+  0; else noBicycles">
+        <div class="bicycles-list">
+          <div *ngFor="let bicycle of bicycles" class="bicycle-card">
+            <div class="bicycle-content" (click)="viewBicycleDetails(bicycle.id)">
+              <div class="bicycle-image" [ngClass]="{'has-photo': bicycle.hasPhoto, 'no-image': !bicycle.hasPhoto}">
+                <ng-container *ngIf="bicycle.hasPhoto; else noImageTemplate">
+                  <img 
+                    [src]="getBicyclePhotoUrl(bicycle.id)" 
+                    alt="Zdjęcie roweru"
+                    (error)="handleImageError($event, bicycle)"
+                  >
+                </ng-container>
+                <ng-template #noImageTemplate>
+                  <div class="placeholder-content">
+                    <span>Brak zdjęcia</span>
+                  </div>
+                </ng-template>
+              </div>
+              <div class="bicycle-details">
+                <h3>{{ bicycle.brand }} {{ bicycle.model || '' }}</h3>
+                <p *ngIf="bicycle.type" class="bicycle-type">Typ: {{ bicycle.type }}</p>
+              </div>
+            </div>
+            <div class="bicycle-actions">
+              <button class="delete-btn" (click)="deleteBicycle(bicycle.id); $event.stopPropagation()">Usuń</button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      
+      <ng-template #noBicycles>
+        <div class="no-bicycles">
+          <p>Nie masz jeszcze dodanego roweru</p>
+          <button class="add-btn-large" (click)="goToAddBicycle()">Dodaj rower</button>
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>

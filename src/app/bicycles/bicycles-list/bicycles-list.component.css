@@ -1,0 +1,95 @@
+/* Dodaj te style na końcu istniejącego pliku CSS */
+
+/* Media queries tylko dla urządzeń mobilnych */
+@media screen and (max-width: 767px) {
+    /* Dostosowanie kontenera głównego */
+    .bicycles-container {
+      padding: 15px 10px;
+    }
+    
+    /* Zmniejszenie nagłówka */
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+    
+    /* Zwiększenie przycisku dodawania */
+    .add-btn {
+      padding: 12px 20px;
+      width: 100%;
+      max-width: none;
+      font-size: 1rem;
+    }
+    
+    /* Dostosowanie kart rowerowych */
+    .bicycle-card {
+      flex-direction: column;
+      margin-bottom: 15px; /* Większy odstęp między kartami */
+      padding: 10px;
+      cursor: pointer; /* Dodanie kursora wskazującego, żeby było widać że karta jest klikalna */
+    }
+    
+    /* Pełna szerokość dla zdjęcia */
+    .bicycle-image {
+      width: 100%;
+      height: 150px;
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+    
+    /* Zdjęcie powinno wypełniać kontener */
+    .bicycle-image.has-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    /* Ukrywanie przycisków na mobilnych urządzeniach */
+    .bicycle-actions {
+      display: none;
+    }
+    
+    /* Układ zawartości karty */
+    .bicycle-details {
+      width: 100%;
+      padding: 0 5px;
+      text-align: center;
+    }
+    
+    /* Zwiększenie nazwy roweru */
+    .bicycle-details h3 {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+    
+    /* Ukryj wszystkie informacje oprócz typu */
+    .bicycle-details p:not(.bicycle-type) {
+      display: none;
+    }
+    
+    /* Stylizacja typu roweru, jeśli jest wyświetlany */
+    .bicycle-type {
+      margin: 5px 0;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    /* Dodanie efektu naciśnięcia dla lepszego UX */
+    .bicycle-card:active {
+      background-color: #f8f9fa;
+    }
+    
+    /* Dostosuj wygląd gdy nie ma rowerów */
+    .no-bicycles {
+      padding: 30px 15px;
+    }
+    
+    .no-bicycles p {
+      font-size: 1rem;
+    }
+    
+    .add-btn-large {
+      width: 100%;
+      padding: 15px;
+    }
+  }

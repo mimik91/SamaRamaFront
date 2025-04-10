@@ -368,6 +368,12 @@ export class BicycleDetailsComponent implements OnInit {
   getBicyclePhotoUrl(bicycleId: number): string {
     return `${this.bicycleService.getBicyclePhotoUrl(bicycleId)}?t=${this.timestamp}`;
   }
+
+  orderService(): void {
+    if (this.bicycle) {
+      this.router.navigate(['/bicycles', this.bicycle.id, 'order-service']);
+    }
+  }
   
   handleImageError(): void {
     if (this.bicycle) {

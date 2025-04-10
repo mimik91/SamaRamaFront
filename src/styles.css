@@ -17,7 +17,7 @@ body.overflow-hidden {
 /* Ogólne style responsywne */
 @media screen and (max-width: 768px) {
   .content-container {
-    padding-top: 60px; /* Dopasowanie do wysokości nawbara */
+    padding-top: 60px; 
   }
   
   h1 {
@@ -28,7 +28,6 @@ body.overflow-hidden {
     padding: 15px 10px !important;
   }
   
-  /* Dostosowanie przycisków */
   button {
     padding: 8px 16px !important;
   }

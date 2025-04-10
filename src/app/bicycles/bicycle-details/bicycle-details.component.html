@@ -39,7 +39,7 @@
         <button class="mobile-action-btn mobile-edit-btn" (click)="startEditing()">
           Edytuj dane roweru
         </button>
-        <button class="mobile-action-btn mobile-service-btn" disabled title="Funkcja w przygotowaniu">
+        <button class="mobile-action-btn mobile-service-btn" (click)="orderService()">
           Umów serwis
         </button>
         <button class="mobile-action-btn mobile-report-btn" disabled title="Funkcja w przygotowaniu">
@@ -180,7 +180,7 @@
         <button class="desktop-action-btn edit-btn" (click)="startEditing()">
           Edytuj dane roweru
         </button>
-        <button class="desktop-action-btn service-btn" disabled title="Funkcja w przygotowaniu">
+        <button class="desktop-action-btn service-btn" (click)="orderService()">
           Umów serwis
         </button>
         <button class="desktop-action-btn report-btn" disabled title="Funkcja w przygotowaniu">

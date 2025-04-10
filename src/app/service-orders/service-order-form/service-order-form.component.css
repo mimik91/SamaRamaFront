@@ -1,0 +1,566 @@
+.service-order-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+  }
+  
+  .loading-message {
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    color: #6c757d;
+  }
+  
+  /* Informacje o rowerze */
+  .bicycle-info {
+    display: flex;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+  }
+  
+  .bicycle-image {
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    border-radius: 4px;
+    margin-right: 20px;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .bicycle-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  
+  .no-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    color: #adb5bd;
+    font-size: 0.9rem;
+  }
+  
+  .bicycle-details {
+    flex-grow: 1;
+  }
+  
+  .bicycle-details h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .bicycle-detail {
+    margin-bottom: 8px;
+    color: #555;
+  }
+  
+  /* Kontenery kroków */
+  .steps-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+  }
+  
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 120px;
+  }
+  
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    border: 2px solid transparent;
+  }
+  
+  .step.active .step-number {
+    background-color: #007bff;
+    color: white;
+    border-color: #0062cc;
+  }
+  
+  .step.completed .step-number {
+    background-color: #28a745;
+    color: white;
+    border-color: #1e7e34;
+  }
+  
+  .step-label {
+    font-size: 14px;
+    color: #6c757d;
+    text-align: center;
+  }
+  
+  .step.active .step-label {
+    color: #007bff;
+    font-weight: bold;
+  }
+  
+  .step.completed .step-label {
+    color: #28a745;
+  }
+  
+  .step-connector {
+    flex-grow: 1;
+    height: 2px;
+    background-color: #e9ecef;
+    margin: 0 10px;
+  }
+  
+  /* Zawartość kroku */
+  .step-content {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 30px;
+    margin-bottom: 30px;
+  }
+  
+  .step-content h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+  }
+  
+  /* Pakiety serwisowe */
+  .packages-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .package-card {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .package-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  .package-card.selected {
+    border-color: #007bff;
+    box-shadow: 0 5px 15px rgba(0,123,255,0.2);
+  }
+  
+  .package-title {
+    font-size: 1.25rem;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  .package-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #28a745;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  .package-description {
+    color: #6c757d;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .package-features {
+    flex-grow: 1;
+    margin-bottom: 20px;
+  }
+  
+  .package-features ul {
+    padding-left: 20px;
+    margin: 0;
+  }
+  
+  .package-features li {
+    margin-bottom: 8px;
+    color: #495057;
+  }
+  
+  .package-select {
+    text-align: center;
+  }
+  
+  .select-btn {
+    padding: 8px 16px;
+    background-color: #fff;
+    border: 2px solid #007bff;
+    color: #007bff;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .select-btn:hover {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .select-btn.selected {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  /* Wybór daty */
+  .date-selection {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .date-info {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #495057;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .form-row .col {
+    flex: 1;
+  }
+  
+  input[type="text"],
+  input[type="date"],
+  input[type="email"],
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #495057;
+  }
+  
+  input[type="text"]:focus,
+  input[type="date"]:focus,
+  input[type="email"]:focus,
+  textarea:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+  }
+  
+  .is-invalid {
+    border-color: #dc3545 !important;
+  }
+  
+  .error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+  
+  /* Mapa lokalizacji */
+  .location-map-container {
+    margin-bottom: 20px;
+  }
+  
+  .location-map {
+    height: 300px;
+    border-radius: 4px;
+    margin-top: 8px;
+    border: 1px solid #ced4da;
+  }
+  
+  .map-help {
+    font-size: 14px;
+    color: #6c757d;
+    margin-top: 5px;
+  }
+  
+  /* Podsumowanie */
+  .summary-container {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 30px;
+  }
+  
+  .summary-section {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .summary-section h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #343a40;
+  }
+  
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .summary-label {
+    color: #6c757d;
+    font-weight: 500;
+  }
+  
+  .summary-value {
+    color: #212529;
+    font-weight: 400;
+  }
+  
+  .summary-total {
+    padding: 20px;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .total-label {
+    font-size: 18px;
+    font-weight: 600;
+    color: #343a40;
+  }
+  
+  .total-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #28a745;
+  }
+  
+  .terms-container {
+    padding: 20px;
+  }
+  
+  .form-check {
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .form-check-input {
+    margin-top: 4px;
+    margin-right: 10px;
+  }
+  
+  .form-check-label {
+    font-size: 14px;
+    color: #495057;
+  }
+  
+  /* Przyciski */
+  .step-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+  }
+  
+  .back-btn, .cancel-btn, .next-btn, .submit-btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .back-btn, .cancel-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    color: #6c757d;
+  }
+  
+  .back-btn:hover, .cancel-btn:hover {
+    background-color: #e9ecef;
+  }
+  
+  .next-btn {
+    background-color: #007bff;
+    border: none;
+    color: white;
+  }
+  
+  .next-btn:hover {
+    background-color: #0069d9;
+  }
+  
+  .next-btn:disabled {
+    background-color: #b6d4fe;
+    cursor: not-allowed;
+  }
+  
+  .submit-btn {
+    background-color: #28a745;
+    border: none;
+    color: white;
+  }
+  
+  .submit-btn:hover {
+    background-color: #218838;
+  }
+  
+  .submit-btn:disabled {
+    background-color: #a3cfad;
+    cursor: not-allowed;
+  }
+  
+  /* Potwierdzenie zamówienia */
+  .confirmation-container {
+    text-align: center;
+    padding: 30px;
+  }
+  
+  .confirmation-icon {
+    color: #28a745;
+    margin-bottom: 20px;
+  }
+  
+  .confirmation-title {
+    font-size: 24px;
+    color: #28a745;
+    margin-bottom: 20px;
+  }
+  
+  .confirmation-message {
+    font-size: 16px;
+    color: #495057;
+    margin-bottom: 20px;
+  }
+  
+  .confirmation-actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .primary-btn, .secondary-btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .primary-btn {
+    background-color: #007bff;
+    border: none;
+    color: white;
+  }
+  
+  .primary-btn:hover {
+    background-color: #0069d9;
+  }
+  
+  .secondary-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    color: #6c757d;
+  }
+  
+  .secondary-btn:hover {
+    background-color: #e9ecef;
+  }
+  
+  /* Komunikat o błędzie */
+  .error-container {
+    text-align: center;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .error-container h3 {
+    color: #dc3545;
+    margin-bottom: 15px;
+  }
+  
+  .error-container p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+  
+  /* Responsywność */
+  @media (max-width: 768px) {
+    .packages-container {
+      grid-template-columns: 1fr;
+    }
+    
+    .bicycle-info {
+      flex-direction: column;
+    }
+    
+    .bicycle-image {
+      width: 100%;
+      margin-right: 0;
+      margin-bottom: 15px;
+    }
+    
+    .form-row {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .steps-container {
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+    
+    .step {
+      min-width: 80px;
+    }
+    
+    .confirmation-actions {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }

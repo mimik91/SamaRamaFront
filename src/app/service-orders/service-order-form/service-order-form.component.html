@@ -1,0 +1,322 @@
+<div class="service-order-container">
+    <h1>Zamów serwis roweru</h1>
+    
+    <div *ngIf="loading" class="loading-message">
+      Ładowanie danych...
+    </div>
+    
+    <div *ngIf="!loading && bicycle">
+      <div class="bicycle-info">
+        <div class="bicycle-image">
+          <ng-container *ngIf="bicycle.hasPhoto; else noImageTemplate">
+            <img 
+              [src]="getBicyclePhotoUrl(bicycle.id)" 
+              alt="Zdjęcie roweru"
+              (error)="handleImageError()"
+            >
+          </ng-container>
+          <ng-template #noImageTemplate>
+            <div class="no-image-placeholder">
+              <span>Brak zdjęcia</span>
+            </div>
+          </ng-template>
+        </div>
+        
+        <div class="bicycle-details">
+          <h2>{{ bicycle.brand }} {{ bicycle.model || '' }}</h2>
+          <div *ngIf="bicycle.type" class="bicycle-detail">
+            <strong>Typ:</strong> {{ bicycle.type }}
+          </div>
+          <div *ngIf="bicycle.frameMaterial" class="bicycle-detail">
+            <strong>Materiał ramy:</strong> {{ bicycle.frameMaterial }}
+          </div>
+          <div *ngIf="bicycle.frameNumber" class="bicycle-detail">
+            <strong>Numer ramy:</strong> {{ bicycle.frameNumber }}
+          </div>
+        </div>
+      </div>
+      
+      <div class="steps-container">
+        <div class="step" [ngClass]="{'active': currentStep === 1, 'completed': currentStep > 1}">
+          <div class="step-number">1</div>
+          <div class="step-label">Wybierz pakiet</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" [ngClass]="{'active': currentStep === 2, 'completed': currentStep > 2}">
+          <div class="step-number">2</div>
+          <div class="step-label">Wybierz termin</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" [ngClass]="{'active': currentStep === 3, 'completed': currentStep > 3}">
+          <div class="step-number">3</div>
+          <div class="step-label">Adres odbioru</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" [ngClass]="{'active': currentStep === 4}">
+          <div class="step-number">4</div>
+          <div class="step-label">Podsumowanie</div>
+        </div>
+      </div>
+      
+      <!-- Krok 1: Wybór pakietu serwisowego -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <h3>Wybierz pakiet serwisowy</h3>
+        
+        <div class="packages-container">
+          <div class="package-card" 
+               *ngFor="let package of availablePackages" 
+               [ngClass]="{'selected': selectedPackage === package.type}"
+               (click)="selectPackage(package.type)">
+            <h4 class="package-title">{{ package.name }}</h4>
+            <div class="package-price">{{ package.price }} zł</div>
+            <div class="package-description">{{ package.description }}</div>
+            
+            <div class="package-features">
+              <ul>
+                <li *ngFor="let feature of package.features">{{ feature }}</li>
+              </ul>
+            </div>
+            
+            <div class="package-select">
+              <button class="select-btn" [ngClass]="{'selected': selectedPackage === package.type}">
+                {{ selectedPackage === package.type ? 'Wybrano' : 'Wybierz' }}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step-actions">
+          <button class="cancel-btn" (click)="cancel()">Anuluj</button>
+          <button class="next-btn" [disabled]="!selectedPackage" (click)="nextStep()">Dalej</button>
+        </div>
+      </div>
+      
+      <!-- Krok 2: Wybór terminu odbioru -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <h3>Wybierz datę odbioru roweru</h3>
+        
+        <div class="date-selection">
+          <p class="date-info">
+            Kurier odbierze Twój rower w godzinach 18:00-22:00 wybranego dnia.
+          </p>
+          
+          <div class="form-group">
+            <label for="pickupDate">Data odbioru:</label>
+            <input 
+              type="date" 
+              id="pickupDate" 
+              [formControl]="pickupDateControl"
+              [min]="minDate"
+              [max]="maxDate"
+              [class.is-invalid]="pickupDateControl.invalid && pickupDateControl.touched"
+            >
+            <div *ngIf="pickupDateControl.invalid && pickupDateControl.touched" class="error-message">
+              <div *ngIf="pickupDateControl.errors?.['required']">Wybierz datę odbioru</div>
+              <div *ngIf="pickupDateControl.errors?.['min']">Data musi być co najmniej jutrzejsza</div>
+              <div *ngIf="pickupDateControl.errors?.['max']">Data nie może być później niż za 30 dni</div>
+            </div>
+          </div>
+          
+          <div class="date-calendar">
+            <!-- Tu można dodać kalendarz z dostępnymi terminami -->
+          </div>
+        </div>
+        
+        <div class="step-actions">
+          <button class="back-btn" (click)="prevStep()">Wstecz</button>
+          <button class="next-btn" [disabled]="pickupDateControl.invalid" (click)="nextStep()">Dalej</button>
+        </div>
+      </div>
+      
+      <!-- Krok 3: Adres odbioru -->
+      <div *ngIf="currentStep === 3" class="step-content">
+        <h3>Podaj adres odbioru roweru</h3>
+        
+        <form [formGroup]="addressForm" class="address-form">
+          <div class="form-group">
+            <label for="street">Ulica i numer*:</label>
+            <input 
+              type="text" 
+              id="street" 
+              formControlName="street"
+              placeholder="np. Długa 10/5"
+              [class.is-invalid]="isFieldInvalid('street')"
+            >
+            <div *ngIf="isFieldInvalid('street')" class="error-message">
+              Podaj ulicę i numer
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group col">
+              <label for="postalCode">Kod pocztowy*:</label>
+              <input 
+                type="text" 
+                id="postalCode" 
+                formControlName="postalCode"
+                placeholder="np. 00-000"
+                [class.is-invalid]="isFieldInvalid('postalCode')"
+              >
+              <div *ngIf="isFieldInvalid('postalCode')" class="error-message">
+                Podaj poprawny kod pocztowy (format: 00-000)
+              </div>
+            </div>
+            
+            <div class="form-group col">
+              <label for="city">Miasto*:</label>
+              <input 
+                type="text" 
+                id="city" 
+                formControlName="city"
+                [class.is-invalid]="isFieldInvalid('city')"
+              >
+              <div *ngIf="isFieldInvalid('city')" class="error-message">
+                Podaj miasto
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mapka do wskazania lokalizacji -->
+          <div class="location-map-container">
+            <label>Wskaż lokalizację na mapie (opcjonalnie):</label>
+            <div id="pickup-map" class="location-map"></div>
+            <p class="map-help">Kliknij na mapie, aby zaznaczyć dokładną lokalizację odbioru</p>
+          </div>
+          
+          <div class="form-group">
+            <label for="additionalNotes">Dodatkowe informacje (opcjonalnie):</label>
+            <textarea 
+              id="additionalNotes" 
+              formControlName="additionalNotes"
+              placeholder="Dodatkowe wskazówki dla kuriera, kod do klatki, informacje o rowerze..."
+              rows="4"
+            ></textarea>
+          </div>
+        </form>
+        
+        <div class="step-actions">
+          <button class="back-btn" (click)="prevStep()">Wstecz</button>
+          <button class="next-btn" [disabled]="addressForm.invalid" (click)="nextStep()">Dalej</button>
+        </div>
+      </div>
+      
+      <!-- Krok 4: Podsumowanie -->
+      <div *ngIf="currentStep === 4" class="step-content">
+        <h3>Podsumowanie zamówienia</h3>
+        
+        <div class="summary-container">
+          <div class="summary-section">
+            <h4>Rower</h4>
+            <div class="summary-item">
+              <span class="summary-label">Marka i model:</span>
+              <span class="summary-value">{{ bicycle.brand }} {{ bicycle.model || '' }}</span>
+            </div>
+            <div *ngIf="bicycle.frameNumber" class="summary-item">
+              <span class="summary-label">Numer ramy:</span>
+              <span class="summary-value">{{ bicycle.frameNumber }}</span>
+            </div>
+          </div>
+          
+          <div class="summary-section">
+            <h4>Pakiet serwisowy</h4>
+            <div class="summary-item">
+              <span class="summary-label">Pakiet:</span>
+              <span class="summary-value">{{ getSelectedPackageInfo().name }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Cena:</span>
+              <span class="summary-value">{{ getSelectedPackageInfo().price }} zł</span>
+            </div>
+          </div>
+          
+          <div class="summary-section">
+            <h4>Odbiór</h4>
+            <div class="summary-item">
+              <span class="summary-label">Data odbioru:</span>
+              <span class="summary-value">{{ pickupDateControl.value | date:'dd.MM.yyyy' }} (godz. 18:00-22:00)</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Adres odbioru:</span>
+              <span class="summary-value">
+                {{ addressForm.get('street')?.value }}, 
+                {{ addressForm.get('postalCode')?.value }} 
+                {{ addressForm.get('city')?.value }}
+              </span>
+            </div>
+            <div *ngIf="addressForm.get('additionalNotes')?.value" class="summary-item">
+              <span class="summary-label">Dodatkowe informacje:</span>
+              <span class="summary-value">{{ addressForm.get('additionalNotes')?.value }}</span>
+            </div>
+          </div>
+          
+          <div class="summary-total">
+            <span class="total-label">Łącznie do zapłaty:</span>
+            <span class="total-value">{{ getSelectedPackageInfo().price }} zł</span>
+          </div>
+          
+          <div class="terms-container">
+            <div class="form-check">
+              <input 
+                type="checkbox" 
+                id="termsAccepted" 
+                [formControl]="termsAcceptedControl"
+                class="form-check-input"
+                [class.is-invalid]="termsAcceptedControl.invalid && termsAcceptedControl.touched"
+              >
+              <label for="termsAccepted" class="form-check-label">
+                Akceptuję regulamin serwisu oraz politykę prywatności
+              </label>
+            </div>
+            <div *ngIf="termsAcceptedControl.invalid && termsAcceptedControl.touched" class="error-message">
+              Musisz zaakceptować regulamin, aby złożyć zamówienie
+            </div>
+          </div>
+        </div>
+        
+        <div class="step-actions">
+          <button class="back-btn" (click)="prevStep()">Wstecz</button>
+          <button 
+            class="submit-btn" 
+            [disabled]="!termsAcceptedControl.value || isSubmitting" 
+            (click)="submitOrder()"
+          >
+            {{ isSubmitting ? 'Przetwarzanie...' : 'Zamów serwis' }}
+          </button>
+        </div>
+      </div>
+      
+      <!-- Potwierdzenie złożenia zamówienia -->
+      <div *ngIf="currentStep === 5" class="step-content">
+        <div class="confirmation-container">
+          <div class="confirmation-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          
+          <h3 class="confirmation-title">Zamówienie zostało złożone!</h3>
+          
+          <p class="confirmation-message">
+            Dziękujemy za zamówienie serwisu. Twój rower zostanie odebrany {{ pickupDateControl.value | date:'dd.MM.yyyy' }} 
+            w godzinach 18:00-22:00.
+          </p>
+          
+          <p class="confirmation-message">
+            Numer zamówienia: <strong>{{ orderId }}</strong>
+          </p>
+          
+          <div class="confirmation-actions">
+            <button class="primary-btn" (click)="goToMain()">Wróć do strony głównej</button>
+            <button class="secondary-btn" (click)="goToServiceOrders()">Zobacz moje zamówienia</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="!loading && !bicycle" class="error-container">
+      <h3>Nie znaleziono roweru</h3>
+      <p>Nie znaleziono roweru o podanym identyfikatorze lub nie masz uprawnień do zamawiania serwisu dla tego roweru.</p>
+      <button class="primary-btn" (click)="goBack()">Wróć do listy rowerów</button>
+    </div>
+  </div>

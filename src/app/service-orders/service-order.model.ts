@@ -45,6 +45,7 @@ export interface CreateServiceOrderRequest {
 }
 
 export interface ServicePackageInfo {
+  type: ServicePackage;
   name: string;
   price: number;
   description: string;
@@ -53,6 +54,7 @@ export interface ServicePackageInfo {
 
 export const SERVICE_PACKAGES: Record<ServicePackage, ServicePackageInfo> = {
   [ServicePackage.BASIC]: {
+    type: ServicePackage.BASIC,
     name: 'Przegląd podstawowy',
     price: 200,
     description: 'Podstawowe sprawdzenie stanu roweru i regulacje',
@@ -71,6 +73,7 @@ export const SERVICE_PACKAGES: Record<ServicePackage, ServicePackageInfo> = {
     ]
   },
   [ServicePackage.EXTENDED]: {
+    type: ServicePackage.EXTENDED,
     name: 'Przegląd rozszerzony',
     price: 350,
     description: 'Rozszerzony przegląd z czyszczeniem i wymianą podstawowych części',
@@ -84,6 +87,7 @@ export const SERVICE_PACKAGES: Record<ServicePackage, ServicePackageInfo> = {
     ]
   },
   [ServicePackage.FULL]: {
+    type: ServicePackage.FULL,
     name: 'Przegląd pełny',
     price: 600,
     description: 'Kompleksowy przegląd i konserwacja całego roweru',

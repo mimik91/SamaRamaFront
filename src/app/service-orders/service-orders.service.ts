@@ -47,8 +47,8 @@ export class ServiceOrderService {
   }
   
   // Utwórz nowe zamówienie serwisu
-  createServiceOrder(orderData: CreateServiceOrderRequest): Observable<any> {
-    return this.http.post(this.apiUrl, orderData)
+  createServiceOrder(orderData: CreateServiceOrderRequest): Observable<{orderId: string}> {
+    return this.http.post<{orderId: string}>(this.apiUrl, orderData)
       .pipe(
         catchError(error => {
           console.error('Error creating service order:', error);

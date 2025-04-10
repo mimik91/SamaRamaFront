@@ -46,6 +46,20 @@ export class BicycleService {
     
     return this.http.post(this.apiUrl, payload)
       .pipe(
+        map((response: any) => {
+          console.log('Response from API:', response);
+          // Sprawdź, które pole zawiera ID roweru
+          if (response.bicycleId) {
+            return { bicycleId: response.bicycleId };
+          } else if (response.bikeId) {
+            return { bikeId: response.bikeId };
+          } else {
+            console.warn('Unexpected response format:', response);
+            // Spróbuj odgadnąć ID
+            const id = response.id || response.bicycleId || response.bikeId;
+            return { bikeId: id };
+          }
+        }),
         catchError(error => {
           console.error('Error adding bicycle:', error);
           return throwError(() => error);
@@ -53,7 +67,7 @@ export class BicycleService {
       );
   }
   
-  uploadBicyclePhoto(bicycleId: number, photoFile: File, isComplete: boolean = false): Observable<any> {
+  uploadBicyclePhoto(bicycleId: number, photoFile: File): Observable<any> {
     if (!photoFile) {
       return throwError(() => new Error('No file selected'));
     }
@@ -65,7 +79,8 @@ export class BicycleService {
     
     const formData = new FormData();
     formData.append('photo', photoFile);
-    formData.append('isComplete', isComplete.toString());
+    
+    console.log(`Uploading photo for bicycle ID: ${bicycleId}`);
     
     return this.http.post(`${this.apiUrl}/${bicycleId}/photo`, formData)
       .pipe(

@@ -1,86 +1,98 @@
 <div class="bicycle-form-container">
-    <h1>Dodaj nowy rower</h1>
+  <h1>Dodaj nowy rower</h1>
+  
+  <form [formGroup]="bicycleForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="brand">Marka*</label>
+      <input 
+        type="text" 
+        id="brand" 
+        formControlName="brand" 
+        [class.is-invalid]="isFieldInvalid('brand')"
+      >
+      <div *ngIf="isFieldInvalid('brand')" class="error-message">
+        Marka jest wymagana
+      </div>
+    </div>
     
-    <form [formGroup]="bicycleForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="brand">Marka*</label>
-        <input 
-          type="text" 
-          id="brand" 
-          formControlName="brand" 
-          [class.is-invalid]="isFieldInvalid('brand')"
-          placeholder="Podaj markę roweru"
-        >
-        <div *ngIf="isFieldInvalid('brand')" class="error-message">
-          Marka jest wymagana
-        </div>
+    <div class="form-group">
+      <label for="model">Model</label>
+      <input 
+        type="text" 
+        id="model" 
+        formControlName="model"
+      >
+    </div>
+    
+    <div class="form-group">
+      <label for="type">Typ roweru</label>
+      <select id="type" formControlName="type">
+        <option value="">-- Wybierz typ --</option>
+        <option value="MOUNTAIN">Górski</option>
+        <option value="ROAD">Szosowy</option>
+        <option value="CITY">Miejski</option>
+        <option value="TREKKING">Trekkingowy</option>
+        <option value="BMX">BMX</option>
+        <option value="KIDS">Dziecięcy</option>
+        <option value="ELECTRIC">Elektryczny</option>
+        <option value="OTHER">Inny</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="frameMaterial">Materiał ramy</label>
+      <select id="frameMaterial" formControlName="frameMaterial">
+        <option value="">-- Wybierz materiał --</option>
+        <option value="ALUMINUM">Aluminium</option>
+        <option value="CARBON">Karbon</option>
+        <option value="STEEL">Stal</option>
+        <option value="TITANIUM">Tytan</option>
+        <option value="OTHER">Inny</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="productionDate">Rok produkcji</label>
+      <input 
+        type="date" 
+        id="productionDate" 
+        formControlName="productionDate"
+      >
+    </div>
+    
+    <div class="form-group">
+      <label for="photo">Zdjęcie roweru (maks. 1MB)</label>
+      <input 
+        type="file" 
+        id="photo" 
+        accept="image/*"
+        (change)="onFileSelected($event)"
+      >
+      <div *ngIf="photoError" class="error-message">
+        {{ photoError }}
       </div>
       
-      <div class="form-group">
-        <label for="model">Model</label>
-        <input 
-          type="text" 
-          id="model" 
-          formControlName="model"
-          placeholder="Podaj model roweru"
-        >
+      <div *ngIf="selectedFile" class="photo-preview">
+        <img [src]="previewUrl" alt="Podgląd zdjęcia roweru">
       </div>
-      
-      <div class="form-group">
-        <label for="type">Typ roweru</label>
-        <select id="type" formControlName="type">
-          <option value="">-- Wybierz typ --</option>
-          <option value="MOUNTAIN">Górski</option>
-          <option value="ROAD">Szosowy</option>
-          <option value="CITY">Miejski</option>
-          <option value="TREKKING">Trekkingowy</option>
-          <option value="BMX">BMX</option>
-          <option value="KIDS">Dziecięcy</option>
-          <option value="ELECTRIC">Elektryczny</option>
-          <option value="OTHER">Inny</option>
-        </select>
+    </div>
+    
+    <div class="note-container">
+      <div class="note-message">
+        <strong>Informacja:</strong> Numer ramy może zostać dodany później przez serwis rowerowy. 
+        Podczas dodawania roweru nie musisz podawać numeru ramy.
       </div>
-      
-      <div class="form-group">
-        <label for="frameMaterial">Materiał ramy</label>
-        <select id="frameMaterial" formControlName="frameMaterial">
-          <option value="">-- Wybierz materiał --</option>
-          <option value="ALUMINUM">Aluminium</option>
-          <option value="CARBON">Karbon</option>
-          <option value="STEEL">Stal</option>
-          <option value="TITANIUM">Tytan</option>
-          <option value="OTHER">Inny</option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label for="productionDate">Rok produkcji</label>
-        <input 
-          type="date" 
-          id="productionDate" 
-          formControlName="productionDate"
-        >
-      </div>
-      
-      <div class="note-container">
-        <div class="note-message">
-          <strong>Informacja:</strong> Numer ramy może zostać dodany później przez serwis rowerowy. 
-          Podczas dodawania roweru nie musisz podawać numeru ramy.
-        </div>
-        <div class="note-message">
-          <strong>Uwaga:</strong> Zdjęcie roweru możesz dodać dopiero po utworzeniu roweru, na stronie szczegółów.
-        </div>
-      </div>
-      
-      <div class="form-actions">
-        <button type="button" class="cancel-btn" (click)="goBack()">Anuluj</button>
-        <button 
-          type="submit" 
-          class="submit-btn" 
-          [disabled]="bicycleForm.invalid || isSubmitting"
-        >
-          {{ isSubmitting ? 'Dodawanie...' : 'Dodaj rower' }}
-        </button>
-      </div>
-    </form>
-  </div>
+    </div>
+    
+    <div class="form-actions">
+      <button type="button" class="cancel-btn" (click)="goBack()">Anuluj</button>
+      <button 
+        type="submit" 
+        class="submit-btn" 
+        [disabled]="bicycleForm.invalid || isSubmitting"
+      >
+        {{ isSubmitting ? 'Dodawanie...' : 'Dodaj rower' }}
+      </button>
+    </div>
+  </form>
+</div>

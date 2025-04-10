@@ -11,108 +11,10 @@ import { Bicycle } from '../bicycle.model';
   selector: 'app-bicycle-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  template: `
-    <div class="bicycle-form-container">
-      <h1>Dodaj nowy rower</h1>
-      
-      <form [formGroup]="bicycleForm" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label for="brand">Marka*</label>
-          <input 
-            type="text" 
-            id="brand" 
-            formControlName="brand" 
-            [class.is-invalid]="isFieldInvalid('brand')"
-          >
-          <div *ngIf="isFieldInvalid('brand')" class="error-message">
-            Marka jest wymagana
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="model">Model</label>
-          <input 
-            type="text" 
-            id="model" 
-            formControlName="model"
-          >
-        </div>
-        
-        <div class="form-group">
-          <label for="type">Typ roweru</label>
-          <select id="type" formControlName="type">
-            <option value="">-- Wybierz typ --</option>
-            <option value="MOUNTAIN">Górski</option>
-            <option value="ROAD">Szosowy</option>
-            <option value="CITY">Miejski</option>
-            <option value="TREKKING">Trekkingowy</option>
-            <option value="BMX">BMX</option>
-            <option value="KIDS">Dziecięcy</option>
-            <option value="ELECTRIC">Elektryczny</option>
-            <option value="OTHER">Inny</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="frameMaterial">Materiał ramy</label>
-          <select id="frameMaterial" formControlName="frameMaterial">
-            <option value="">-- Wybierz materiał --</option>
-            <option value="ALUMINUM">Aluminium</option>
-            <option value="CARBON">Karbon</option>
-            <option value="STEEL">Stal</option>
-            <option value="TITANIUM">Tytan</option>
-            <option value="OTHER">Inny</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="productionDate">Rok produkcji</label>
-          <input 
-            type="date" 
-            id="productionDate" 
-            formControlName="productionDate"
-          >
-        </div>
-        
-        <div class="form-group">
-          <label for="photo">Zdjęcie roweru (maks. 1MB)</label>
-          <input 
-            type="file" 
-            id="photo" 
-            accept="image/*"
-            (change)="onFileSelected($event)"
-          >
-          <div *ngIf="photoError" class="error-message">
-            {{ photoError }}
-          </div>
-          
-          <div *ngIf="selectedFile" class="photo-preview">
-            <img [src]="previewUrl" alt="Podgląd zdjęcia roweru">
-          </div>
-        </div>
-        
-        <div class="note-container">
-          <div class="note-message">
-            <strong>Informacja:</strong> Numer ramy może zostać dodany później przez serwis rowerowy. 
-            Podczas dodawania roweru nie musisz podawać numeru ramy.
-          </div>
-        </div>
-        
-        <div class="form-actions">
-          <button type="button" class="cancel-btn" (click)="goBack()">Anuluj</button>
-          <button 
-            type="submit" 
-            class="submit-btn" 
-            [disabled]="bicycleForm.invalid || isSubmitting"
-          >
-            {{ isSubmitting ? 'Dodawanie...' : 'Dodaj rower' }}
-          </button>
-        </div>
-      </form>
-    </div>
-  `,
+  templateUrl: './bicycle-form.component.html',
   styleUrls: ['./bicycle-form.component.css']
 })
+
 export class BicycleFormComponent {
   private fb = inject(FormBuilder);
   private bicycleService = inject(BicycleService);
@@ -134,7 +36,6 @@ export class BicycleFormComponent {
       productionDate: ['']
     });
   }
-  
   isFieldInvalid(fieldName: string): boolean {
     const field = this.bicycleForm.get(fieldName);
     return field ? (field.invalid && (field.dirty || field.touched)) : false;
@@ -196,22 +97,25 @@ export class BicycleFormComponent {
     
     this.bicycleService.addBicycle(bicycleData).subscribe({
       next: (response: any) => {
-        const bicycleId = response.bicycleId;
+        const bicycleId = response.bikeId; // Zmiana z bicycleId na bikeId!
         const successMessage = 'Rower został dodany pomyślnie.';
         
         if (this.selectedFile && bicycleId) {
-          // Rower dodany, teraz dodaj zdjęcie
-          this.bicycleService.uploadBicyclePhoto(bicycleId, this.selectedFile).subscribe({
-            next: () => {
-              this.notificationService.success(successMessage);
-              this.router.navigate(['/bicycles']);
-            },
-            error: (error) => {
-              console.error('Error uploading photo:', error);
-              this.notificationService.success(successMessage + ' (nie udało się dodać zdjęcia)');
-              this.router.navigate(['/bicycles']);
-            }
-          });
+          // Dodaj timeout, aby dać czas backendowi na zapisanie roweru
+          const fileToUpload = this.selectedFile; // Utwórz referencję, którą TypeScript rozpozna jako non-null
+          setTimeout(() => {
+            this.bicycleService.uploadBicyclePhoto(bicycleId, fileToUpload).subscribe({
+              next: () => {
+                this.notificationService.success(successMessage);
+                this.router.navigate(['/bicycles']);
+              },
+              error: (error) => {
+                console.error('Error uploading photo:', error);
+                this.notificationService.success(successMessage + ' (nie udało się dodać zdjęcia)');
+                this.router.navigate(['/bicycles']);
+              }
+            });
+          }, 500); // dodanie 500ms opóźnienia
         } else {
           // Dodano rower bez zdjęcia
           this.notificationService.success(successMessage);

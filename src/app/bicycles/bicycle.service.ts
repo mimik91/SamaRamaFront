@@ -1,5 +1,6 @@
+
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { Bicycle, BicycleForm } from './bicycle.model';
 import { AuthService } from '../auth/auth.service';
@@ -99,8 +100,11 @@ export class BicycleService {
     return `${this.apiUrl}/${bicycleId}/photo`;
   }
   
-  deleteBicyclePhoto(bicycleId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${bicycleId}/photo`)
+  deleteBicyclePhoto(bicycleId: number, isComplete: boolean = true): Observable<any> {
+    // Add query parameter for isComplete
+    const params = new HttpParams().set('isComplete', isComplete.toString());
+    
+    return this.http.delete(`${this.apiUrl}/${bicycleId}/photo`, { params })
       .pipe(
         catchError(error => {
           console.error('Error deleting bicycle photo:', error);
@@ -122,11 +126,28 @@ export class BicycleService {
       );
   }
   
-  updateBicycle(id: number, bicycleData: Omit<Bicycle, 'id' | 'hasPhoto'>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, bicycleData)
+  updateBicycle(id: number, bicycleData: Omit<Bicycle, 'id' | 'hasPhoto'>, isComplete: boolean = true): Observable<any> {
+    console.log(`Updating bicycle ID ${id} with data:`, bicycleData);
+    console.log(`isComplete parameter: ${isComplete}`);
+    
+    // Dodaj parametr isComplete do zapytania
+    const params = new HttpParams().set('isComplete', isComplete.toString());
+    
+    return this.http.put(`${this.apiUrl}/${id}`, bicycleData, { params })
       .pipe(
+        map(response => {
+          console.log('Bicycle update response:', response);
+          return response;
+        }),
         catchError(error => {
           console.error(`Error updating bicycle with id ${id}:`, error);
+          console.error('Request data was:', bicycleData);
+          console.error('Request params were:', { isComplete });
+          
+          if (error.error && error.error.message) {
+            console.error('Error message from server:', error.error.message);
+          }
+          
           return throwError(() => error);
         })
       );

@@ -98,7 +98,7 @@ export class BicycleDetailsComponent implements OnInit {
         model: this.bicycle.model,
         type: this.bicycle.type,
         frameMaterial: this.bicycle.frameMaterial,
-        productionDate: this.bicycle.productionDate
+        productionDate: this.formatDateForForm(this.bicycle.productionDate)
       });
     }
   }
@@ -213,7 +213,10 @@ export class BicycleDetailsComponent implements OnInit {
     
     this.isPhotoDeleting = true;
     
-    this.bicycleService.deleteBicyclePhoto(this.bicycle.id).subscribe({
+    // Determine if the bicycle is complete based on the existence of a frameNumber
+    const isComplete = !!this.bicycle.frameNumber;
+    
+    this.bicycleService.deleteBicyclePhoto(this.bicycle.id, isComplete).subscribe({
       next: () => {
         this.notificationService.success('Zdjęcie zostało usunięte');
         if (this.bicycle) {
@@ -236,19 +239,40 @@ export class BicycleDetailsComponent implements OnInit {
     
     this.isSubmitting = true;
     
+    // Poprawne formatowanie daty produkcji
+    let productionDate = this.bicycleForm.value.productionDate;
+    
+    // Upewnij się, że data jest w formacie ISO
+    if (productionDate && typeof productionDate === 'string' && productionDate.trim() !== '') {
+      try {
+        // Konwersja do formatu ISO 8601, zachowując tylko datę (YYYY-MM-DD)
+        productionDate = new Date(productionDate).toISOString().split('T')[0];
+      } catch (e) {
+        console.error('Error formatting production date:', e);
+        productionDate = null;
+      }
+    } else {
+      productionDate = null;
+    }
+    
     // Tworzymy nowy obiekt zawierający TYLKO te pola, które są w BicycleDto
     const bicycleData = {
       brand: this.bicycleForm.value.brand,
-      model: this.bicycleForm.value.model,
-      type: this.bicycleForm.value.type,
-      frameMaterial: this.bicycleForm.value.frameMaterial,
-      productionDate: this.bicycleForm.value.productionDate,
+      model: this.bicycleForm.value.model || null,
+      type: this.bicycleForm.value.type || null,
+      frameMaterial: this.bicycleForm.value.frameMaterial || null,
+      productionDate: productionDate,
       frameNumber: this.bicycle.frameNumber // Zachowujemy oryginalny numer ramy
     };
     
-    // Użyj HttpClient do wywołania PUT
-    this.http.put<any>(`${this.bicycleService['apiUrl']}/${this.bicycle!.id}`, bicycleData).subscribe({
+    // Określamy, czy rower jest kompletny (ma numer ramy)
+    const isComplete = !!this.bicycle.frameNumber;
+    
+    // Używamy serwisu BicycleService zamiast bezpośrednio HttpClient
+    this.bicycleService.updateBicycle(this.bicycle.id, bicycleData, isComplete).subscribe({
       next: () => {
+        // Zaktualizowano dane podstawowe
+        
         // Jeśli mamy nowe zdjęcie, załaduj je
         if (this.selectedFile) {
           this.bicycleService.uploadBicyclePhoto(this.bicycle!.id, this.selectedFile).subscribe({
@@ -313,7 +337,6 @@ export class BicycleDetailsComponent implements OnInit {
   deleteBicycle(): void {
     if (!this.bicycle) return;
     
-    // For bicycle details, we determine if it's complete based on the existence of frameNumber
     const isComplete = !!this.bicycle.frameNumber;
     
     this.bicycleService.deleteBicycle(this.bicycle.id, isComplete).subscribe({
@@ -352,4 +375,18 @@ export class BicycleDetailsComponent implements OnInit {
     };
     return materials[material] || material;
   }
+
+  // Zaktualizuj sygnaturę metody, aby akceptowała również undefined
+formatDateForForm(dateString: string | null | undefined): string {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    // Format yyyy-MM-dd wymagany przez input type="date"
+    return date.toISOString().split('T')[0];
+  } catch (e) {
+    console.error('Error formatting date:', e);
+    return '';
+  }
+}
 }

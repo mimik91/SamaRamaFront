@@ -69,8 +69,18 @@ export class BicyclesListComponent implements OnInit {
       return;
     }
     
+    // Znajdź rower w tablicy, aby sprawdzić, czy jest kompletny
+    const bicycle = this.bicycles.find(b => b.id === bicycleId);
+    
+    if (!bicycle) {
+      this.notificationService.error('Nie znaleziono roweru do usunięcia');
+      return;
+    }
+    
+    const isComplete = !!bicycle.frameNumber;
+    
     if (window.confirm('Czy na pewno chcesz usunąć ten rower? Tej operacji nie można cofnąć.')) {
-      this.bicycleService.deleteBicycle(bicycleId).subscribe({
+      this.bicycleService.deleteBicycle(bicycleId, isComplete).subscribe({
         next: () => {
           this.notificationService.success('Rower został usunięty');
           this.loadBicycles();

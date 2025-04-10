@@ -313,7 +313,10 @@ export class BicycleDetailsComponent implements OnInit {
   deleteBicycle(): void {
     if (!this.bicycle) return;
     
-    this.bicycleService.deleteBicycle(this.bicycle.id).subscribe({
+    // For bicycle details, we determine if it's complete based on the existence of frameNumber
+    const isComplete = !!this.bicycle.frameNumber;
+    
+    this.bicycleService.deleteBicycle(this.bicycle.id, isComplete).subscribe({
       next: () => {
         this.notificationService.success('Rower został pomyślnie usunięty');
         this.router.navigate(['/bicycles']);

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { Bicycle, BicycleForm } from './bicycle.model';
 import { AuthService } from '../auth/auth.service';
@@ -109,8 +109,11 @@ export class BicycleService {
       );
   }
   
-  deleteBicycle(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`)
+  deleteBicycle(id: number, isComplete: boolean = true): Observable<any> {
+    // Add query parameter for isComplete
+    const params = new HttpParams().set('isComplete', isComplete.toString());
+    
+    return this.http.delete(`${this.apiUrl}/${id}`, { params })
       .pipe(
         catchError(error => {
           console.error('Error deleting bicycle:', error);

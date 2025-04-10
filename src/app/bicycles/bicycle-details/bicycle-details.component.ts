@@ -8,6 +8,7 @@ import { Bicycle } from '../bicycle.model';
 import { NotificationService } from '../../core/notification.service';
 import { ServiceRecord } from '../../service-records/service-record.model';
 import { ServiceRecordService } from '../../service-records/service-record.service';
+import { EnumerationService } from '../../core/enumeration.service';
 
 @Component({
   selector: 'app-bicycle-details',
@@ -27,6 +28,7 @@ export class BicycleDetailsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private notificationService = inject(NotificationService);
   private http = inject(HttpClient);
+  private enumerationService = inject(EnumerationService);
 
   bicycle: Bicycle | null = null;
   bicycleForm: FormGroup;
@@ -37,6 +39,16 @@ export class BicycleDetailsComponent implements OnInit {
   isPhotoDeleting = false;
   errorMessage = '';
   timestamp = Date.now();
+  
+  // Listy dostępnych opcji
+  brands: string[] = [];
+  bikeTypes: string[] = [];
+  frameMaterials: string[] = [];
+  
+  // Flagi ładowania
+  loadingBrands = true;
+  loadingTypes = true;
+  loadingMaterials = true;
   
   // Zmienne dla uploadu zdjęcia
   selectedFile: File | null = null;
@@ -57,9 +69,48 @@ export class BicycleDetailsComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadBicycle(+id);
+      this.loadEnumerations();
     } else {
       this.router.navigate(['/bicycles']);
     }
+  }
+
+  private loadEnumerations(): void {
+    // Pobierz marki rowerów
+    this.enumerationService.getEnumeration('BRAND').subscribe({
+      next: (brands) => {
+        this.brands = brands;
+        this.loadingBrands = false;
+      },
+      error: () => {
+        this.loadingBrands = false;
+        this.notificationService.error('Nie udało się pobrać listy marek rowerów');
+      }
+    });
+    
+    // Pobierz typy rowerów
+    this.enumerationService.getEnumeration('BIKE_TYPE').subscribe({
+      next: (types) => {
+        this.bikeTypes = types;
+        this.loadingTypes = false;
+      },
+      error: () => {
+        this.loadingTypes = false;
+        this.notificationService.error('Nie udało się pobrać listy typów rowerów');
+      }
+    });
+    
+    // Pobierz materiały ram
+    this.enumerationService.getEnumeration('FRAME_MATERIAL').subscribe({
+      next: (materials) => {
+        this.frameMaterials = materials;
+        this.loadingMaterials = false;
+      },
+      error: () => {
+        this.loadingMaterials = false;
+        this.notificationService.error('Nie udało się pobrać listy materiałów ram');
+      }
+    });
   }
 
   loadBicycle(id: number): void {
@@ -351,42 +402,17 @@ export class BicycleDetailsComponent implements OnInit {
     });
   }
 
-  getTranslatedType(type: string): string {
-    const types: Record<string, string> = {
-      'MOUNTAIN': 'Górski',
-      'ROAD': 'Szosowy',
-      'CITY': 'Miejski',
-      'TREKKING': 'Trekkingowy',
-      'BMX': 'BMX',
-      'KIDS': 'Dziecięcy',
-      'ELECTRIC': 'Elektryczny',
-      'OTHER': 'Inny'
-    };
-    return types[type] || type;
-  }
-
-  getTranslatedMaterial(material: string): string {
-    const materials: Record<string, string> = {
-      'ALUMINUM': 'Aluminium',
-      'CARBON': 'Karbon',
-      'STEEL': 'Stal',
-      'TITANIUM': 'Tytan',
-      'OTHER': 'Inny'
-    };
-    return materials[material] || material;
-  }
-
   // Zaktualizuj sygnaturę metody, aby akceptowała również undefined
-formatDateForForm(dateString: string | null | undefined): string {
-  if (!dateString) return '';
-  
-  try {
-    const date = new Date(dateString);
-    // Format yyyy-MM-dd wymagany przez input type="date"
-    return date.toISOString().split('T')[0];
-  } catch (e) {
-    console.error('Error formatting date:', e);
-    return '';
+  formatDateForForm(dateString: string | null | undefined): string {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      // Format yyyy-MM-dd wymagany przez input type="date"
+      return date.toISOString().split('T')[0];
+    } catch (e) {
+      console.error('Error formatting date:', e);
+      return '';
+    }
   }
-}
 }

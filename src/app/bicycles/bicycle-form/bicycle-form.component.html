@@ -4,12 +4,18 @@
   <form [formGroup]="bicycleForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label for="brand">Marka*</label>
-      <input 
-        type="text" 
+      <select 
         id="brand" 
         formControlName="brand" 
         [class.is-invalid]="isFieldInvalid('brand')"
+        [attr.disabled]="loadingBrands ? '' : null"
       >
+        <option value="" disabled>-- Wybierz markę --</option>
+        <option *ngIf="loadingBrands" value="" disabled>Ładowanie...</option>
+        <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
+        <!-- Opcja dla innych marek -->
+        <option value="Inna">Inna marka (wpisz w polu model)</option>
+      </select>
       <div *ngIf="isFieldInvalid('brand')" class="error-message">
         Marka jest wymagana
       </div>
@@ -21,33 +27,33 @@
         type="text" 
         id="model" 
         formControlName="model"
+        placeholder="Wpisz model roweru"
       >
     </div>
     
     <div class="form-group">
       <label for="type">Typ roweru</label>
-      <select id="type" formControlName="type">
+      <select 
+        id="type" 
+        formControlName="type"
+        [attr.disabled]="loadingTypes ? '' : null"
+      >
         <option value="">-- Wybierz typ --</option>
-        <option value="MOUNTAIN">Górski</option>
-        <option value="ROAD">Szosowy</option>
-        <option value="CITY">Miejski</option>
-        <option value="TREKKING">Trekkingowy</option>
-        <option value="BMX">BMX</option>
-        <option value="KIDS">Dziecięcy</option>
-        <option value="ELECTRIC">Elektryczny</option>
-        <option value="OTHER">Inny</option>
+        <option *ngIf="loadingTypes" value="" disabled>Ładowanie...</option>
+        <option *ngFor="let type of bikeTypes" [value]="type">{{ type }}</option>
       </select>
     </div>
     
     <div class="form-group">
       <label for="frameMaterial">Materiał ramy</label>
-      <select id="frameMaterial" formControlName="frameMaterial">
+      <select 
+        id="frameMaterial" 
+        formControlName="frameMaterial"
+        [attr.disabled]="loadingMaterials ? '' : null"
+      >
         <option value="">-- Wybierz materiał --</option>
-        <option value="ALUMINUM">Aluminium</option>
-        <option value="CARBON">Karbon</option>
-        <option value="STEEL">Stal</option>
-        <option value="TITANIUM">Tytan</option>
-        <option value="OTHER">Inny</option>
+        <option *ngIf="loadingMaterials" value="" disabled>Ładowanie...</option>
+        <option *ngFor="let material of frameMaterials" [value]="material">{{ material }}</option>
       </select>
     </div>
     
@@ -89,7 +95,7 @@
       <button 
         type="submit" 
         class="submit-btn" 
-        [disabled]="bicycleForm.invalid || isSubmitting"
+        [disabled]="bicycleForm.invalid || isSubmitting || loadingBrands || loadingTypes || loadingMaterials"
       >
         {{ isSubmitting ? 'Dodawanie...' : 'Dodaj rower' }}
       </button>

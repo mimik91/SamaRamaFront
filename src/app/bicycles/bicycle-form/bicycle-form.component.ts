@@ -1,11 +1,11 @@
-// src/app/bicycles/bicycle-form/bicycle-form.component.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BicycleService } from '../bicycle.service';
 import { NotificationService } from '../../core/notification.service';
 import { Bicycle } from '../bicycle.model';
+import { EnumerationService } from '../../core/enumeration.service';
 
 @Component({
   selector: 'app-bicycle-form',
@@ -15,17 +15,28 @@ import { Bicycle } from '../bicycle.model';
   styleUrls: ['./bicycle-form.component.css']
 })
 
-export class BicycleFormComponent {
+export class BicycleFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private bicycleService = inject(BicycleService);
   private router = inject(Router);
   private notificationService = inject(NotificationService);
+  private enumerationService = inject(EnumerationService);
   
   bicycleForm: FormGroup;
   isSubmitting = false;
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   photoError: string | null = null;
+  
+  // Listy dostępnych opcji
+  brands: string[] = [];
+  bikeTypes: string[] = [];
+  frameMaterials: string[] = [];
+  
+  // Flagi ładowania
+  loadingBrands = true;
+  loadingTypes = true;
+  loadingMaterials = true;
   
   constructor() {
     this.bicycleForm = this.fb.group({
@@ -36,6 +47,49 @@ export class BicycleFormComponent {
       productionDate: ['']
     });
   }
+  
+  ngOnInit(): void {
+    this.loadEnumerations();
+  }
+  
+  private loadEnumerations(): void {
+    // Pobierz marki rowerów
+    this.enumerationService.getEnumeration('BRAND').subscribe({
+      next: (brands) => {
+        this.brands = brands;
+        this.loadingBrands = false;
+      },
+      error: () => {
+        this.loadingBrands = false;
+        this.notificationService.error('Nie udało się pobrać listy marek rowerów');
+      }
+    });
+    
+    // Pobierz typy rowerów
+    this.enumerationService.getEnumeration('BIKE_TYPE').subscribe({
+      next: (types) => {
+        this.bikeTypes = types;
+        this.loadingTypes = false;
+      },
+      error: () => {
+        this.loadingTypes = false;
+        this.notificationService.error('Nie udało się pobrać listy typów rowerów');
+      }
+    });
+    
+    // Pobierz materiały ram
+    this.enumerationService.getEnumeration('FRAME_MATERIAL').subscribe({
+      next: (materials) => {
+        this.frameMaterials = materials;
+        this.loadingMaterials = false;
+      },
+      error: () => {
+        this.loadingMaterials = false;
+        this.notificationService.error('Nie udało się pobrać listy materiałów ram');
+      }
+    });
+  }
+  
   isFieldInvalid(fieldName: string): boolean {
     const field = this.bicycleForm.get(fieldName);
     return field ? (field.invalid && (field.dirty || field.touched)) : false;

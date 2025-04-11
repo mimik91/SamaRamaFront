@@ -1,4 +1,3 @@
-// src/app/service-orders/service-order.model.ts
 import { Bicycle } from '../bicycles/bicycle.model';
 import { BikeService } from '../service-panel/bike-service.model';
 
@@ -24,8 +23,6 @@ export interface ServiceOrder {
   servicePackage: ServicePackage;
   pickupDate: string;
   pickupAddress: string;
-  pickupLatitude?: number;
-  pickupLongitude?: number;
   price: number;
   orderDate: string;
   additionalNotes?: string;
@@ -39,8 +36,6 @@ export interface CreateServiceOrderRequest {
   servicePackage: ServicePackage;
   pickupDate: string;
   pickupAddress: string;
-  pickupLatitude?: number;
-  pickupLongitude?: number;
   additionalNotes?: string;
 }
 

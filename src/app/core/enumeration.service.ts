@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, map, of, shareReplay } from 'rxjs';
+import { Observable, forkJoin, catchError, map, of, shareReplay, switchMap } from 'rxjs';
+import { ServicePackage, OrderStatus, ServicePackageInfo } from '../service-orders/service-order.model';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,15 @@ export class EnumerationService {
   
   // Cache dla poszczególnych typów
   private typeCache: Record<string, Observable<string[]>> = {};
+
+  // Cache dla pakietów serwisowych
+  private servicePackagesCache$: Observable<Record<ServicePackage, ServicePackageInfo>> | null = null;
+  
+  // Cache dla statusów zamówień
+  private orderStatusCache$: Observable<OrderStatus[]> | null = null;
+  
+  // Cache dla typów pakietów
+  private servicePackageTypesCache$: Observable<ServicePackage[]> | null = null;
 
   constructor() {}
   
@@ -73,10 +83,121 @@ export class EnumerationService {
   }
   
   /**
+   * Pobiera metadane dla danego typu enumeracji
+   * @param type Typ enumeracji
+   */
+  getEnumerationMetadata(type: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${type}/metadata`)
+      .pipe(
+        shareReplay(1),
+        catchError(error => {
+          console.error(`Error fetching metadata for ${type}:`, error);
+          return of({});
+        })
+      );
+  }
+  
+  /**
+   * Pobiera dostępne typy pakietów serwisowych
+   */
+  getServicePackageTypes(): Observable<ServicePackage[]> {
+    if (!this.servicePackageTypesCache$) {
+      this.servicePackageTypesCache$ = this.getEnumeration('SERVICE_PACKAGE')
+        .pipe(
+          shareReplay(1)
+        );
+    }
+    
+    return this.servicePackageTypesCache$;
+  }
+  
+  /**
+   * Pobiera dozwolone statusy zamówień
+   */
+  getOrderStatusValues(): Observable<OrderStatus[]> {
+    if (!this.orderStatusCache$) {
+      this.orderStatusCache$ = this.getEnumeration('ORDER_STATUS')
+        .pipe(
+          shareReplay(1)
+        );
+    }
+    
+    return this.orderStatusCache$;
+  }
+  
+  /**
+   * Pobiera informacje o pakietach serwisowych
+   */
+  getServicePackages(): Observable<Record<ServicePackage, ServicePackageInfo>> {
+    if (!this.servicePackagesCache$) {
+      // Pobierz typy pakietów 
+      const packagesTypes$ = this.getServicePackageTypes();
+      
+      // Pobierz cennik pakietów
+      const packagePrices$ = this.getEnumerationMetadata('SERVICE_PACKAGE_PRICES');
+      
+      // Tworzymy funkcję pomocniczą do pobierania szczegółów pakietu
+      const getPackageDetails = (packageType: string): Observable<[ServicePackage, string[], any]> => {
+        const packageKey = `SERVICE_PACKAGE_${packageType}`;
+        // Pobierz listę funkcji
+        const features$ = this.getEnumeration(packageKey);
+        // Pobierz metadane pakietu (nazwę, opis)
+        const metadata$ = this.getEnumerationMetadata(packageKey);
+        
+        return forkJoin([features$, metadata$]).pipe(
+          map(([features, metadata]) => [packageType as ServicePackage, features, metadata])
+        );
+      };
+      
+      // Pobieramy szczegóły wszystkich pakietów
+      this.servicePackagesCache$ = forkJoin([
+        packagesTypes$,
+        packagePrices$
+      ]).pipe(
+        // Dla każdego typu pakietu, pobierz jego szczegóły
+        switchMap(([packageTypes, prices]) => {
+          const requests = packageTypes.map(type => getPackageDetails(type));
+          
+          return forkJoin(requests).pipe(
+            map(packagesWithFeatures => {
+              const packages: Record<ServicePackage, ServicePackageInfo> = {} as Record<ServicePackage, ServicePackageInfo>;
+              
+              // Tworzenie obiektów ServicePackageInfo
+              packagesWithFeatures.forEach(([type, features, metadata]) => {
+                packages[type] = {
+                  type: type as ServicePackage,
+                  name: metadata?.name || type,
+                  price: prices[type] || 0,
+                  description: metadata?.description || '',
+                  features: features
+                };
+              });
+              
+              return packages;
+            })
+          );
+        }),
+        // Obsługa błędów
+        catchError(error => {
+          console.error('Error fetching service packages:', error);
+          return of({} as Record<ServicePackage, ServicePackageInfo>);
+        }),
+        // Cache'ujemy wynik
+        shareReplay(1)
+      );
+    }
+    
+    return this.servicePackagesCache$;
+  }
+  
+  /**
    * Czyści cache, wymuszając ponowne pobranie danych
    */
   clearCache(): void {
     this.enumerationsCache$ = null;
     this.typeCache = {};
+    this.servicePackagesCache$ = null;
+    this.orderStatusCache$ = null;
+    this.servicePackageTypesCache$ = null;
   }
 }

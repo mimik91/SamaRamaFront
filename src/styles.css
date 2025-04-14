@@ -32,3 +32,5 @@ body.overflow-hidden {
     padding: 8px 16px !important;
   }
 }
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

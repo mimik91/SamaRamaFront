@@ -1,5 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+// Dodaj importy dla Angular Material
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatNativeDateModule } from '@angular/material/core';
 import { 
   FormBuilder, 
   FormControl, 
@@ -23,11 +28,39 @@ import { EnumerationService } from '../../core/enumeration.service';
 @Component({
   selector: 'app-service-order-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    MatDatepickerModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatNativeDateModule
+  ],
+  providers: [
+    { provide: MAT_DATE_FORMATS, useValue: CUSTOM_DATE_FORMATS }
+  ],
   templateUrl: './service-order-form.component.html',
   styleUrls: ['./service-order-form.component.css']
 })
 export class ServiceOrderFormComponent implements OnInit {
+
+  dateFilter = CustomDatePickerFilter.dateFilter;
+  
+  // Zaktualizowane zmienne dat na obiekty Date zamiast stringów
+  minDate: Date;
+  maxDate: Date;
+  
+  constructor() {
+    // Inicjalizacja dat
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.minDate = tomorrow;
+    
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    this.maxDate = maxDate;
+  }
+
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);

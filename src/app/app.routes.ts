@@ -14,11 +14,9 @@ import { BicycleDetailsComponent } from './bicycles/bicycle-details/bicycle-deta
 import { ServiceOrderFormComponent } from './service-orders/service-order-form/service-order-form.component';
 import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
+import { AdminServiceOrdersComponent } from './admin/admin-orders/admin-service-orders.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
-
-// Create the AdminServiceOrdersComponent if it doesn't exist yet
-// You'll need to create the directory structure: src/app/admin/service-orders/
 
 export const routes: Routes = [
     // Auth routes
@@ -41,8 +39,7 @@ export const routes: Routes = [
     // Admin routes
     {path: 'admin', component: AdminPanelComponent, canActivate: [adminGuard]},
     {path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard]},
-    // Temporarily comment this out until we create the component
-    // {path: 'service-orders', component: AdminServiceOrdersComponent, canActivate: [adminGuard]},
+    {path: 'service-orders', component: AdminServiceOrdersComponent, canActivate: [adminGuard]},
     
     // Shared routes (available to all authenticated users)
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},

@@ -225,12 +225,14 @@ export class AuthService {
   
   isClient(): boolean {
     const currentUser = this.currentUserSubject.value;
-    return currentUser?.role === 'CLIENT';
+    // Administrator i moderator nie powinni mieć uprawnień klienta
+    return currentUser?.role === 'CLIENT' && !this.hasAdminPrivileges();
   }
   
   isService(): boolean {
     const currentUser = this.currentUserSubject.value;
-    return currentUser?.role === 'SERVICE';
+    // Administrator i moderator nie powinni mieć uprawnień serwisu
+    return currentUser?.role === 'SERVICE' && !this.hasAdminPrivileges();
   }
 
   isAdmin(): boolean {

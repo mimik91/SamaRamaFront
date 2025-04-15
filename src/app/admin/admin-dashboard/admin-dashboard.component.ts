@@ -6,6 +6,7 @@ import { NotificationService } from '../../core/notification.service';
 import { AdminService, DashboardStats } from '../admin-service';
 import { ServiceOrder } from '../../service-orders/service-order.model';
 import { ServiceOrderService } from '../../service-orders/service-orders.service';
+import { User } from '../../core/models/user.models'
 
 @Component({
   selector: 'app-admin-dashboard',

@@ -1,5 +1,6 @@
 import { Bicycle } from '../bicycles/bicycle.model';
 import { BikeService } from '../service-panel/bike-service.model';
+import { User } from '../core/models/user.models';
 
 export type ServicePackage = string;
 export type OrderStatus = string;
@@ -7,6 +8,7 @@ export type OrderStatus = string;
 export interface ServiceOrder {
   id: number;
   bicycle: Bicycle;
+  client?: User;  // Added client property
   servicePackage: ServicePackage;
   pickupDate: string;
   pickupAddress: string;

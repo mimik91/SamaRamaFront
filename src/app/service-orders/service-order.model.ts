@@ -7,8 +7,8 @@ export type OrderStatus = string;
 
 export interface ServiceOrder {
   id: number;
-  bicycle: Bicycle;
-  client?: User;  // Added client property
+  bicycle: Bicycle | null; // Zmiana tutaj
+  client?: User;
   servicePackage: ServicePackage;
   pickupDate: string;
   pickupAddress: string;

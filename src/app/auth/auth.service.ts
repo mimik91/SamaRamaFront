@@ -38,17 +38,17 @@ export interface AuthResponse {
   firstName?: string;
   lastName?: string;
   name?: string;
-  role: 'CLIENT' | 'SERVICE';
+  role: 'CLIENT' | 'SERVICE' | 'ADMIN' | 'MODERATOR';
   redirectUrl?: string;
 }
 
 interface UserSession {
   token: string;
-  role: 'CLIENT' | 'SERVICE';
+  role: 'CLIENT' | 'SERVICE' | 'ADMIN' | 'MODERATOR';
   userId: number;
   email: string;
   name?: string;
-  expiresAt: number; // Timestamp
+  expiresAt: number;
 }
 
 @Injectable({
@@ -222,5 +222,39 @@ export class AuthService {
   isService(): boolean {
     const currentUser = this.currentUserSubject.value;
     return currentUser?.role === 'SERVICE';
+  }
+
+  isAdmin(): boolean {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser?.role === 'ADMIN';
+  }
+  
+  isModerator(): boolean {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser?.role === 'MODERATOR';
+  }
+  
+  // Helper method to check if user has admin privileges (either admin or moderator)
+  hasAdminPrivileges(): boolean {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser?.role === 'ADMIN' || currentUser?.role === 'MODERATOR';
+  }
+  
+  // Get the current user's email
+  getCurrentUserEmail(): string | null {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser ? currentUser.email : null;
+  }
+  
+  // Get the current user's name
+  getCurrentUserName(): string | null {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser ? currentUser.name || null : null;
+  }
+  
+  // Get the current user's ID
+  getCurrentUserId(): number | null {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser ? currentUser.userId : null;
   }
 }

@@ -1,0 +1,122 @@
+<!-- src/app/admin/admin-panel/admin-panel.component.html -->
+<div class="admin-container">
+    <div class="header">
+      <h1>Panel Administracyjny SamaRama</h1>
+      <div class="user-info">
+        <div class="user-email">{{ userName }}</div>
+        <div class="user-role" [ngClass]="{'admin': userRole === 'ADMIN', 'moderator': userRole === 'MODERATOR'}">
+          {{ userRole === 'ADMIN' ? 'Administrator' : userRole === 'MODERATOR' ? 'Moderator' : 'Użytkownik' }}
+        </div>
+      </div>
+    </div>
+    
+    <section class="dashboard">
+      <h2>Witaj, {{ userRole === 'ADMIN' ? 'Administratorze' : 'Moderatorze' }}!</h2>
+      <p>Poniżej znajdziesz przegląd systemu oraz dostęp do paneli administracyjnych.</p>
+      
+      <div class="stats-grid">
+        <div class="stat-card users">
+          <div class="stat-title">Łączna liczba użytkowników</div>
+          <div class="stat-value">{{ totalUsers }}</div>
+        </div>
+        
+        <div class="stat-card bicycles">
+          <div class="stat-title">Rowery w systemie</div>
+          <div class="stat-value">{{ totalBicycles }}</div>
+        </div>
+        
+        <div class="stat-card services">
+          <div class="stat-title">Zarejestrowane serwisy</div>
+          <div class="stat-value">{{ totalServices }}</div>
+        </div>
+        
+        <div class="stat-card orders">
+          <div class="stat-title">Oczekujące zamówienia</div>
+          <div class="stat-value">{{ pendingOrders }}</div>
+        </div>
+      </div>
+    </section>
+    
+    <section class="modules">
+      <h2>Moduły administracyjne</h2>
+      
+      <div class="module-grid">
+        <div class="module-card">
+          <h3 class="module-title">Zarządzanie użytkownikami</h3>
+          <div class="module-content">
+            <p class="module-description">
+              Przeglądaj, edytuj i usuwaj konta użytkowników. Możesz również zarządzać rolami i uprawnieniami.
+            </p>
+          </div>
+          <div class="module-actions">
+            <button class="action-btn">Zarządzaj użytkownikami</button>
+          </div>
+        </div>
+        
+        <div class="module-card">
+          <h3 class="module-title">Zarządzanie serwisami</h3>
+          <div class="module-content">
+            <p class="module-description">
+              Przeglądaj i weryfikuj serwisy rowerowe. Możesz edytować dane serwisów i moderować ich oferty.
+            </p>
+          </div>
+          <div class="module-actions">
+            <button class="action-btn">Zarządzaj serwisami</button>
+          </div>
+        </div>
+        
+        <div class="module-card">
+          <h3 class="module-title">Zamówienia serwisowe</h3>
+          <div class="module-content">
+            <p class="module-description">
+              Monitoruj wszystkie zamówienia serwisowe w systemie. Sprawdzaj status i historię zamówień.
+            </p>
+          </div>
+          <div class="module-actions">
+            <button class="action-btn">Zobacz zamówienia</button>
+          </div>
+        </div>
+        
+        <div class="module-card">
+          <h3 class="module-title">Katalog enumeracji</h3>
+          <div class="module-content">
+            <p class="module-description">
+              Zarządzaj listami marek, typów i materiałów rowerów. Dodawaj nowe wartości do katalogów.
+            </p>
+          </div>
+          <div class="module-actions">
+            <button class="action-btn">Zarządzaj katalogami</button>
+          </div>
+        </div>
+        
+        <div class="module-card">
+          <h3 class="module-title">Pakiety serwisowe</h3>
+          <div class="module-content">
+            <p class="module-description">
+              Konfiguruj cenniki i zawartość pakietów serwisowych dostępnych w aplikacji.
+            </p>
+          </div>
+          <div class="module-actions">
+            <button class="action-btn">Zarządzaj pakietami</button>
+          </div>
+        </div>
+        
+        <div class="module-card">
+          <h3 class="module-title">Logi systemowe</h3>
+          <div class="module-content">
+            <p class="module-description">
+              Przeglądaj logi działania systemu i aktywności użytkowników.
+            </p>
+            <p class="coming-soon">Funkcja w przygotowaniu</p>
+          </div>
+          <div class="module-actions">
+            <button class="action-btn disabled">Zobacz logi</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+  </div>

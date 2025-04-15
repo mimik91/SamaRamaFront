@@ -6,11 +6,12 @@ import { RegistrationComponent } from './auth/registration/registration.componen
 import { BikeServiceRegistrationComponent } from './auth/registration/bike-service-registration.component';
 import { WelcomeComponent } from './welcome/welcome.component';
 import { ServicePanelComponent } from './service-panel/service-panel.component';
-import { authGuard, clientGuard, serviceGuard } from './auth/auth.guard';
+import { authGuard, clientGuard, serviceGuard, adminGuard } from './auth/auth.guard';
 import { BicyclesListComponent } from './bicycles/bicycles-list/bicycles-list.component';
 import { BicycleFormComponent } from './bicycles/bicycle-form/bicycle-form.component';
 import { BicycleDetailsComponent } from './bicycles/bicycle-details/bicycle-details.component';
 import { ServiceOrderFormComponent } from './service-orders/service-order-form/service-order-form.component';
+import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 
 export const routes: Routes = [
     // Auth routes
@@ -28,6 +29,9 @@ export const routes: Routes = [
     
     // Service routes
     {path: 'service-panel', component: ServicePanelComponent, canActivate: [serviceGuard]},
+    
+    // Admin routes
+    {path: 'admin', component: AdminPanelComponent, canActivate: [adminGuard]},
     
     // Default route
     {path: '', redirectTo: 'login', pathMatch: 'full'}

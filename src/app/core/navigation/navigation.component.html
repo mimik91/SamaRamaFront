@@ -1,78 +1,86 @@
+<!-- Update to src/app/core/navigation/navigation.component.html -->
 <nav class="navbar" [ngClass]="{'auth-navbar': isAuthPage()}">
-    <!-- Podstawowa wersja nawigacji (z przyciskiem hamburger) -->
-    <div class="navbar-container" *ngIf="!isAuthPage()">
-      <div class="navbar-brand">
-        <a routerLink="/welcome">SamaRama</a>
-      </div>
-      
-      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
-        <span class="hamburger-icon" [class.open]="mobileMenuOpen">
-          <span></span>
-          <span></span>
-          <span></span>
-        </span>
-      </button>
-      
-      <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
-        <!-- Menu dla zalogowanych klientów -->
-        <ng-container *ngIf="authService.isLoggedIn() && authService.isClient()">
-          <a routerLink="/welcome" routerLinkActive="active" (click)="closeMobileMenu()">Mapa serwisów</a>
-          <a routerLink="/bicycles" routerLinkActive="active" (click)="closeMobileMenu()">Moje rowery</a>
-          <a href="#" (click)="logout($event)">Wyloguj się</a>
-        </ng-container>
-        
-        <!-- Menu dla zalogowanych serwisów -->
-        <ng-container *ngIf="authService.isLoggedIn() && authService.isService()">
-          <a routerLink="/service-panel" routerLinkActive="active" (click)="closeMobileMenu()">Panel serwisu</a>
-          <a href="#" (click)="logout($event)">Wyloguj się</a>
-        </ng-container>
-        
-        <!-- Menu dla niezalogowanych -->
-        <ng-container *ngIf="!authService.isLoggedIn()">
-          <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Logowanie klienta</a>
-          <a routerLink="/login-serviceman" routerLinkActive="active" (click)="closeMobileMenu()">Logowanie serwisu</a>
-          <a routerLink="/register" routerLinkActive="active" (click)="closeMobileMenu()">Rejestracja</a>
-        </ng-container>
-      </div>
-    </div>
-  
-    <!-- Wersja nawigacji dla stron logowania/rejestracji -->
-    <div class="auth-navbar-container" *ngIf="isAuthPage()">
-      <div class="navbar-brand">
-        <a routerLink="/welcome">SamaRama</a>
-      </div>
-  
-      <div class="auth-links">
-        <!-- Menu dla strony logowania klienta -->
-        <ng-container *ngIf="isLoginPage()">
-          <a routerLink="/register" routerLinkActive="active">Rejestracja klienta</a>
-          <a routerLink="/login-serviceman">Logowanie serwisu</a>
-          <a routerLink="/register-serviceman">Rejestracja serwisu</a>
-        </ng-container>
-  
-        <!-- Menu dla strony logowania serwisu -->
-        <ng-container *ngIf="isServiceLoginPage()">
-          <a routerLink="/register-serviceman">Rejestracja serwisu</a>
-          <a routerLink="/login">Logowanie klienta</a>
-          <a routerLink="/register">Rejestracja klienta</a>
-        </ng-container>
-  
-        <!-- Menu dla strony rejestracji klienta -->
-        <ng-container *ngIf="isRegisterPage()">
-          <a routerLink="/login">Logowanie klienta</a>
-          <a routerLink="/login-serviceman">Logowanie serwisu</a>
-          <a routerLink="/register-serviceman">Rejestracja serwisu</a>
-        </ng-container>
-  
-        <!-- Menu dla strony rejestracji serwisu -->
-        <ng-container *ngIf="isServiceRegisterPage()">
-          <a routerLink="/login-serviceman">Logowanie serwisu</a>
-          <a routerLink="/login">Logowanie klienta</a>
-          <a routerLink="/register">Rejestracja klienta</a>
-        </ng-container>
-      </div>
+  <!-- Podstawowa wersja nawigacji (z przyciskiem hamburger) -->
+  <div class="navbar-container" *ngIf="!isAuthPage()">
+    <div class="navbar-brand">
+      <a routerLink="/welcome">SamaRama</a>
     </div>
     
-    <!-- Overlay dla menu mobilnego -->
-    <div class="menu-overlay" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()"></div>
-  </nav>
+    <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+      <span class="hamburger-icon" [class.open]="mobileMenuOpen">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+    
+    <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
+      <!-- Menu dla zalogowanych klientów -->
+      <ng-container *ngIf="authService.isLoggedIn() && authService.isClient()">
+        <a routerLink="/welcome" routerLinkActive="active" (click)="closeMobileMenu()">Mapa serwisów</a>
+        <a routerLink="/bicycles" routerLinkActive="active" (click)="closeMobileMenu()">Moje rowery</a>
+        <a href="#" (click)="logout($event)">Wyloguj się</a>
+      </ng-container>
+      
+      <!-- Menu dla zalogowanych serwisów -->
+      <ng-container *ngIf="authService.isLoggedIn() && authService.isService()">
+        <a routerLink="/service-panel" routerLinkActive="active" (click)="closeMobileMenu()">Panel serwisu</a>
+        <a href="#" (click)="logout($event)">Wyloguj się</a>
+      </ng-container>
+      
+      <!-- Menu dla administratorów i moderatorów -->
+      <ng-container *ngIf="authService.isLoggedIn() && (authService.isAdmin() || authService.isModerator())">
+        <a routerLink="/admin" routerLinkActive="active" (click)="closeMobileMenu()">Panel administracyjny</a>
+        <a routerLink="/welcome" routerLinkActive="active" (click)="closeMobileMenu()">Mapa serwisów</a>
+        <a href="#" (click)="logout($event)">Wyloguj się</a>
+      </ng-container>
+      
+      <!-- Menu dla niezalogowanych -->
+      <ng-container *ngIf="!authService.isLoggedIn()">
+        <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Logowanie klienta</a>
+        <a routerLink="/login-serviceman" routerLinkActive="active" (click)="closeMobileMenu()">Logowanie serwisu</a>
+        <a routerLink="/register" routerLinkActive="active" (click)="closeMobileMenu()">Rejestracja</a>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Wersja nawigacji dla stron logowania/rejestracji -->
+  <div class="auth-navbar-container" *ngIf="isAuthPage()">
+    <div class="navbar-brand">
+      <a routerLink="/welcome">SamaRama</a>
+    </div>
+
+    <div class="auth-links">
+      <!-- Menu dla strony logowania klienta -->
+      <ng-container *ngIf="isLoginPage()">
+        <a routerLink="/register" routerLinkActive="active">Rejestracja klienta</a>
+        <a routerLink="/login-serviceman">Logowanie serwisu</a>
+        <a routerLink="/register-serviceman">Rejestracja serwisu</a>
+      </ng-container>
+
+      <!-- Menu dla strony logowania serwisu -->
+      <ng-container *ngIf="isServiceLoginPage()">
+        <a routerLink="/register-serviceman">Rejestracja serwisu</a>
+        <a routerLink="/login">Logowanie klienta</a>
+        <a routerLink="/register">Rejestracja klienta</a>
+      </ng-container>
+
+      <!-- Menu dla strony rejestracji klienta -->
+      <ng-container *ngIf="isRegisterPage()">
+        <a routerLink="/login">Logowanie klienta</a>
+        <a routerLink="/login-serviceman">Logowanie serwisu</a>
+        <a routerLink="/register-serviceman">Rejestracja serwisu</a>
+      </ng-container>
+
+      <!-- Menu dla strony rejestracji serwisu -->
+      <ng-container *ngIf="isServiceRegisterPage()">
+        <a routerLink="/login-serviceman">Logowanie serwisu</a>
+        <a routerLink="/login">Logowanie klienta</a>
+        <a routerLink="/register">Rejestracja klienta</a>
+      </ng-container>
+    </div>
+  </div>
+  
+  <!-- Overlay dla menu mobilnego -->
+  <div class="menu-overlay" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+</nav>

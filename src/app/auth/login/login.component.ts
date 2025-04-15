@@ -44,18 +44,24 @@ export class LoginComponent {
       this.successMessage = 'Próba logowania...';
       
       const credentials = this.loginForm.value;
-
+  
       this.authService.loginClient(credentials).subscribe({
         next: (response) => {
           console.log('Login successful', response);
           this.successMessage = 'Logowanie udane!';
-
+  
           // Add a delay to see the success message
           setTimeout(() => {
-            console.log('Navigating to welcome page');
-            this.router.navigate(['/welcome']).then((success) => {
-              console.log('Navigation result:', success);
-            });
+            console.log('User role:', this.authService.getUserRole());
+            
+            // Determine redirect based on user role
+            if (this.authService.isAdmin() || this.authService.isModerator()) {
+              console.log('Admin user detected, navigating to admin panel');
+              this.router.navigate(['/admin']);
+            } else {
+              console.log('Regular user, navigating to welcome page');
+              this.router.navigate(['/welcome']);
+            }
           }, 1000);
         },
         error: (error) => {

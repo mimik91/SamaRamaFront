@@ -1,3 +1,4 @@
+// src/app/auth/auth.guard.ts
 import { inject, PLATFORM_ID } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from './auth.service';
@@ -38,11 +39,18 @@ export const authGuard: CanActivateFn = (
     return true;
   }
   
+  // If user has ADMIN or MODERATOR role, always allow access regardless of other roles
+  if (userRole === 'ADMIN' || userRole === 'MODERATOR') {
+    return true;
+  }
+  
   // Redirect based on user role
   if (userRole === 'CLIENT') {
     router.navigate(['/welcome']);
   } else if (userRole === 'SERVICE') {
     router.navigate(['/service-panel']);
+  } else if (userRole === 'ADMIN' || userRole === 'MODERATOR') {
+    router.navigate(['/admin']);
   } else {
     router.navigate(['/login']);
   }
@@ -60,7 +68,7 @@ export const clientGuard: CanActivateFn = (route, state) => {
     return true;
   }
   
-  if (authService.isLoggedIn() && authService.isClient()) {
+  if (authService.isLoggedIn() && (authService.isClient() || authService.isAdmin())) {
     return true;
   }
   
@@ -83,7 +91,7 @@ export const serviceGuard: CanActivateFn = (route, state) => {
     return true;
   }
   
-  if (authService.isLoggedIn() && authService.isService()) {
+  if (authService.isLoggedIn() && (authService.isService() || authService.isAdmin())) {
     return true;
   }
   
@@ -91,6 +99,32 @@ export const serviceGuard: CanActivateFn = (route, state) => {
     router.navigate(['/welcome']);
   } else {
     router.navigate(['/login-serviceman']);
+  }
+  
+  return false;
+};
+
+// Specific guard for admin or moderator role
+export const adminGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  const platformId = inject(PLATFORM_ID);
+  
+  if (!isPlatformBrowser(platformId)) {
+    return true;
+  }
+  
+  if (authService.isLoggedIn() && (authService.isAdmin() || authService.isModerator())) {
+    return true;
+  }
+  
+  // Redirect based on role
+  if (authService.isClient()) {
+    router.navigate(['/welcome']);
+  } else if (authService.isService()) {
+    router.navigate(['/service-panel']);
+  } else {
+    router.navigate(['/login']);
   }
   
   return false;

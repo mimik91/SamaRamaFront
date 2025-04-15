@@ -28,6 +28,7 @@ export interface AdminUser {
 })
 export class AdminService {
   private apiUrl = 'http://localhost:8080/api/admin';
+  private enumerationsUrl = 'http://localhost:8080/api/enumerations';
   private http = inject(HttpClient);
 
   constructor() { }
@@ -74,10 +75,30 @@ export class AdminService {
   }
 
   getAllEnumerations(): Observable<Record<string, string[]>> {
-    return this.http.get<Record<string, string[]>>(`${this.apiUrl}/enumerations`).pipe(
+    return this.http.get<Record<string, string[]>>(this.enumerationsUrl).pipe(
       catchError(error => {
         console.error('Error fetching enumerations:', error);
         return of({});
+      })
+    );
+  }
+
+  // New method for getting a specific enumeration
+  getEnumeration(type: string): Observable<string[]> {
+    return this.http.get<string[]>(`${this.enumerationsUrl}/${type}`).pipe(
+      catchError(error => {
+        console.error(`Error fetching enumeration ${type}:`, error);
+        return of([]);
+      })
+    );
+  }
+
+  // New method for updating an enumeration
+  updateEnumeration(type: string, values: string[]): Observable<any> {
+    return this.http.post(`${this.enumerationsUrl}/${type}`, values).pipe(
+      catchError(error => {
+        console.error(`Error updating enumeration ${type}:`, error);
+        return of({ success: false, message: 'Failed to update enumeration' });
       })
     );
   }

@@ -1,3 +1,5 @@
+```html
+<!-- src/app/admin/admin-dashboard/admin-dashboard.component.html -->
 <div class="admin-dashboard-container">
     <div class="header">
       <h1>Panel Administracyjny</h1>
@@ -112,7 +114,7 @@
           <div class="action-title">Zarządzaj serwisami</div>
         </div>
         
-        <div class="action-card" (click)="navigateToModule('enumerations')">
+        <div class="action-card" (click)="navigateToEnumerationsManager()">
           <div class="action-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -123,7 +125,7 @@
               <line x1="3" y1="18" x2="3.01" y2="18"></line>
             </svg>
           </div>
-          <div class="action-title">Edytuj katalogi</div>
+          <div class="action-title">Edytuj Enumy</div>
         </div>
         
         <div class="action-card" (click)="navigateToModule('packages')">
@@ -142,3 +144,4 @@
   <div class="loading-overlay" *ngIf="loading">
     <div class="loading-spinner"></div>
   </div>
+```

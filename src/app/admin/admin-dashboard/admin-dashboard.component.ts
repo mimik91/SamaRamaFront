@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { NotificationService } from '../../core/notification.service';
 import { AdminService, DashboardStats } from '../admin-service';
@@ -20,6 +20,7 @@ export class AdminDashboardComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private adminService = inject(AdminService);
   private serviceOrderService = inject(ServiceOrderService);
+  private router = inject(Router);
   
   userName: string = '';
   userRole: string = '';
@@ -172,5 +173,10 @@ export class AdminDashboardComponent implements OnInit {
   navigateToModule(module: string): void {
     // This will be implemented in future to navigate to admin submodules
     this.notificationService.info(`Moduł ${module} jest w przygotowaniu`);
+  }
+
+  // New method to navigate to enumerations manager
+  navigateToEnumerationsManager(): void {
+    this.router.navigate(['/admin-enumerations']);
   }
 }

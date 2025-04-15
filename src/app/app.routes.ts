@@ -15,6 +15,7 @@ import { ServiceOrderFormComponent } from './service-orders/service-order-form/s
 import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminServiceOrdersComponent } from './admin/admin-orders/admin-service-orders.component';
+import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/admin-enumerations-manager.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
 
@@ -40,6 +41,7 @@ export const routes: Routes = [
     {path: 'admin', component: AdminPanelComponent, canActivate: [adminGuard]},
     {path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard]},
     {path: 'service-orders', component: AdminServiceOrdersComponent, canActivate: [adminGuard]},
+    {path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard]},
     
     // Shared routes (available to all authenticated users)
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},

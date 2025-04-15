@@ -563,4 +563,50 @@
       flex-direction: column;
       gap: 10px;
     }
+
+    .full-width {
+      width: 100%;
+    }
+
+    mat-form-field {
+      margin-bottom: 15px;
+    }
+
+    .mat-mdc-form-field {
+      width: 100%;
+    }
+
+    /* Custom calendar styles */
+    .mat-calendar-body-cell.mat-calendar-body-disabled {
+      text-decoration: line-through;
+      opacity: 0.5;
+    }
+
+    /* Make the datepicker more consistent with other form controls */
+    ::ng-deep .mat-datepicker-toggle {
+      color: #007bff;
+    }
+
+    ::ng-deep .mat-calendar-body-selected {
+      background-color: #007bff;
+      color: white;
+    }
+
+    ::ng-deep .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+
+    /* Adjust the inputs to match our custom styling */
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      border-radius: 4px;
+      background-color: white;
+    }
+
+    ::ng-deep .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+      background-color: white;
+    }
+
+    ::ng-deep .mdc-text-field--invalid .mdc-line-ripple::before {
+      border-bottom-color: #dc3545;
+    }
   }

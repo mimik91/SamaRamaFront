@@ -1,4 +1,3 @@
-```html
 <div class="service-order-container">
   <h1>Zamów serwis roweru</h1>
   
@@ -99,20 +98,23 @@
         <form [formGroup]="addressForm" class="pickup-form">
           <div class="form-group">
             <label for="pickupDate">Data odbioru:</label>
-            <input 
-              type="date" 
-              id="pickupDate" 
-              [formControl]="pickupDateControl"
-              [min]="minDate"
-              [max]="maxDate"
-              [class.is-invalid]="pickupDateControl.invalid && pickupDateControl.touched"
-            >
-            <div *ngIf="pickupDateControl.invalid && pickupDateControl.touched" class="error-message">
-              <div *ngIf="pickupDateControl.errors?.['required']">Wybierz datę odbioru</div>
-              <div *ngIf="pickupDateControl.errors?.['min']">Data musi być co najmniej jutrzejsza</div>
-              <div *ngIf="pickupDateControl.errors?.['max']">Data nie może być później niż za 30 dni</div>
-              <div *ngIf="pickupDateControl.errors?.['invalidDay']">Odbiór możliwy tylko od niedzieli do czwartku</div>
-            </div>
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Wybierz datę</mat-label>
+              <input 
+                matInput 
+                [matDatepicker]="picker" 
+                [formControl]="pickupDateControl"
+                [matDatepickerFilter]="dateFilter"
+                [min]="minDate"
+                [max]="maxDate"
+              >
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="pickupDateControl.invalid && pickupDateControl.touched">
+                <span *ngIf="pickupDateControl.errors?.['required']">Wybierz datę odbioru</span>
+                <span *ngIf="pickupDateControl.errors?.['invalidDay']">Odbiór możliwy tylko od niedzieli do czwartku</span>
+              </mat-error>
+            </mat-form-field>
           </div>
           
           <div class="form-group">

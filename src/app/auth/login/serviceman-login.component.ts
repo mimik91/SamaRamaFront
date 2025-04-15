@@ -47,7 +47,12 @@ export class ServicemanLoginComponent {
           
           // Dodaj opóźnienie, aby użytkownik zobaczył komunikat o powodzeniu
           setTimeout(() => {
-            this.router.navigate(['/service-panel']);
+            // Determine redirect URL based on role (for admins logged in as serviceman)
+            if (this.authService.isAdmin()) {
+              this.router.navigate(['/admin-dashboard']);
+            } else {
+              this.router.navigate(['/service-panel']);
+            }
           }, 1000);
         },
         error: (error) => {

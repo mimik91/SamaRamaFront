@@ -1,0 +1,98 @@
+<div class="account-container">
+    <div class="header">
+      <h1>Moje konto</h1>
+      <button class="back-btn" (click)="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Wróć
+      </button>
+    </div>
+  
+    <div *ngIf="loading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Ładowanie danych konta...</p>
+    </div>
+  
+    <div *ngIf="!loading" class="account-content">
+      <div class="account-section">
+        <h2>Dane osobowe</h2>
+        <form [formGroup]="userForm" (ngSubmit)="onSubmitUserData()">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" formControlName="email" readonly class="readonly-input">
+            <p class="help-text">Email nie może zostać zmieniony</p>
+          </div>
+  
+          <div class="form-group">
+            <label for="firstName">Imię *</label>
+            <input type="text" id="firstName" formControlName="firstName">
+            <div *ngIf="userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched" class="error-message">
+              Imię jest wymagane
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label for="lastName">Nazwisko *</label>
+            <input type="text" id="lastName" formControlName="lastName">
+            <div *ngIf="userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched" class="error-message">
+              Nazwisko jest wymagane
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label for="phoneNumber">Numer telefonu</label>
+            <input type="tel" id="phoneNumber" formControlName="phoneNumber" placeholder="123456789">
+            <div *ngIf="userForm.get('phoneNumber')?.invalid && userForm.get('phoneNumber')?.touched" class="error-message">
+              Wprowadź poprawny numer telefonu (9 cyfr)
+            </div>
+          </div>
+  
+          <div class="form-actions">
+            <button type="submit" class="primary-btn" [disabled]="userForm.invalid || submitting">
+              {{ submitting ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+            </button>
+          </div>
+        </form>
+      </div>
+  
+      <div class="account-section">
+        <h2>Zmiana hasła</h2>
+        <form [formGroup]="passwordForm" (ngSubmit)="onSubmitPasswordChange()">
+          <div class="form-group">
+            <label for="currentPassword">Obecne hasło *</label>
+            <input type="password" id="currentPassword" formControlName="currentPassword">
+            <div *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched" class="error-message">
+              Obecne hasło jest wymagane
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label for="newPassword">Nowe hasło *</label>
+            <input type="password" id="newPassword" formControlName="newPassword">
+            <div *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched" class="error-message">
+              Nowe hasło musi mieć co najmniej 6 znaków
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label for="confirmPassword">Powtórz nowe hasło *</label>
+            <input type="password" id="confirmPassword" formControlName="confirmPassword">
+            <div *ngIf="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched" class="error-message">
+              Powtórzenie hasła jest wymagane
+            </div>
+            <div *ngIf="passwordForm.hasError('mismatch') && passwordForm.get('confirmPassword')?.touched" class="error-message">
+              Hasła nie są identyczne
+            </div>
+          </div>
+  
+          <div class="form-actions">
+            <button type="submit" class="primary-btn" [disabled]="passwordForm.invalid || changingPassword">
+              {{ changingPassword ? 'Zmienianie hasła...' : 'Zmień hasło' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>

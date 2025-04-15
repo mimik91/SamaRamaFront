@@ -54,14 +54,11 @@ export class LoginComponent {
           setTimeout(() => {
             console.log('User role:', this.authService.getUserRole());
             
-            // Determine redirect based on user role
-            if (this.authService.isAdmin() || this.authService.isModerator()) {
-              console.log('Admin user detected, navigating to admin panel');
-              this.router.navigate(['/admin']);
-            } else {
-              console.log('Regular user, navigating to welcome page');
-              this.router.navigate(['/welcome']);
-            }
+            // Get the redirect URL from the response or use a default
+            const redirectUrl = response.redirectUrl || '/welcome';
+            
+            console.log(`Navigating to ${redirectUrl}`);
+            this.router.navigate([redirectUrl]);
           }, 1000);
         },
         error: (error) => {

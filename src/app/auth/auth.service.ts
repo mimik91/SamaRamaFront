@@ -102,10 +102,19 @@ export class AuthService {
       .pipe(
         tap(response => {
           console.log('Login response:', response);
-          // Upewnij się, że response.role jest ustawione na 'CLIENT'
+          // Determine the redirect URL based on role
+          let redirectUrl = '/welcome'; // Default for clients
+          
+          // Check if response contains admin or moderator role indicators
+          if (response.role === 'ADMIN' || response.role === 'MODERATOR') {
+            redirectUrl = '/admin-dashboard';
+          }
+          
+          // Upewnij się, że response.role jest ustawione na 'CLIENT' (or admin/moderator)
           const authResponse = {
             ...response,
-            role: 'CLIENT' as const
+            role: response.role || 'CLIENT' as const,
+            redirectUrl
           };
           this.handleAuthResponse(authResponse);
         }),

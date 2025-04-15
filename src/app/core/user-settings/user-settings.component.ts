@@ -41,16 +41,17 @@ export class UserSettingsComponent implements OnInit {
 
   logout(event: Event): void {
     event.preventDefault();
+    this.isOpen = false;
     this.authService.logout();
     this.notificationService.success('Zostałeś wylogowany');
     this.router.navigate(['/login']);
-    this.isOpen = false;
   }
 
   navigateToAccount(event: Event): void {
     event.preventDefault();
-    this.router.navigate(['/account']);
     this.isOpen = false;
+    // Navigate to the account page
+    this.router.navigate(['/account']);
   }
 
   private getUserInfo(): void {

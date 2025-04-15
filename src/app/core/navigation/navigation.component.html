@@ -1,4 +1,4 @@
-<!-- Updated src/app/core/navigation/navigation.component.html -->
+<!-- src/app/core/navigation/navigation.component.html -->
 <nav class="navbar" [ngClass]="{'auth-navbar': isAuthPage()}">
   <!-- Podstawowa wersja nawigacji (z przyciskiem hamburger) -->
   <div class="navbar-container" *ngIf="!isAuthPage()">
@@ -15,24 +15,23 @@
     </button>
     
     <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
-      <!-- Menu dla zalogowanych klientów -->
-      <ng-container *ngIf="authService.isLoggedIn() && authService.isClient()">
+      <!-- Menu dla zalogowanych klientów (bez przywilejów administratora) -->
+      <ng-container *ngIf="authService.isLoggedIn() && authService.isClient() && !authService.hasAdminPrivileges()">
         <a routerLink="/welcome" routerLinkActive="active" (click)="closeMobileMenu()">Mapa serwisów</a>
         <a routerLink="/bicycles" routerLinkActive="active" (click)="closeMobileMenu()">Moje rowery</a>
         <a routerLink="/service-appointments" routerLinkActive="active" (click)="closeMobileMenu()">Moje zamówienia</a>
       </ng-container>
       
-      <!-- Menu dla zalogowanych serwisów -->
-      <ng-container *ngIf="authService.isLoggedIn() && authService.isService()">
+      <!-- Menu dla zalogowanych serwisów (bez przywilejów administratora) -->
+      <ng-container *ngIf="authService.isLoggedIn() && authService.isService() && !authService.hasAdminPrivileges()">
         <a routerLink="/service-panel" routerLinkActive="active" (click)="closeMobileMenu()">Panel serwisu</a>
-        <a routerLink="/service-orders" routerLinkActive="active" (click)="closeMobileMenu()">Zamówienia</a>
       </ng-container>
       
       <!-- Menu dla administratorów i moderatorów -->
-      <ng-container *ngIf="authService.isLoggedIn() && (authService.isAdmin() || authService.isModerator())">
+      <ng-container *ngIf="authService.isLoggedIn() && authService.hasAdminPrivileges()">
         <a routerLink="/admin-dashboard" routerLinkActive="active" (click)="closeMobileMenu()">Dashboard</a>
         <a routerLink="/admin" routerLinkActive="active" (click)="closeMobileMenu()">Panel administracyjny</a>
-        <a routerLink="/service-orders" routerLinkActive="active" (click)="closeMobileMenu()">Zamówienia serwisowe</a>
+        <a routerLink="/service-orders" routerLinkActive="active" (click)="closeMobileMenu()">Zamówienia</a>
       </ng-container>
       
       <!-- Menu dla niezalogowanych -->

@@ -1,8 +1,9 @@
-// src/app/service-orders/service-order.service.ts
+// src/app/service-orders/service-orders.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
-import { CreateServiceOrderRequest, OrderStatus, ServiceOrder, ServicePackage } from './service-order.model';
+import { CreateServiceOrderRequest, OrderStatus, ServiceOrder } from './service-order.model';
+import { ServicePackage } from '../service-packages/service-package.model';
 
 @Injectable({
   providedIn: 'root'
@@ -69,11 +70,23 @@ export class ServiceOrderService {
   }
   
   // Pobierz cenę pakietu serwisowego
-  getServicePackagePrice(servicePackage: ServicePackage): Observable<any> {
-    return this.http.get(`${this.apiUrl}/package-price/${servicePackage}`)
+  // Ta metoda może być użyta do wstecznej kompatybilności 
+  getServicePackagePrice(packageCode: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/package-price/${packageCode}`)
       .pipe(
         catchError(error => {
-          console.error(`Error fetching price for service package ${servicePackage}:`, error);
+          console.error(`Error fetching price for service package ${packageCode}:`, error);
+          return throwError(() => error);
+        })
+      );
+  }
+  
+  // Nowa metoda - pobierz cenę po ID pakietu
+  getServicePackagePriceById(packageId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/package/${packageId}/price`)
+      .pipe(
+        catchError(error => {
+          console.error(`Error fetching price for service package ID ${packageId}:`, error);
           return throwError(() => error);
         })
       );

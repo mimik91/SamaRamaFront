@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+// src/app/service-orders/service-order-form/service-order-form.component.ts
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // Angular Material imports
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -18,12 +19,12 @@ import { BicycleService } from '../../bicycles/bicycle.service';
 import { Bicycle } from '../../bicycles/bicycle.model';
 import { 
   CreateServiceOrderRequest, 
-  ServicePackage, 
-  ServicePackageInfo 
+  OrderStatus,
 } from '../service-order.model';
 import { ServiceOrderService } from '../service-orders.service';
 import { NotificationService } from '../../core/notification.service';
-import { EnumerationService } from '../../core/enumeration.service';
+import { ServicePackageService } from '../../service-package/service-package.service';
+import { ServicePackage } from '../../service-package/service-package.model';
 
 // Import our custom date filter and formats
 import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
@@ -71,7 +72,7 @@ export class ServiceOrderFormComponent implements OnInit {
   private bicycleService = inject(BicycleService);
   private serviceOrderService = inject(ServiceOrderService);
   private notificationService = inject(NotificationService);
-  private enumerationService = inject(EnumerationService);
+  private servicePackageService = inject(ServicePackageService);
   
   // Bicycle data
   bicycleId!: number;
@@ -79,7 +80,7 @@ export class ServiceOrderFormComponent implements OnInit {
   
   // Form controls
   currentStep = 1;
-  selectedPackage: ServicePackage | null = null;
+  selectedPackageId: number | null = null;
   
   // Pickup date with validation for day of week (Sunday-Thursday)
   pickupDateControl: FormControl = new FormControl('', [
@@ -100,11 +101,9 @@ export class ServiceOrderFormComponent implements OnInit {
   isSubmitting = false;
   orderId: string | null = null;
   
-  // Available service packages - initially empty, will be loaded from API
-  availablePackages: ServicePackageInfo[] = [];
-  
-  // Available package types
-  servicePackageTypes: ServicePackage[] = [];
+  // Available service packages from database
+  availablePackages: ServicePackage[] = [];
+  loadingPackages = false;
   
   ngOnInit(): void {
     // Get bicycle ID from URL parameters
@@ -118,55 +117,8 @@ export class ServiceOrderFormComponent implements OnInit {
       }
     });
     
-    // Get service package types
-    this.enumerationService.getServicePackageTypes().subscribe({
-      next: (types) => {
-        this.servicePackageTypes = types;
-      },
-      error: (error) => {
-        console.error('Failed to load package types:', error);
-        // Default values in case of error
-        this.servicePackageTypes = ['BASIC', 'EXTENDED', 'FULL'];
-      }
-    });
-    
-    // Get service packages from API
-    this.enumerationService.getServicePackages().subscribe({
-      next: (packages) => {
-        // Convert object to array
-        this.availablePackages = Object.values(packages);
-      },
-      error: (error) => {
-        console.error('Failed to load service packages:', error);
-        // Show error message to the user
-        this.notificationService.error('An error occurred while loading service packages');
-        
-        // Create minimal service packages so that the interface can work
-        this.availablePackages = [
-          {
-            type: 'BASIC',
-            name: 'Basic Service',
-            price: 200,
-            description: 'Basic bike maintenance',
-            features: ['Basic service tasks']
-          },
-          {
-            type: 'EXTENDED',
-            name: 'Extended Service',
-            price: 350,
-            description: 'Extended maintenance',
-            features: ['Extended service tasks']
-          },
-          {
-            type: 'FULL',
-            name: 'Full Service',
-            price: 600,
-            description: 'Complete bike service',
-            features: ['Full range of service tasks']
-          }
-        ];
-      }
-    });
+    // Load service packages
+    this.loadServicePackages();
   }
   
   private loadBicycle(id: number): void {
@@ -180,6 +132,25 @@ export class ServiceOrderFormComponent implements OnInit {
         this.notificationService.error('Failed to load bicycle data');
         this.bicycle = null;
         this.loading = false;
+      }
+    });
+  }
+  
+  private loadServicePackages(): void {
+    this.loadingPackages = true;
+    
+    this.servicePackageService.getActivePackages().subscribe({
+      next: (packages) => {
+        this.availablePackages = packages;
+        this.loadingPackages = false;
+      },
+      error: (error) => {
+        console.error('Failed to load service packages:', error);
+        this.notificationService.error('An error occurred while loading service packages');
+        this.loadingPackages = false;
+        
+        // Fallback to empty array
+        this.availablePackages = [];
       }
     });
   }
@@ -229,38 +200,22 @@ export class ServiceOrderFormComponent implements OnInit {
   }
   
   // Interface handling methods
-  selectPackage(packageType: ServicePackage): void {
-    this.selectedPackage = packageType;
+  selectPackage(packageId: number): void {
+    this.selectedPackageId = packageId;
   }
   
-  getSelectedPackageInfo(): ServicePackageInfo {
-    if (!this.selectedPackage) {
-      // If no package is selected, return the first available one
-      return this.availablePackages.length > 0 ? 
-        this.availablePackages[0] : 
-        { 
-          type: 'BASIC', 
-          name: 'Basic Service', 
-          price: 200, 
-          description: 'Basic bike maintenance', 
-          features: [] 
-        };
+  getSelectedPackageInfo(): ServicePackage | null {
+    if (!this.selectedPackageId) {
+      return null;
     }
     
     // Find the package in available packages
-    const packageInfo = this.availablePackages.find(p => p.type === this.selectedPackage);
+    const packageInfo = this.availablePackages.find(p => p.id === this.selectedPackageId);
     if (packageInfo) {
       return packageInfo;
     }
     
-    // Fallback - if package not found
-    return { 
-      type: this.selectedPackage, 
-      name: this.selectedPackage, 
-      price: 0, 
-      description: '', 
-      features: [] 
-    };
+    return null;
   }
   
   nextStep(): void {
@@ -303,16 +258,8 @@ export class ServiceOrderFormComponent implements OnInit {
     }
   }
   
-  // Format date to yyyy-MM-dd format for input type="date"
-  private formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-  
   submitOrder(): void {
-    if (!this.bicycle || !this.selectedPackage || !this.pickupDateControl.valid || !this.addressForm.valid || !this.termsAcceptedControl.value) {
+    if (!this.bicycle || !this.selectedPackageId || !this.pickupDateControl.valid || !this.addressForm.valid || !this.termsAcceptedControl.value) {
       this.notificationService.error('Please ensure all fields are filled correctly');
       return;
     }
@@ -322,7 +269,7 @@ export class ServiceOrderFormComponent implements OnInit {
     // Create order object
     const serviceOrder: CreateServiceOrderRequest = {
       bicycleId: this.bicycle.id,
-      servicePackage: this.selectedPackage,
+      servicePackageId: this.selectedPackageId,
       pickupDate: this.pickupDateControl.value,
       pickupAddress: `${this.addressForm.get('street')?.value}, ${this.addressForm.get('city')?.value}`,
       additionalNotes: this.addressForm.get('additionalNotes')?.value || undefined

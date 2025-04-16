@@ -17,14 +17,14 @@ export class EnumerationService {
   // Cache dla poszczególnych typów
   private typeCache: Record<string, Observable<string[]>> = {};
 
-  // Cache dla pakietów serwisowych
-  private servicePackagesCache$: Observable<Record<ServicePackage, ServicePackageInfo>> | null = null;
+  // Cache dla pakietów serwisowych - poprawienie typu
+  private servicePackagesCache$: Observable<Record<string, ServicePackageInfo>> | null = null;
   
   // Cache dla statusów zamówień
   private orderStatusCache$: Observable<OrderStatus[]> | null = null;
   
   // Cache dla typów pakietów
-  private servicePackageTypesCache$: Observable<ServicePackage[]> | null = null;
+  private servicePackageTypesCache$: Observable<string[]> | null = null;
 
   constructor() {}
   
@@ -101,12 +101,9 @@ export class EnumerationService {
   /**
    * Pobiera dostępne typy pakietów serwisowych
    */
-  getServicePackageTypes(): Observable<ServicePackage[]> {
+  getServicePackageTypes(): Observable<string[]> {
     if (!this.servicePackageTypesCache$) {
-      this.servicePackageTypesCache$ = this.getEnumeration('SERVICE_PACKAGE')
-        .pipe(
-          shareReplay(1)
-        );
+      this.servicePackageTypesCache$ = this.getEnumeration('SERVICE_PACKAGE');
     }
     
     return this.servicePackageTypesCache$;
@@ -117,10 +114,7 @@ export class EnumerationService {
    */
   getOrderStatusValues(): Observable<OrderStatus[]> {
     if (!this.orderStatusCache$) {
-      this.orderStatusCache$ = this.getEnumeration('ORDER_STATUS')
-        .pipe(
-          shareReplay(1)
-        );
+      this.orderStatusCache$ = this.getEnumeration('ORDER_STATUS') as Observable<OrderStatus[]>;
     }
     
     return this.orderStatusCache$;
@@ -129,7 +123,7 @@ export class EnumerationService {
   /**
    * Pobiera informacje o pakietach serwisowych
    */
-  getServicePackages(): Observable<Record<ServicePackage, ServicePackageInfo>> {
+  getServicePackages(): Observable<Record<string, ServicePackageInfo>> {
     if (!this.servicePackagesCache$) {
       // Pobierz typy pakietów 
       const packagesTypes$ = this.getServicePackageTypes();
@@ -138,7 +132,7 @@ export class EnumerationService {
       const packagePrices$ = this.getEnumerationMetadata('SERVICE_PACKAGE_PRICES');
       
       // Tworzymy funkcję pomocniczą do pobierania szczegółów pakietu
-      const getPackageDetails = (packageType: string): Observable<[ServicePackage, string[], any]> => {
+      const getPackageDetails = (packageType: string): Observable<[string, string[], any]> => {
         const packageKey = `SERVICE_PACKAGE_${packageType}`;
         // Pobierz listę funkcji
         const features$ = this.getEnumeration(packageKey);
@@ -146,7 +140,7 @@ export class EnumerationService {
         const metadata$ = this.getEnumerationMetadata(packageKey);
         
         return forkJoin([features$, metadata$]).pipe(
-          map(([features, metadata]) => [packageType as ServicePackage, features, metadata])
+          map(([features, metadata]) => [packageType, features, metadata])
         );
       };
       
@@ -161,12 +155,12 @@ export class EnumerationService {
           
           return forkJoin(requests).pipe(
             map(packagesWithFeatures => {
-              const packages: Record<ServicePackage, ServicePackageInfo> = {} as Record<ServicePackage, ServicePackageInfo>;
+              const packages: Record<string, ServicePackageInfo> = {};
               
               // Tworzenie obiektów ServicePackageInfo
               packagesWithFeatures.forEach(([type, features, metadata]) => {
                 packages[type] = {
-                  type: type as ServicePackage,
+                  type: type,
                   name: metadata?.name || type,
                   price: prices[type] || 0,
                   description: metadata?.description || '',
@@ -181,7 +175,7 @@ export class EnumerationService {
         // Obsługa błędów
         catchError(error => {
           console.error('Error fetching service packages:', error);
-          return of({} as Record<ServicePackage, ServicePackageInfo>);
+          return of({} as Record<string, ServicePackageInfo>);
         }),
         // Cache'ujemy wynik
         shareReplay(1)

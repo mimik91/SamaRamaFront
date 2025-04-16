@@ -3,7 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { CreateServiceOrderRequest, OrderStatus, ServiceOrder } from './service-order.model';
-import { ServicePackage } from '../service-packages/service-package.model';
+import { ServicePackage } from '../service-package/service-package.model';
+                               
 
 @Injectable({
   providedIn: 'root'

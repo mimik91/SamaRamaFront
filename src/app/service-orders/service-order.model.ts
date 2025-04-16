@@ -1,8 +1,7 @@
-// src/app/service-orders/service-order.model.ts
 import { Bicycle } from '../bicycles/bicycle.model';
 import { BikeService } from '../service-panel/bike-service.model';
 import { User } from '../core/models/user.models';
-import { ServicePackage } from '../service-packages/service-package.model';
+import { ServicePackage } from '../service-package/service-package.model';
 
 export type OrderStatus = string;
 

@@ -1,5 +1,3 @@
-// src/app/app.routes.ts
-
 import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { ServicemanLoginComponent } from './auth/login/serviceman-login.component';
@@ -16,6 +14,7 @@ import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminServiceOrdersComponent } from './admin/admin-orders/admin-service-orders.component';
 import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/admin-enumerations-manager.component';
+import { AdminServicePackagesComponent } from './admin/admin-service-packages/admin-service-package.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
 
@@ -42,6 +41,7 @@ export const routes: Routes = [
     {path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard]},
     {path: 'service-orders', component: AdminServiceOrdersComponent, canActivate: [adminGuard]},
     {path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard]},
+    {path: 'admin-service-packages', component: AdminServicePackagesComponent, canActivate: [adminGuard]},
     
     // Shared routes (available to all authenticated users)
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},

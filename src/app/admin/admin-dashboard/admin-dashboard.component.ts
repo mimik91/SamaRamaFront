@@ -171,11 +171,17 @@ export class AdminDashboardComponent implements OnInit {
   }
   
   navigateToModule(module: string): void {
-    // This will be implemented in future to navigate to admin submodules
-    this.notificationService.info(`Moduł ${module} jest w przygotowaniu`);
+    // Navigate to admin submodules
+    if (module === 'orders') {
+      this.router.navigate(['/service-orders']);
+    } else if (module === 'packages') {
+      this.router.navigate(['/admin-service-packages']);
+    } else {
+      this.notificationService.info(`Moduł ${module} jest w przygotowaniu`);
+    }
   }
 
-  // New method to navigate to enumerations manager
+  // Navigate to enumerations manager
   navigateToEnumerationsManager(): void {
     this.router.navigate(['/admin-enumerations']);
   }

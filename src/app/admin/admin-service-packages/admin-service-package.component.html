@@ -1,0 +1,293 @@
+<div class="service-packages-container">
+    <div class="header">
+      <h1>Zarządzanie Pakietami Serwisowymi</h1>
+      <button class="back-btn" (click)="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Wróć do panelu
+      </button>
+    </div>
+    
+    <div *ngIf="loading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Ładowanie pakietów serwisowych...</p>
+    </div>
+    
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+    
+    <ng-container *ngIf="!loading && !error">
+      <div class="content-container">
+        <!-- Lista pakietów (lewa kolumna) -->
+        <div class="packages-sidebar">
+          <div class="sidebar-header">
+            <h2>Pakiety serwisowe</h2>
+            <button class="add-package-btn" (click)="startAddingNew()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Dodaj nowy
+            </button>
+          </div>
+          
+          <div class="packages-list">
+            <div *ngIf="servicePackages.length === 0" class="no-packages-message">
+              Brak pakietów serwisowych. Kliknij "Dodaj nowy", aby utworzyć pierwszy pakiet.
+            </div>
+            
+            <div
+              *ngFor="let package of servicePackages"
+              class="package-item"
+              [class.active]="selectedPackage?.id === package.id"
+              [class.inactive]="package.active === false"
+              (click)="selectPackage(package.id)"
+            >
+              <div class="package-item-header">
+                <span class="package-name">{{ package.name }}</span>
+                <span class="package-price">{{ package.price }} zł</span>
+              </div>
+              <div class="package-code">{{ package.code }}</div>
+              <div *ngIf="package.active === false" class="inactive-label">Nieaktywny</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Szczegóły pakietu lub formularz edycji (prawa kolumna) -->
+        <div class="package-details-container">
+          <!-- Widok szczegółów pakietu -->
+          <div *ngIf="selectedPackage && !isEditing && !isAddingNew" class="package-details">
+            <div class="details-header">
+              <h2>{{ selectedPackage.name }}</h2>
+              <div class="header-actions">
+                <button class="edit-btn" (click)="startEditing()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Edytuj
+                </button>
+                <button 
+                  class="toggle-btn" 
+                  [ngClass]="{'activate-btn': !selectedPackage.active, 'deactivate-btn': selectedPackage.active}"
+                  (click)="togglePackageActive(selectedPackage.id, !selectedPackage.active)"
+                >
+                  <svg *ngIf="selectedPackage.active" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18.36 6.64A9 9 0 0 1 20.77 15"></path>
+                    <path d="M6.16 6.16a9 9 0 1 0 12.68 12.68"></path>
+                    <path d="M12 2v4"></path>
+                    <path d="m2 2 20 20"></path>
+                  </svg>
+                  <svg *ngIf="!selectedPackage.active" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18.36 6.64A9 9 0 1 1 5.63 18.36"></path>
+                    <path d="M12 2v4"></path>
+                  </svg>
+                  {{ selectedPackage.active ? 'Dezaktywuj' : 'Aktywuj' }}
+                </button>
+                <button class="delete-btn" (click)="deletePackage(selectedPackage.id)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                  Usuń
+                </button>
+              </div>
+            </div>
+            
+            <div class="package-status" [ngClass]="{'active': selectedPackage.active, 'inactive': !selectedPackage.active}">
+              {{ selectedPackage.active ? 'Aktywny' : 'Nieaktywny' }}
+            </div>
+            
+            <div class="details-section">
+              <div class="detail-item">
+                <div class="detail-label">Kod pakietu:</div>
+                <div class="detail-value">{{ selectedPackage.code }}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Cena:</div>
+                <div class="detail-value">{{ selectedPackage.price }} zł</div>
+              </div>
+              <div class="detail-item" *ngIf="selectedPackage.displayOrder !== undefined && selectedPackage.displayOrder !== null">
+                <div class="detail-label">Kolejność wyświetlania:</div>
+                <div class="detail-value">{{ selectedPackage.displayOrder }}</div>
+              </div>
+            </div>
+            
+            <div class="details-section">
+              <div class="detail-label">Opis:</div>
+              <div class="detail-value description">{{ selectedPackage.description || 'Brak opisu' }}</div>
+            </div>
+            
+            <div class="details-section">
+              <div class="detail-label">Funkcje i usługi:</div>
+              <ul class="features-list">
+                <li *ngFor="let feature of selectedPackage.features">{{ feature }}</li>
+                <li *ngIf="!selectedPackage.features || selectedPackage.features.length === 0" class="no-features">
+                  Brak zdefiniowanych funkcji i usług
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Formularz dodawania/edycji pakietu -->
+          <div *ngIf="isEditing || isAddingNew" class="package-edit-form">
+            <h2>{{ isAddingNew ? 'Dodaj nowy pakiet' : 'Edytuj pakiet' }}</h2>
+            
+            <form [formGroup]="packageForm" (ngSubmit)="savePackage()">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="code">Kod pakietu*</label>
+                  <input 
+                    type="text" 
+                    id="code" 
+                    formControlName="code" 
+                    [class.is-invalid]="packageForm.get('code')?.invalid && packageForm.get('code')?.touched"
+                    placeholder="np. BASIC, STANDARD, PREMIUM"
+                  >
+                  <div *ngIf="packageForm.get('code')?.invalid && packageForm.get('code')?.touched" class="error-message">
+                    <span *ngIf="packageForm.get('code')?.errors?.['required']">Kod pakietu jest wymagany</span>
+                    <span *ngIf="packageForm.get('code')?.errors?.['minlength']">Kod musi mieć co najmniej 2 znaki</span>
+                    <span *ngIf="packageForm.get('code')?.errors?.['maxlength']">Kod nie może przekraczać 20 znaków</span>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="name">Nazwa pakietu*</label>
+                  <input 
+                    type="text" 
+                    id="name" 
+                    formControlName="name" 
+                    [class.is-invalid]="packageForm.get('name')?.invalid && packageForm.get('name')?.touched"
+                    placeholder="np. Przegląd Podstawowy"
+                  >
+                  <div *ngIf="packageForm.get('name')?.invalid && packageForm.get('name')?.touched" class="error-message">
+                    <span *ngIf="packageForm.get('name')?.errors?.['required']">Nazwa pakietu jest wymagana</span>
+                    <span *ngIf="packageForm.get('name')?.errors?.['minlength']">Nazwa musi mieć co najmniej 2 znaki</span>
+                    <span *ngIf="packageForm.get('name')?.errors?.['maxlength']">Nazwa nie może przekraczać 100 znaków</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="price">Cena (zł)*</label>
+                  <input 
+                    type="number" 
+                    id="price" 
+                    formControlName="price" 
+                    [class.is-invalid]="packageForm.get('price')?.invalid && packageForm.get('price')?.touched"
+                    min="0"
+                    step="0.01"
+                  >
+                  <div *ngIf="packageForm.get('price')?.invalid && packageForm.get('price')?.touched" class="error-message">
+                    <span *ngIf="packageForm.get('price')?.errors?.['required']">Cena jest wymagana</span>
+                    <span *ngIf="packageForm.get('price')?.errors?.['min']">Cena nie może być ujemna</span>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="displayOrder">Kolejność wyświetlania</label>
+                  <input 
+                    type="number" 
+                    id="displayOrder" 
+                    formControlName="displayOrder" 
+                    [class.is-invalid]="packageForm.get('displayOrder')?.invalid && packageForm.get('displayOrder')?.touched"
+                    min="0"
+                    step="1"
+                  >
+                  <div *ngIf="packageForm.get('displayOrder')?.invalid && packageForm.get('displayOrder')?.touched" class="error-message">
+                    <span *ngIf="packageForm.get('displayOrder')?.errors?.['min']">Kolejność nie może być ujemna</span>
+                  </div>
+                </div>
+                
+                <div class="form-group active-checkbox">
+                  <label for="active" class="checkbox-label">
+                    <input type="checkbox" id="active" formControlName="active">
+                    Pakiet aktywny
+                  </label>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="description">Opis pakietu</label>
+                <textarea 
+                  id="description" 
+                  formControlName="description" 
+                  [class.is-invalid]="packageForm.get('description')?.invalid && packageForm.get('description')?.touched"
+                  rows="4"
+                  placeholder="Opisz zakres usług oferowanych w pakiecie"
+                ></textarea>
+                <div *ngIf="packageForm.get('description')?.invalid && packageForm.get('description')?.touched" class="error-message">
+                  <span *ngIf="packageForm.get('description')?.errors?.['maxlength']">Opis nie może przekraczać 1000 znaków</span>
+                </div>
+              </div>
+              
+              <div class="form-group features-container">
+                <label>Funkcje i usługi pakietu*</label>
+                <p class="help-text">Każdy punkt to osobna usługa lub funkcja pakietu</p>
+                
+                <div formArrayName="features" class="features-list">
+                  <div *ngFor="let feature of featuresArray.controls; let i = index" class="feature-item">
+                    <input 
+                      [formControlName]="i" 
+                      type="text" 
+                      placeholder="np. Regulacja przerzutek"
+                      [class.is-invalid]="featuresArray.at(i).invalid && featuresArray.at(i).touched"
+                    >
+                    <button type="button" class="remove-feature-btn" (click)="removeFeature(i)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  <div *ngIf="featuresArray.controls.length === 0" class="no-features-message">
+                    Dodaj co najmniej jedną funkcję lub usługę
+                  </div>
+                  
+                  <button type="button" class="add-feature-btn" (click)="addFeature()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Dodaj pozycję
+                  </button>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" class="cancel-btn" (click)="cancelEdit()">Anuluj</button>
+                <button type="submit" class="save-btn" [disabled]="saving">
+                  {{ saving ? 'Zapisywanie...' : 'Zapisz pakiet' }}
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Placeholder gdy nie wybrano pakietu -->
+          <div *ngIf="!selectedPackage && !isAddingNew" class="no-selection-message">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+              <path d="M6 8h.01"></path>
+              <path d="M12 8h.01"></path>
+              <path d="M18 8h.01"></path>
+              <path d="M6 12h.01"></path>
+              <path d="M12 12h.01"></path>
+              <path d="M18 12h.01"></path>
+              <path d="M6 16h.01"></path>
+              <path d="M12 16h.01"></path>
+              <path d="M18 16h.01"></path>
+            </svg>
+            <h3>Wybierz pakiet serwisowy z listy</h3>
+            <p>lub</p>
+            <button class="primary-btn" (click)="startAddingNew()">Dodaj nowy pakiet</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>

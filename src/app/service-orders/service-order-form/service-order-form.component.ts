@@ -1,5 +1,5 @@
 // src/app/service-orders/service-order-form/service-order-form.component.ts
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // Angular Material imports
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -17,10 +17,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { BicycleService } from '../../bicycles/bicycle.service';
 import { Bicycle } from '../../bicycles/bicycle.model';
-import { 
-  CreateServiceOrderRequest, 
-  OrderStatus,
-} from '../service-order.model';
+import { CreateServiceOrderRequest } from '../service-order.model';
 import { ServiceOrderService } from '../service-orders.service';
 import { NotificationService } from '../../core/notification.service';
 import { ServicePackageService } from '../../service-package/service-package.service';
@@ -243,9 +240,7 @@ export class ServiceOrderFormComponent implements OnInit {
   }
   
   goToServiceOrders(): void {
-    // Here we should redirect to the service orders list
-    // This will need to be implemented in the future
-    this.router.navigate(['/bicycles']);
+    this.router.navigate(['/service-appointments']);
   }
   
   getBicyclePhotoUrl(bicycleId: number): string {

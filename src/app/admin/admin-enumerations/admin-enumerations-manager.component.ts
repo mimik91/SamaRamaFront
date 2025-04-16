@@ -32,7 +32,7 @@ export class AdminEnumerationsManagerComponent implements OnInit {
   readonly BRAND = 'BRAND';
   readonly BIKE_TYPE = 'BIKE_TYPE';
   readonly FRAME_MATERIAL = 'FRAME_MATERIAL';
-  readonly SERVICE_PACKAGE = 'SERVICE_PACKAGE';
+  readonly ORDER_STATUS = 'ORDER_STATUS';
 
   ngOnInit(): void {
     this.loadEnumerations();
@@ -152,7 +152,7 @@ export class AdminEnumerationsManagerComponent implements OnInit {
       case this.BRAND: return 'Marki rowerów';
       case this.BIKE_TYPE: return 'Typy rowerów';
       case this.FRAME_MATERIAL: return 'Materiały ram';
-      case this.SERVICE_PACKAGE: return 'Pakiety serwisowe';
+      case this.ORDER_STATUS: return 'Statusy zamówień';
       default: return type;
     }
   }

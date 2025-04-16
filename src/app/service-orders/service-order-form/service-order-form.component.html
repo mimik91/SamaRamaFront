@@ -60,8 +60,8 @@
       <div class="packages-container">
         <div class="package-card" 
              *ngFor="let package of availablePackages" 
-             [ngClass]="{'selected': selectedPackage === package.type}"
-             (click)="selectPackage(package.type)">
+             [ngClass]="{'selected': selectedPackageId === package.id}"
+             (click)="selectPackage(package.id)">
           <h4 class="package-title">{{ package.name }}</h4>
           <div class="package-price">{{ package.price }} zł</div>
           <div class="package-description">{{ package.description }}</div>
@@ -73,8 +73,8 @@
           </div>
           
           <div class="package-select">
-            <button class="select-btn" [ngClass]="{'selected': selectedPackage === package.type}">
-              {{ selectedPackage === package.type ? 'Wybrano' : 'Wybierz' }}
+            <button class="select-btn" [ngClass]="{'selected': selectedPackageId === package.id}">
+              {{ selectedPackageId === package.id ? 'Wybrano' : 'Wybierz' }}
             </button>
           </div>
         </div>
@@ -82,7 +82,7 @@
       
       <div class="step-actions">
         <button class="cancel-btn" (click)="cancel()">Anuluj</button>
-        <button class="next-btn" [disabled]="!selectedPackage" (click)="nextStep()">Dalej</button>
+        <button class="next-btn" [disabled]="!selectedPackageId" (click)="nextStep()">Dalej</button>
       </div>
     </div>
     
@@ -183,11 +183,11 @@
           <h4>Pakiet serwisowy</h4>
           <div class="summary-item">
             <span class="summary-label">Pakiet:</span>
-            <span class="summary-value">{{ getSelectedPackageInfo().name }}</span>
+            <span class="summary-value">{{ getSelectedPackageInfo()?.name }}</span>
           </div>
           <div class="summary-item">
             <span class="summary-label">Cena:</span>
-            <span class="summary-value">{{ getSelectedPackageInfo().price }} zł</span>
+            <span class="summary-value">{{ getSelectedPackageInfo()?.price }} zł</span>
           </div>
         </div>
         
@@ -212,7 +212,7 @@
         
         <div class="summary-total">
           <span class="total-label">Łącznie do zapłaty:</span>
-          <span class="total-value">{{ getSelectedPackageInfo().price }} zł</span>
+          <span class="total-value">{{ getSelectedPackageInfo()?.price }} zł</span>
         </div>
         
         <div class="terms-container">

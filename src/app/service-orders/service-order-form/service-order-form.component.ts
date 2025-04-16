@@ -140,11 +140,11 @@ export class ServiceOrderFormComponent implements OnInit {
     this.loadingPackages = true;
     
     this.servicePackageService.getActivePackages().subscribe({
-      next: (packages) => {
+      next: (packages: ServicePackage[]) => {
         this.availablePackages = packages;
         this.loadingPackages = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Failed to load service packages:', error);
         this.notificationService.error('An error occurred while loading service packages');
         this.loadingPackages = false;

@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, catchError, map, of, shareReplay, switchMap } from 'rxjs';
-import { ServicePackage, OrderStatus, ServicePackageInfo } from '../service-orders/service-order.model';
+import { OrderStatus, ServicePackageInfo } from '../service-orders/service-order.model';
+import { ServicePackage } from '../service-package/service-package.model';
 
 @Injectable({
   providedIn: 'root'
@@ -190,9 +191,6 @@ export class EnumerationService {
     return this.servicePackagesCache$;
   }
   
-  /**
-   * Czyści cache, wymuszając ponowne pobranie danych
-   */
   clearCache(): void {
     this.enumerationsCache$ = null;
     this.typeCache = {};

@@ -1,3 +1,4 @@
+// Aktualizacja AccountComponent aby obsługiwał różne typy użytkowników
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -25,6 +26,7 @@ export class AccountComponent implements OnInit {
   loading = true;
   submitting = false;
   changingPassword = false;
+  userType: 'CLIENT' | 'SERVICE' | 'ADMIN' | 'MODERATOR' = 'CLIENT';
 
   constructor() {
     this.userForm = this.fb.group({
@@ -42,6 +44,12 @@ export class AccountComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Określ typ użytkownika
+    const userRole = this.authService.getUserRole();
+    if (userRole) {
+      this.userType = userRole as any;
+    }
+    
     this.loadUserData();
   }
 
@@ -54,22 +62,50 @@ export class AccountComponent implements OnInit {
 
   loadUserData(): void {
     this.loading = true;
-    this.accountService.getUserProfile().subscribe({
-      next: (user) => {
-        this.userForm.patchValue({
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          phoneNumber: user.phoneNumber || ''
-        });
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading user data:', error);
-        this.notificationService.error('Nie udało się załadować danych użytkownika');
-        this.loading = false;
-      }
-    });
+    
+    if (this.userType === 'SERVICE') {
+      // Załaduj dane serwisu
+      this.accountService.getServiceProfile().subscribe({
+        next: (service) => {
+          // Dostosuj formularz do serwisu
+          this.userForm = this.fb.group({
+            name: [service.name, Validators.required],
+            email: [{ value: service.email, disabled: true }],
+            phoneNumber: [service.phoneNumber || '', [Validators.pattern('^[0-9]{9}$')]],
+            businessPhone: [service.businessPhone || ''],
+            street: [service.street || ''],
+            building: [service.building || ''],
+            city: [service.city || ''],
+            postalCode: [service.postalCode || '']
+          });
+          
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading service data:', error);
+          this.notificationService.error('Nie udało się załadować danych serwisu');
+          this.loading = false;
+        }
+      });
+    } else {
+      // Załaduj dane klienta lub admina (wszystkie typy użytkowników poza serwisem)
+      this.accountService.getUserProfile().subscribe({
+        next: (user) => {
+          this.userForm.patchValue({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phoneNumber: user.phoneNumber || ''
+          });
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading user data:', error);
+          this.notificationService.error('Nie udało się załadować danych użytkownika');
+          this.loading = false;
+        }
+      });
+    }
   }
 
   onSubmitUserData(): void {
@@ -78,23 +114,42 @@ export class AccountComponent implements OnInit {
     }
 
     this.submitting = true;
-    const userData = {
-      firstName: this.userForm.get('firstName')?.value,
-      lastName: this.userForm.get('lastName')?.value,
-      phoneNumber: this.userForm.get('phoneNumber')?.value || null
-    };
+    
+    if (this.userType === 'SERVICE') {
+      // Aktualizacja danych serwisu
+      const serviceData = this.userForm.getRawValue();
+      
+      this.accountService.updateServiceProfile(serviceData).subscribe({
+        next: () => {
+          this.notificationService.success('Dane serwisu zostały zaktualizowane pomyślnie');
+          this.submitting = false;
+        },
+        error: (error) => {
+          console.error('Error updating service data:', error);
+          this.notificationService.error('Nie udało się zaktualizować danych serwisu');
+          this.submitting = false;
+        }
+      });
+    } else {
+      // Aktualizacja danych klienta lub admina
+      const userData = {
+        firstName: this.userForm.get('firstName')?.value,
+        lastName: this.userForm.get('lastName')?.value,
+        phoneNumber: this.userForm.get('phoneNumber')?.value || null
+      };
 
-    this.accountService.updateUserProfile(userData).subscribe({
-      next: () => {
-        this.notificationService.success('Dane zostały zaktualizowane pomyślnie');
-        this.submitting = false;
-      },
-      error: (error) => {
-        console.error('Error updating user data:', error);
-        this.notificationService.error('Nie udało się zaktualizować danych użytkownika');
-        this.submitting = false;
-      }
-    });
+      this.accountService.updateUserProfile(userData).subscribe({
+        next: () => {
+          this.notificationService.success('Dane zostały zaktualizowane pomyślnie');
+          this.submitting = false;
+        },
+        error: (error) => {
+          console.error('Error updating user data:', error);
+          this.notificationService.error('Nie udało się zaktualizować danych użytkownika');
+          this.submitting = false;
+        }
+      });
+    }
   }
 
   onSubmitPasswordChange(): void {

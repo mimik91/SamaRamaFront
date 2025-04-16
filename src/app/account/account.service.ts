@@ -1,3 +1,4 @@
+// Zaktualizuj account.service.ts, aby obsługiwał różne typy użytkowników
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
@@ -11,10 +12,37 @@ export interface UserProfile {
   phoneNumber?: string;
 }
 
+export interface ServiceProfile {
+  id: number;
+  email: string;
+  name: string;
+  phoneNumber?: string;
+  businessPhone?: string;
+  street?: string;
+  building?: string;
+  flat?: string;
+  city?: string;
+  postalCode?: string;
+  description?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
 export interface UserUpdateData {
   firstName: string;
   lastName: string;
   phoneNumber?: string | null;
+}
+
+export interface ServiceUpdateData {
+  name: string;
+  phoneNumber?: string;
+  businessPhone?: string;
+  street?: string;
+  building?: string;
+  city?: string;
+  postalCode?: string;
+  description?: string;
 }
 
 export interface PasswordChangeData {
@@ -59,13 +87,13 @@ export class AccountService {
     );
   }
 
-  // For service users
-  getServiceProfile(): Observable<any> {
+  // Dla użytkowników serwisu
+  getServiceProfile(): Observable<ServiceProfile> {
     if (!this.authService.isService()) {
       return throwError(() => new Error('User is not a service provider'));
     }
     
-    return this.http.get(`${this.apiUrl}/service-profile`).pipe(
+    return this.http.get<ServiceProfile>(`${this.apiUrl}/service-profile`).pipe(
       catchError(error => {
         console.error('Error fetching service profile:', error);
         return throwError(() => error);
@@ -73,7 +101,7 @@ export class AccountService {
     );
   }
 
-  updateServiceProfile(serviceData: any): Observable<any> {
+  updateServiceProfile(serviceData: ServiceUpdateData): Observable<any> {
     if (!this.authService.isService()) {
       return throwError(() => new Error('User is not a service provider'));
     }

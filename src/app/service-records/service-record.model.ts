@@ -1,4 +1,3 @@
-import { BikeService } from '../service-panel/bike-service.model';
 import { Bicycle } from '../bicycles/bicycle.model';
 
 export interface ServiceRecord {
@@ -8,5 +7,4 @@ export interface ServiceRecord {
   description: string;
   serviceDate: string;
   price?: number;
-  service?: BikeService;
 }

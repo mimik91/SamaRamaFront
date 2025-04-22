@@ -90,9 +90,6 @@
                 <span *ngIf="record.price" class="service-price">
                   Koszt: {{ record.price | currency:'PLN':'symbol':'1.2-2' }}
                 </span>
-                <span class="service-name">
-                  Wykonane przez: {{ record.service?.name || 'Nieznany serwis' }}
-                </span>
               </div>
             </div>
           </div>
@@ -214,9 +211,6 @@
               <div class="service-footer">
                 <span *ngIf="record.price" class="service-price">
                   Koszt: {{ record.price | currency:'PLN':'symbol':'1.2-2' }}
-                </span>
-                <span class="service-name">
-                  Wykonane przez: {{ record.service?.name || 'Nieznany serwis' }}
                 </span>
               </div>
             </div>

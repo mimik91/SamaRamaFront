@@ -72,18 +72,12 @@ export class NavigationComponent implements OnInit {
   isAuthPage(): boolean {
     return this.currentUrl.includes('/login') || 
            this.currentUrl.includes('/register') ||
-           this.currentUrl.includes('/login-serviceman') ||
            this.currentUrl.includes('/register-serviceman');
   }
 
   // Sprawdza, czy jesteśmy na stronie logowania klienta
   isLoginPage(): boolean {
     return this.currentUrl === '/login';
-  }
-
-  // Sprawdza, czy jesteśmy na stronie logowania serwisu
-  isServiceLoginPage(): boolean {
-    return this.currentUrl === '/login-serviceman';
   }
 
   // Sprawdza, czy jesteśmy na stronie rejestracji klienta

@@ -1,5 +1,4 @@
 import { Bicycle } from '../bicycles/bicycle.model';
-import { BikeService } from '../service-panel/bike-service.model';
 import { User } from '../core/models/user.models';
 import { ServicePackage } from '../service-package/service-package.model';
 
@@ -9,7 +8,6 @@ export interface ServiceOrder {
   id: number;
   bicycle: Bicycle | null;
   client?: User;
-  service?: BikeService;
   
   // Nowe pole referencyjne do ServicePackage
   servicePackage?: ServicePackage;

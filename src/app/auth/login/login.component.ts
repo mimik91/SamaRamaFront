@@ -54,18 +54,17 @@ export class LoginComponent {
           setTimeout(() => {
             console.log('User role:', this.authService.getUserRole());
             
-            // Get the redirect URL from the response or use a default based on role
-            let redirectUrl = '/welcome';
-            
-            // Determine redirect URL based on user role
+            // Poprawiona logika przekierowywania
             if (this.authService.isAdmin() || this.authService.isModerator()) {
-              redirectUrl = '/admin-dashboard';
+              this.router.navigate(['/admin-dashboard']);
             } else if (this.authService.isClient()) {
-              redirectUrl = '/welcome';
+              this.router.navigate(['/bicycles']);
+            } else if (this.authService.isService()) {
+              this.router.navigate(['/service-panel']);
+            } else {
+              // Domyślne przekierowanie jeśli nie rozpoznano roli
+              this.router.navigate(['/bicycles']);
             }
-            
-            console.log(`Navigating to ${redirectUrl}`);
-            this.router.navigate([redirectUrl]);
           }, 1000);
         },
         error: (error) => {

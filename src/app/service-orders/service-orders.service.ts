@@ -5,7 +5,6 @@ import { Observable, catchError, throwError } from 'rxjs';
 import { CreateServiceOrderRequest, OrderStatus, ServiceOrder } from './service-order.model';
 import { ServicePackage } from '../service-package/service-package.model';
                                
-
 @Injectable({
   providedIn: 'root'
 })

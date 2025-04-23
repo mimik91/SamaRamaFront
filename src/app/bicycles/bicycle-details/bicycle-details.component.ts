@@ -9,6 +9,7 @@ import { NotificationService } from '../../core/notification.service';
 import { ServiceRecord } from '../../service-records/service-record.model';
 import { ServiceRecordService } from '../../service-records/service-record.service';
 import { EnumerationService } from '../../core/enumeration.service';
+import { BicycleSelectionService } from '../bicycle-selection.service';
 
 @Component({
   selector: 'app-bicycle-details',
@@ -29,6 +30,7 @@ export class BicycleDetailsComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private http = inject(HttpClient);
   private enumerationService = inject(EnumerationService);
+  private bicycleSelectionService = inject(BicycleSelectionService);
 
   bicycle: Bicycle | null = null;
   bicycleForm: FormGroup;
@@ -371,7 +373,9 @@ export class BicycleDetailsComponent implements OnInit {
 
   orderService(): void {
     if (this.bicycle) {
-      this.router.navigate(['/bicycles', this.bicycle.id, 'order-service']);
+      // Zamiast przekierowania do trasy z id, użyj serwisu do przetrzymania zaznaczenia
+      this.bicycleSelectionService.selectBicycles([this.bicycle]);
+      this.router.navigate(['/order-service']);
     }
   }
   

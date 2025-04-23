@@ -238,4 +238,99 @@ h1 {
   .bicycle-actions {
     display: none !important;
   }
+
+  
+  .action-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .multi-select-btn {
+    padding: 8px 16px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .multi-select-btn:hover {
+    background-color: #5a6268;
+  }
+
+  .service-multi-btn {
+    padding: 8px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .service-multi-btn:hover:not(:disabled) {
+    background-color: #218838;
+  }
+
+  .service-multi-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  .cancel-multi-btn {
+    padding: 8px 16px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .cancel-multi-btn:hover {
+    background-color: #c82333;
+  }
+
+  /* Selection checkbox styling */
+  .selection-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    margin-left: 5px;
+  }
+
+  .selection-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  /* Selected bicycle card styling */
+  .bicycle-card.selected {
+    border: 2px solid #007bff;
+    box-shadow: 0 0 0 1px #007bff, 0 4px 8px rgba(0, 123, 255, 0.25);
+    background-color: rgba(0, 123, 255, 0.05);
+  }
+
+  /* Adjust the bicycle content when in multi-select mode */
+  .bicycle-card {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .action-bar {
+      flex-direction: column;
+    }
+    
+    .add-btn, .multi-select-btn, .service-multi-btn, .cancel-multi-btn {
+      width: 100%;
+    }
+  }
 }

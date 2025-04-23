@@ -1,4 +1,3 @@
-// src/app/service-orders/service-order-form/service-order-form.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // Angular Material imports
@@ -14,7 +13,7 @@ import {
   ValidationErrors,
   Validators 
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BicycleService } from '../../bicycles/bicycle.service';
 import { Bicycle } from '../../bicycles/bicycle.model';
 import { CreateServiceOrderRequest } from '../service-order.model';
@@ -22,6 +21,7 @@ import { ServiceOrderService } from '../service-orders.service';
 import { NotificationService } from '../../core/notification.service';
 import { ServicePackageService } from '../../service-package/service-package.service';
 import { ServicePackage } from '../../service-package/service-package.model';
+import { BicycleSelectionService } from '../../bicycles/bicycle-selection.service';
 
 // Import our custom date filter and formats
 import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
@@ -64,15 +64,17 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   private fb = inject(FormBuilder);
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private bicycleService = inject(BicycleService);
   private serviceOrderService = inject(ServiceOrderService);
   private notificationService = inject(NotificationService);
   private servicePackageService = inject(ServicePackageService);
+  private bicycleSelectionService = inject(BicycleSelectionService);
   
   // Bicycle data
-  bicycleId!: number;
+  selectedBicycles: Bicycle[] = [];
+  currentBicycleIndex = 0;
   bicycle: Bicycle | null = null;
   
   // Form controls
@@ -102,58 +104,8 @@ export class ServiceOrderFormComponent implements OnInit {
   availablePackages: ServicePackage[] = [];
   loadingPackages = false;
   
-  ngOnInit(): void {
-    // Get bicycle ID from URL parameters
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.bicycleId = +id;
-        this.loadBicycle(this.bicycleId);
-      } else {
-        this.loading = false;
-      }
-    });
-    
-    // Load service packages
-    this.loadServicePackages();
-  }
-  
-  private loadBicycle(id: number): void {
-    this.bicycleService.getBicycle(id).subscribe({
-      next: (bicycle) => {
-        this.bicycle = bicycle;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading bicycle:', error);
-        this.notificationService.error('Failed to load bicycle data');
-        this.bicycle = null;
-        this.loading = false;
-      }
-    });
-  }
-  
-  private loadServicePackages(): void {
-    this.loadingPackages = true;
-    
-    this.servicePackageService.getActivePackages().subscribe({
-      next: (packages: ServicePackage[]) => {
-        this.availablePackages = packages;
-        this.loadingPackages = false;
-      },
-      error: (error: any) => {
-        console.error('Failed to load service packages:', error);
-        this.notificationService.error('An error occurred while loading service packages');
-        this.loadingPackages = false;
-        
-        // Fallback to empty array
-        this.availablePackages = [];
-      }
-    });
-  }
-  
   // Validator checking if the selected date is from Sunday to Thursday
-  private dateValidator(control: FormControl): ValidationErrors | null {
+  dateValidator(control: FormControl): ValidationErrors | null {
     if (!control.value) {
       return { required: true };
     }
@@ -185,6 +137,69 @@ export class ServiceOrderFormComponent implements OnInit {
     }
     
     return null;
+  }
+  
+  ngOnInit(): void {
+    // Get selected bicycles from the service
+    this.selectedBicycles = this.bicycleSelectionService.getSelectedBicycles();
+    
+    // Check route parameter for backward compatibility
+    const bicycleId = this.route.snapshot.paramMap.get('id');
+    
+    // If we have a bicycle ID in the route and no bicycles in the selection service
+    if (bicycleId && this.selectedBicycles.length === 0) {
+      // Load single bicycle by ID
+      this.loadBicycle(+bicycleId);
+    } else if (this.selectedBicycles.length === 0) {
+      // If no bicycles are selected, redirect to bicycle list
+      this.notificationService.warning('Wybierz rower dla którego chcesz zamówić serwis.');
+      this.router.navigate(['/bicycles']);
+      return;
+    } else {
+      // Use bicycles from selection service
+      this.bicycle = this.selectedBicycles[this.currentBicycleIndex];
+      this.loading = false;
+    }
+    
+    // Load service packages
+    this.loadServicePackages();
+  }
+  
+  private loadBicycle(id: number): void {
+    this.loading = true;
+    this.bicycleService.getBicycle(id).subscribe({
+      next: (bicycle) => {
+        // Add this bicycle to the selection service
+        this.bicycleSelectionService.addBicycle(bicycle);
+        this.selectedBicycles = [bicycle];
+        this.bicycle = bicycle;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading bicycle:', error);
+        this.notificationService.error('Nie udało się załadować danych roweru');
+        this.router.navigate(['/bicycles']);
+      }
+    });
+  }
+  
+  private loadServicePackages(): void {
+    this.loadingPackages = true;
+    
+    this.servicePackageService.getActivePackages().subscribe({
+      next: (packages: ServicePackage[]) => {
+        this.availablePackages = packages;
+        this.loadingPackages = false;
+      },
+      error: (error: any) => {
+        console.error('Failed to load service packages:', error);
+        this.notificationService.error('An error occurred while loading service packages');
+        this.loadingPackages = false;
+        
+        // Fallback to empty array
+        this.availablePackages = [];
+      }
+    });
   }
   
   isFieldInvalid(fieldName: string): boolean {
@@ -227,6 +242,22 @@ export class ServiceOrderFormComponent implements OnInit {
     }
   }
   
+  // Switch to the next bicycle in the list
+  nextBicycle(): void {
+    if (this.currentBicycleIndex < this.selectedBicycles.length - 1) {
+      this.currentBicycleIndex++;
+      this.bicycle = this.selectedBicycles[this.currentBicycleIndex];
+    }
+  }
+  
+  // Switch to the previous bicycle in the list
+  prevBicycle(): void {
+    if (this.currentBicycleIndex > 0) {
+      this.currentBicycleIndex--;
+      this.bicycle = this.selectedBicycles[this.currentBicycleIndex];
+    }
+  }
+  
   cancel(): void {
     this.goBack();
   }
@@ -255,33 +286,45 @@ export class ServiceOrderFormComponent implements OnInit {
   
   submitOrder(): void {
     if (!this.bicycle || !this.selectedPackageId || !this.pickupDateControl.valid || !this.addressForm.valid || !this.termsAcceptedControl.value) {
-      this.notificationService.error('Please ensure all fields are filled correctly');
+      this.notificationService.error('Proszę wypełnić wszystkie wymagane pola');
       return;
     }
     
     this.isSubmitting = true;
     
-    // Create order object
+    // Tworzenie listy ID rowerów
+    // Możemy użyć albo wszystkich wybranych rowerów, albo tylko aktualnie wyświetlanego
+    const bicycleIds = this.selectedBicycles.map(bike => bike.id);
+    
+    // Alternatywnie, jeśli chcemy tylko aktualnie wyświetlany rower:
+    // const bicycleIds = [this.bicycle.id];
+    
+    // Utwórz obiekt zamówienia z listą ID rowerów
     const serviceOrder: CreateServiceOrderRequest = {
-      bicycleId: this.bicycle.id,
+      bicycleIds: bicycleIds,  // Lista ID zamiast pojedynczego ID
       servicePackageId: this.selectedPackageId,
       pickupDate: this.pickupDateControl.value,
       pickupAddress: `${this.addressForm.get('street')?.value}, ${this.addressForm.get('city')?.value}`,
       additionalNotes: this.addressForm.get('additionalNotes')?.value || undefined
     };
     
-    // Send order to API
+    console.log('Sending service order with bicycle IDs:', serviceOrder);
+    
+    // Wysyłanie żądania
     this.serviceOrderService.createServiceOrder(serviceOrder).subscribe({
       next: (response: {orderId: string}) => {
         this.isSubmitting = false;
         this.orderId = response.orderId;
         this.currentStep = 4; // Go to confirmation
-        this.notificationService.success('Order was placed successfully!');
+        this.notificationService.success('Zamówienie zostało złożone pomyślnie!');
+        
+        // Clear the selection after successful order
+        this.bicycleSelectionService.clearSelection();
       },
       error: (error: any) => {
         this.isSubmitting = false;
         console.error('Error creating service order:', error);
-        this.notificationService.error('An error occurred while placing the order. Please try again.');
+        this.notificationService.error('Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie.');
       }
     });
   }

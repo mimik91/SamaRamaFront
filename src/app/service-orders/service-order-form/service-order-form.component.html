@@ -6,6 +6,14 @@
   </div>
   
   <div *ngIf="!loading && bicycle">
+    <div class="bicycle-selection-nav" *ngIf="selectedBicycles.length > 1">
+      <button class="nav-btn prev-btn" [disabled]="currentBicycleIndex === 0" (click)="prevBicycle()">Poprzedni</button>
+      <div class="bicycle-counter">
+        Rower {{ currentBicycleIndex + 1 }} z {{ selectedBicycles.length }}
+      </div>
+      <button class="nav-btn next-btn" [disabled]="currentBicycleIndex === selectedBicycles.length - 1" (click)="nextBicycle()">Następny</button>
+    </div>
+    
     <div class="bicycle-info">
       <div class="bicycle-image">
         <ng-container *ngIf="bicycle.hasPhoto; else noImageTemplate">
@@ -169,9 +177,9 @@
       <div class="summary-container">
         <div class="summary-section">
           <h4>Rower</h4>
-          <div class="summary-item">
-            <span class="summary-label">Marka i model:</span>
-            <span class="summary-value">{{ bicycle.brand }} {{ bicycle.model || '' }}</span>
+          <div *ngFor="let bike of selectedBicycles" class="summary-item">
+            <span class="summary-label">Rower:</span>
+            <span class="summary-value">{{ bike.brand }} {{ bike.model || '' }}</span>
           </div>
           <div *ngIf="bicycle.frameNumber" class="summary-item">
             <span class="summary-label">Numer ramy:</span>
@@ -276,8 +284,8 @@
   </div>
   
   <div *ngIf="!loading && !bicycle" class="error-container">
-    <h3>Nie znaleziono roweru</h3>
-    <p>Nie znaleziono roweru o podanym identyfikatorze lub nie masz uprawnień do zamawiania serwisu dla tego roweru.</p>
+    <h3>Nie wybrano roweru</h3>
+    <p>Najpierw wybierz rower z listy, dla którego chcesz zamówić serwis.</p>
     <button class="primary-btn" (click)="goBack()">Wróć do listy rowerów</button>
   </div>
 </div>

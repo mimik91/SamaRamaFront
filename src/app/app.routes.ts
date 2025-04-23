@@ -23,7 +23,13 @@ export const routes: Routes = [
     {path: 'bicycles', component: BicyclesListComponent, canActivate: [clientGuard]},
     {path: 'bicycles/add', component: BicycleFormComponent, canActivate: [clientGuard]},
     {path: 'bicycles/:id', component: BicycleDetailsComponent, canActivate: [clientGuard]},
+    
+    // New route for service order without bicycle ID in URL
+    {path: 'order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard]},
+    
+    // Keep the old route for backward compatibility
     {path: 'bicycles/:id/order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard]},
+    
     {path: 'service-appointments', component: ServiceAppointmentsComponent, canActivate: [clientGuard]},
     
     // Admin routes

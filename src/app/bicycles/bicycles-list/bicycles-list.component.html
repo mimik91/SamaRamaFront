@@ -3,6 +3,17 @@
   
   <div class="action-bar">
     <button class="add-btn" (click)="goToAddBicycle()">Dodaj rower</button>
+    <button *ngIf="!isMultiSelectMode" class="multi-select-btn" (click)="toggleMultiSelectMode()">
+      Wybierz wiele rowerów
+    </button>
+    <ng-container *ngIf="isMultiSelectMode">
+      <button class="service-multi-btn" [disabled]="selectedBicycles.size === 0" (click)="orderServiceForSelected()">
+        Zamów serwis ({{ selectedBicycles.size }})
+      </button>
+      <button class="cancel-multi-btn" (click)="toggleMultiSelectMode()">
+        Anuluj
+      </button>
+    </ng-container>
   </div>
   
   <div *ngIf="loading" class="loading-message">
@@ -16,8 +27,16 @@
   <ng-container *ngIf="!loading && !error">
     <ng-container *ngIf="bicycles.length > 0; else noBicycles">
       <div class="bicycles-list">
-        <div *ngFor="let bicycle of bicycles" class="bicycle-card">
-          <div class="bicycle-content" (click)="viewBicycleDetails(bicycle.id)">
+        <div *ngFor="let bicycle of bicycles" class="bicycle-card" 
+             [class.selected]="isBicycleSelected(bicycle.id)"
+             (click)="viewBicycleDetails(bicycle.id)">
+          
+          <!-- Checkbox for multi-select mode -->
+          <div *ngIf="isMultiSelectMode" class="selection-checkbox" (click)="toggleBicycleSelection(bicycle.id, $event)">
+            <input type="checkbox" [checked]="isBicycleSelected(bicycle.id)">
+          </div>
+          
+          <div class="bicycle-content">
             <div class="bicycle-image" [ngClass]="{'has-photo': bicycle.hasPhoto, 'no-image': !bicycle.hasPhoto}">
               <ng-container *ngIf="bicycle.hasPhoto; else noImageTemplate">
                 <img 
@@ -39,7 +58,7 @@
               <p *ngIf="bicycle.frameMaterial">Materiał ramy: {{ bicycle.frameMaterial }}</p>
             </div>
           </div>
-          <div class="bicycle-actions">
+          <div class="bicycle-actions" *ngIf="!isMultiSelectMode">
             <button class="view-btn" (click)="viewBicycleDetails(bicycle.id); $event.stopPropagation()">Szczegóły</button>
             <button class="delete-btn" (click)="deleteBicycle(bicycle.id); $event.stopPropagation()">Usuń</button>
           </div>

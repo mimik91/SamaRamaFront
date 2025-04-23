@@ -27,9 +27,8 @@ export interface ServiceOrder {
 }
 
 export interface CreateServiceOrderRequest {
-  bicycleId: number;
+  bicycleIds: number[];
   
-  // Nowe pola - można użyć albo id albo code
   servicePackageId?: number;
   servicePackageCode?: string;
   

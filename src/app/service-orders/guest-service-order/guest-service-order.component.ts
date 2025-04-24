@@ -14,6 +14,7 @@ import { BikeFormService, BikeFormData } from '../../home/bike-form.service';
 import { ServicePackage } from '../../service-package/service-package.model';
 import { ServicePackageService } from '../../service-package/service-package.service';
 import { EnumerationService } from '../../core/enumeration.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-guest-service-order',
@@ -29,6 +30,7 @@ export class GuestServiceOrderComponent implements OnInit {
   private bikeFormService = inject(BikeFormService);
   private servicePackageService = inject(ServicePackageService);
   private enumerationService = inject(EnumerationService);
+  private http = inject(HttpClient);
 
   // Dane z formularza
   bikesData: BikeFormData[] = [];
@@ -51,6 +53,7 @@ export class GuestServiceOrderComponent implements OnInit {
     phone: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
     address: ['', Validators.required],
     city: ['', Validators.required],
+    pickupDate: ['', Validators.required], // Dodane pole daty
     notes: ['']
   });
 
@@ -81,6 +84,18 @@ export class GuestServiceOrderComponent implements OnInit {
     
     // Załaduj miasta
     this.loadCities();
+  }
+
+  getMinDate(): string {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  }
+  
+  getMaxDate(): string {
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    return maxDate.toISOString().split('T')[0];
   }
   
   private loadServicePackages(): void {
@@ -172,18 +187,47 @@ export class GuestServiceOrderComponent implements OnInit {
     
     this.isSubmitting = true;
     
-    // Normanie tutaj byłoby wysłanie danych do API
-    // Ale ponieważ użytkownik nie jest zalogowany, możemy tylko przekierować do rejestracji
-    
-    // Symulacja opóźnienia API
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.isSuccess = true;
-      this.currentStep = 4; // Krok podsumowania
+    // Przygotuj dane do wysłania
+    const orderData = {
+      // Dane użytkownika
+      email: this.contactForm.get('email')?.value,
+      phone: this.contactForm.get('phone')?.value,
       
-      // Opcjonalnie możemy wyczyścić dane w serwisie po pomyślnym zamówieniu
-      // this.bikeFormService.clearData();
-    }, 1500);
+      // Dane adresowe
+      address: this.contactForm.get('address')?.value,
+      city: this.contactForm.get('city')?.value,
+      notes: this.contactForm.get('notes')?.value || '',
+      
+      // Dane rowerów
+      bicycles: this.bikesData.map(bike => ({
+        brand: bike.brand,
+        model: bike.model || '',
+        additionalInfo: bike.additionalInfo || ''
+      })),
+      
+      // Dane zamówienia
+      servicePackageId: this.selectedPackageId,
+      pickupDate: this.contactForm.get('pickupDate')?.value,
+    };
+    
+    // Wyślij dane do API
+    this.http.post('http://localhost:8080/api/guest-orders', orderData)
+      .subscribe({
+        next: (response: any) => {
+          this.isSubmitting = false;
+          this.isSuccess = true;
+          this.currentStep = 4; // Krok potwierdzenia
+          this.notificationService.success('Zamówienie zostało złożone pomyślnie!');
+          
+          // Wyczyść dane formularza
+          this.bikeFormService.clearData();
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+          console.error('Error submitting order:', error);
+          this.notificationService.error('Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie.');
+        }
+      });
   }
   
   // Nawigacja do rejestracji

@@ -7,6 +7,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = authService.getToken();
 
   console.log(`Intercepting request to ${req.url}`);
+
+  const publicEndpoints = [
+    '/api/service-packages/active',
+    '/api/enumerations/BRAND'
+  ];
+  
+  // Sprawdź, czy obecne żądanie jest do publicznego endpointu
+  const isPublicEndpoint = publicEndpoints.some(endpoint => req.url.includes(endpoint));
+  
+  // Jeśli to publiczny endpoint, nie dodawaj tokenu
+  if (isPublicEndpoint) {
+    console.log('Public endpoint, proceeding without authentication');
+    return next(req);
+  }
   
   // Zawsze dołączaj token do żądań POST/PUT/DELETE
   const isPostPutDelete = ['POST', 'PUT', 'DELETE'].includes(req.method);

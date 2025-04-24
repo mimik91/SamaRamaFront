@@ -57,11 +57,15 @@ export class GuestServiceOrderComponent implements OnInit {
   isSuccess = false;
   
   ngOnInit(): void {
+    console.log("GuestServiceOrderComponent initialized");
+    
     // Pobierz dane rowerów z serwisu
     this.bikesData = this.bikeFormService.getBikesDataValue();
+    console.log("Bikes data from service:", this.bikesData);
     
-    // Jeżeli nie ma danych o rowerach, przekieruj na stronę główną
-    if (this.bikesData.length === 0) {
+    // Jeżeli nie ma danych o rowerach, przekieruj na stronę główną, ale dodaj więcej informacji o tym co się dzieje
+    if (!this.bikesData || this.bikesData.length === 0) {
+      console.log("No bikes data found in service!");
       this.notificationService.warning('Nie wprowadzono danych o rowerach.');
       this.router.navigate(['/']);
       return;
@@ -73,17 +77,19 @@ export class GuestServiceOrderComponent implements OnInit {
   
   private loadServicePackages(): void {
     this.loadingPackages = true;
+    console.log("Starting to load service packages...");
     
     this.servicePackageService.getActivePackages().subscribe({
       next: (packages: ServicePackage[]) => {
-        this.availablePackages = packages;
+        console.log("Received service packages:", packages);
+        this.availablePackages = packages || []; // Upewnij się, że zawsze masz tablicę
         this.loadingPackages = false;
       },
       error: (error) => {
-        console.error('Nie udało się załadować pakietów serwisowych:', error);
+        console.error('Failed to load service packages:', error);
         this.notificationService.error('Nie udało się załadować pakietów serwisowych.');
         this.loadingPackages = false;
-        this.availablePackages = [];
+        this.availablePackages = []; // Ustaw pustą tablicę, aby uniknąć problemów z renderowaniem
       }
     });
   }

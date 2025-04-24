@@ -8,46 +8,44 @@ export interface BikeFormData {
 }
 
 @Injectable({
-  providedIn: 'root'
-})
-export class BikeFormService {
-  private bikesDataSubject = new BehaviorSubject<BikeFormData[]>([]);
+    providedIn: 'root'
+  })
+  export class BikeFormService {
+    private bikesDataSubject = new BehaviorSubject<BikeFormData[]>([]);
+    
+    constructor() {
+      // Sprawdź, czy jesteśmy w środowisku przeglądarki
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const savedData = localStorage.getItem('bikesData');
+        if (savedData) {
+          try {
+            const parsedData = JSON.parse(savedData);
+            this.bikesDataSubject.next(parsedData);
+          } catch (e) {
+            console.error('Error parsing saved bikes data:', e);
+          }
+        }
+      }
+    }
   
-  constructor() {}
-
-  // Pobierz aktualne dane formularza
-  getBikesData(): Observable<BikeFormData[]> {
-    return this.bikesDataSubject.asObservable();
-  }
-
-  // Pobierz aktualne dane formularza jako wartość
-  getBikesDataValue(): BikeFormData[] {
-    return this.bikesDataSubject.getValue();
-  }
-
-  // Ustaw nowe dane formularza
-  setBikesData(data: BikeFormData[]): void {
-    this.bikesDataSubject.next(data);
-  }
-
-  // Dodaj dane o jednym rowerze
-  addBike(bikeData: BikeFormData): void {
-    const currentData = this.bikesDataSubject.getValue();
-    this.bikesDataSubject.next([...currentData, bikeData]);
-  }
-
-  // Usuń dane o rowerze
-  removeBike(index: number): void {
-    const currentData = this.bikesDataSubject.getValue();
-    if (index >= 0 && index < currentData.length) {
-      const updatedData = [...currentData];
-      updatedData.splice(index, 1);
-      this.bikesDataSubject.next(updatedData);
+    getBikesDataValue(): BikeFormData[] {
+      return this.bikesDataSubject.getValue();
+    }
+  
+    setBikesData(data: BikeFormData[]): void {
+      this.bikesDataSubject.next(data);
+      
+      // Zapisuj do localStorage tylko w środowisku przeglądarki
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('bikesData', JSON.stringify(data));
+      }
+    }
+  
+    clearData(): void {
+      this.bikesDataSubject.next([]);
+      
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('bikesData');
+      }
     }
   }
-
-  // Wyczyść wszystkie dane
-  clearData(): void {
-    this.bikesDataSubject.next([]);
-  }
-}

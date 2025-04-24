@@ -6,6 +6,7 @@ import { BicyclesListComponent } from './bicycles/bicycles-list/bicycles-list.co
 import { BicycleFormComponent } from './bicycles/bicycle-form/bicycle-form.component';
 import { BicycleDetailsComponent } from './bicycles/bicycle-details/bicycle-details.component';
 import { ServiceOrderFormComponent } from './service-orders/service-order-form/service-order-form.component';
+import { GuestServiceOrderComponent } from './service-orders/guest-service-order/guest-service-order.component';
 import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminServiceOrdersComponent } from './admin/admin-orders/admin-service-orders.component';
@@ -16,8 +17,11 @@ import { ServiceAppointmentsComponent } from './service-orders/service-appointme
 import { HomeComponent } from './home/home.component';
 
 export const routes: Routes = [
-    // Home route (new)
+    // Home route
     {path: '', component: HomeComponent},
+    
+    // Guest order route - dostępna dla niezalogowanych
+    {path: 'guest-order', component: GuestServiceOrderComponent},
     
     // Auth routes
     {path: 'login', component: LoginComponent},

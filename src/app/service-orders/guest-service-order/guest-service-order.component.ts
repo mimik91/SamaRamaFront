@@ -47,7 +47,6 @@ export class GuestServiceOrderComponent implements OnInit {
   
   // Formularz danych kontaktowych
   contactForm: FormGroup = this.fb.group({
-    name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
     address: ['', Validators.required],
@@ -56,7 +55,7 @@ export class GuestServiceOrderComponent implements OnInit {
   });
 
   // Akceptacja regulaminu
-  termsAccepted = new FormControl(false, Validators.requiredTrue);
+  termsAccepted = new FormControl(false, [Validators.requiredTrue]);
   
   // Stany UI
   isSubmitting = false;

@@ -90,21 +90,7 @@
       <h2>Dane kontaktowe</h2>
       
       <form [formGroup]="contactForm">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="name">Imię i nazwisko *</label>
-            <input 
-              type="text" 
-              id="name" 
-              formControlName="name" 
-              [class.is-invalid]="isFieldInvalid('name')" 
-              placeholder="Jan Kowalski"
-            >
-            <div *ngIf="isFieldInvalid('name')" class="error-message">
-              Imię i nazwisko jest wymagane
-            </div>
-          </div>
-        </div>
+        <!-- Pole imię i nazwisko zostało usunięte -->
         
         <div class="form-row">
           <div class="form-group">
@@ -233,10 +219,7 @@
         <div class="summary-section">
           <h3>Dane kontaktowe</h3>
           <div class="summary-contact">
-            <div class="contact-row">
-              <span class="contact-label">Imię i nazwisko:</span>
-              <span class="contact-value">{{ contactForm.get('name')?.value }}</span>
-            </div>
+            <!-- Pole imię i nazwisko zostało usunięte z podsumowania -->
             <div class="contact-row">
               <span class="contact-label">Email:</span>
               <span class="contact-value">{{ contactForm.get('email')?.value }}</span>

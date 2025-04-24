@@ -1,0 +1,322 @@
+<div class="guest-order-container">
+    <h1>Zamówienie serwisu</h1>
+    
+    <div class="steps-container">
+      <div class="step" [ngClass]="{'active': currentStep === 1, 'completed': currentStep > 1}">
+        <div class="step-number">1</div>
+        <div class="step-label">Wybierz pakiet</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" [ngClass]="{'active': currentStep === 2, 'completed': currentStep > 2}">
+        <div class="step-number">2</div>
+        <div class="step-label">Dane kontaktowe</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" [ngClass]="{'active': currentStep === 3, 'completed': currentStep > 3}">
+        <div class="step-number">3</div>
+        <div class="step-label">Podsumowanie</div>
+      </div>
+    </div>
+    
+    <!-- Krok 1: Wybór pakietu serwisowego -->
+    <div *ngIf="currentStep === 1" class="step-content">
+      <h2>Wybierz pakiet serwisowy</h2>
+      
+      <div class="bikes-summary">
+        <h3>Twoje rowery ({{ bikesData.length }})</h3>
+        <div class="bikes-list">
+          <div *ngFor="let bike of bikesData; let i = index" class="bike-item">
+            <div class="bike-number">{{ i + 1 }}</div>
+            <div class="bike-details">
+              <div class="bike-title">{{ bike.brand }} {{ bike.model || '' }}</div>
+              <div *ngIf="bike.additionalInfo" class="bike-notes">{{ bike.additionalInfo }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="packages-container">
+        <div *ngIf="loadingPackages" class="loading-message">
+          Ładowanie pakietów serwisowych...
+        </div>
+        
+        <div *ngIf="!loadingPackages && availablePackages.length === 0" class="error-message">
+          Nie udało się załadować pakietów serwisowych. Odśwież stronę lub spróbuj później.
+        </div>
+        
+        <div *ngIf="!loadingPackages && availablePackages.length > 0" class="packages-grid">
+          <div 
+            *ngFor="let package of availablePackages" 
+            class="package-card" 
+            [ngClass]="{'selected': selectedPackageId === package.id}"
+            (click)="selectPackage(package.id)"
+          >
+            <h3 class="package-title">{{ package.name }}</h3>
+            <div class="package-price">{{ package.price }} zł</div>
+            <div class="package-description">{{ package.description }}</div>
+            <div class="package-features">
+              <ul>
+                <li *ngFor="let feature of package.features">{{ feature }}</li>
+              </ul>
+            </div>
+            <div class="package-select">
+              <button 
+                type="button" 
+                class="select-btn" 
+                [ngClass]="{'selected': selectedPackageId === package.id}"
+              >
+                {{ selectedPackageId === package.id ? 'Wybrano' : 'Wybierz' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="step-actions">
+        <button type="button" class="back-btn" (click)="goToHome()">Wróć</button>
+        <button 
+          type="button" 
+          class="next-btn" 
+          [disabled]="!selectedPackageId" 
+          (click)="nextStep()"
+        >
+          Dalej
+        </button>
+      </div>
+    </div>
+    
+    <!-- Krok 2: Dane kontaktowe -->
+    <div *ngIf="currentStep === 2" class="step-content">
+      <h2>Dane kontaktowe</h2>
+      
+      <form [formGroup]="contactForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Imię i nazwisko *</label>
+            <input 
+              type="text" 
+              id="name" 
+              formControlName="name" 
+              [class.is-invalid]="isFieldInvalid('name')" 
+              placeholder="Jan Kowalski"
+            >
+            <div *ngIf="isFieldInvalid('name')" class="error-message">
+              Imię i nazwisko jest wymagane
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email" 
+              [class.is-invalid]="isFieldInvalid('email')" 
+              placeholder="jan.kowalski@example.com"
+            >
+            <div *ngIf="isFieldInvalid('email')" class="error-message">
+              Wprowadź poprawny adres email
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">Telefon *</label>
+            <input 
+              type="tel" 
+              id="phone" 
+              formControlName="phone" 
+              [class.is-invalid]="isFieldInvalid('phone')" 
+              placeholder="123456789"
+            >
+            <div *ngIf="isFieldInvalid('phone')" class="error-message">
+              Wprowadź poprawny numer telefonu (9 cyfr)
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="address">Adres odbioru *</label>
+            <input 
+              type="text" 
+              id="address" 
+              formControlName="address" 
+              [class.is-invalid]="isFieldInvalid('address')" 
+              placeholder="ul. Przykładowa 123/45"
+            >
+            <div *ngIf="isFieldInvalid('address')" class="error-message">
+              Adres jest wymagany
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="city">Miasto *</label>
+            <input 
+              type="text" 
+              id="city" 
+              formControlName="city" 
+              [class.is-invalid]="isFieldInvalid('city')" 
+              placeholder="Warszawa"
+            >
+            <div *ngIf="isFieldInvalid('city')" class="error-message">
+              Miasto jest wymagane
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="notes">Dodatkowe informacje</label>
+          <textarea 
+            id="notes" 
+            formControlName="notes" 
+            rows="3" 
+            placeholder="Informacje o preferowanych godzinach odbioru, dodatkowe wskazówki dla kuriera, itp."
+          ></textarea>
+        </div>
+      </form>
+      
+      <div class="login-suggestion">
+        <div class="suggestion-message">
+          Masz już konto? Zaloguj się, aby korzystać z dodatkowych funkcji.
+        </div>
+        <div class="suggestion-actions">
+          <button type="button" class="login-btn" (click)="goToLogin()">Zaloguj się</button>
+          <button type="button" class="register-btn" (click)="goToRegistration()">Zarejestruj się</button>
+        </div>
+      </div>
+      
+      <div class="step-actions">
+        <button type="button" class="back-btn" (click)="prevStep()">Wstecz</button>
+        <button 
+          type="button" 
+          class="next-btn" 
+          [disabled]="contactForm.invalid" 
+          (click)="nextStep()"
+        >
+          Dalej
+        </button>
+      </div>
+    </div>
+    
+    <!-- Krok 3: Podsumowanie -->
+    <div *ngIf="currentStep === 3" class="step-content">
+      <h2>Podsumowanie zamówienia</h2>
+      
+      <div class="summary-container">
+        <!-- Podsumowanie rowerów -->
+        <div class="summary-section">
+          <h3>Rowery do serwisu</h3>
+          <div class="summary-bikes">
+            <div *ngFor="let bike of bikesData; let i = index" class="summary-bike">
+              <span class="bike-index">{{ i + 1 }}.</span>
+              <span class="bike-name">{{ bike.brand }} {{ bike.model || '' }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Podsumowanie pakietu -->
+        <div class="summary-section">
+          <h3>Pakiet serwisowy</h3>
+          <div class="summary-package" *ngIf="getSelectedPackageInfo() as selectedPackage">
+            <div class="package-name">{{ selectedPackage.name }}</div>
+            <div class="package-price">{{ selectedPackage.price }} zł</div>
+            <div class="package-desc">{{ selectedPackage.description }}</div>
+          </div>
+        </div>
+        
+        <!-- Podsumowanie danych kontaktowych -->
+        <div class="summary-section">
+          <h3>Dane kontaktowe</h3>
+          <div class="summary-contact">
+            <div class="contact-row">
+              <span class="contact-label">Imię i nazwisko:</span>
+              <span class="contact-value">{{ contactForm.get('name')?.value }}</span>
+            </div>
+            <div class="contact-row">
+              <span class="contact-label">Email:</span>
+              <span class="contact-value">{{ contactForm.get('email')?.value }}</span>
+            </div>
+            <div class="contact-row">
+              <span class="contact-label">Telefon:</span>
+              <span class="contact-value">{{ contactForm.get('phone')?.value }}</span>
+            </div>
+            <div class="contact-row">
+              <span class="contact-label">Adres odbioru:</span>
+              <span class="contact-value">{{ contactForm.get('address')?.value }}, {{ contactForm.get('city')?.value }}</span>
+            </div>
+            <div *ngIf="contactForm.get('notes')?.value" class="contact-row">
+              <span class="contact-label">Dodatkowe informacje:</span>
+              <span class="contact-value">{{ contactForm.get('notes')?.value }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Suma zamówienia -->
+        <div class="summary-total" *ngIf="getSelectedPackageInfo() as selectedPackage">
+          <div class="total-label">Całkowity koszt:</div>
+          <div class="total-price">{{ selectedPackage.price * bikesData.length }} zł</div>
+          <div class="total-details">({{ selectedPackage.price }} zł × {{ bikesData.length }} {{ bikesData.length === 1 ? 'rower' : bikesData.length > 1 && bikesData.length < 5 ? 'rowery' : 'rowerów' }})</div>
+        </div>
+        
+        <!-- Akceptacja regulaminu -->
+        <div class="terms-container">
+          <div class="form-check">
+            <input 
+              type="checkbox" 
+              id="termsAccepted" 
+              [formControl]="termsAccepted"
+              [class.is-invalid]="termsAccepted.invalid && termsAccepted.touched"
+            >
+            <label for="termsAccepted" class="terms-label">
+              Akceptuję <a href="#" (click)="$event.preventDefault()">regulamin serwisu</a> oraz <a href="#" (click)="$event.preventDefault()">politykę prywatności</a>
+            </label>
+          </div>
+          <div *ngIf="termsAccepted.invalid && termsAccepted.touched" class="error-message">
+            Musisz zaakceptować regulamin
+          </div>
+        </div>
+      </div>
+      
+      <div class="step-actions">
+        <button type="button" class="back-btn" (click)="prevStep()">Wstecz</button>
+        <button 
+          type="button" 
+          class="submit-btn" 
+          [disabled]="contactForm.invalid || !termsAccepted.value || isSubmitting" 
+          (click)="submitOrder()"
+        >
+          {{ isSubmitting ? 'Przetwarzanie...' : 'Zamów serwis' }}
+        </button>
+      </div>
+    </div>
+    
+    <!-- Krok 4: Potwierdzenie -->
+    <div *ngIf="currentStep === 4" class="step-content">
+      <div class="confirmation-container">
+        <div class="confirmation-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        
+        <h2 class="confirmation-title">Dziękujemy za zamówienie!</h2>
+        
+        <p class="confirmation-message">
+          Twoje zamówienie zostało przyjęte. Skontaktujemy się z Tobą wkrótce, aby potwierdzić szczegóły.
+        </p>
+        
+        <div class="confirmation-details">
+          <p>Aby śledzić status zamówienia i mieć dostęp do wielu dodatkowych funkcji, zachęcamy do założenia konta w naszym serwisie.</p>
+        </div>
+        
+        <div class="confirmation-actions">
+          <button type="button" class="register-btn" (click)="goToRegistration()">Załóż konto</button>
+          <button type="button" class="login-btn" (click)="goToLogin()">Zaloguj się</button>
+          <button type="button" class="home-btn" (click)="goToHome()">Wróć do strony głównej</button>
+        </div>
+      </div>
+    </div>
+  </div>

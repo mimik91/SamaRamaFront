@@ -149,6 +149,41 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  // Metoda wywoływana bezpośrednio przez przycisk
+  goToServiceOrder(): void {
+    console.log('goToServiceOrder wywołana');
+    
+    // Zapisujemy dane formularza, niezależnie od walidacji
+    const bikesData: BikeFormData[] = this.bikesArray.controls.map(control => {
+      return {
+        brand: control.get('brand')?.value || 'Nieznana',
+        model: control.get('model')?.value || '',
+        additionalInfo: control.get('additionalInfo')?.value || ''
+      };
+    });
+    
+    // Zapisujemy dane formularza w serwisie
+    this.bikeFormService.setBikesData(bikesData);
+    console.log('Form data saved:', bikesData);
+    
+    // Bezpośrednie przekierowanie, bez sprawdzania walidacji
+    try {
+      window.location.href = '/guest-order';
+      console.log('Przekierowano przez window.location');
+    } catch (e) {
+      console.error('Błąd przekierowania przez window.location:', e);
+      
+      try {
+        this.router.navigate(['/guest-order']).then(
+          success => console.log('Przekierowanie udane:', success),
+          error => console.error('Błąd przekierowania:', error)
+        ).catch(e => console.error('Wyjątek podczas przekierowania:', e));
+      } catch (e) {
+        console.error('Błąd w router.navigate:', e);
+      }
+    }
+  }
+
   // Metoda do resetowania formularza
   resetForm(): void {
     // Zachowujemy jeden pusty formularz

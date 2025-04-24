@@ -13,6 +13,7 @@ import { NotificationService } from '../../core/notification.service';
 import { BikeFormService, BikeFormData } from '../../home/bike-form.service';
 import { ServicePackage } from '../../service-package/service-package.model';
 import { ServicePackageService } from '../../service-package/service-package.service';
+import { EnumerationService } from '../../core/enumeration.service';
 
 @Component({
   selector: 'app-guest-service-order',
@@ -27,6 +28,7 @@ export class GuestServiceOrderComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private bikeFormService = inject(BikeFormService);
   private servicePackageService = inject(ServicePackageService);
+  private enumerationService = inject(EnumerationService);
 
   // Dane z formularza
   bikesData: BikeFormData[] = [];
@@ -38,6 +40,10 @@ export class GuestServiceOrderComponent implements OnInit {
   availablePackages: ServicePackage[] = [];
   loadingPackages = true;
   selectedPackageId: number | null = null;
+  
+  // Cities
+  cities: string[] = [];
+  loadingCities = true;
   
   // Formularz danych kontaktowych
   contactForm: FormGroup = this.fb.group({
@@ -73,6 +79,9 @@ export class GuestServiceOrderComponent implements OnInit {
     
     // Załaduj pakiety serwisowe
     this.loadServicePackages();
+    
+    // Załaduj miasta
+    this.loadCities();
   }
   
   private loadServicePackages(): void {
@@ -90,6 +99,25 @@ export class GuestServiceOrderComponent implements OnInit {
         this.notificationService.error('Nie udało się załadować pakietów serwisowych.');
         this.loadingPackages = false;
         this.availablePackages = []; // Ustaw pustą tablicę, aby uniknąć problemów z renderowaniem
+      }
+    });
+  }
+  
+  private loadCities(): void {
+    this.loadingCities = true;
+    
+    this.enumerationService.getCities().subscribe({
+      next: (cities: string[]) => {
+        this.cities = cities;
+        this.loadingCities = false;
+      },
+      error: (error: any) => {
+        console.error('Failed to load cities:', error);
+        this.notificationService.error('Nie udało się załadować listy miast');
+        this.loadingCities = false;
+        
+        // Fallback to empty array
+        this.cities = [];
       }
     });
   }

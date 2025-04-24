@@ -153,15 +153,18 @@
           
           <div class="form-group">
             <label for="city">Miasto *</label>
-            <input 
-              type="text" 
+            <select 
               id="city" 
               formControlName="city" 
-              [class.is-invalid]="isFieldInvalid('city')" 
-              placeholder="Warszawa"
+              [class.is-invalid]="isFieldInvalid('city')"
+              [attr.disabled]="loadingCities ? '' : null"
             >
+              <option value="" disabled>-- Wybierz miasto --</option>
+              <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
+              <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+            </select>
             <div *ngIf="isFieldInvalid('city')" class="error-message">
-              Miasto jest wymagane
+              Wybierz miasto z listy
             </div>
           </div>
         </div>

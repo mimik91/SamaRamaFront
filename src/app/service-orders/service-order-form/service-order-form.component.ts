@@ -22,6 +22,7 @@ import { NotificationService } from '../../core/notification.service';
 import { ServicePackageService } from '../../service-package/service-package.service';
 import { ServicePackage } from '../../service-package/service-package.model';
 import { BicycleSelectionService } from '../../bicycles/bicycle-selection.service';
+import { EnumerationService } from '../../core/enumeration.service';
 
 // Import our custom date filter and formats
 import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
@@ -71,6 +72,7 @@ export class ServiceOrderFormComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private servicePackageService = inject(ServicePackageService);
   private bicycleSelectionService = inject(BicycleSelectionService);
+  private enumerationService = inject(EnumerationService);
   
   // Bicycle data
   selectedBicycles: Bicycle[] = [];
@@ -80,6 +82,10 @@ export class ServiceOrderFormComponent implements OnInit {
   // Form controls
   currentStep = 1;
   selectedPackageId: number | null = null;
+  
+  // City list
+  cities: string[] = [];
+  loadingCities = true;
   
   // Pickup date with validation for day of week (Sunday-Thursday)
   pickupDateControl: FormControl = new FormControl('', [
@@ -163,6 +169,9 @@ export class ServiceOrderFormComponent implements OnInit {
     
     // Load service packages
     this.loadServicePackages();
+    
+    // Load cities
+    this.loadCities();
   }
   
   private loadBicycle(id: number): void {
@@ -198,6 +207,25 @@ export class ServiceOrderFormComponent implements OnInit {
         
         // Fallback to empty array
         this.availablePackages = [];
+      }
+    });
+  }
+  
+  private loadCities(): void {
+    this.loadingCities = true;
+    
+    this.enumerationService.getCities().subscribe({
+      next: (cities: string[]) => {
+        this.cities = cities;
+        this.loadingCities = false;
+      },
+      error: (error: any) => {
+        console.error('Failed to load cities:', error);
+        this.notificationService.error('Nie udało się załadować listy miast');
+        this.loadingCities = false;
+        
+        // Fallback to empty array
+        this.cities = [];
       }
     });
   }

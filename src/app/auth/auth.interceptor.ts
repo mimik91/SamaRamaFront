@@ -10,7 +10,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const publicEndpoints = [
     '/api/service-packages/active',
-    '/api/enumerations/BRAND'
+    '/api/enumerations/BRAND',
+    '/api/enumerations/CITY'  // Allow CITY enumeration without authentication
   ];
   
   // Sprawdź, czy obecne żądanie jest do publicznego endpointu

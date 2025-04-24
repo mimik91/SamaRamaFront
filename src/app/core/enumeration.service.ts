@@ -18,6 +18,9 @@ export class EnumerationService {
   
   // Cache for order statuses
   private orderStatusCache$: Observable<OrderStatus[]> | null = null;
+  
+  // Cache for cities 
+  private citiesCache$: Observable<string[]> | null = null;
 
   constructor() {}
   
@@ -53,7 +56,7 @@ export class EnumerationService {
   
   /**
    * Get values for a specific enumeration type
-   * @param type Enumeration type (BRAND, BIKE_TYPE, FRAME_MATERIAL)
+   * @param type Enumeration type (BRAND, BIKE_TYPE, FRAME_MATERIAL, CITY)
    */
   getEnumeration(type: string): Observable<string[]> {
     if (!this.typeCache[type]) {
@@ -88,11 +91,23 @@ export class EnumerationService {
   }
   
   /**
+   * Get cities values
+   */
+  getCities(): Observable<string[]> {
+    if (!this.citiesCache$) {
+      this.citiesCache$ = this.getEnumeration('CITY');
+    }
+    
+    return this.citiesCache$;
+  }
+  
+  /**
    * Clear all caches
    */
   clearCache(): void {
     this.enumerationsCache$ = null;
     this.typeCache = {};
     this.orderStatusCache$ = null;
+    this.citiesCache$ = null;
   }
 }

@@ -13,8 +13,12 @@ import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/ad
 import { AdminServicePackagesComponent } from './admin/admin-service-packages/admin-service-package.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
+import { HomeComponent } from './home/home.component';
 
 export const routes: Routes = [
+    // Home route (new)
+    {path: '', component: HomeComponent},
+    
     // Auth routes
     {path: 'login', component: LoginComponent},
     {path: 'register', component: RegistrationComponent, data: { userType: 'client' }},
@@ -41,7 +45,4 @@ export const routes: Routes = [
     
     // Shared routes (available to all authenticated users)
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},
-    
-    // Default route
-    {path: '', redirectTo: 'login', pathMatch: 'full'}
 ];

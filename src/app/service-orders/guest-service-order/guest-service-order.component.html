@@ -90,8 +90,6 @@
       <h2>Dane kontaktowe</h2>
       
       <form [formGroup]="contactForm">
-        <!-- Pole imię i nazwisko zostało usunięte -->
-        
         <div class="form-row">
           <div class="form-group">
             <label for="email">Email *</label>
@@ -152,6 +150,21 @@
             <div *ngIf="isFieldInvalid('city')" class="error-message">
               Wybierz miasto z listy
             </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="pickupDate">Data odbioru *</label>
+          <input 
+            type="date" 
+            id="pickupDate" 
+            formControlName="pickupDate" 
+            [class.is-invalid]="isFieldInvalid('pickupDate')"
+            [min]="getMinDate()"
+            [max]="getMaxDate()"
+          >
+          <div *ngIf="isFieldInvalid('pickupDate')" class="error-message">
+            Wybierz datę odbioru (nie wcześniej niż jutro, nie później niż za miesiąc)
           </div>
         </div>
         
@@ -219,7 +232,6 @@
         <div class="summary-section">
           <h3>Dane kontaktowe</h3>
           <div class="summary-contact">
-            <!-- Pole imię i nazwisko zostało usunięte z podsumowania -->
             <div class="contact-row">
               <span class="contact-label">Email:</span>
               <span class="contact-value">{{ contactForm.get('email')?.value }}</span>
@@ -232,25 +244,15 @@
               <span class="contact-label">Adres odbioru:</span>
               <span class="contact-value">{{ contactForm.get('address')?.value }}, {{ contactForm.get('city')?.value }}</span>
             </div>
+            <div class="contact-row">
+              <span class="contact-label">Data odbioru:</span>
+              <span class="contact-value">{{ contactForm.get('pickupDate')?.value | date:'dd.MM.yyyy' }}</span>
+            </div>
             <div *ngIf="contactForm.get('notes')?.value" class="contact-row">
               <span class="contact-label">Dodatkowe informacje:</span>
               <span class="contact-value">{{ contactForm.get('notes')?.value }}</span>
             </div>
           </div>
-            <div class="form-group">
-                <label for="pickupDate">Data odbioru *</label>
-                <input 
-                type="date" 
-                id="pickupDate" 
-                formControlName="pickupDate" 
-                [class.is-invalid]="isFieldInvalid('pickupDate')"
-                [min]="getMinDate()"
-                [max]="getMaxDate()"
-                >
-                <div *ngIf="isFieldInvalid('pickupDate')" class="error-message">
-                Wybierz datę odbioru (nie wcześniej niż jutro, nie później niż za miesiąc)
-                </div>
-            </div>
         </div>
         
         <!-- Suma zamówienia -->
@@ -291,10 +293,6 @@
         </button>
       </div>
     </div>
-    <div class="contact-row">
-        <span class="contact-label">Data odbioru:</span>
-        <span class="contact-value">{{ contactForm.get('pickupDate')?.value | date:'dd.MM.yyyy' }}</span>
-      </div>
     
     <!-- Krok 4: Potwierdzenie -->
     <div *ngIf="currentStep === 4" class="step-content">

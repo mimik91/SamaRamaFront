@@ -11,22 +11,23 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const publicEndpoints = [
     '/api/service-packages/active',
     '/api/enumerations/BRAND',
-    '/api/enumerations/CITY'  // Allow CITY enumeration without authentication
+    '/api/enumerations/CITY',
+    '/api/guest-orders'  // Added guest-orders endpoint
   ];
   
-  // Sprawdź, czy obecne żądanie jest do publicznego endpointu
+  // Check if current request is to a public endpoint
   const isPublicEndpoint = publicEndpoints.some(endpoint => req.url.includes(endpoint));
   
-  // Jeśli to publiczny endpoint, nie dodawaj tokenu
+  // If it's a public endpoint, don't add a token
   if (isPublicEndpoint) {
     console.log('Public endpoint, proceeding without authentication');
     return next(req);
   }
   
-  // Zawsze dołączaj token do żądań POST/PUT/DELETE
+  // Always include token for POST/PUT/DELETE requests
   const isPostPutDelete = ['POST', 'PUT', 'DELETE'].includes(req.method);
   
-  // Zawsze dodawaj token do żądań związanych ze zdjęciami
+  // Always add token to requests related to photos
   const isPhotoEndpoint = req.url.includes('/photo');
   
   if (token && (isPostPutDelete || isPhotoEndpoint)) {
@@ -38,7 +39,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     });
     return next(clonedRequest);
   } else if (token) {
-    // Dla innych żądań też dodajemy token, jeśli jest dostępny
+    // For other requests, also add a token if available
     const clonedRequest = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`,

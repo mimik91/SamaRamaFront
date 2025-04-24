@@ -9,12 +9,12 @@ import {
   FormControl
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../core/notification.service';
 import { BikeFormService, BikeFormData } from '../../home/bike-form.service';
 import { ServicePackage } from '../../service-package/service-package.model';
 import { ServicePackageService } from '../../service-package/service-package.service';
 import { EnumerationService } from '../../core/enumeration.service';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-guest-service-order',
@@ -53,7 +53,7 @@ export class GuestServiceOrderComponent implements OnInit {
     phone: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
     address: ['', Validators.required],
     city: ['', Validators.required],
-    pickupDate: ['', Validators.required], // Dodane pole daty
+    pickupDate: ['', Validators.required],
     notes: ['']
   });
 
@@ -63,6 +63,7 @@ export class GuestServiceOrderComponent implements OnInit {
   // Stany UI
   isSubmitting = false;
   isSuccess = false;
+  orderIds: number[] = [];
   
   ngOnInit(): void {
     console.log("GuestServiceOrderComponent initialized");
@@ -207,15 +208,24 @@ export class GuestServiceOrderComponent implements OnInit {
       
       // Dane zamówienia
       servicePackageId: this.selectedPackageId,
-      pickupDate: this.contactForm.get('pickupDate')?.value,
+      pickupDate: this.contactForm.get('pickupDate')?.value
     };
+    
+    console.log('Sending order data:', orderData);
     
     // Wyślij dane do API
     this.http.post('http://localhost:8080/api/guest-orders', orderData)
       .subscribe({
         next: (response: any) => {
+          console.log('Order submission successful:', response);
           this.isSubmitting = false;
           this.isSuccess = true;
+          
+          // Zapisz identyfikatory zamówień, jeśli są dostępne
+          if (response.orderIds && Array.isArray(response.orderIds)) {
+            this.orderIds = response.orderIds;
+          }
+          
           this.currentStep = 4; // Krok potwierdzenia
           this.notificationService.success('Zamówienie zostało złożone pomyślnie!');
           
@@ -225,7 +235,15 @@ export class GuestServiceOrderComponent implements OnInit {
         error: (error) => {
           this.isSubmitting = false;
           console.error('Error submitting order:', error);
-          this.notificationService.error('Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie.');
+          
+          let errorMsg = 'Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie.';
+          
+          // Sprawdź czy serwer zwrócił konkretny komunikat błędu
+          if (error.error && error.error.message) {
+            errorMsg = error.error.message;
+          }
+          
+          this.notificationService.error(errorMsg);
         }
       });
   }

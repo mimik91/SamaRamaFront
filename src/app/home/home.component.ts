@@ -76,7 +76,14 @@ export class HomeComponent implements OnInit {
   }
 
   addBike(): void {
-    this.bikesArray.push(this.createBikeFormGroup());
+    // Ograniczenie do 5 rowerów
+    if (this.bikesArray.length < 5) {
+      this.bikesArray.push(this.createBikeFormGroup());
+    } else {
+      // Opcjonalnie: pokaż powiadomienie lub komunikat
+      console.log('Osiągnięto maksymalną liczbę rowerów (5)');
+      alert('Możesz dodać maksymalnie 5 rowerów. Aby dodać więcej, zarejestruj się lub zaloguj.');
+    }
   }
 
   removeBike(index: number): void {
@@ -91,6 +98,10 @@ export class HomeComponent implements OnInit {
   }
 
   onSubmit(): void {
+    console.log('onSubmit wywołana');
+    console.log('Stan formularza:', this.bikeForm.valid ? 'Formularz poprawny' : 'Formularz niepoprawny');
+    console.log('Wartości formularza:', this.bikeForm.value);
+    
     if (this.bikeForm.valid) {
       // Konwertujemy dane formularza do formatu używanego przez serwis
       const bikesData: BikeFormData[] = this.bikesArray.controls.map(control => {
@@ -104,14 +115,23 @@ export class HomeComponent implements OnInit {
       // Zapisujemy dane formularza w serwisie
       this.bikeFormService.setBikesData(bikesData);
       
-      // Pokazujemy komunikat o sukcesie
-      this.formSubmitted = true;
-      
       console.log('Form data saved:', bikesData);
+      console.log('Przekierowuję do /guest-order');
       
-      // Przykładowe logowanie na konsolę - normalnie tutaj byłaby logika wysyłania danych do backendu
-      console.log('Form submitted successfully!');
+      // Przekieruj do formularza zamówienia dla gości
+      this.router.navigate(['/guest-order']);
     } else {
+      console.log('Formularz niepoprawny - sprawdzam błędy:');
+      
+      // Sprawdź błędy w kontrolkach
+      this.bikesArray.controls.forEach((control, index) => {
+        const brandControl = control.get('brand');
+        console.log(`Rower ${index + 1}, marka:`, 
+          brandControl?.value, 
+          brandControl?.valid ? 'poprawna' : 'niepoprawna', 
+          brandControl?.errors);
+      });
+      
       // Oznacz wszystkie pola jako dotknięte, aby pokazać błędy walidacji
       this.markFormGroupTouched(this.bikeForm);
     }

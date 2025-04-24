@@ -76,7 +76,14 @@ export class HomeComponent implements OnInit {
   }
 
   addBike(): void {
-    this.bikesArray.push(this.createBikeFormGroup());
+    // Ograniczenie do 5 rowerów
+    if (this.bikesArray.length < 5) {
+      this.bikesArray.push(this.createBikeFormGroup());
+    } else {
+      // Opcjonalnie: pokaż powiadomienie lub komunikat
+      console.log('Osiągnięto maksymalną liczbę rowerów (5)');
+      alert('Możesz dodać maksymalnie 5 rowerów. Aby dodać więcej, zarejestruj się lub zaloguj.');
+    }
   }
 
   removeBike(index: number): void {
@@ -104,13 +111,10 @@ export class HomeComponent implements OnInit {
       // Zapisujemy dane formularza w serwisie
       this.bikeFormService.setBikesData(bikesData);
       
-      // Pokazujemy komunikat o sukcesie
-      this.formSubmitted = true;
-      
       console.log('Form data saved:', bikesData);
       
-      // Przykładowe logowanie na konsolę - normalnie tutaj byłaby logika wysyłania danych do backendu
-      console.log('Form submitted successfully!');
+      // Przekieruj do formularza zamówienia dla gości
+      this.router.navigate(['/guest-order']);
     } else {
       // Oznacz wszystkie pola jako dotknięte, aby pokazać błędy walidacji
       this.markFormGroupTouched(this.bikeForm);

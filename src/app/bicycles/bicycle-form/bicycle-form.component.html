@@ -56,6 +56,10 @@
         <option *ngFor="let material of frameMaterials" [value]="material">{{ material }}</option>
       </select>
     </div>
+
+      <div class="warning-box" style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin: 10px 0; border-radius: 4px;">
+        <strong>Uwaga:</strong> Obsługa rowerów z ramą karbonową zostanie w pełni wprowadzona w 2026r. Aktualnie zamawiając serwis dla roweru karbonowego, odpowiedzialność za potencjalne uszkodzenia ponosi klient. Dokładamy wszelkich starań, aby zapewnić najwyższą jakość usług, jednak obecnie nie jesteśmy w stanie zagwarantować specjalistycznych warunków transportu dla ram karbonowych.
+      </div>
     
     <div class="form-group">
       <label for="productionDate">Rok produkcji</label>
@@ -80,13 +84,6 @@
       
       <div *ngIf="selectedFile" class="photo-preview">
         <img [src]="previewUrl" alt="Podgląd zdjęcia roweru">
-      </div>
-    </div>
-    
-    <div class="note-container">
-      <div class="note-message">
-        <strong>Informacja:</strong> Numer ramy może zostać dodany później przez serwis rowerowy. 
-        Podczas dodawania roweru nie musisz podawać numeru ramy.
       </div>
     </div>
     

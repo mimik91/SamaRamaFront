@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { 
   FormBuilder, 
   FormControl, 
@@ -24,9 +24,9 @@ import { ServicePackage } from '../../service-package/service-package.model';
 import { BicycleSelectionService } from '../../bicycles/bicycle-selection.service';
 import { EnumerationService } from '../../core/enumeration.service';
 
-// Import our custom date filter and formats
+// Import our custom date filter, formats and adapter
 import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
-import { MAT_DATE_FORMATS } from '@angular/material/core';
+import { CustomDateAdapter } from '../custom-date-adapter';
 
 @Component({
   selector: 'app-service-order-form',
@@ -40,7 +40,9 @@ import { MAT_DATE_FORMATS } from '@angular/material/core';
     MatNativeDateModule
   ],
   providers: [
-    { provide: MAT_DATE_FORMATS, useValue: CUSTOM_DATE_FORMATS }
+    { provide: MAT_DATE_FORMATS, useValue: CUSTOM_DATE_FORMATS },
+    { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' },
+    { provide: DateAdapter, useClass: CustomDateAdapter }
   ],
   templateUrl: './service-order-form.component.html',
   styleUrls: ['./service-order-form.component.css']

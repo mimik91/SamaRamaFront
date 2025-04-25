@@ -16,10 +16,30 @@ import { ServicePackage } from '../../service-package/service-package.model';
 import { ServicePackageService } from '../../service-package/service-package.service';
 import { EnumerationService } from '../../core/enumeration.service';
 
+// Angular Material imports 
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
+import { CustomDateAdapter } from '../custom-date-adapter';
+
 @Component({
   selector: 'app-guest-service-order',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    MatDatepickerModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatNativeDateModule
+  ],
+  providers: [
+    { provide: MAT_DATE_FORMATS, useValue: CUSTOM_DATE_FORMATS },
+    { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' },
+    { provide: DateAdapter, useClass: CustomDateAdapter }
+  ],
   templateUrl: './guest-service-order.component.html',
   styleUrls: ['./guest-service-order.component.css']
 })
@@ -31,6 +51,11 @@ export class GuestServiceOrderComponent implements OnInit {
   private servicePackageService = inject(ServicePackageService);
   private enumerationService = inject(EnumerationService);
   private http = inject(HttpClient);
+
+  // Ustawienia datepickera
+  dateFilter = CustomDatePickerFilter.dateFilter;
+  minDate: Date;
+  maxDate: Date;
 
   // Dane z formularza
   bikesData: BikeFormData[] = [];
@@ -47,15 +72,14 @@ export class GuestServiceOrderComponent implements OnInit {
   cities: string[] = [];
   loadingCities = true;
   
+  // Validator dla daty odbioru (niedziela-czwartek)
+  pickupDateControl = new FormControl('', [
+    Validators.required,
+    this.dateValidator.bind(this)
+  ]);
+  
   // Formularz danych kontaktowych
-  contactForm: FormGroup = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
-    address: ['', Validators.required],
-    city: ['', Validators.required],
-    pickupDate: ['', Validators.required],
-    notes: ['']
-  });
+  contactForm: FormGroup;
 
   // Akceptacja regulaminu
   termsAccepted = new FormControl(false, [Validators.requiredTrue]);
@@ -64,6 +88,43 @@ export class GuestServiceOrderComponent implements OnInit {
   isSubmitting = false;
   isSuccess = false;
   orderIds: number[] = [];
+  
+  constructor() {
+    // Ustawienie minimalnej i maksymalnej daty
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.minDate = tomorrow;
+    
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    this.maxDate = maxDate;
+    
+    // Inicjalizacja formularza
+    this.contactForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
+      address: ['', Validators.required],
+      city: ['', Validators.required],
+      notes: ['']
+    });
+  }
+  
+  // Validator sprawdzający czy wybrana data to niedziela-czwartek
+  dateValidator(control: FormControl): {[key: string]: any} | null {
+    if (!control.value) {
+      return { required: true };
+    }
+    
+    const selectedDate = new Date(control.value);
+    const dayOfWeek = selectedDate.getDay();
+    
+    // Sprawdź dzień tygodnia (0 = niedziela, 4 = czwartek)
+    if (dayOfWeek > 4) { // Piątek i sobota nie są dozwolone
+      return { invalidDay: true };
+    }
+    
+    return null;
+  }
   
   ngOnInit(): void {
     console.log("GuestServiceOrderComponent initialized");
@@ -85,18 +146,6 @@ export class GuestServiceOrderComponent implements OnInit {
     
     // Załaduj miasta
     this.loadCities();
-  }
-
-  getMinDate(): string {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-  }
-  
-  getMaxDate(): string {
-    const maxDate = new Date();
-    maxDate.setDate(maxDate.getDate() + 30);
-    return maxDate.toISOString().split('T')[0];
   }
   
   private loadServicePackages(): void {
@@ -174,12 +223,13 @@ export class GuestServiceOrderComponent implements OnInit {
   
   // Wysłanie formularza zamówienia
   submitOrder(): void {
-    if (this.contactForm.invalid || !this.termsAccepted.value || !this.selectedPackageId) {
+    if (this.contactForm.invalid || !this.termsAccepted.value || !this.selectedPackageId || this.pickupDateControl.invalid) {
       // Oznacz wszystkie pola jako dotknięte, żeby pokazać walidację
       Object.keys(this.contactForm.controls).forEach(key => {
         const control = this.contactForm.get(key);
         control?.markAsTouched();
       });
+      this.pickupDateControl.markAsTouched();
       this.termsAccepted.markAsTouched();
       
       this.notificationService.warning('Wypełnij wszystkie wymagane pola formularza.');
@@ -208,7 +258,7 @@ export class GuestServiceOrderComponent implements OnInit {
       
       // Dane zamówienia
       servicePackageId: this.selectedPackageId,
-      pickupDate: this.contactForm.get('pickupDate')?.value
+      pickupDate: this.pickupDateControl.value
     };
     
     console.log('Sending order data:', orderData);

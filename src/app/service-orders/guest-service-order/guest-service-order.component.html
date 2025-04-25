@@ -87,121 +87,130 @@
     
     <!-- Krok 2: Dane kontaktowe -->
     <div *ngIf="currentStep === 2" class="step-content">
-      <h2>Dane kontaktowe</h2>
-      
-      <form [formGroup]="contactForm">
+        <h2>Dane kontaktowe</h2>
+        
+        <form [formGroup]="contactForm">
         <div class="form-row">
-          <div class="form-group">
+            <div class="form-group">
             <label for="email">Email *</label>
             <input 
-              type="email" 
-              id="email" 
-              formControlName="email" 
-              [class.is-invalid]="isFieldInvalid('email')" 
-              placeholder="jan.kowalski@example.com"
+                type="email" 
+                id="email" 
+                formControlName="email" 
+                [class.is-invalid]="isFieldInvalid('email')" 
+                placeholder="jan.kowalski@example.com"
             >
             <div *ngIf="isFieldInvalid('email')" class="error-message">
-              Wprowadź poprawny adres email
+                Wprowadź poprawny adres email
             </div>
-          </div>
-          
-          <div class="form-group">
+            </div>
+            
+            <div class="form-group">
             <label for="phone">Telefon *</label>
             <input 
-              type="tel" 
-              id="phone" 
-              formControlName="phone" 
-              [class.is-invalid]="isFieldInvalid('phone')" 
-              placeholder="123456789"
+                type="tel" 
+                id="phone" 
+                formControlName="phone" 
+                [class.is-invalid]="isFieldInvalid('phone')" 
+                placeholder="123456789"
             >
             <div *ngIf="isFieldInvalid('phone')" class="error-message">
-              Wprowadź poprawny numer telefonu (9 cyfr)
+                Wprowadź poprawny numer telefonu (9 cyfr)
             </div>
-          </div>
+            </div>
         </div>
         
         <div class="form-row">
-          <div class="form-group">
+            <div class="form-group">
             <label for="address">Adres odbioru *</label>
             <input 
-              type="text" 
-              id="address" 
-              formControlName="address" 
-              [class.is-invalid]="isFieldInvalid('address')" 
-              placeholder="ul. Przykładowa 123/45"
+                type="text" 
+                id="address" 
+                formControlName="address" 
+                [class.is-invalid]="isFieldInvalid('address')" 
+                placeholder="ul. Przykładowa 123/45"
             >
             <div *ngIf="isFieldInvalid('address')" class="error-message">
-              Adres jest wymagany
+                Adres jest wymagany
             </div>
-          </div>
-          
-          <div class="form-group">
+            </div>
+            
+            <div class="form-group">
             <label for="city">Miasto *</label>
             <select 
-              id="city" 
-              formControlName="city" 
-              [class.is-invalid]="isFieldInvalid('city')"
-              [attr.disabled]="loadingCities ? '' : null"
+                id="city" 
+                formControlName="city" 
+                [class.is-invalid]="isFieldInvalid('city')"
+                [attr.disabled]="loadingCities ? '' : null"
             >
-              <option value="" disabled>-- Wybierz miasto --</option>
-              <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
-              <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                <option value="" disabled>-- Wybierz miasto --</option>
+                <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
+                <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
             </select>
             <div *ngIf="isFieldInvalid('city')" class="error-message">
-              Wybierz miasto z listy
+                Wybierz miasto z listy
             </div>
-          </div>
+            </div>
         </div>
         
         <div class="form-group">
-          <label for="pickupDate">Data odbioru *</label>
-          <input 
-            type="date" 
-            id="pickupDate" 
-            formControlName="pickupDate" 
-            [class.is-invalid]="isFieldInvalid('pickupDate')"
-            [min]="getMinDate()"
-            [max]="getMaxDate()"
-          >
-          <div *ngIf="isFieldInvalid('pickupDate')" class="error-message">
-            Wybierz datę odbioru (nie wcześniej niż jutro, nie później niż za miesiąc)
-          </div>
+            <label for="pickupDate">Data odbioru *</label>
+            <div class="date-info">
+            Odbiór roweru dostępny od niedzieli do czwartku w godzinach 18:00-22:00.
+            </div>
+            <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Wybierz datę</mat-label>
+            <input 
+                matInput 
+                [matDatepicker]="picker" 
+                [formControl]="pickupDateControl"
+                [matDatepickerFilter]="dateFilter"
+                [min]="minDate"
+                [max]="maxDate"
+            >
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="pickupDateControl.invalid && pickupDateControl.touched">
+                <span *ngIf="pickupDateControl.errors?.['required']">Wybierz datę odbioru</span>
+                <span *ngIf="pickupDateControl.errors?.['invalidDay']">Odbiór możliwy tylko od niedzieli do czwartku</span>
+            </mat-error>
+            </mat-form-field>
         </div>
         
         <div class="form-group">
-          <label for="notes">Dodatkowe informacje</label>
-          <textarea 
+            <label for="notes">Dodatkowe informacje</label>
+            <textarea 
             id="notes" 
             formControlName="notes" 
             rows="3" 
             placeholder="Informacje o preferowanych godzinach odbioru, dodatkowe wskazówki dla kuriera, itp."
-          ></textarea>
+            ></textarea>
         </div>
-      </form>
-      
-      <div class="login-suggestion">
+        </form>
+        
+        <div class="login-suggestion">
         <div class="suggestion-message">
-          Masz już konto? Zaloguj się, aby korzystać z dodatkowych funkcji.
+            Masz już konto? Zaloguj się, aby korzystać z dodatkowych funkcji.
         </div>
         <div class="suggestion-actions">
-          <button type="button" class="login-btn" (click)="goToLogin()">Zaloguj się</button>
-          <button type="button" class="register-btn" (click)="goToRegistration()">Zarejestruj się</button>
+            <button type="button" class="login-btn" (click)="goToLogin()">Zaloguj się</button>
+            <button type="button" class="register-btn" (click)="goToRegistration()">Zarejestruj się</button>
         </div>
-      </div>
-      
-      <div class="step-actions">
+        </div>
+        
+        <div class="step-actions">
         <button type="button" class="back-btn" (click)="prevStep()">Wstecz</button>
         <button 
-          type="button" 
-          class="next-btn" 
-          [disabled]="contactForm.invalid" 
-          (click)="nextStep()"
+            type="button" 
+            class="next-btn" 
+            [disabled]="contactForm.invalid || pickupDateControl.invalid" 
+            (click)="nextStep()"
         >
-          Dalej
+            Dalej
         </button>
-      </div>
+        </div>
     </div>
-    
+        
     <!-- Krok 3: Podsumowanie -->
     <div *ngIf="currentStep === 3" class="step-content">
       <h2>Podsumowanie zamówienia</h2>
@@ -246,7 +255,7 @@
             </div>
             <div class="contact-row">
               <span class="contact-label">Data odbioru:</span>
-              <span class="contact-value">{{ contactForm.get('pickupDate')?.value | date:'dd.MM.yyyy' }}</span>
+              <span class="contact-value">{{ pickupDateControl.value | date:'dd.MM.yyyy' }}</span>
             </div>
             <div *ngIf="contactForm.get('notes')?.value" class="contact-row">
               <span class="contact-label">Dodatkowe informacje:</span>
@@ -286,7 +295,7 @@
         <button 
           type="button" 
           class="submit-btn" 
-          [disabled]="contactForm.invalid || !termsAccepted.value || isSubmitting" 
+          [disabled]="contactForm.invalid || !termsAccepted.value || isSubmitting || pickupDateControl.invalid" 
           (click)="submitOrder()"
         >
           {{ isSubmitting ? 'Przetwarzanie...' : 'Zamów serwis' }}

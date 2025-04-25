@@ -13,10 +13,6 @@
     margin-bottom: 30px;
   }
   
-  h2 {
-    margin-bottom: 20px;
-  }
-  
   /* Steps navigation */
   .steps-container {
     display: flex;
@@ -264,6 +260,17 @@
   .form-group {
     flex: 1;
     margin-bottom: 20px;
+  }
+
+  .date-info {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-style: italic;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-left: 3px solid #007bff;
+    border-radius: 4px;
   }
   
   .form-group label {
@@ -593,8 +600,48 @@
   .home-btn:hover {
     background-color: #e9ecef;
   }
+
+  /* Material Datepicker Styles */
+  .full-width {
+    width: 100%;
+  }
+
+  /* Custom calendar styles */
+  ::ng-deep .mat-calendar-body-cell.mat-calendar-body-disabled {
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+
+  ::ng-deep .mat-datepicker-toggle {
+    color: #007bff;
+  }
+
+  ::ng-deep .mat-calendar-body-selected {
+    background-color: #007bff;
+    color: white;
+  }
+
+  ::ng-deep .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+    background-color: rgba(0, 123, 255, 0.1);
+  }
+
+  /* Calendar filter visual indication */
+  ::ng-deep .mat-calendar-body-cell.mat-calendar-body-disabled.friday-saturday {
+    position: relative;
+  }
+
+  ::ng-deep .mat-calendar-body-cell.mat-calendar-body-disabled.friday-saturday::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(220, 53, 69, 0.1);
+    border-radius: 999px;
+  }
   
-  /* Responsive styles */
+  /* Responsiveness */
   @media (max-width: 768px) {
     .form-row {
       flex-direction: column;
@@ -631,4 +678,5 @@
     .login-btn, .register-btn, .home-btn {
       width: 100%;
     }
+
   }

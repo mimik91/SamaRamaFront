@@ -1,0 +1,132 @@
+<div class="service-registration-container">
+    <div class="header">
+      <h1>Rejestracja serwisu rowerowego</h1>
+      <p class="subtitle">Dołącz do naszej sieci profesjonalnych serwisów rowerowych</p>
+    </div>
+  
+    <div *ngIf="!isSuccess" class="form-container">
+      <div class="info-box">
+        <div class="info-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </div>
+        <div class="info-content">
+          <h3>Jak dołączyć do sieci SamaRama?</h3>
+          <p>Wypełnij poniższy formularz z podstawowymi danymi kontaktowymi Twojego serwisu rowerowego. Proszę podawać zwięzłe informacje. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.</p>
+          <p>Jako partner SamaRama zyskasz dostęp do szerokiej bazy klientów oraz zaawansowanego systemu zarządzania serwisem rowerowym.</p>
+        </div>
+      </div>
+  
+      <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="contactPerson">Osoba do kontaktu * <span class="char-limit">(max 50 znaków)</span></label>
+          <input 
+            type="text" 
+            id="contactPerson" 
+            formControlName="contactPerson"
+            [class.is-invalid]="isFieldInvalid('contactPerson')"
+            placeholder="Imię i nazwisko osoby do kontaktu"
+            maxlength="50"
+          >
+          <div *ngIf="isFieldInvalid('contactPerson')" class="error-message">
+            Pole wymagane
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="phoneNumber">Numer telefonu *</label>
+          <input 
+            type="tel" 
+            id="phoneNumber" 
+            formControlName="phoneNumber"
+            [class.is-invalid]="isFieldInvalid('phoneNumber')"
+            placeholder="123456789"
+          >
+          <div *ngIf="isFieldInvalid('phoneNumber')" class="error-message">
+            Wprowadź poprawny numer telefonu (9 cyfr)
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email * <span class="char-limit">(max 50 znaków)</span></label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email"
+            [class.is-invalid]="isFieldInvalid('email')"
+            placeholder="kontakt@twojserwis.pl"
+            maxlength="50"
+          >
+          <div *ngIf="isFieldInvalid('email')" class="error-message">
+            Wprowadź poprawny adres email
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="serviceName">Nazwa serwisu * <span class="char-limit">(max 50 znaków)</span></label>
+          <input 
+            type="text" 
+            id="serviceName" 
+            formControlName="serviceName"
+            [class.is-invalid]="isFieldInvalid('serviceName')"
+            placeholder="Nazwa Twojego serwisu rowerowego"
+            maxlength="50"
+          >
+          <div *ngIf="isFieldInvalid('serviceName')" class="error-message">
+            Pole wymagane
+          </div>
+        </div>
+        
+        <!-- Usunięto pole "Dodatkowe informacje" -->
+        <div *ngIf="dataLengthExceeded" class="error-message data-length-warning">
+          Wprowadzone dane przekraczają dozwolony limit znaków. Proszę skrócić wprowadzone informacje.
+        </div>
+        
+        <div class="benefits-box">
+          <h3>Korzyści współpracy z SamaRama</h3>
+          <ul>
+            <li>Dostęp do bazy klientów poszukujących profesjonalnego serwisu rowerowego</li>
+            <li>Zaawansowany system zarządzania serwisem i zamówieniami</li>
+            <li>Promocja Twojego serwisu na naszej platformie</li>
+            <li>Wsparcie techniczne i marketingowe</li>
+            <li>Elastyczne warunki współpracy</li>
+          </ul>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" (click)="goToHome()">Wróć do strony głównej</button>
+          <button 
+            type="submit" 
+            class="primary-btn"
+            [disabled]="registrationForm.invalid || isSubmitting"
+          >
+            {{ isSubmitting ? 'Wysyłanie...' : 'Wyślij zgłoszenie' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  
+    <!-- Ekran sukcesu po wysłaniu formularza -->
+    <div *ngIf="isSuccess" class="success-container">
+      <div class="success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      
+      <h2>Dziękujemy za zgłoszenie!</h2>
+      
+      <p class="success-message">
+        Twoje zgłoszenie zostało przyjęte. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.
+      </p>
+      
+      <div class="success-actions">
+        <button class="secondary-btn" (click)="goToHome()">Wróć do strony głównej</button>
+        <button class="primary-btn" (click)="goToLogin()">Przejdź do logowania</button>
+      </div>
+    </div>
+  </div>

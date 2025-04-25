@@ -67,6 +67,19 @@ export class NavigationComponent implements OnInit {
     this.router.navigate(['/login']);
     this.closeMobileMenu();
   }
+  
+  navigateToHome(event: Event): void {
+    event.preventDefault();
+    // Sprawdź, czy użytkownik jest zalogowany
+    if (this.authService.isLoggedIn()) {
+      // Dla zalogowanych przekieruj na stronę z rowerami
+      this.router.navigate(['/bicycles']);
+    } else {
+      // Dla niezalogowanych przekieruj na stronę główną
+      this.router.navigate(['/']);
+    }
+    this.closeMobileMenu();
+  }
 
   // Sprawdza, czy jesteśmy na stronie logowania lub rejestracji
   isAuthPage(): boolean {

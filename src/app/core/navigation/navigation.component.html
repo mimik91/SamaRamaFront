@@ -3,7 +3,7 @@
   <!-- Podstawowa wersja nawigacji (z przyciskiem hamburger) -->
   <div class="navbar-container" *ngIf="!isAuthPage()">
     <div class="navbar-brand">
-      <a routerLink="/welcome">SamaRama</a>
+      <a href="javascript:void(0)" (click)="navigateToHome($event)">SamaRama</a>
     </div>
     
     <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
@@ -43,7 +43,7 @@
   <!-- Wersja nawigacji dla stron logowania/rejestracji -->
   <div class="auth-navbar-container" *ngIf="isAuthPage()">
     <div class="navbar-brand">
-      <a routerLink="/welcome">SamaRama</a>
+      <a href="javascript:void(0)" (click)="navigateToHome($event)">SamaRama</a>
     </div>
 
     <div class="auth-links">
@@ -57,13 +57,11 @@
       <!-- Menu dla strony rejestracji klienta -->
       <ng-container *ngIf="isRegisterPage()">
         <a routerLink="/login">Logowanie klienta</a>
-        <a routerLink="/login-serviceman">Logowanie serwisu</a>
         <a routerLink="/register-serviceman">Rejestracja serwisu</a>
       </ng-container>
 
       <!-- Menu dla strony rejestracji serwisu -->
       <ng-container *ngIf="isServiceRegisterPage()">
-        <a routerLink="/login-serviceman">Logowanie serwisu</a>
         <a routerLink="/login">Logowanie klienta</a>
         <a routerLink="/register">Rejestracja klienta</a>
       </ng-container>

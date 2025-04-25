@@ -15,6 +15,7 @@ import { AdminServicePackagesComponent } from './admin/admin-service-packages/ad
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
 import { HomeComponent } from './home/home.component';
+import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 
 export const routes: Routes = [
     // Home route
@@ -26,6 +27,9 @@ export const routes: Routes = [
     // Auth routes
     {path: 'login', component: LoginComponent},
     {path: 'register', component: RegistrationComponent, data: { userType: 'client' }},
+    
+    // Nowa trasa dla rejestracji serwisu
+    {path: 'register-service', component: ServiceRegistrationComponent},
     
     // Client routes
     {path: 'bicycles', component: BicyclesListComponent, canActivate: [clientGuard]},

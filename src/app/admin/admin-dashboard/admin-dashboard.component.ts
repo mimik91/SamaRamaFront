@@ -48,14 +48,7 @@ export class AdminDashboardComponent implements OnInit {
     // Load service orders
     this.loadServiceOrders();
     
-    // Welcome message based on user role
-    setTimeout(() => {
-      if (this.userRole === 'ADMIN') {
-        this.notificationService.info('Witaj w panelu administracyjnym!');
-      } else if (this.userRole === 'MODERATOR') {
-        this.notificationService.info('Witaj w panelu moderatora!');
-      }
-    }, 500);
+    // Usunięto powiadomienie powitalne
   }
   
   private getUserInfo(): void {

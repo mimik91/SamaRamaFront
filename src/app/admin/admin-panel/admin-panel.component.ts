@@ -1,7 +1,6 @@
-// src/app/admin/admin-panel/admin-panel.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { NotificationService } from '../../core/notification.service';
 import { AdminService, DashboardStats } from '../admin-service';  // Fixed import path
@@ -38,14 +37,7 @@ export class AdminPanelComponent implements OnInit {
     // Load dashboard stats from backend
     this.loadDashboardStats();
     
-    // Welcome message based on user role
-    setTimeout(() => {
-      if (this.userRole === 'ADMIN') {
-        this.notificationService.info('Witaj w panelu administracyjnym!');
-      } else if (this.userRole === 'MODERATOR') {
-        this.notificationService.info('Witaj w panelu moderatora!');
-      }
-    }, 500);
+    // Usunięto powiadomienie powitalne
   }
   
   private getUserInfo(): void {

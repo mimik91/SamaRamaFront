@@ -47,6 +47,6 @@ export const routes: Routes = [
     {path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard]},
     {path: 'admin-service-packages', component: AdminServicePackagesComponent, canActivate: [adminGuard]},
     
-    // Shared routes (available to all authenticated users)
+    // Account route - dostępna dla zalogowanych użytkowników
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},
 ];

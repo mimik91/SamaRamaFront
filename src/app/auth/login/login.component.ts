@@ -49,6 +49,7 @@ export class LoginComponent {
         next: (response) => {
           console.log('Login successful', response);
           this.successMessage = 'Logowanie udane!';
+          console.log('Token saved to localStorage:', localStorage.getItem('auth_session'));
   
           // Add a delay to see the success message
           setTimeout(() => {

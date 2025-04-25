@@ -71,11 +71,14 @@ export class AuthService {
   }
   
   private loadSession(): void {
-    if (typeof window === 'undefined') {
-      return; // Skip during SSR
+    if (typeof localStorage === 'undefined') {
+      console.log('localStorage not available (SSR context)');
+      return;
     }
     
-    const sessionData = localStorage.getItem('auth_session'); // Zmiana z sessionStorage na localStorage
+    const sessionData = localStorage.getItem('auth_session');
+    console.log('Loading session from localStorage:', sessionData ? 'session exists' : 'no session');
+    
     if (sessionData) {
       try {
         const session = JSON.parse(sessionData) as UserSession;
@@ -83,7 +86,7 @@ export class AuthService {
         // Check if token is expired
         if (session.expiresAt > Date.now()) {
           this.currentUserSubject.next(session);
-          console.log('Loaded session:', session);
+          console.log('Valid session loaded:', session.email);
         } else {
           // Clear expired session
           console.log('Session expired, clearing');
@@ -93,6 +96,8 @@ export class AuthService {
         console.error('Error parsing session data', e);
         this.clearSession();
       }
+    } else {
+      console.log('No session found in localStorage');
     }
   }
   
@@ -103,7 +108,7 @@ export class AuthService {
         tap(response => {
           console.log('Login response:', response);
           // Determine the redirect URL based on role
-          let redirectUrl = '/welcome'; // Default for clients
+          let redirectUrl = '/bicycles'; // Changed from '/welcome' to '/bicycles'
           
           // Check if response contains admin or moderator role indicators
           if (response.role === 'ADMIN' || response.role === 'MODERATOR') {
@@ -123,27 +128,7 @@ export class AuthService {
           return throwError(() => error);
         })
       );
-  }
-
-  loginService(credentials: LoginCredentials): Observable<AuthResponse> {
-    console.log('Attempting service login:', credentials.email);
-    return this.http.post<AuthResponse>(`${this.apiUrl}/signin/service`, credentials)
-      .pipe(
-        tap(response => {
-          console.log('Service login response:', response);
-          // Upewnij się, że response.role jest ustawione na 'SERVICE'
-          const authResponse = {
-            ...response,
-            role: 'SERVICE' as const
-          };
-          this.handleAuthResponse(authResponse);
-        }),
-        catchError(error => {
-          console.error('Service login failed:', error);
-          return throwError(() => error);
-        })
-      );
-  }
+    }
 
   registerClient(userData: UserRegistrationData): Observable<any> {
     console.log('Registering client:', userData.email);
@@ -156,16 +141,6 @@ export class AuthService {
       );
   }
 
-  registerService(serviceData: ServiceRegistrationData): Observable<any> {
-    console.log('Registering service:', serviceData.email);
-    return this.http.post(`${this.apiUrl}/signup/service`, serviceData)
-      .pipe(
-        catchError(error => {
-          console.error('Service registration failed:', error);
-          return throwError(() => error);
-        })
-      );
-  }
   
   private handleAuthResponse(response: AuthResponse): void {
     if (response && response.token) {
@@ -195,7 +170,9 @@ export class AuthService {
       // Try to load from storage in case it wasn't loaded yet
       this.loadSession();
     }
-    return this.currentUserSubject.value?.token || null;
+    const token = this.currentUserSubject.value?.token || null;
+    console.log('AuthService.getToken() returned:', token ? 'token exists' : 'no token');
+    return token;
   }
   
   getUserRole(): string | null {
@@ -245,7 +222,6 @@ export class AuthService {
     return currentUser?.role === 'MODERATOR';
   }
   
-  // Helper method to check if user has admin privileges (either admin or moderator)
   hasAdminPrivileges(): boolean {
     const currentUser = this.currentUserSubject.value;
     return currentUser?.role === 'ADMIN' || currentUser?.role === 'MODERATOR';

@@ -35,6 +35,7 @@ export class UserSettingsComponent implements OnInit {
   }
 
   toggleDropdown(event: Event): void {
+    console.log('Toggle dropdown clicked');
     event.stopPropagation();
     this.isOpen = !this.isOpen;
   }

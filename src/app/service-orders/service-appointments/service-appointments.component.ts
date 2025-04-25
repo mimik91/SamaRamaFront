@@ -112,8 +112,8 @@ export class ServiceAppointmentsComponent implements OnInit {
            ' ' + date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
   }
 
-  formatPrice(price: number): string {
-    return price.toFixed(2) + ' zł';
+  formatPrice(price: number | undefined | null): string {
+    return (price ?? 0).toFixed(2) + ' zł';
   }
 
   orderNewService(): void {

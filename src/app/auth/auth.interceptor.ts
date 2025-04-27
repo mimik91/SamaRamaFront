@@ -13,6 +13,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const publicEndpoints = [
     '/api/auth/signin',
     '/api/auth/signup',
+    '/api/verification/verify',
+    '/api/verification/resend',
     '/api/service-packages/active',
     '/api/enumerations/BRAND',
     '/api/enumerations/CITY',

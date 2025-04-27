@@ -70,11 +70,12 @@ export class RegistrationComponent implements OnInit {
       };
       
       this.authService.registerClient(clientData).subscribe({
-        next: () => {
-          this.successMessage = 'Rejestracja zakończona sukcesem! Za chwilę zostaniesz przekierowany na stronę logowania.';
+        next: (response) => {
+          this.successMessage = 'Rejestracja zakończona sukcesem! Na Twój adres email został wysłany link weryfikacyjny. Sprawdź swoją skrzynkę odbiorczą i potwierdź rejestrację.';
+          // Wydłużamy czas wyświetlania komunikatu o sukcesie
           setTimeout(() => {
             this.router.navigate(['/login']);
-          }, 2000);
+          }, 5000);
         },
         error: (error: any) => {
           console.error('Registration failed', error);

@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { VerificationService } from '../verification.service';
 
 @Component({
   selector: 'app-login',
@@ -20,16 +21,25 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private verificationService = inject(VerificationService);
 
   loginForm: FormGroup;
+  resendVerificationForm: FormGroup;
   errorMessage: string = '';
   successMessage: string = '';
   isSubmitting: boolean = false;
+  isResendingVerification: boolean = false;
+  showResendVerification: boolean = false;
+  verificationResendSuccess: boolean = false;
 
   constructor() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+    });
+    
+    this.resendVerificationForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]]
     });
   }
 
@@ -70,8 +80,20 @@ export class LoginComponent {
         },
         error: (error) => {
           console.error('Logowanie nie powiodło się', error);
-          this.errorMessage =
-            'Logowanie nie powiodło się. Sprawdź dane logowania.';
+          
+          // Sprawdzenie, czy konto nie jest zweryfikowane
+          if (error.error && error.error.message && 
+              (error.error.message.includes('not verified') || 
+               error.error.message.includes('nie zweryfikowane'))) {
+            this.errorMessage = 'Konto nie zostało zweryfikowane. Sprawdź swoją skrzynkę email lub kliknij poniżej, aby wysłać link weryfikacyjny ponownie.';
+            this.showResendVerification = true;
+            // Przenieś email z formularza logowania do formularza ponownego wysyłania
+            this.resendVerificationForm.patchValue({
+              email: this.loginForm.get('email')?.value
+            });
+          } else {
+            this.errorMessage = 'Logowanie nie powiodło się. Sprawdź dane logowania.';
+          }
           this.successMessage = '';
           this.isSubmitting = false;
         },
@@ -79,6 +101,30 @@ export class LoginComponent {
     } else {
       this.markFormGroupTouched(this.loginForm);
     }
+  }
+
+  // Metoda do ponownego wysłania maila weryfikacyjnego
+  resendVerification() {
+    if (this.resendVerificationForm.invalid) {
+      this.markFormGroupTouched(this.resendVerificationForm);
+      return;
+    }
+
+    const email = this.resendVerificationForm.get('email')?.value;
+    this.isResendingVerification = true;
+    this.errorMessage = '';
+    
+    this.verificationService.resendVerificationEmail(email).subscribe({
+      next: (response) => {
+        this.isResendingVerification = false;
+        this.verificationResendSuccess = true;
+        this.successMessage = 'Link weryfikacyjny został wysłany. Sprawdź swoją skrzynkę pocztową.';
+      },
+      error: (error) => {
+        this.isResendingVerification = false;
+        this.errorMessage = error.error?.message || 'Nie udało się wysłać linku weryfikacyjnego. Spróbuj ponownie.';
+      }
+    });
   }
 
   // Pomocnicza funkcja do zaznaczenia wszystkich pól jako dotknięte
@@ -89,5 +135,16 @@ export class LoginComponent {
         this.markFormGroupTouched(control);
       }
     });
+  }
+  
+  // Funkcja sprawdzająca, czy dane pole formularza jest nieprawidłowe
+  isFieldInvalid(formGroup: FormGroup, fieldName: string): boolean {
+    const control = formGroup.get(fieldName);
+    return control ? (control.invalid && control.touched) : false;
+  }
+  
+  // Włączanie/wyłączanie formularza ponownego wysyłania
+  toggleResendForm() {
+    this.showResendVerification = !this.showResendVerification;
   }
 }

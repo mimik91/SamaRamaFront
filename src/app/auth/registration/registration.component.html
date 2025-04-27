@@ -97,7 +97,11 @@
             {{ errorMessage }}
           </div>
           <div *ngIf="successMessage" class="success-alert">
-            {{ successMessage }}
+            <p>{{ successMessage }}</p>
+            <div class="verification-info">
+              Jeśli nie otrzymasz emaila z linkiem weryfikacyjnym w ciągu kilku minut, 
+              sprawdź folder spam lub przejdź do strony logowania, aby ponownie wysłać link weryfikacyjny.
+            </div>
           </div>
         </div>
       </form>

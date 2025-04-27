@@ -170,4 +170,29 @@
     .btn {
       width: 100%;
     }
+    .success-alert {
+      padding: 15px;
+      border-radius: 4px;
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      margin-bottom: 15px;
+      position: relative;
+    }
+    
+    .success-alert p {
+      margin: 0 0 10px 0;
+    }
+    
+    .success-alert p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .success-alert .verification-info {
+      font-style: italic;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #c3e6cb;
+    }
   }

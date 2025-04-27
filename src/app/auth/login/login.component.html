@@ -1,53 +1,99 @@
 <div class="login-container">
-    <div class="login-form-container">
-      <h2>Logowanie Klienta</h2>
+  <div class="login-form-container">
+    <h2>Logowanie Klienta</h2>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          required
+        />
+      </div>
       
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input 
-            type="email" 
-            id="email" 
-            formControlName="email" 
-            required
-          />
-        </div>
+      <div class="form-group">
+        <label for="password">Hasło</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password" 
+          required
+        />
+      </div>
+      
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="secondary-btn" 
+          (click)="goToRegistration()"
+        >
+          Stwórz nowe konto
+        </button>
         
-        <div class="form-group">
-          <label for="password">Hasło</label>
-          <input 
-            type="password" 
-            id="password" 
-            formControlName="password" 
-            required
-          />
-        </div>
-        
-        <div class="form-actions">
-          <button 
-            type="button" 
-            class="secondary-btn" 
-            (click)="goToRegistration()"
-          >
-            Stwórz nowe konto
-          </button>
+        <button 
+          type="submit" 
+          class="primary-btn" 
+          [disabled]="loginForm.invalid || isSubmitting"
+        >
+          {{ isSubmitting ? 'Logowanie...' : 'Zaloguj się' }}
+        </button>
+      </div>
+      
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+      
+      <!-- Formularz ponownego wysłania linku weryfikacyjnego -->
+      <div *ngIf="showResendVerification" class="resend-verification-form">
+        <form [formGroup]="resendVerificationForm" (ngSubmit)="resendVerification()">
+          <div class="form-group">
+            <label for="verificationEmail">Email</label>
+            <input 
+              type="email" 
+              id="verificationEmail" 
+              formControlName="email" 
+              [class.is-invalid]="isFieldInvalid(resendVerificationForm, 'email')"
+              required
+            />
+            <div *ngIf="isFieldInvalid(resendVerificationForm, 'email')" class="validation-error">
+              Podaj poprawny adres email
+            </div>
+          </div>
           
-          <button 
-            type="submit" 
-            class="primary-btn" 
-            [disabled]="loginForm.invalid || isSubmitting"
-          >
-            {{ isSubmitting ? 'Logowanie...' : 'Zaloguj się' }}
-          </button>
-        </div>
-        
-        <div *ngIf="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-        
-        <div *ngIf="successMessage" class="success-message">
-          {{ successMessage }}
-        </div>
-      </form>
-    </div>
+          <div class="form-actions verification-actions">
+            <button 
+              type="button" 
+              class="secondary-btn" 
+              (click)="toggleResendForm()"
+            >
+              Anuluj
+            </button>
+            
+            <button 
+              type="submit" 
+              class="primary-btn" 
+              [disabled]="resendVerificationForm.invalid || isResendingVerification"
+            >
+              {{ isResendingVerification ? 'Wysyłanie...' : 'Wyślij link' }}
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <div *ngIf="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
+      
+      <!-- Komunikat o powodzeniu wysłania linku weryfikacyjnego -->
+      <div *ngIf="verificationResendSuccess" class="resend-success-message">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <p>Link weryfikacyjny został wysłany na podany adres email.</p>
+      </div>
+    </form>
   </div>
+</div>

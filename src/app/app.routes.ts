@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { RegistrationComponent } from './auth/registration/registration.component';
+import { VerificationComponent } from './auth/verification/verification.component';
 import { authGuard, clientGuard, adminGuard } from './auth/auth.guard';
 import { BicyclesListComponent } from './bicycles/bicycles-list/bicycles-list.component';
 import { BicycleFormComponent } from './bicycles/bicycle-form/bicycle-form.component';
@@ -27,6 +28,7 @@ export const routes: Routes = [
     // Auth routes
     {path: 'login', component: LoginComponent},
     {path: 'register', component: RegistrationComponent, data: { userType: 'client' }},
+    {path: 'verify-account', component: VerificationComponent},
     
     // Nowa trasa dla rejestracji serwisu
     {path: 'register-service', component: ServiceRegistrationComponent},

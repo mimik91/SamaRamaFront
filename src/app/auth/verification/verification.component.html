@@ -1,0 +1,40 @@
+<div class="verification-container">
+    <div class="verification-card">
+      <ng-container *ngIf="verificationStatus === 'verifying'">
+        <div class="verification-loading">
+          <div class="spinner"></div>
+          <h2>Weryfikowanie konta...</h2>
+          <p>Proszę czekać, trwa weryfikacja Twojego konta.</p>
+        </div>
+      </ng-container>
+      
+      <ng-container *ngIf="verificationStatus === 'success'">
+        <div class="verification-success">
+          <div class="success-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <h2>Konto zweryfikowane!</h2>
+          <p>Twoje konto zostało pomyślnie zweryfikowane. Za chwilę zostaniesz przekierowany do strony logowania.</p>
+          <button class="login-btn" (click)="goToLogin()">Przejdź do logowania</button>
+        </div>
+      </ng-container>
+      
+      <ng-container *ngIf="verificationStatus === 'error'">
+        <div class="verification-error">
+          <div class="error-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <h2>Błąd weryfikacji</h2>
+          <p>{{ errorMessage }}</p>
+          <button class="login-btn" (click)="goToLogin()">Przejdź do logowania</button>
+        </div>
+      </ng-container>
+    </div>
+  </div>

@@ -81,3 +81,12 @@
   .login-btn:hover {
     background-color: #2980b9;
   }
+
+  .verification-info {
+    color: #3498db;
+  }
+  
+  .info-icon {
+    color: #3498db;
+    margin-bottom: 20px;
+  }

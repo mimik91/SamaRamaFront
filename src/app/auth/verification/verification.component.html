@@ -1,5 +1,6 @@
 <div class="verification-container">
     <div class="verification-card">
+      <!-- Stan wczytywania -->
       <ng-container *ngIf="verificationStatus === 'verifying'">
         <div class="verification-loading">
           <div class="spinner"></div>
@@ -8,6 +9,7 @@
         </div>
       </ng-container>
       
+      <!-- Stan sukcesu -->
       <ng-container *ngIf="verificationStatus === 'success'">
         <div class="verification-success">
           <div class="success-icon">
@@ -22,8 +24,9 @@
         </div>
       </ng-container>
       
+      <!-- Stan błędu -->
       <ng-container *ngIf="verificationStatus === 'error'">
-        <div class="verification-error">
+        <div class="verification-error" *ngIf="!isTokenUsed">
           <div class="error-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
@@ -33,6 +36,19 @@
           </div>
           <h2>Błąd weryfikacji</h2>
           <p>{{ errorMessage }}</p>
+          <button class="login-btn" (click)="goToLogin()">Przejdź do logowania</button>
+        </div>
+        
+        <!-- Specjalny komunikat dla wykorzystanego tokenu -->
+        <div class="verification-info" *ngIf="isTokenUsed">
+          <div class="info-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9 12l2 2 4-4"></path>
+            </svg>
+          </div>
+          <h2>Konto już aktywne</h2>
+          <p>Ten link aktywacyjny został już wykorzystany. Twoje konto jest już aktywne i możesz się zalogować.</p>
           <button class="login-btn" (click)="goToLogin()">Przejdź do logowania</button>
         </div>
       </ng-container>

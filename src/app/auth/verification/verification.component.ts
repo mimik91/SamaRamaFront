@@ -17,8 +17,10 @@ export class VerificationComponent implements OnInit {
   private verificationService = inject(VerificationService);
   private notificationService = inject(NotificationService);
 
+
   verificationStatus: 'verifying' | 'success' | 'error' = 'verifying';
   errorMessage: string = '';
+  isTokenUsed: boolean = false;
 
   ngOnInit(): void {
     // Pobierz token z parametrów URL
@@ -41,9 +43,20 @@ export class VerificationComponent implements OnInit {
           this.router.navigate(['/login']);
         }, 3000);
       },
+
+    
+
       error: (error) => {
         this.verificationStatus = 'error';
         this.errorMessage = error.error?.message || 'Nie udało się zweryfikować konta. Token może być nieprawidłowy lub wygasł.';
+        
+        // Sprawdź czy komunikat błędu dotyczy wykorzystanego tokenu
+        if (this.errorMessage.includes('Token został już wykorzystany') || 
+            this.errorMessage.includes('token już wykorzystany') ||
+            this.errorMessage.includes('już wykorzystany')) {
+          this.isTokenUsed = true;
+        }
+        
         this.notificationService.error(this.errorMessage);
       }
     });

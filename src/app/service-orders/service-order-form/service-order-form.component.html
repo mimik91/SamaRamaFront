@@ -103,6 +103,21 @@
           Odbiór roweru dostępny od niedzieli do czwartku w godzinach 18:00-22:00.
         </p>
         
+        <!-- Informacja o liczbie rowerów i dostępności slotów -->
+        <div class="bikes-count-info">
+          <p>Liczba wybranych rowerów: <strong>{{ selectedBicycles.length }}</strong></p>
+        </div>
+        
+        <!-- Komunikat o ładowaniu dostępności slotów -->
+        <div *ngIf="loadingSlots" class="loading-slots-message">
+          <p>Ładowanie informacji o dostępności terminów...</p>
+        </div>
+        
+        <!-- Komunikat o błędzie ładowania dostępności -->
+        <div *ngIf="slotAvailabilityError" class="error-slots-message">
+          <p>{{ slotAvailabilityError }}</p>
+        </div>
+        
         <form [formGroup]="addressForm" class="pickup-form">
           <div class="form-group">
             <label for="pickupDate">Data odbioru:</label>
@@ -112,7 +127,7 @@
                 matInput 
                 [matDatepicker]="picker" 
                 [formControl]="pickupDateControl"
-                [matDatepickerFilter]="dateFilter"
+                [matDatepickerFilter]="advancedDateFilter"
                 [min]="minDate"
                 [max]="maxDate"
               >
@@ -121,8 +136,27 @@
               <mat-error *ngIf="pickupDateControl.invalid && pickupDateControl.touched">
                 <span *ngIf="pickupDateControl.errors?.['required']">Wybierz datę odbioru</span>
                 <span *ngIf="pickupDateControl.errors?.['invalidDay']">Odbiór możliwy tylko od niedzieli do czwartku</span>
+                <span *ngIf="pickupDateControl.errors?.['noSlots']">Brak dostępnych miejsc w tym dniu</span>
+                <span *ngIf="pickupDateControl.errors?.['notEnoughSlots']">
+                  Niewystarczająca liczba miejsc - dostępnych: {{ pickupDateControl.errors?.['notEnoughSlots'].available }}, 
+                  potrzebnych: {{ pickupDateControl.errors?.['notEnoughSlots'].requested }}
+                </span>
+                <span *ngIf="pickupDateControl.errors?.['exceedsMaxBikesPerOrder']">
+                  Maksymalna liczba rowerów na jedno zamówienie to {{ pickupDateControl.errors?.['exceedsMaxBikesPerOrder'].maxBikesPerOrder }}
+                </span>
               </mat-error>
             </mat-form-field>
+            
+            <!-- Dodatkowa informacja o dostępności slotów dla wybranej daty -->
+            <div *ngIf="pickupDateControl.value && !pickupDateControl.errors" class="date-availability-info">
+              <p class="success-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                Data dostępna - wystarczająca liczba miejsc dla {{ selectedBicycles.length }} rowerów
+              </p>
+            </div>
           </div>
           
           <div class="form-group">

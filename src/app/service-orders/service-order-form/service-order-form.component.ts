@@ -23,10 +23,12 @@ import { ServicePackageService } from '../../service-package/service-package.ser
 import { ServicePackage } from '../../service-package/service-package.model';
 import { BicycleSelectionService } from '../../bicycles/bicycle-selection.service';
 import { EnumerationService } from '../../core/enumeration.service';
+import { ServiceSlotService, ServiceSlotAvailability, SlotAvailabilityCheck } from '../../service-slots/service-slot.service';
 
 // Import our custom date filter, formats and adapter
 import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
 import { CustomDateAdapter } from '../custom-date-adapter';
+import { map, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-service-order-form',
@@ -48,8 +50,8 @@ import { CustomDateAdapter } from '../custom-date-adapter';
   styleUrls: ['./service-order-form.component.css']
 })
 export class ServiceOrderFormComponent implements OnInit {
-
-  dateFilter = CustomDatePickerFilter.dateFilter;
+  // Używamy naszej implementacji filtra dostępności
+  advancedDateFilter = this.createDateFilter();
   
   // Updated date variables to Date objects instead of strings
   minDate: Date;
@@ -75,6 +77,7 @@ export class ServiceOrderFormComponent implements OnInit {
   private servicePackageService = inject(ServicePackageService);
   private bicycleSelectionService = inject(BicycleSelectionService);
   private enumerationService = inject(EnumerationService);
+  private serviceSlotService = inject(ServiceSlotService);
   
   // Bicycle data
   selectedBicycles: Bicycle[] = [];
@@ -89,7 +92,12 @@ export class ServiceOrderFormComponent implements OnInit {
   cities: string[] = [];
   loadingCities = true;
   
-  // Pickup date with validation for day of week (Sunday-Thursday)
+  // Slot availability data
+  slotAvailabilities: ServiceSlotAvailability[] = [];
+  loadingSlots = true;
+  slotAvailabilityError: string | null = null;
+  
+  // Pickup date with validation for day of week and slot availability
   pickupDateControl: FormControl = new FormControl('', [
     Validators.required,
     this.dateValidator.bind(this)
@@ -112,7 +120,40 @@ export class ServiceOrderFormComponent implements OnInit {
   availablePackages: ServicePackage[] = [];
   loadingPackages = false;
   
+  // Tworzenie funkcji filtrującej daty dla datepickera
+  private createDateFilter(): (date: Date | null) => boolean {
+    return (date: Date | null): boolean => {
+      if (!date) return false;
+      
+      // Najpierw używamy naszego podstawowego filtra dni tygodnia
+      if (!CustomDatePickerFilter.dateFilter(date)) {
+        return false;
+      }
+      
+      // Następnie sprawdzamy dostępność slotów
+      const dateString = this.formatDateToISOString(date);
+      
+      // Jeśli mamy już dane o dostępności, sprawdzamy je
+      const availability = this.slotAvailabilities.find(a => a.date === dateString);
+      if (availability) {
+        // Sprawdź czy liczba rowerów nie przekracza dostępnej liczby miejsc
+        return availability.isAvailable && 
+               availability.availableBikes >= this.selectedBicycles.length &&
+               this.selectedBicycles.length <= availability.maxBikesPerOrder;
+      }
+      
+      // Domyślnie pozwalamy na wybór daty, a później zweryfikujemy przy próbie przejścia dalej
+      return true;
+    };
+  }
+  
+  // Helper function to convert Date to ISO string (YYYY-MM-DD)
+  private formatDateToISOString(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+  
   // Validator checking if the selected date is from Sunday to Thursday
+  // and if there are enough available slots
   dateValidator(control: FormControl): ValidationErrors | null {
     if (!control.value) {
       return { required: true };
@@ -142,6 +183,28 @@ export class ServiceOrderFormComponent implements OnInit {
     const dayOfWeek = selectedDate.getDay();
     if (dayOfWeek > 4) { // Friday and Saturday are not allowed
       return { invalidDay: true };
+    }
+    
+    // Check if date is in the list of available dates
+    const dateString = this.formatDateToISOString(selectedDate);
+    const availability = this.slotAvailabilities.find(a => a.date === dateString);
+    
+    if (availability && !availability.isAvailable) {
+      return { noSlots: true };
+    }
+    
+    if (availability && this.selectedBicycles.length > availability.availableBikes) {
+      return { notEnoughSlots: {
+        available: availability.availableBikes,
+        requested: this.selectedBicycles.length
+      }};
+    }
+    
+    if (availability && this.selectedBicycles.length > availability.maxBikesPerOrder) {
+      return { exceedsMaxBikesPerOrder: {
+        maxBikesPerOrder: availability.maxBikesPerOrder,
+        requested: this.selectedBicycles.length
+      }};
     }
     
     return null;
@@ -174,6 +237,9 @@ export class ServiceOrderFormComponent implements OnInit {
     
     // Load cities
     this.loadCities();
+    
+    // Load slot availability for the next 30 days
+    this.loadSlotAvailability();
   }
   
   private loadBicycle(id: number): void {
@@ -232,6 +298,70 @@ export class ServiceOrderFormComponent implements OnInit {
     });
   }
   
+  private loadSlotAvailability(): void {
+    this.loadingSlots = true;
+    this.slotAvailabilityError = null;
+    
+    const today = new Date();
+    const formattedDate = this.formatDateToISOString(today);
+    
+    this.serviceSlotService.getNextDaysAvailability(formattedDate, 30).subscribe({
+      next: (availabilities) => {
+        this.slotAvailabilities = availabilities;
+        this.loadingSlots = false;
+        
+        // Po załadowaniu dostępności, odśwież filtr datepickera
+        this.advancedDateFilter = this.createDateFilter();
+      },
+      error: (error) => {
+        console.error('Error loading slot availability:', error);
+        this.slotAvailabilityError = 'Nie udało się załadować informacji o dostępności terminów.';
+        this.loadingSlots = false;
+      }
+    });
+  }
+  
+  // Dodatkowa metoda do sprawdzania dostępności po wybraniu daty
+  checkAvailabilityForSelectedDate(): void {
+    if (!this.pickupDateControl.value) return;
+    
+    const selectedDate = new Date(this.pickupDateControl.value);
+    const dateString = this.formatDateToISOString(selectedDate);
+    
+    this.serviceSlotService.checkAvailability(dateString, this.selectedBicycles.length)
+      .subscribe({
+        next: (result: SlotAvailabilityCheck) => {
+          if (!result.available) {
+            if (result.reason === 'MAX_BIKES_PER_ORDER_EXCEEDED') {
+              this.notificationService.warning(
+                `Maksymalna liczba rowerów na jeden dzień to ${result.maxBikesPerOrder}. Rozłóż swoją usługę na kilka dni.`
+              );
+              this.pickupDateControl.setErrors({
+                exceedsMaxBikesPerOrder: {
+                  maxBikesPerOrder: result.maxBikesPerOrder,
+                  requested: this.selectedBicycles.length
+                }
+              });
+            } else if (result.reason === 'NO_AVAILABLE_SLOTS') {
+              this.notificationService.warning(
+                `Na wybrany dzień dostępnych jest tylko ${result.availableBikes} miejsc, a próbujesz zamówić serwis dla ${this.selectedBicycles.length} rowerów.`
+              );
+              this.pickupDateControl.setErrors({
+                notEnoughSlots: {
+                  available: result.availableBikes,
+                  requested: this.selectedBicycles.length
+                }
+              });
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error checking availability:', error);
+          this.notificationService.error('Wystąpił błąd podczas sprawdzania dostępności terminów.');
+        }
+      });
+  }
+  
   isFieldInvalid(fieldName: string): boolean {
     const field = this.addressForm.get(fieldName);
     return field ? (field.invalid && (field.dirty || field.touched)) : false;
@@ -261,6 +391,21 @@ export class ServiceOrderFormComponent implements OnInit {
   }
   
   nextStep(): void {
+    if (this.currentStep === 1 && !this.selectedPackageId) {
+      this.notificationService.warning('Wybierz pakiet serwisowy aby kontynuować.');
+      return;
+    }
+    
+    if (this.currentStep === 2) {
+      // Przed przejściem do podsumowania, dodatkowe sprawdzenie dostępności
+      this.checkAvailabilityForSelectedDate();
+      
+      if (this.pickupDateControl.invalid || this.addressForm.invalid) {
+        this.notificationService.warning('Wypełnij poprawnie wszystkie wymagane pola.');
+        return;
+      }
+    }
+    
     if (this.currentStep < 3) {
       this.currentStep++;
     }
@@ -320,42 +465,69 @@ export class ServiceOrderFormComponent implements OnInit {
       return;
     }
     
-    this.isSubmitting = true;
+    // Final availability check before submission
+    const selectedDate = new Date(this.pickupDateControl.value);
+    const dateString = this.formatDateToISOString(selectedDate);
     
-    // Tworzenie listy ID rowerów
-    // Możemy użyć albo wszystkich wybranych rowerów, albo tylko aktualnie wyświetlanego
-    const bicycleIds = this.selectedBicycles.map(bike => bike.id);
-    
-    // Alternatywnie, jeśli chcemy tylko aktualnie wyświetlany rower:
-    // const bicycleIds = [this.bicycle.id];
-    
-    // Utwórz obiekt zamówienia z listą ID rowerów
-    const serviceOrder: CreateServiceOrderRequest = {
-      bicycleIds: bicycleIds,  // Lista ID zamiast pojedynczego ID
-      servicePackageId: this.selectedPackageId,
-      pickupDate: this.pickupDateControl.value,
-      pickupAddress: `${this.addressForm.get('street')?.value}, ${this.addressForm.get('city')?.value}`,
-      additionalNotes: this.addressForm.get('additionalNotes')?.value || undefined
-    };
-    
-    console.log('Sending service order with bicycle IDs:', serviceOrder);
-    
-    // Wysyłanie żądania
-    this.serviceOrderService.createServiceOrder(serviceOrder).subscribe({
-      next: (response: {orderId: string}) => {
-        this.isSubmitting = false;
-        this.orderId = response.orderId;
-        this.currentStep = 4; // Go to confirmation
-        this.notificationService.success('Zamówienie zostało złożone pomyślnie!');
-        
-        // Clear the selection after successful order
-        this.bicycleSelectionService.clearSelection();
-      },
-      error: (error: any) => {
-        this.isSubmitting = false;
-        console.error('Error creating service order:', error);
-        this.notificationService.error('Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie.');
-      }
-    });
+    this.serviceSlotService.checkAvailability(dateString, this.selectedBicycles.length)
+      .pipe(
+        switchMap((result: SlotAvailabilityCheck) => {
+          if (!result.available) {
+            if (result.reason === 'MAX_BIKES_PER_ORDER_EXCEEDED') {
+              this.notificationService.error(
+                `Maksymalna liczba rowerów na jeden dzień to ${result.maxBikesPerOrder}. Rozłóż swoją usługę na kilka dni.`
+              );
+              return of(null);
+            } else if (result.reason === 'NO_AVAILABLE_SLOTS') {
+              this.notificationService.error(
+                `Na wybrany dzień dostępnych jest tylko ${result.availableBikes} miejsc, a próbujesz zamówić serwis dla ${this.selectedBicycles.length} rowerów.`
+              );
+              return of(null);
+            }
+            return of(null);
+          }
+          
+          // If available, proceed with order submission
+          this.isSubmitting = true;
+          
+          // Tworzenie listy ID rowerów
+          const bicycleIds = this.selectedBicycles.map(bike => bike.id);
+          
+          // Utwórz obiekt zamówienia z listą ID rowerów
+          const serviceOrder: CreateServiceOrderRequest = {
+            bicycleIds: bicycleIds,  // Lista ID zamiast pojedynczego ID
+            servicePackageId: this.selectedPackageId,
+            pickupDate: this.pickupDateControl.value,
+            pickupAddress: `${this.addressForm.get('street')?.value}, ${this.addressForm.get('city')?.value}`,
+            additionalNotes: this.addressForm.get('additionalNotes')?.value || undefined
+          };
+          
+          console.log('Sending service order with bicycle IDs:', serviceOrder);
+          
+          // Return the observable from service
+          return this.serviceOrderService.createServiceOrder(serviceOrder);
+        })
+      )
+      .subscribe({
+        next: (response: any) => {
+          if (!response) return; // This means availability check failed
+          
+          this.isSubmitting = false;
+          this.orderId = response.orderId;
+          this.currentStep = 4; // Go to confirmation
+          this.notificationService.success('Zamówienie zostało złożone pomyślnie!');
+          
+          // Clear the selection after successful order
+          this.bicycleSelectionService.clearSelection();
+          
+          // Clear the slot availability cache to refresh data for future orders
+          this.serviceSlotService.clearCache();
+        },
+        error: (error: any) => {
+          this.isSubmitting = false;
+          console.error('Error creating service order:', error);
+          this.notificationService.error('Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie.');
+        }
+      });
   }
 }

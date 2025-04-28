@@ -2,10 +2,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* Zmiana z center na flex-start */
+  justify-content: flex-start;
   min-height: calc(100vh - 60px);
   padding: 20px;
-  padding-top: 120px; /* Zwiększony padding na górze, aby podnieść okno logowania */
+  padding-top: 80px;
   background-color: #f8f9fa;
 }
 
@@ -16,7 +16,6 @@
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-top: -60px; /* Ujemny margines dodatkowo podnosi okno logowania */
 }
 
 h2 {
@@ -26,6 +25,13 @@ h2 {
   text-align: center;
   font-size: 1.8rem;
   font-weight: 600;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-size: 1.3rem;
 }
 
 .form-group {
@@ -39,16 +45,17 @@ label {
   color: #34495e;
 }
 
-input {
+.form-control {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
   transition: border-color 0.3s;
+  box-sizing: border-box;
 }
 
-input:focus {
+.form-control:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
@@ -112,17 +119,36 @@ input:focus {
 }
 
 /* Style dla formularza ponownego wysłania linku weryfikacyjnego */
-.resend-verification-form {
+.resend-verification-container {
   margin-top: 20px;
-  padding: 15px;
-  background-color: #f8f9fa;
+  padding: 20px;
+  background-color: #edf7fd;
   border-radius: 4px;
-  border-left: 3px solid #3498db;
+  border: 1px solid #b3daef;
+}
+
+.resend-verification-header {
+  margin-bottom: 15px;
+}
+
+.info-text {
+  color: #5a7188;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+.resend-form {
+  margin-top: 15px;
 }
 
 .verification-actions {
   margin-top: 15px;
-  margin-bottom: 5px;
+  margin-bottom: 0;
+}
+
+.cancel-btn {
+  background-color: #e9ecef;
+  border-color: #ced4da;
 }
 
 .validation-error {
@@ -158,14 +184,11 @@ input:focus {
 /* Media query dla urządzeń mobilnych */
 @media screen and (max-width: 480px) {
   .login-container {
-    padding-top: 80px; /* Mniejszy padding na urządzeniach mobilnych */
+    padding-top: 60px;
   }
   
   .login-form-container {
     padding: 20px;
-    box-shadow: none;
-    border-radius: 0;
-    margin-top: -30px; /* Mniejszy margines negatywny dla urządzeń mobilnych */
   }
   
   .form-actions {
@@ -176,5 +199,10 @@ input:focus {
   .primary-btn, .secondary-btn {
     width: 100%;
     text-align: center;
+  }
+  
+  .verification-actions {
+    flex-direction: column;
+    gap: 10px;
   }
 }

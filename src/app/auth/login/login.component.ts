@@ -1,3 +1,4 @@
+// login.component.ts
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -84,7 +85,8 @@ export class LoginComponent {
           // Sprawdzenie, czy konto nie jest zweryfikowane
           if (error.error && error.error.message && 
               (error.error.message.includes('not verified') || 
-               error.error.message.includes('nie zweryfikowane'))) {
+               error.error.message.includes('nie zweryfikowane') ||
+               error.error.message.includes('nie zostało zweryfikowane'))) {
             this.errorMessage = 'Konto nie zostało zweryfikowane. Sprawdź swoją skrzynkę email lub kliknij poniżej, aby wysłać link weryfikacyjny ponownie.';
             this.showResendVerification = true;
             // Przenieś email z formularza logowania do formularza ponownego wysyłania
@@ -118,6 +120,7 @@ export class LoginComponent {
       next: (response) => {
         this.isResendingVerification = false;
         this.verificationResendSuccess = true;
+        this.showResendVerification = false;
         this.successMessage = 'Link weryfikacyjny został wysłany. Sprawdź swoją skrzynkę pocztową.';
       },
       error: (error) => {
@@ -146,5 +149,6 @@ export class LoginComponent {
   // Włączanie/wyłączanie formularza ponownego wysyłania
   toggleResendForm() {
     this.showResendVerification = !this.showResendVerification;
+    this.verificationResendSuccess = false;
   }
 }

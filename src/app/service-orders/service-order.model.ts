@@ -9,10 +9,11 @@ export interface ServiceOrder {
   bicycle: Bicycle | null;
   client?: User;
   
-  // Nowe pole referencyjne do ServicePackage
+  // Pełny obiekt pakietu serwisowego (jeśli zwrócony przez API)
   servicePackage?: ServicePackage;
   
-  // Stare pole - dla wstecznej kompatybilności
+  // Dane pakietu serwisowego, jeśli nie jest zwracany pełny obiekt
+  servicePackageName?: string;
   servicePackageCode?: string;
   
   pickupDate: string;

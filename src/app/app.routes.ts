@@ -15,6 +15,7 @@ import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/ad
 import { AdminServicePackagesComponent } from './admin/admin-service-packages/admin-service-package.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
+import { ServiceOrderDetailsComponent } from './service-orders/service-order-details/service-order-details.component';
 import { HomeComponent } from './home/home.component';
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 
@@ -40,7 +41,7 @@ export const routes: Routes = [
     
     // New route for service order without bicycle ID in URL
     {path: 'order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard]},
-    
+    {path: 'service-appointments/:id', component: ServiceOrderDetailsComponent, canActivate: [clientGuard]},
     // Keep the old route for backward compatibility
     {path: 'bicycles/:id/order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard]},
     

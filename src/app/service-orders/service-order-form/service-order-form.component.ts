@@ -493,16 +493,27 @@ export class ServiceOrderFormComponent implements OnInit {
           // Tworzenie listy ID rowerów
           const bicycleIds = this.selectedBicycles.map(bike => bike.id);
           
+          // FIX: Ensure proper date handling by creating the date in local timezone
+          // instead of using the date object directly (which converts to UTC in ISO string)
+          const pickupDate = this.pickupDateControl.value;
+          
+          // Ensure we preserve the selected date by adjusting for timezone offsets
+          // Format as YYYY-MM-DDT00:00:00.000Z to keep the correct date
+          const year = pickupDate.getFullYear();
+          const month = String(pickupDate.getMonth() + 1).padStart(2, '0');
+          const day = String(pickupDate.getDate()).padStart(2, '0');
+          const formattedDate = `${year}-${month}-${day}T00:00:00.000Z`;
+          
           // Utwórz obiekt zamówienia z listą ID rowerów
           const serviceOrder: CreateServiceOrderRequest = {
             bicycleIds: bicycleIds,  // Lista ID zamiast pojedynczego ID
             servicePackageId: this.selectedPackageId === null ? undefined : this.selectedPackageId,
-            pickupDate: this.pickupDateControl.value,
+            pickupDate: formattedDate, // Use the properly formatted date string
             pickupAddress: `${this.addressForm.get('street')?.value}, ${this.addressForm.get('city')?.value}`,
             additionalNotes: this.addressForm.get('additionalNotes')?.value || undefined
           };
           
-          console.log('Sending service order with bicycle IDs:', serviceOrder);
+          console.log('Sending service order with bicycle IDs and adjusted date:', serviceOrder);
           
           // Return the observable from service
           return this.serviceOrderService.createServiceOrder(serviceOrder);
@@ -529,5 +540,13 @@ export class ServiceOrderFormComponent implements OnInit {
           this.notificationService.error('Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie.');
         }
       });
+  }
+  
+  // Also add this helper method if it doesn't exist
+  private formatDateWithoutTimezoneConversion(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T00:00:00.000Z`;
   }
 }

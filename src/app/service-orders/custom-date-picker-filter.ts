@@ -27,8 +27,9 @@ export class CustomDatePickerFilter {
     );
   }
 
-  // Filter for days (Sunday-Thursday allowed, Friday-Saturday not allowed)
+  // Basic filter for days (Sunday-Thursday allowed, Friday-Saturday not allowed)
   // Also filters out days before public holidays
+  // NOTE: This is now only the basic filter - actual slot availability is checked separately
   static dateFilter: DateFilterFn<Date | null> = (date: Date | null): boolean => {
     if (!date) return false;
     

@@ -496,7 +496,7 @@ export class ServiceOrderFormComponent implements OnInit {
           // Utwórz obiekt zamówienia z listą ID rowerów
           const serviceOrder: CreateServiceOrderRequest = {
             bicycleIds: bicycleIds,  // Lista ID zamiast pojedynczego ID
-            servicePackageId: this.selectedPackageId,
+            servicePackageId: this.selectedPackageId === null ? undefined : this.selectedPackageId,
             pickupDate: this.pickupDateControl.value,
             pickupAddress: `${this.addressForm.get('street')?.value}, ${this.addressForm.get('city')?.value}`,
             additionalNotes: this.addressForm.get('additionalNotes')?.value || undefined

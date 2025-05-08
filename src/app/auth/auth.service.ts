@@ -56,7 +56,7 @@ interface UserSession {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = '${environment.apiUrl}/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
   private http = inject(HttpClient);
   
   // Use BehaviorSubject to track authentication state

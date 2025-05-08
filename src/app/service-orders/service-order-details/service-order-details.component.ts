@@ -1,3 +1,4 @@
+// service-order-details.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -75,6 +76,51 @@ export class ServiceOrderDetailsComponent implements OnInit {
       case 'CANCELLED': return 'status-cancelled';
       default: return '';
     }
+  }
+  
+  // Safe accessor for bicycle properties
+  getBicycleBrand(): string {
+    if (!this.serviceOrder || !this.serviceOrder.bicycle) return 'Nie określono';
+    return this.serviceOrder.bicycle.brand || 'Nie określono';
+  }
+  
+  getBicycleModel(): string {
+    if (!this.serviceOrder || !this.serviceOrder.bicycle) return '';
+    return this.serviceOrder.bicycle.model || '';
+  }
+  
+  getBicycleType(): string {
+    if (!this.serviceOrder || !this.serviceOrder.bicycle) return '';
+    return this.serviceOrder.bicycle.type || '';
+  }
+  
+  getBicycleFrameMaterial(): string {
+    if (!this.serviceOrder || !this.serviceOrder.bicycle) return '';
+    return this.serviceOrder.bicycle.frameMaterial || '';
+  }
+  
+  getBicycleFrameNumber(): string {
+    if (!this.serviceOrder || !this.serviceOrder.bicycle) return '';
+    return this.serviceOrder.bicycle.frameNumber || '';
+  }
+  
+  // Safe accessor for service package
+  getServicePackageName(): string {
+    if (!this.serviceOrder) return 'Nie określono';
+    
+    if (this.serviceOrder.servicePackage && this.serviceOrder.servicePackage.name) {
+      return this.serviceOrder.servicePackage.name;
+    }
+    
+    if (this.serviceOrder.servicePackageName) {
+      return this.serviceOrder.servicePackageName;
+    }
+    
+    if (this.serviceOrder.servicePackageCode) {
+      return this.serviceOrder.servicePackageCode;
+    }
+    
+    return 'Nie określono';
   }
 
   formatDate(dateString: string): string {

@@ -18,6 +18,8 @@ import { ServiceAppointmentsComponent } from './service-orders/service-appointme
 import { ServiceOrderDetailsComponent } from './service-orders/service-order-details/service-order-details.component';
 import { HomeComponent } from './home/home.component';
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
+import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
+import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 
 export const routes: Routes = [
     // Home route
@@ -30,6 +32,8 @@ export const routes: Routes = [
     {path: 'login', component: LoginComponent},
     {path: 'register', component: RegistrationComponent, data: { userType: 'client' }},
     {path: 'verify-account', component: VerificationComponent},
+    {path: 'password-reset-request', component: PasswordResetRequestComponent},
+    {path: 'password-reset', component: PasswordResetComponent},
     
     // Nowa trasa dla rejestracji serwisu
     {path: 'register-service', component: ServiceRegistrationComponent},

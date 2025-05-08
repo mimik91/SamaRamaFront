@@ -205,4 +205,18 @@ label {
     flex-direction: column;
     gap: 10px;
   }
+  .forgot-password {
+    margin-top: 5px;
+    text-align: right;
+  }
+  
+  .forgot-password a {
+    color: #3498db;
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+  
+  .forgot-password a:hover {
+    text-decoration: underline;
+  }
 }

@@ -1,3 +1,4 @@
+// service-appointments.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -70,6 +71,42 @@ export class ServiceAppointmentsComponent implements OnInit {
       case 'CANCELLED': return 'status-cancelled';
       default: return '';
     }
+  }
+  
+  // Get bicycle display name from the actual API response structure
+  getBicycleDisplayName(order: any): string {
+    if (order.bicycleBrand || order.bicycleModel) {
+      const brand = order.bicycleBrand || '';
+      const model = order.bicycleModel || '';
+      return brand + (model ? ' ' + model : '');
+    }
+    
+    // Fallback to bicycle object if it exists (unlikely based on the API response)
+    if (order.bicycle && (order.bicycle.brand || order.bicycle.model)) {
+      const brand = order.bicycle.brand || '';
+      const model = order.bicycle.model || '';
+      return brand + (model ? ' ' + model : '');
+    }
+    
+    return 'Nie określono';
+  }
+  
+  // Get service package display name
+  getServicePackageDisplayName(order: any): string {
+    if (order.servicePackageName) {
+      return order.servicePackageName;
+    }
+    
+    if (order.servicePackageCode) {
+      return order.servicePackageCode;
+    }
+    
+    // Fallback to servicePackage object if it exists (unlikely based on the API response)
+    if (order.servicePackage && order.servicePackage.name) {
+      return order.servicePackage.name;
+    }
+    
+    return 'Nie określono';
   }
 
   viewOrderDetails(orderId: number): void {

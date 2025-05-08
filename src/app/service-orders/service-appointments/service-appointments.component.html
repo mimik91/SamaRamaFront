@@ -51,10 +51,7 @@
             <div class="detail-row">
               <div class="detail-label">Rower:</div>
               <div class="detail-value">
-                <span *ngIf="order.bicycle?.brand">{{ order.bicycle.brand }}</span>
-                <span *ngIf="order.bicycle?.model && order.bicycle?.brand">&nbsp;</span>
-                <span *ngIf="order.bicycle?.model">{{ order.bicycle.model }}</span>
-                <span *ngIf="!order.bicycle?.brand && !order.bicycle?.model">Nie określono</span>
+                {{ getBicycleDisplayName(order) }}
               </div>
             </div>
 
@@ -62,11 +59,7 @@
             <div class="detail-row">
               <div class="detail-label">Pakiet:</div>
               <div class="detail-value">
-                <!-- Sprawdzamy różne możliwe źródła nazwy pakietu -->
-                <span *ngIf="order.servicePackage?.name">{{ order.servicePackage.name }}</span>
-                <span *ngIf="!order.servicePackage?.name && order.servicePackageName">{{ order.servicePackageName }}</span>
-                <span *ngIf="!order.servicePackage?.name && !order.servicePackageName && order.servicePackageCode">{{ order.servicePackageCode }}</span>
-                <span *ngIf="!order.servicePackage?.name && !order.servicePackageName && !order.servicePackageCode">Nie określono</span>
+                {{ getServicePackageDisplayName(order) }}
               </div>
             </div>
             

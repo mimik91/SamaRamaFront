@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, catchError, throwError, of } from 'rxjs';
+import { environment } from '../core/api-config';
 
 export interface LoginCredentials {
   email: string;
@@ -55,7 +56,7 @@ interface UserSession {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = '${environment.apiUrl}/auth';
   private http = inject(HttpClient);
   
   // Use BehaviorSubject to track authentication state

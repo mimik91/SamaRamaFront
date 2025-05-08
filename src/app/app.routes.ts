@@ -20,6 +20,7 @@ import { HomeComponent } from './home/home.component';
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
+import { RenderMode } from '@angular/ssr';
 
 export const routes: Routes = [
     // Home route
@@ -41,11 +42,11 @@ export const routes: Routes = [
     // Client routes
     {path: 'bicycles', component: BicyclesListComponent, canActivate: [clientGuard]},
     {path: 'bicycles/add', component: BicycleFormComponent, canActivate: [clientGuard]},
-    {path: 'bicycles/:id', component: BicycleDetailsComponent, canActivate: [clientGuard]},
+    {path: 'bicycles/:id', component: BicycleDetailsComponent, canActivate: [clientGuard], data: {RenderMode: 'client'}},
     
     // New route for service order without bicycle ID in URL
     {path: 'order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard]},
-    {path: 'service-appointments/:id', component: ServiceOrderDetailsComponent, canActivate: [clientGuard]},
+    {path: 'service-appointments/:id', component: ServiceOrderDetailsComponent, canActivate: [clientGuard], data: {RenderMode: 'client'}},
     // Keep the old route for backward compatibility
     {path: 'bicycles/:id/order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard]},
     

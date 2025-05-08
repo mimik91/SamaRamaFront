@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
+import { environment } from '../core/api-config';
 
 export interface UserProfile {
   id: number;
@@ -26,7 +27,7 @@ export interface PasswordChangeData {
   providedIn: 'root'
 })
 export class AccountService {
-  private apiUrl = 'http://localhost:8080/api/account';
+  private apiUrl = `${environment.apiUrl}/account`;
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 

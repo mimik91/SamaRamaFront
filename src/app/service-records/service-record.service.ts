@@ -3,12 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { ServiceRecord } from './service-record.model';
+import { environment } from '../core/api-config';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class ServiceRecordService {
-  private apiUrl = 'http://localhost:8080/api/service-records';
+  private apiUrl = `${environment.apiUrl}/service-records`;
   private http = inject(HttpClient);
   
   constructor() {}

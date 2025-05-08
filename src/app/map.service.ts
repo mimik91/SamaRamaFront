@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, NgZone } from '@angular/core';
 import { Observable, BehaviorSubject, catchError, throwError, tap } from 'rxjs';
+import { environment } from './core/api-config';
 
 // Interface dla koordynatów serwisu
 export interface Coordinate {
@@ -20,7 +21,7 @@ declare global {
   providedIn: 'root'
 })
 export class MapService {
-  private apiUrl = 'http://localhost:8080/api';
+  private apiUrl = `${environment.apiUrl}`;
   private http = inject(HttpClient);
   private zone = inject(NgZone);
   

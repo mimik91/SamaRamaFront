@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, catchError } from 'rxjs';
 import { ServiceOrder } from '../service-orders/service-order.model';
+import { environment } from '../core/api-config';
 
 export interface DashboardStats {
   totalUsers: number;
@@ -27,8 +28,8 @@ export interface AdminUser {
   providedIn: 'root'
 })
 export class AdminService {
-  private apiUrl = 'http://localhost:8080/api/admin';
-  private enumerationsUrl = 'http://localhost:8080/api/enumerations';
+  private apiUrl = `${environment.apiUrl}/admin`;
+  private enumerationsUrl = `${environment.apiUrl}/enumerations`;
   private http = inject(HttpClient);
 
   constructor() { }

@@ -1,4 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080/api'
+  apiUrl: 'samarama-a5cba73df1da.herokuapp.com/api'
 };
+

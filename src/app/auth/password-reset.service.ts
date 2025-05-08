@@ -2,6 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
+import { environment } from '../core/api-config';
 
 export interface PasswordResetRequestDto {
   email: string;
@@ -16,7 +17,7 @@ export interface PasswordResetDto {
   providedIn: 'root'
 })
 export class PasswordResetService {
-  private apiUrl = 'http://localhost:8080/api/password';
+  private apiUrl = `${environment.apiUrl}/password`;
   private http = inject(HttpClient);
 
   /**

@@ -3,12 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { ServicePackage } from './service-package.model';
+import { environment } from '../core/api-config';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class ServicePackageService {
-  private apiUrl = 'http://localhost:8080/api/service-packages';
+  private apiUrl = `${environment.apiUrl}/service-packages`;
   private http = inject(HttpClient);
   
   constructor() {}

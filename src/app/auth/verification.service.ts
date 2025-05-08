@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
+import { environment } from '../core/api-config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VerificationService {
-  private apiUrl = 'http://localhost:8080/api/verification';
+  private apiUrl = `${environment.apiUrl}/verification`;
   private http = inject(HttpClient);
 
   /**

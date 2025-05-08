@@ -4,12 +4,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { CreateServiceOrderRequest, OrderStatus, ServiceOrder } from './service-order.model';
 import { ServicePackage } from '../service-package/service-package.model';
+import { environment } from '../core/api-config';
+
                                
 @Injectable({
   providedIn: 'root'
 })
 export class ServiceOrderService {
-  private apiUrl = 'http://localhost:8080/api/service-orders';
+  private apiUrl = `${environment.apiUrl}/service-orders`;
   private http = inject(HttpClient);
   
   constructor() {}

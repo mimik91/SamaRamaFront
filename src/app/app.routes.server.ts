@@ -10,6 +10,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
   {
+    path: 'bicycles/:id/order-service',
+    renderMode: RenderMode.Server  // Set this to Server instead of Prerender
+  },
+  {
     path: '**',
     renderMode: RenderMode.Prerender,
   },

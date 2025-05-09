@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://samarama/api'
+  apiUrl: 'http://samarama.herokuapp.com/api'
 };

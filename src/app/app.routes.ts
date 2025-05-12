@@ -21,6 +21,7 @@ import { ServiceRegistrationComponent } from './service-registration/service-reg
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { RenderMode } from '@angular/ssr';
+import { AdminServiceSlotsComponent } from './admin/service-slots/admin-service-slots.component';
 
 export const routes: Routes = [
     // Home route
@@ -58,6 +59,7 @@ export const routes: Routes = [
     {path: 'service-orders', component: AdminServiceOrdersComponent, canActivate: [adminGuard]},
     {path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard]},
     {path: 'admin-service-packages', component: AdminServicePackagesComponent, canActivate: [adminGuard]},
+    {path: 'admin-service-slots', component: AdminServiceSlotsComponent, canActivate: [adminGuard]},
     
     // Account route - dostępna dla zalogowanych użytkowników
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},

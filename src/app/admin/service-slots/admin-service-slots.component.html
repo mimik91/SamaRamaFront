@@ -1,0 +1,279 @@
+<div class="service-slots-container">
+  <div class="header">
+    <h1>Zarządzanie dostępnością slotów serwisowych</h1>
+    <button class="back-btn" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Wróć do panelu
+    </button>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Ładowanie konfiguracji slotów...</p>
+  </div>
+  
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+  
+  <ng-container *ngIf="!loading && !error">
+    <div class="content-container">
+      <!-- Lista konfiguracji (lewa kolumna) -->
+      <div class="configs-sidebar">
+        <div class="sidebar-header">
+          <h2>Konfiguracje slotów</h2>
+          <button class="add-config-btn" (click)="startAddingNew()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Dodaj nową
+          </button>
+        </div>
+        
+        <div class="config-groups">
+          <!-- Aktywne konfiguracje -->
+          <div class="config-group">
+            <h3 class="group-title">Aktywne konfiguracje</h3>
+            <div class="configs-list">
+              <div *ngIf="activeConfigs.length === 0" class="no-configs-message">
+                Brak aktywnych konfiguracji slotów.
+              </div>
+              
+              <div
+                *ngFor="let config of activeConfigs"
+                class="config-item"
+                [class.active]="selectedConfig?.id === config.id"
+                (click)="selectConfig(config)"
+              >
+                <div class="config-item-header">
+                  <span class="config-dates">
+                    {{ formatDateForDisplay(config.startDate) }} 
+                    <span *ngIf="config.endDate"> - {{ formatDateForDisplay(config.endDate) }}</span>
+                    <span *ngIf="!config.endDate"> - bezterminowo</span>
+                  </span>
+                </div>
+                <div class="config-details">
+                  <div class="config-detail">
+                    <span class="detail-label">Max rowerów/dzień:</span>
+                    <span class="detail-value">{{ config.maxBikesPerDay }}</span>
+                  </div>
+                  <div class="config-detail">
+                    <span class="detail-label">Max rowerów/zamówienie:</span>
+                    <span class="detail-value">{{ config.maxBikesPerOrder }}</span>
+                  </div>
+                  <div class="config-detail">
+                    <span class="detail-label">Dostępne dni:</span>
+                    <span class="detail-value">{{ getAvailableDaysDisplay(config.availableDays) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Przyszłe konfiguracje -->
+          <div class="config-group" *ngIf="futureConfigs.length > 0">
+            <h3 class="group-title">Przyszłe konfiguracje</h3>
+            <div class="configs-list">
+              <div
+                *ngFor="let config of futureConfigs"
+                class="config-item"
+                [class.active]="selectedConfig?.id === config.id"
+                [class.inactive]="!config.active"
+                (click)="selectConfig(config)"
+              >
+                <div class="config-item-header">
+                  <span class="config-dates">
+                    {{ formatDateForDisplay(config.startDate) }} 
+                    <span *ngIf="config.endDate"> - {{ formatDateForDisplay(config.endDate) }}</span>
+                    <span *ngIf="!config.endDate"> - bezterminowo</span>
+                  </span>
+                </div>
+                <div class="config-details">
+                  <div class="config-detail">
+                    <span class="detail-label">Max rowerów/dzień:</span>
+                    <span class="detail-value">{{ config.maxBikesPerDay }}</span>
+                  </div>
+                  <div class="config-detail">
+                    <span class="detail-label">Max rowerów/zamówienie:</span>
+                    <span class="detail-value">{{ config.maxBikesPerOrder }}</span>
+                  </div>
+                  <div class="config-detail">
+                    <span class="detail-label">Dostępne dni:</span>
+                    <span class="detail-value">{{ getAvailableDaysDisplay(config.availableDays) }}</span>
+                  </div>
+                  <div class="config-status" *ngIf="!config.active">Nieaktywna</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Szczegóły konfiguracji lub formularz edycji (prawa kolumna) -->
+      <div class="config-details-container">
+        <!-- Widok szczegółów konfiguracji -->
+        <div *ngIf="selectedConfig && !isEditing && !isAddingNew" class="config-details">
+          <div class="details-header">
+            <h2>Szczegóły konfiguracji</h2>
+            <div class="header-actions">
+              <button class="edit-btn" (click)="startEditing()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edytuj
+              </button>
+              <button class="delete-btn" (click)="deleteConfig(selectedConfig.id)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
+                Usuń
+              </button>
+            </div>
+          </div>
+          
+          <div class="details-section">
+            <div class="detail-item">
+              <div class="detail-label">Okres ważności:</div>
+              <div class="detail-value">
+                {{ formatDateForDisplay(selectedConfig.startDate) }} 
+                <span *ngIf="selectedConfig.endDate"> - {{ formatDateForDisplay(selectedConfig.endDate) }}</span>
+                <span *ngIf="!selectedConfig.endDate"> - bezterminowo</span>
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Maksymalna liczba rowerów dziennie:</div>
+              <div class="detail-value">{{ selectedConfig.maxBikesPerDay }}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Maksymalna liczba rowerów na zamówienie:</div>
+              <div class="detail-value">{{ selectedConfig.maxBikesPerOrder }}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Dostępne dni:</div>
+              <div class="detail-value">{{ getAvailableDaysDisplay(selectedConfig.availableDays) }}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Status:</div>
+              <div class="detail-value">
+                <span [ngClass]="{'status-active': selectedConfig.active, 'status-inactive': !selectedConfig.active}">
+                  {{ selectedConfig.active ? 'Aktywna' : 'Nieaktywna' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Formularz dodawania/edycji konfiguracji -->
+        <div *ngIf="isEditing || isAddingNew" class="config-edit-form">
+          <h2>{{ isAddingNew ? 'Dodaj nową konfigurację' : 'Edytuj konfigurację' }}</h2>
+          
+          <form [formGroup]="slotConfigForm" (ngSubmit)="saveConfig()">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="startDate">Data początkowa*</label>
+                <input 
+                  type="date" 
+                  id="startDate" 
+                  formControlName="startDate" 
+                  [class.is-invalid]="isFieldInvalid('startDate')"
+                >
+                <div *ngIf="isFieldInvalid('startDate')" class="error-message">
+                  Data początkowa jest wymagana
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="endDate">Data końcowa (opcjonalnie)</label>
+                <input 
+                  type="date" 
+                  id="endDate" 
+                  formControlName="endDate"
+                >
+                <div class="help-text">Pozostaw puste dla konfiguracji bezterminowej</div>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="maxBikesPerDay">Maksymalna liczba rowerów dziennie*</label>
+                <input 
+                  type="number" 
+                  id="maxBikesPerDay" 
+                  formControlName="maxBikesPerDay" 
+                  [class.is-invalid]="isFieldInvalid('maxBikesPerDay')"
+                  min="1"
+                >
+                <div *ngIf="isFieldInvalid('maxBikesPerDay')" class="error-message">
+                  Podaj poprawną wartość (minimum 1)
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="maxBikesPerOrder">Maksymalna liczba rowerów na zamówienie*</label>
+                <input 
+                  type="number" 
+                  id="maxBikesPerOrder" 
+                  formControlName="maxBikesPerOrder" 
+                  [class.is-invalid]="isFieldInvalid('maxBikesPerOrder')"
+                  min="1"
+                >
+                <div *ngIf="isFieldInvalid('maxBikesPerOrder')" class="error-message">
+                  Podaj poprawną wartość (minimum 1)
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Dostępne dni tygodnia</label>
+              <div class="days-selector">
+                <div 
+                  *ngFor="let day of dayNames; let i = index" 
+                  class="day-checkbox" 
+                  [class.checked]="slotConfigForm.value.availableDays[i]"
+                  (click)="slotConfigForm.value.availableDays[i] = !slotConfigForm.value.availableDays[i]"
+                >
+                  <span class="day-name">{{ day }}</span>
+                </div>
+              </div>
+              <div class="help-text">Kliknij nazwę dnia, aby zmienić jego dostępność</div>
+            </div>
+            
+            <div class="form-group active-checkbox">
+              <label for="active" class="checkbox-label">
+                <input type="checkbox" id="active" formControlName="active">
+                Konfiguracja aktywna
+              </label>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="cancel-btn" (click)="cancelEdit()">Anuluj</button>
+              <button type="submit" class="save-btn" [disabled]="slotConfigForm.invalid || saving">
+                {{ saving ? 'Zapisywanie...' : 'Zapisz konfigurację' }}
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Placeholder gdy nie wybrano konfiguracji -->
+        <div *ngIf="!selectedConfig && !isAddingNew" class="no-selection-message">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <h3>Wybierz konfigurację z listy</h3>
+          <p>lub</p>
+          <button class="primary-btn" (click)="startAddingNew()">Dodaj nową konfigurację</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

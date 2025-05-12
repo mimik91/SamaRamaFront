@@ -174,8 +174,21 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
+  // Helper method for formatting dates without timezone conversion
+  private formatDateWithoutTimezoneConversion(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T00:00:00.000Z`;
+  }
+  
   // Navigate to enumerations manager
   navigateToEnumerationsManager(): void {
     this.router.navigate(['/admin-enumerations']);
+  }
+  
+  // Navigate to service slots manager
+  navigateToServiceSlots(): void {
+    this.router.navigate(['/admin-service-slots']);
   }
 }

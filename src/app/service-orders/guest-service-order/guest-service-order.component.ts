@@ -15,6 +15,8 @@ import { BikeFormService, BikeFormData } from '../../home/bike-form.service';
 import { ServicePackage } from '../../service-package/service-package.model';
 import { ServicePackageService } from '../../service-package/service-package.service';
 import { EnumerationService } from '../../core/enumeration.service';
+import { Observable, of, catchError, map } from 'rxjs';
+
 
 // Angular Material imports 
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -24,6 +26,8 @@ import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } f
 import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
 import { CustomDateAdapter } from '../custom-date-adapter';
 import { environment } from '../../core/api-config';
+import { ServiceSlotAvailability } from '../../service-slots/service-slot.service';
+
 
 @Component({
   selector: 'app-guest-service-order',
@@ -142,6 +146,20 @@ export class GuestServiceOrderComponent implements OnInit {
       return;
     }
     
+    // Sprawdź maksymalną liczbę rowerów dozwoloną na zamówienie
+    this.getMaxBikesPerOrder().subscribe({
+      next: (maxBikes) => {
+        // Jeśli liczba rowerów przekracza limit, pokaż ostrzeżenie
+        if (this.bikesData.length > maxBikes) {
+          this.notificationService.warning(`Maksymalna liczba rowerów na jedno zamówienie to ${maxBikes}. Niektóre rowery mogą zostać pominięte.`);
+          // Przytnij listę rowerów do dozwolonego limitu
+          this.bikesData = this.bikesData.slice(0, maxBikes);
+          // Zaktualizuj dane w serwisie
+          this.bikeFormService.setBikesData(this.bikesData);
+        }
+      }
+    });
+    
     // Załaduj pakiety serwisowe
     this.loadServicePackages();
     
@@ -166,6 +184,22 @@ export class GuestServiceOrderComponent implements OnInit {
         this.availablePackages = []; // Ustaw pustą tablicę, aby uniknąć problemów z renderowaniem
       }
     });
+  }
+  
+  // Metoda do pobierania maksymalnej liczby rowerów na zamówienie
+  getMaxBikesPerOrder(): Observable<number> {
+    // Get current date
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
+    
+    return this.http.get<ServiceSlotAvailability>(`${environment.apiUrl}/service-slots/availability?date=${formattedDate}`)
+      .pipe(
+        map(response => response.maxBikesPerOrder || 5), // Default to 5 if not specified
+        catchError(error => {
+          console.error('Error fetching max bikes per order:', error);
+          return of(5); // Default value if error
+        })
+      );
   }
   
   private loadCities(): void {

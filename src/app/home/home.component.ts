@@ -76,6 +76,10 @@ export class HomeComponent implements OnInit {
     return this.bikeForm.get('bikes') as FormArray;
   }
 
+  canAddMoreBikes(): boolean {
+    return this.bikesArray.length < this.maxBikesPerOrder;
+  }
+
   addBike(): void {
     // Ograniczenie do 5 rowerów
     if (this.bikesArray.length < 5) {

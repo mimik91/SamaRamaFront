@@ -23,6 +23,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
 import { CustomDateAdapter } from '../custom-date-adapter';
+import { environment } from '../../core/api-config';
 
 @Component({
   selector: 'app-guest-service-order',
@@ -264,7 +265,7 @@ export class GuestServiceOrderComponent implements OnInit {
     console.log('Sending order data:', orderData);
     
     // Wyślij dane do API
-    this.http.post('http://localhost:8080/api/guest-orders', orderData)
+   this.http.post(`${environment.apiUrl}/guest-orders`, orderData)
       .subscribe({
         next: (response: any) => {
           console.log('Order submission successful:', response);

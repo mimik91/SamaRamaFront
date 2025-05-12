@@ -23,7 +23,7 @@ import { NavigationComponent } from './core/navigation/navigation.component';
   `]
 })
 export class AppComponent implements OnInit {
-  title = 'SamaRama';
+  title = 'CycloPick';
   @ViewChild('navigation') navigationComponent!: NavigationComponent;
 
   constructor(private router: Router) {}

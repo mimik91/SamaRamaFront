@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { NotificationService } from '../../core/notification.service';
-import { AdminService, DashboardStats } from '../admin-service';  // Fixed import path
+import { AdminService, DashboardStats } from '../admin-service';
+import { CycloPickLogoComponent } from '../../shared/cyclopick-logo/cyclopick-logo.component';
 
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, CycloPickLogoComponent],
   templateUrl: './admin-panel.component.html',
   styleUrls: ['./admin-panel.component.css']
 })
@@ -36,8 +37,6 @@ export class AdminPanelComponent implements OnInit {
     
     // Load dashboard stats from backend
     this.loadDashboardStats();
-    
-    // Usunięto powiadomienie powitalne
   }
   
   private getUserInfo(): void {

@@ -1,15 +1,23 @@
+// src/app/core/navigation/navigation.component.ts
 import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { NotificationService } from '../notification.service';
 import { UserSettingsComponent } from '../user-settings/user-settings.component';
+import { CycloPickLogoComponent } from '../../shared/cyclopick-logo/cyclopick-logo.component';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, UserSettingsComponent],
+  imports: [
+    CommonModule, 
+    RouterLink, 
+    RouterLinkActive, 
+    UserSettingsComponent,
+    CycloPickLogoComponent
+  ],
   templateUrl: './navigation.component.html',
   styleUrls: ['./navigation.component.css']
 })

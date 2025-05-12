@@ -3,7 +3,9 @@
   <!-- Podstawowa wersja nawigacji (z przyciskiem hamburger) -->
   <div class="navbar-container" *ngIf="!isAuthPage()">
     <div class="navbar-brand">
-      <a href="javascript:void(0)" (click)="navigateToHome($event)">SamaRama</a>
+      <a href="javascript:void(0)" (click)="navigateToHome($event)">
+        <app-cyclopick-logo [height]="'32px'" [textSize]="'1.2rem'" [textColor]="'#FFFFFF'"></app-cyclopick-logo>
+      </a>
     </div>
     
     <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
@@ -43,7 +45,9 @@
   <!-- Wersja nawigacji dla stron logowania/rejestracji -->
   <div class="auth-navbar-container" *ngIf="isAuthPage()">
     <div class="navbar-brand">
-      <a href="javascript:void(0)" (click)="navigateToHome($event)">SamaRama</a>
+      <a href="javascript:void(0)" (click)="navigateToHome($event)">
+        <app-cyclopick-logo [height]="'32px'" [textSize]="'1.2rem'" [textColor]="'#FFFFFF'"></app-cyclopick-logo>
+      </a>
     </div>
 
     <div class="auth-links">

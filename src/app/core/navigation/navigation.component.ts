@@ -40,6 +40,8 @@ export class NavigationComponent implements OnInit {
 
     // Pobierz aktualny URL
     this.currentUrl = this.router.url;
+    console.log('Navigation component initialized');
+    console.log('Current URL:', this.currentUrl);
   }
   
   // Zamknij menu mobilne gdy rozmiar ekranu przekracza 768px

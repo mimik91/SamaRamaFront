@@ -1,7 +1,9 @@
 <!-- src/app/admin/admin-dashboard/admin-dashboard.component.html -->
 <div class="admin-dashboard-container">
     <div class="header">
-      <h1>Panel Administracyjny</h1>
+      <h1>
+        Panel Administracyjny
+      </h1>
       <div class="user-info">
         <div class="user-email">{{ userName }}</div>
         <div class="user-role" [ngClass]="{'admin': userRole === 'ADMIN', 'moderator': userRole === 'MODERATOR'}">
@@ -143,4 +145,3 @@
   <div class="loading-overlay" *ngIf="loading">
     <div class="loading-spinner"></div>
   </div>
-```

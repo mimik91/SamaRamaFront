@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="logo-container" [style.height]="height">
       <div class="logo-svg" [style.height]="height">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" preserveAspectRatio="xMidYMid meet">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" preserveAspectRatio="xMidYMid meet" [style.height]="height" [style.width]="height">
             <g transform="translate(0,1024) scale(0.1,-0.1)" fill="currentColor" stroke="none" class="cyclopick-logo-icon">
                 <path d="M3973 8341 c-76 -19 -120 -80 -110 -154 12 -88 58 -120 181 -127 l90
                 -5 22 -105 c12 -58 41 -188 63 -290 22 -101 38 -186 36 -188 -2 -2 -14 6 -27
@@ -151,12 +151,13 @@ import { CommonModule } from '@angular/common';
     }
     
     /* Stylizacja elementów SVG */
-    .svg-logo {
+    svg {
+      fill: currentColor;
       transition: transform 0.3s ease;
     }
     
     /* Opcjonalna animacja przy najechaniu */
-    .logo-container:hover .svg-logo {
+    .logo-container:hover svg {
       transform: scale(1.05);
     }
   `]

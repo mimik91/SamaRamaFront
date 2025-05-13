@@ -91,7 +91,6 @@ export class AdminServiceOrdersComponent implements OnInit {
   }
 
   updateOrderStatus(orderId: number): void {
-    // W rzeczywistej implementacji, to może otworzyć okno dialogowe lub formularz edycji
     this.notificationService.info(`Edycja statusu zamówienia ${orderId} - funkcja w przygotowaniu`);
   }
 
@@ -106,6 +105,12 @@ export class AdminServiceOrdersComponent implements OnInit {
   }
 
   formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+  
+  formatDateOnly(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });

@@ -46,30 +46,30 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Data zamówienia</th>
-            <th>Klient</th>
-            <th>Rower</th>
-            <th>Pakiet</th>
             <th>Data odbioru</th>
+            <th>Rower</th>
+            <th>Adres odbioru</th>
             <th>Cena</th>
+            <th>Pakiet</th>
             <th>Status</th>
+            <th>Data zamówienia</th>
             <th>Akcje</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let order of displayedOrders">
             <td>{{ order.id }}</td>
-            <td>{{ formatDateTime(order.orderDate) }}</td>
-            <td>{{ getClientIdentifier(order) }}</td>
-            <td>{{ order.bicycle?.brand }} {{ order.bicycle?.model || '' }}</td>
-            <td>{{ order.servicePackage }}</td>
             <td>{{ formatDate(order.pickupDate) }}</td>
+            <td>{{ order.bicycle?.brand }} {{ order.bicycle?.model || '' }}</td>
+            <td>{{ order.pickupAddress }}</td>
             <td>{{ formatPrice(order.price) }}</td>
+            <td>{{ order.servicePackage }}</td>
             <td>
               <span class="status-badge" [ngClass]="getStatusClass(order.status)">
                 {{ getStatusLabel(order.status) }}
               </span>
             </td>
+            <td>{{ formatDateOnly(order.orderDate) }}</td>
             <td>
               <button class="view-btn" (click)="viewOrderDetails(order.id)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

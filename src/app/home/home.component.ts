@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { EnumerationService } from '../core/enumeration.service';
 import { BikeFormService, BikeFormData } from './bike-form.service';
 import { CycloPickLogoComponent } from '../shared/cyclopick-logo/cyclopick-logo.component';
+import { ServiceSlotService } from '../service-slots/service-slot.service';
 
 @Component({
   selector: 'app-home',
@@ -18,11 +19,16 @@ export class HomeComponent implements OnInit {
   private router = inject(Router);
   private enumerationService = inject(EnumerationService);
   private bikeFormService = inject(BikeFormService);
+  private serviceSlotService = inject(ServiceSlotService);
 
   bikeForm: FormGroup;
   brands: string[] = [];
   loadingBrands = true;
   formSubmitted = false;
+  
+  // Maximum bikes per order from service slots configuration
+  maxBikesPerOrder = 5; // Default value
+  loadingMaxBikes = true;
   
   constructor() {
     this.bikeForm = this.fb.group({
@@ -32,6 +38,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBrands();
+    this.loadMaxBikesConfiguration();
     
     // Sprawdzamy, czy mamy zapisane dane formularza w serwisie
     const savedBikesData = this.bikeFormService.getBikesDataValue();
@@ -63,6 +70,29 @@ export class HomeComponent implements OnInit {
       }
     });
   }
+  
+  private loadMaxBikesConfiguration(): void {
+    this.loadingMaxBikes = true;
+    
+    // Get current date in YYYY-MM-DD format
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
+    
+    // Get availability for today to determine max bikes
+    this.serviceSlotService.getSlotAvailability(formattedDate).subscribe({
+      next: (availability) => {
+        if (availability && availability.maxBikesPerOrder) {
+          this.maxBikesPerOrder = availability.maxBikesPerOrder;
+        }
+        this.loadingMaxBikes = false;
+      },
+      error: (error) => {
+        console.error('Error loading maximum bikes configuration:', error);
+        // Keep default value if error
+        this.loadingMaxBikes = false;
+      }
+    });
+  }
 
   private createBikeFormGroup(): FormGroup {
     return this.fb.group({
@@ -75,19 +105,19 @@ export class HomeComponent implements OnInit {
   get bikesArray(): FormArray {
     return this.bikeForm.get('bikes') as FormArray;
   }
-
+  
+  // Check if more bikes can be added based on server configuration
   canAddMoreBikes(): boolean {
     return this.bikesArray.length < this.maxBikesPerOrder;
   }
 
   addBike(): void {
-    // Ograniczenie do 5 rowerów
-    if (this.bikesArray.length < 5) {
+    // Check against the dynamic maximum
+    if (this.canAddMoreBikes()) {
       this.bikesArray.push(this.createBikeFormGroup());
     } else {
-      // Opcjonalnie: pokaż powiadomienie lub komunikat
-      console.log('Osiągnięto maksymalną liczbę rowerów (5)');
-      alert('Możesz dodać maksymalnie 5 rowerów. Aby dodać więcej, zarejestruj się lub zaloguj.');
+      console.log(`Osiągnięto maksymalną liczbę rowerów (${this.maxBikesPerOrder})`);
+      alert(`Możesz dodać maksymalnie ${this.maxBikesPerOrder} rowerów. Aby dodać więcej, zarejestruj się lub zaloguj.`);
     }
   }
 

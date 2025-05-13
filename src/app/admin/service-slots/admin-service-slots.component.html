@@ -65,10 +65,7 @@
                     <span class="detail-label">Max rowerów/zamówienie:</span>
                     <span class="detail-value">{{ config.maxBikesPerOrder }}</span>
                   </div>
-                  <div class="config-detail">
-                    <span class="detail-label">Dostępne dni:</span>
-                    <span class="detail-value">{{ getAvailableDaysDisplay(config.availableDays) }}</span>
-                  </div>
+                  <!-- Removed availableDays section -->
                 </div>
               </div>
             </div>
@@ -101,10 +98,7 @@
                     <span class="detail-label">Max rowerów/zamówienie:</span>
                     <span class="detail-value">{{ config.maxBikesPerOrder }}</span>
                   </div>
-                  <div class="config-detail">
-                    <span class="detail-label">Dostępne dni:</span>
-                    <span class="detail-value">{{ getAvailableDaysDisplay(config.availableDays) }}</span>
-                  </div>
+                  <!-- Removed availableDays section -->
                   <div class="config-status" *ngIf="!config.active">Nieaktywna</div>
                 </div>
               </div>
@@ -155,10 +149,7 @@
               <div class="detail-label">Maksymalna liczba rowerów na zamówienie:</div>
               <div class="detail-value">{{ selectedConfig.maxBikesPerOrder }}</div>
             </div>
-            <div class="detail-item">
-              <div class="detail-label">Dostępne dni:</div>
-              <div class="detail-value">{{ getAvailableDaysDisplay(selectedConfig.availableDays) }}</div>
-            </div>
+            <!-- Removed availableDays section since it's not in the backend DTO -->
             <div class="detail-item">
               <div class="detail-label">Status:</div>
               <div class="detail-value">
@@ -230,20 +221,7 @@
               </div>
             </div>
             
-            <div class="form-group">
-              <label>Dostępne dni tygodnia</label>
-              <div class="days-selector">
-                <div 
-                  *ngFor="let day of dayNames; let i = index" 
-                  class="day-checkbox" 
-                  [class.checked]="slotConfigForm.value.availableDays[i]"
-                  (click)="slotConfigForm.value.availableDays[i] = !slotConfigForm.value.availableDays[i]"
-                >
-                  <span class="day-name">{{ day }}</span>
-                </div>
-              </div>
-              <div class="help-text">Kliknij nazwę dnia, aby zmienić jego dostępność</div>
-            </div>
+            <!-- Remove the days selector since it's not in the backend DTO -->
             
             <div class="form-group active-checkbox">
               <label for="active" class="checkbox-label">

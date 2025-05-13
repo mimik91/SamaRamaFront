@@ -20,7 +20,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/enumerations/CITY',
     '/api/guest-orders',
     '/api/password/reset-request',
-    '/api/password/reset'
+    '/api/password/reset',
+    '/api/service-slots/availability'
   ];
   
   // Check if current request is to a public endpoint

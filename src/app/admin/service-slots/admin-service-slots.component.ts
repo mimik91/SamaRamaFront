@@ -10,18 +10,17 @@ import { ServiceSlotService } from '../../service-slots/service-slot.service';
 export interface ServiceSlotConfig {
   id?: number;
   startDate: string;
-  endDate?: string;
+  endDate?: string | null;
   maxBikesPerDay: number;
   maxBikesPerOrder: number;
-  availableDays: number[];
-  active: boolean;
+  active?: boolean; // This might be handled separately in your backend
 }
 
 @Component({
   selector: 'app-admin-service-slots',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './admin-service-slots.component.ts',
+  templateUrl: './admin-service-slots.component.html',
   styleUrls: ['./admin-service-slots.component.css']
 })
 export class AdminServiceSlotsComponent implements OnInit {
@@ -57,15 +56,7 @@ export class AdminServiceSlotsComponent implements OnInit {
       endDate: [''],
       maxBikesPerDay: [10, [Validators.required, Validators.min(1)]],
       maxBikesPerOrder: [5, [Validators.required, Validators.min(1)]],
-      availableDays: [this.fb.array([
-        { value: true, disabled: false }, // Sunday
-        { value: true, disabled: false }, // Monday
-        { value: true, disabled: false }, // Tuesday
-        { value: true, disabled: false }, // Wednesday
-        { value: true, disabled: false }, // Thursday
-        { value: false, disabled: false }, // Friday
-        { value: false, disabled: false }  // Saturday
-      ])],
+      // Remove availableDays array
       active: [true]
     });
   }
@@ -118,18 +109,12 @@ export class AdminServiceSlotsComponent implements OnInit {
     
     this.resetForm();
     
-    // Convert availableDays array to form values
-    const availableDaysArray = new Array(7).fill(false);
-    this.selectedConfig.availableDays.forEach(day => {
-      availableDaysArray[day] = true;
-    });
-    
     this.slotConfigForm.patchValue({
       startDate: this.formatDateForInput(this.selectedConfig.startDate),
       endDate: this.selectedConfig.endDate ? this.formatDateForInput(this.selectedConfig.endDate) : '',
       maxBikesPerDay: this.selectedConfig.maxBikesPerDay,
       maxBikesPerOrder: this.selectedConfig.maxBikesPerOrder,
-      availableDays: availableDaysArray,
+      // No more availableDays
       active: this.selectedConfig.active
     });
     
@@ -154,7 +139,7 @@ export class AdminServiceSlotsComponent implements OnInit {
       endDate: '',
       maxBikesPerDay: 10,
       maxBikesPerOrder: 5,
-      availableDays: [true, true, true, true, true, false, false], // Sun-Thu enabled
+      // Remove availableDays
       active: true
     });
   }
@@ -178,21 +163,16 @@ export class AdminServiceSlotsComponent implements OnInit {
     
     this.saving = true;
     
-    // Convert availableDays from boolean array to day indices
-    const availableDaysValues = this.slotConfigForm.value.availableDays;
-    const availableDays = availableDaysValues
-      .map((isAvailable: boolean, index: number) => ({ isAvailable, index }))
-      .filter(item => item.isAvailable)
-      .map(item => item.index);
-    
-    const configData: ServiceSlotConfig = {
+    // Create the data object that exactly matches the backend DTO structure
+    const configData: any = {
       startDate: this.formatDateForApi(this.slotConfigForm.value.startDate),
-      endDate: this.slotConfigForm.value.endDate ? this.formatDateForApi(this.slotConfigForm.value.endDate) : undefined,
+      endDate: this.slotConfigForm.value.endDate ? this.formatDateForApi(this.slotConfigForm.value.endDate) : null,
       maxBikesPerDay: Number(this.slotConfigForm.value.maxBikesPerDay),
       maxBikesPerOrder: Number(this.slotConfigForm.value.maxBikesPerOrder),
-      availableDays: availableDays,
-      active: this.slotConfigForm.value.active
+      // No availableDays field as it's not in the DTO
     };
+    
+    console.log('Sending config data:', configData);
     
     if (this.isAddingNew) {
       // Create new config
@@ -214,7 +194,7 @@ export class AdminServiceSlotsComponent implements OnInit {
       });
     } else if (this.isEditing && this.selectedConfig) {
       // Update existing config
-      configData.id = this.selectedConfig.id;
+      configData['id'] = this.selectedConfig.id;
       
       this.http.put(`${environment.apiUrl}/service-slots/config/${this.selectedConfig.id}`, configData).subscribe({
         next: () => {
@@ -276,12 +256,6 @@ export class AdminServiceSlotsComponent implements OnInit {
     if (!dateString) return 'Bezterminowo';
     const date = new Date(dateString);
     return date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  }
-  
-  getAvailableDaysDisplay(days: number[]): string {
-    if (!days || days.length === 0) return 'Brak';
-    
-    return days.map(day => this.dayNames[day]).join(', ');
   }
   
   isFieldInvalid(fieldName: string): boolean {

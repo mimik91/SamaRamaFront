@@ -58,12 +58,18 @@ export class AdminOrderDetailsComponent implements OnInit {
       this.error = 'Brak ID zamówienia';
       this.loading = false;
     }
+    
+    // Log when values change in the form
+    this.orderForm.valueChanges.subscribe(values => {
+      console.log('Form values changed:', values);
+    });
   }
 
   private loadServicePackages(): void {
     this.servicePackageService.getAllPackages().subscribe({
       next: (packages) => {
         this.availablePackages = packages;
+        console.log('Loaded service packages:', packages);
       },
       error: (err) => {
         console.error('Error loading service packages:', err);
@@ -75,9 +81,15 @@ export class AdminOrderDetailsComponent implements OnInit {
   private loadOrderDetails(orderId: number): void {
     this.loading = true;
     this.error = null;
+    
+    // Ensure service packages are loaded
+    if (this.availablePackages.length === 0) {
+      this.loadServicePackages();
+    }
 
     this.http.get<ServiceOrder>(`${environment.apiUrl}/service-orders/${orderId}`).subscribe({
       next: (order) => {
+        console.log('Loaded order details:', order); // Added logging
         this.serviceOrder = order;
         this.loading = false;
       },
@@ -94,14 +106,24 @@ export class AdminOrderDetailsComponent implements OnInit {
   getServicePackageIdFromOrder(order: ServiceOrder | null): number | null {
     if (!order) return null;
     
+    // Try all possible properties where service package ID might be stored
+    if (order.servicePackageId) {
+      return order.servicePackageId;
+    }
+    
     if (order.servicePackage?.id) {
       return order.servicePackage.id;
     }
     
-    // Try to access servicePackageId using bracket notation to avoid TypeScript errors
-    const servicePackageId = (order as any)['servicePackageId'];
-    if (servicePackageId) {
-      return servicePackageId;
+    // If we have a service package name or code, try to find the matching package
+    if (order.servicePackageName || order.servicePackageCode) {
+      const packageName = order.servicePackageName || order.servicePackageCode;
+      const matchingPackage = this.availablePackages.find(p => 
+        p.name === packageName || p.code === order.servicePackageCode
+      );
+      if (matchingPackage) {
+        return matchingPackage.id;
+      }
     }
     
     return null;
@@ -110,7 +132,10 @@ export class AdminOrderDetailsComponent implements OnInit {
   startEditing(): void {
     if (!this.serviceOrder) return;
 
-    const packageId = this.getServicePackageIdFromOrder(this.serviceOrder);
+    // More reliable way to get the package ID
+    let packageId = this.getServicePackageIdFromOrder(this.serviceOrder);
+    
+    console.log('Setting service package ID:', packageId);
 
     this.orderForm.patchValue({
       pickupDate: this.formatDateForInput(this.serviceOrder.pickupDate),
@@ -143,8 +168,12 @@ export class AdminOrderDetailsComponent implements OnInit {
       pickupDate: this.orderForm.value.pickupDate,
       pickupAddress: this.orderForm.value.pickupAddress,
       servicePackageId: this.orderForm.value.servicePackageId,
-      additionalNotes: this.orderForm.value.additionalNotes
+      additionalNotes: this.orderForm.value.additionalNotes || '',
+      bicycleIds: this.serviceOrder.bicycleId ? [this.serviceOrder.bicycleId] : 
+               (this.serviceOrder.bicycle?.id ? [this.serviceOrder.bicycle.id] : [])
     };
+
+    console.log('Saving updated order:', updatedOrder);
 
     this.http.put(`${environment.apiUrl}/service-orders/${this.serviceOrder.id}`, updatedOrder).subscribe({
       next: () => {

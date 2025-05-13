@@ -10,18 +10,14 @@ export interface ServiceOrder {
   
   // Standard bicycle object - may not be present in API response
   bicycle?: Bicycle | null;
-  
-  // Direct bicycle properties from the API response
   bicycleId?: number;
   bicycleBrand?: string;
   bicycleModel?: string;
   
   client?: User;
   
-  // Pełny obiekt pakietu serwisowego (jeśli zwrócony przez API)
   servicePackage?: ServicePackage;
-  
-  // Dane pakietu serwisowego bezpośrednio w API
+  servicePackageId?: number;  // Add this property
   servicePackageName?: string;
   servicePackageCode?: string;
   
@@ -34,6 +30,9 @@ export interface ServiceOrder {
   additionalNotes?: string;
   status: OrderStatus;
   serviceNotes?: string;
+
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
 }
 
 export interface CreateServiceOrderRequest {

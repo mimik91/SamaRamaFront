@@ -211,4 +211,44 @@
     .filter-group select {
       width: 100%;
     }
+
+    /* Add this to the existing admin-service-orders.component.css */
+
+.orders-table tr.order-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.orders-table tr.order-row:hover {
+  background-color: #f1f7fd;
+}
+
+.action-column {
+  white-space: nowrap;
+}
+
+.view-btn, .edit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.view-btn {
+  color: #007bff;
+}
+
+.edit-btn {
+  color: #28a745;
+}
+
+.view-btn:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.edit-btn:hover {
+  background-color: rgba(40, 167, 69, 0.1);
+}
   }

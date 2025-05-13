@@ -1,0 +1,218 @@
+<div class="order-details-container">
+  <div class="header">
+    <h1>Szczegóły zamówienia serwisowego</h1>
+    <button class="back-btn" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Powrót do listy
+    </button>
+  </div>
+  
+  <div *ngIf="loading" class="loading-message">
+    <div class="loading-spinner"></div>
+    <p>Ładowanie szczegółów zamówienia...</p>
+  </div>
+  
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+  
+  <ng-container *ngIf="!loading && !error && serviceOrder">
+    <!-- View Mode -->
+    <div *ngIf="!isEditing" class="order-content">
+      <!-- Header with order info and status -->
+      <div class="order-header">
+        <div class="order-title">
+          <h2>Zamówienie #{{ serviceOrder.id }}</h2>
+          <span class="order-status" [ngClass]="getStatusClass(serviceOrder.status)">
+            {{ getStatusLabel(serviceOrder.status) }}
+          </span>
+        </div>
+        <div class="order-date">
+          Zamówiono: {{ formatDateTime(serviceOrder.orderDate) }}
+        </div>
+      </div>
+      
+      <!-- Main content in sections -->
+      <div class="details-section">
+        <h3>Informacje o kliencie</h3>
+        <div class="detail-row">
+          <div class="detail-label">Email:</div>
+          <div class="detail-value">{{ serviceOrder.client?.email || 'Nie określono' }}</div>
+        </div>
+        <div class="detail-row" *ngIf="serviceOrder.client?.firstName">
+          <div class="detail-label">Imię i nazwisko:</div>
+          <div class="detail-value">{{ serviceOrder.client?.firstName }} {{ serviceOrder.client?.lastName }}</div>
+        </div>
+        <div class="detail-row" *ngIf="serviceOrder.client?.phoneNumber">
+          <div class="detail-label">Telefon:</div>
+          <div class="detail-value">{{ serviceOrder.client?.phoneNumber }}</div>
+        </div>
+      </div>
+      
+      <div class="details-section">
+        <h3>Informacje o rowerze</h3>
+        <div class="detail-row">
+          <div class="detail-label">Marka:</div>
+          <div class="detail-value">{{ serviceOrder.bicycle?.brand || serviceOrder.bicycleBrand || 'Nie określono' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Model:</div>
+          <div class="detail-value">{{ serviceOrder.bicycle?.model || serviceOrder.bicycleModel || 'Nie określono' }}</div>
+        </div>
+        <div class="detail-row" *ngIf="serviceOrder.bicycle?.type">
+          <div class="detail-label">Typ roweru:</div>
+          <div class="detail-value">{{ serviceOrder.bicycle?.type }}</div>
+        </div>
+        <div class="detail-row" *ngIf="serviceOrder.bicycle?.frameMaterial">
+          <div class="detail-label">Materiał ramy:</div>
+          <div class="detail-value">{{ serviceOrder.bicycle?.frameMaterial }}</div>
+        </div>
+        <div class="detail-row" *ngIf="serviceOrder.bicycle?.frameNumber">
+          <div class="detail-label">Numer ramy:</div>
+          <div class="detail-value">{{ serviceOrder.bicycle?.frameNumber }}</div>
+        </div>
+      </div>
+      
+      <div class="details-section">
+        <h3>Szczegóły serwisu</h3>
+        <div class="detail-row">
+          <div class="detail-label">Pakiet serwisowy:</div>
+          <div class="detail-value">
+            {{ serviceOrder.servicePackage?.name || 
+               serviceOrder.servicePackageName || 
+               (serviceOrder && getPackageName(getServicePackageIdFromOrder(serviceOrder))) || 
+               'Nie określono' }}
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Cena:</div>
+          <div class="detail-value price">{{ formatPrice(serviceOrder.price) }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Data odbioru:</div>
+          <div class="detail-value">{{ formatDate(serviceOrder.pickupDate) }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Adres odbioru:</div>
+          <div class="detail-value">{{ serviceOrder.pickupAddress }}</div>
+        </div>
+        <div class="detail-row" *ngIf="serviceOrder.additionalNotes">
+          <div class="detail-label">Dodatkowe informacje:</div>
+          <div class="detail-value">{{ serviceOrder.additionalNotes }}</div>
+        </div>
+      </div>
+      
+      <div class="details-section" *ngIf="serviceOrder.serviceNotes">
+        <h3>Notatki serwisowe</h3>
+        <div class="service-notes">
+          {{ serviceOrder.serviceNotes }}
+        </div>
+      </div>
+      
+      <div class="details-section" *ngIf="serviceOrder.lastModifiedBy">
+        <h3>Historia zmian</h3>
+        <div class="detail-row">
+          <div class="detail-label">Ostatnia zmiana przez:</div>
+          <div class="detail-value">{{ serviceOrder.lastModifiedBy }}</div>
+        </div>
+        <div class="detail-row" *ngIf="serviceOrder.lastModifiedDate">
+          <div class="detail-label">Data ostatniej zmiany:</div>
+          <div class="detail-value">{{ formatDateTime(serviceOrder.lastModifiedDate) }}</div>
+        </div>
+      </div>
+      
+      <!-- Action buttons -->
+      <div class="actions-section">
+        <button class="edit-btn" (click)="startEditing()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          Edytuj zamówienie
+        </button>
+        
+        <button class="cancel-btn" (click)="cancelOrder()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"></path>
+            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path>
+          </svg>
+          Anuluj zamówienie
+        </button>
+      </div>
+    </div>
+    
+    <!-- Edit Mode -->
+    <div *ngIf="isEditing" class="edit-form-container">
+      <h2>Edycja zamówienia #{{ serviceOrder.id }}</h2>
+      
+      <form [formGroup]="orderForm" (ngSubmit)="saveOrder()" class="order-edit-form">
+        <div class="form-section">
+          <h3>Dane zamówienia</h3>
+          
+          <div class="form-group">
+            <label for="pickupDate">Data odbioru*</label>
+            <input 
+              type="date" 
+              id="pickupDate" 
+              formControlName="pickupDate"
+              [class.is-invalid]="isFieldInvalid('pickupDate')"
+            >
+            <div *ngIf="isFieldInvalid('pickupDate')" class="error-message">
+              Data odbioru jest wymagana
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="pickupAddress">Adres odbioru*</label>
+            <input 
+              type="text" 
+              id="pickupAddress" 
+              formControlName="pickupAddress"
+              [class.is-invalid]="isFieldInvalid('pickupAddress')"
+            >
+            <div *ngIf="isFieldInvalid('pickupAddress')" class="error-message">
+              Adres odbioru jest wymagany
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="servicePackageId">Pakiet serwisowy*</label>
+            <select 
+              id="servicePackageId" 
+              formControlName="servicePackageId"
+              [class.is-invalid]="isFieldInvalid('servicePackageId')"
+            >
+              <option [ngValue]="null" disabled>-- Wybierz pakiet --</option>
+              <option *ngFor="let package of availablePackages" [ngValue]="package.id">
+                {{ package.name }} - {{ formatPrice(package.price) }}
+              </option>
+            </select>
+            <div *ngIf="isFieldInvalid('servicePackageId')" class="error-message">
+              Wybierz pakiet serwisowy
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="additionalNotes">Dodatkowe informacje</label>
+            <textarea 
+              id="additionalNotes" 
+              formControlName="additionalNotes"
+              rows="4"
+            ></textarea>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="cancel-edit-btn" (click)="cancelEditing()">Anuluj edycję</button>
+          <button type="submit" class="save-btn" [disabled]="orderForm.invalid || isSaving">
+            {{ isSaving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+</div>

@@ -23,18 +23,23 @@ export class AdminServiceOrdersComponent implements OnInit {
   error: string | null = null;
   selectedStatus: string = '';
 
-  constructor() { }
+  constructor() { 
+    console.log('AdminServiceOrdersComponent constructor');
+  }
 
   ngOnInit(): void {
+    console.log('AdminServiceOrdersComponent initialized');
     this.loadServiceOrders();
   }
 
   loadServiceOrders(): void {
+    console.log('Loading service orders...');
     this.loading = true;
     this.error = null;
     
     this.adminService.getAllServiceOrders().subscribe({
       next: (orders) => {
+        console.log('Loaded service orders:', orders);
         this.serviceOrders = orders;
         this.displayedOrders = [...this.serviceOrders];
         this.loading = false;
@@ -51,12 +56,14 @@ export class AdminServiceOrdersComponent implements OnInit {
   filterByStatus(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.selectedStatus = select.value;
+    console.log('Filtering by status:', this.selectedStatus);
     
     if (!this.selectedStatus) {
       this.displayedOrders = [...this.serviceOrders];
     } else {
       this.displayedOrders = this.serviceOrders.filter(order => order.status === this.selectedStatus);
     }
+    console.log('Filtered orders:', this.displayedOrders.length);
   }
 
   // Helper methods for displaying status
@@ -87,11 +94,19 @@ export class AdminServiceOrdersComponent implements OnInit {
   }
 
   viewOrderDetails(orderId: number): void {
-    this.notificationService.info(`Szczegóły zamówienia ${orderId} - funkcja w przygotowaniu`);
+    console.log(`viewOrderDetails called with ID: ${orderId}`);
+    this.notificationService.info(`Przechodzenie do szczegółów zamówienia ${orderId}`);
+    
+    // Use a short timeout to ensure notification displays before navigation
+    setTimeout(() => {
+      console.log(`Navigating to /admin/orders/${orderId}`);
+      this.router.navigate(['/admin/orders', orderId]);
+    }, 100);
   }
 
   updateOrderStatus(orderId: number): void {
-    this.notificationService.info(`Edycja statusu zamówienia ${orderId} - funkcja w przygotowaniu`);
+    console.log(`updateOrderStatus called with ID: ${orderId}`);
+    this.notificationService.info(`Edycja statusu zamówienia ${orderId}`);
   }
 
   getClientIdentifier(order: ServiceOrder): string {
@@ -125,5 +140,10 @@ export class AdminServiceOrdersComponent implements OnInit {
 
   formatPrice(price: number): string {
     return price.toFixed(2) + ' zł';
+  }
+  
+  // For testing event propagation
+  onRowClick(orderId: number): void {
+    console.log(`Row clicked for order ID: ${orderId}`);
   }
 }

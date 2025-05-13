@@ -29,6 +29,7 @@ export interface AdminUser {
 })
 export class AdminService {
   private apiUrl = `${environment.apiUrl}/admin`;
+  private serviceOrdersUrl = `${environment.apiUrl}/service-orders`;
   private enumerationsUrl = `${environment.apiUrl}/enumerations`;
   private http = inject(HttpClient);
 
@@ -57,8 +58,9 @@ export class AdminService {
     );
   }
 
+  // Updated to use the service-orders controller instead of admin controller
   getAllServiceOrders(): Observable<ServiceOrder[]> {
-    return this.http.get<ServiceOrder[]>(`${this.apiUrl}/orders`).pipe(
+    return this.http.get<ServiceOrder[]>(`${this.serviceOrdersUrl}/admin/all`).pipe(
       catchError(error => {
         console.error('Error fetching service orders:', error);
         return of([]);
@@ -66,8 +68,10 @@ export class AdminService {
     );
   }
 
+  // This method may need updating depending on how the backend handles status filtering
   getAllServicesByStatus(status: string): Observable<ServiceOrder[]> {
-    return this.http.get<ServiceOrder[]>(`${this.apiUrl}/orders/status/${status}`).pipe(
+    // You might need to update this endpoint if it's changed in the backend
+    return this.http.get<ServiceOrder[]>(`${this.serviceOrdersUrl}?status=${status}`).pipe(
       catchError(error => {
         console.error(`Error fetching orders with status ${status}:`, error);
         return of([]);
@@ -84,7 +88,6 @@ export class AdminService {
     );
   }
 
-  // New method for getting a specific enumeration
   getEnumeration(type: string): Observable<string[]> {
     return this.http.get<string[]>(`${this.enumerationsUrl}/${type}`).pipe(
       catchError(error => {
@@ -94,7 +97,6 @@ export class AdminService {
     );
   }
 
-  // New method for updating an enumeration
   updateEnumeration(type: string, values: string[]): Observable<any> {
     return this.http.post(`${this.enumerationsUrl}/${type}`, values).pipe(
       catchError(error => {
@@ -104,8 +106,9 @@ export class AdminService {
     );
   }
 
+  // This is now using the service-orders controller with the admin authorization
   updateServiceOrderStatus(orderId: number, status: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/orders/${orderId}/status`, { status }).pipe(
+    return this.http.patch(`${this.serviceOrdersUrl}/${orderId}/status`, { status }).pipe(
       catchError(error => {
         console.error(`Error updating order ${orderId} status:`, error);
         return of({ success: false, message: 'Failed to update status' });

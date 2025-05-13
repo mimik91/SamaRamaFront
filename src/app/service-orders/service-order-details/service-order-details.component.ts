@@ -1,4 +1,3 @@
-// service-order-details.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,8 +21,13 @@ export class ServiceOrderDetailsComponent implements OnInit {
   serviceOrder: ServiceOrder | null = null;
   loading = true;
   error: string | null = null;
+  isAdminView = false;
 
   ngOnInit(): void {
+    // Check if we're in admin view based on the URL
+    this.isAdminView = this.router.url.includes('/admin/orders');
+    console.log('Admin view:', this.isAdminView);
+    
     const orderId = this.route.snapshot.paramMap.get('id');
     if (orderId) {
       this.loadServiceOrder(+orderId);
@@ -39,6 +43,7 @@ export class ServiceOrderDetailsComponent implements OnInit {
 
     this.serviceOrderService.getServiceOrderById(orderId).subscribe({
       next: (order) => {
+        console.log('Loaded service order details:', order);
         this.serviceOrder = order;
         this.loading = false;
       },
@@ -80,13 +85,31 @@ export class ServiceOrderDetailsComponent implements OnInit {
   
   // Safe accessor for bicycle properties
   getBicycleBrand(): string {
-    if (!this.serviceOrder || !this.serviceOrder.bicycle) return 'Nie określono';
-    return this.serviceOrder.bicycle.brand || 'Nie określono';
+    if (!this.serviceOrder) return 'Nie określono';
+    
+    if (this.serviceOrder.bicycleBrand) {
+      return this.serviceOrder.bicycleBrand;
+    }
+    
+    if (this.serviceOrder.bicycle?.brand) {
+      return this.serviceOrder.bicycle.brand;
+    }
+    
+    return 'Nie określono';
   }
   
   getBicycleModel(): string {
-    if (!this.serviceOrder || !this.serviceOrder.bicycle) return '';
-    return this.serviceOrder.bicycle.model || '';
+    if (!this.serviceOrder) return '';
+    
+    if (this.serviceOrder.bicycleModel) {
+      return this.serviceOrder.bicycleModel;
+    }
+    
+    if (this.serviceOrder.bicycle?.model) {
+      return this.serviceOrder.bicycle.model;
+    }
+    
+    return '';
   }
   
   getBicycleType(): string {
@@ -108,12 +131,12 @@ export class ServiceOrderDetailsComponent implements OnInit {
   getServicePackageName(): string {
     if (!this.serviceOrder) return 'Nie określono';
     
-    if (this.serviceOrder.servicePackage && this.serviceOrder.servicePackage.name) {
-      return this.serviceOrder.servicePackage.name;
-    }
-    
     if (this.serviceOrder.servicePackageName) {
       return this.serviceOrder.servicePackageName;
+    }
+    
+    if (this.serviceOrder.servicePackage && this.serviceOrder.servicePackage.name) {
+      return this.serviceOrder.servicePackage.name;
     }
     
     if (this.serviceOrder.servicePackageCode) {
@@ -141,7 +164,11 @@ export class ServiceOrderDetailsComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/service-appointments']);
+    if (this.isAdminView) {
+      this.router.navigate(['/service-orders']);
+    } else {
+      this.router.navigate(['/service-appointments']);
+    }
   }
 
   cancelOrder(): void {
@@ -164,5 +191,23 @@ export class ServiceOrderDetailsComponent implements OnInit {
   canCancelOrder(): boolean {
     if (!this.serviceOrder) return false;
     return this.serviceOrder.status === 'PENDING' || this.serviceOrder.status === 'CONFIRMED';
+  }
+  
+  updateOrderStatus(newStatus: string): void {
+    if (!this.serviceOrder) return;
+    
+    // Only admin can update status
+    if (!this.isAdminView) return;
+    
+    this.serviceOrderService.updateOrderStatus(this.serviceOrder.id, newStatus).subscribe({
+      next: () => {
+        this.notificationService.success(`Status zamówienia został zmieniony na ${this.getStatusLabel(newStatus)}`);
+        this.loadServiceOrder(this.serviceOrder!.id); // Reload to show updated status
+      },
+      error: (err) => {
+        console.error('Error updating order status:', err);
+        this.notificationService.error('Nie udało się zaktualizować statusu zamówienia');
+      }
+    });
   }
 }

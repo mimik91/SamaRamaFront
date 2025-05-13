@@ -93,4 +93,26 @@ export class ServiceOrderService {
         })
       );
   }
+  
+  // Update order status method - for admin and regular users
+  updateOrderStatus(orderId: number, status: OrderStatus): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${orderId}/status`, { status })
+      .pipe(
+        catchError(error => {
+          console.error(`Error updating order ${orderId} status:`, error);
+          return throwError(() => error);
+        })
+      );
+  }
+  
+  // Method to update service order details
+  updateServiceOrder(orderId: number, orderData: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${orderId}`, orderData)
+      .pipe(
+        catchError(error => {
+          console.error(`Error updating service order ${orderId}:`, error);
+          return throwError(() => error);
+        })
+      );
+  }
 }

@@ -76,7 +76,7 @@ export class AdminOrderDetailsComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.http.get<ServiceOrder>(`${environment.apiUrl}/admin/orders/${orderId}`).subscribe({
+    this.http.get<ServiceOrder>(`${environment.apiUrl}/service-orders/${orderId}`).subscribe({
       next: (order) => {
         this.serviceOrder = order;
         this.loading = false;
@@ -146,7 +146,7 @@ export class AdminOrderDetailsComponent implements OnInit {
       additionalNotes: this.orderForm.value.additionalNotes
     };
 
-    this.http.put(`${environment.apiUrl}/admin/orders/${this.serviceOrder.id}`, updatedOrder).subscribe({
+    this.http.put(`${environment.apiUrl}/service-orders/${this.serviceOrder.id}`, updatedOrder).subscribe({
       next: () => {
         this.notificationService.success('Zamówienie zostało zaktualizowane');
         this.isEditing = false;
@@ -168,7 +168,7 @@ export class AdminOrderDetailsComponent implements OnInit {
     if (!this.serviceOrder || !this.serviceOrder.id) return;
 
     if (confirm('Czy na pewno chcesz anulować to zamówienie? Ta operacja jest nieodwracalna.')) {
-      this.http.delete(`${environment.apiUrl}/admin/orders/${this.serviceOrder.id}`).subscribe({
+      this.http.delete(`${environment.apiUrl}/service-orders/${this.serviceOrder.id}`).subscribe({
         next: () => {
           this.notificationService.success('Zamówienie zostało anulowane');
           this.router.navigate(['/service-orders']);

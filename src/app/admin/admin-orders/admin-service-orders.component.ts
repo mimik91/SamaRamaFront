@@ -95,7 +95,7 @@ export class AdminServiceOrdersComponent implements OnInit {
 
   viewOrderDetails(orderId: number): void {
     console.log(`viewOrderDetails called with ID: ${orderId}`);
-    this.notificationService.info(`Przechodzenie do szczegółów zamówienia ${orderId}`);
+    this.router.navigate(['/admin/order-details', orderId]);
     
     // Use a short timeout to ensure notification displays before navigation
     setTimeout(() => {

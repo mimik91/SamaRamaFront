@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { AdminService } from '../admin-service';
 import { NotificationService } from '../../core/notification.service';
 import { ServiceOrder } from '../../service-orders/service-order.model';
+import { AuthService } from '../../auth/auth.service';
+
 
 @Component({
   selector: 'app-admin-service-orders',
@@ -16,6 +18,7 @@ export class AdminServiceOrdersComponent implements OnInit {
   private adminService = inject(AdminService);
   private notificationService = inject(NotificationService);
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   serviceOrders: ServiceOrder[] = [];
   displayedOrders: ServiceOrder[] = [];
@@ -36,6 +39,18 @@ export class AdminServiceOrdersComponent implements OnInit {
     console.log('Loading service orders...');
     this.loading = true;
     this.error = null;
+
+    if (!this.authService.isLoggedIn()) {
+    this.error = 'Sesja wygasła, prosimy o ponowne zalogowanie.';
+    this.loading = false;
+    this.notificationService.error(this.error);
+    
+    // Redirect to login
+    setTimeout(() => {
+      this.router.navigate(['/login']);
+    }, 2000);
+    return;
+    }
     
     this.adminService.getAllServiceOrders().subscribe({
       next: (orders) => {

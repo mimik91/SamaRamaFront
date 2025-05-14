@@ -1,13 +1,12 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const router = inject(Router);
   const token = authService.getToken();
-
-  console.log(`Intercepting request to ${req.url}`);
-  console.log(`Token available: ${token ? 'Yes' : 'No'}`);
 
   // List of public endpoints that don't need authentication
   const publicEndpoints = [
@@ -26,32 +25,39 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   
   // Check if current request is to a public endpoint
   const isPublicEndpoint = publicEndpoints.some(endpoint => req.url.includes(endpoint));
-  console.log(`Is public endpoint: ${isPublicEndpoint}`);
   
   // If it's a public endpoint, don't add a token
   if (isPublicEndpoint) {
-    console.log('Public endpoint, proceeding without authentication');
     return next(req);
   }
   
-  // If we have a token, add it to all other requests
-  if (token) {
-    console.log(`Adding token to request: ${token.substring(0, 15)}...`);
+  // Only attach token if user is logged in
+  if (token && authService.isLoggedIn()) {
+    // Check if token is not expired
     const clonedRequest = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`,
       },
     });
     return next(clonedRequest);
+  } else {
+    // If we need a token but don't have one, handle session expiration
+    // Only for non-GET requests or specific secure endpoints
+    if (req.method !== 'GET' || 
+        req.url.includes('/api/service-orders') || 
+        req.url.includes('/api/admin')) {
+      
+      // Let the request proceed but it will likely fail with 401
+      setTimeout(() => {
+        if (!authService.isLoggedIn() && !isPublicEndpoint) {
+          console.log('Session expired, redirecting to login');
+          // Skip redirect if already on login pages
+          if (!window.location.href.includes('/login')) {
+            router.navigate(['/login']);
+          }
+        }
+      }, 500);
+    }
+    return next(req);
   }
-  
-  console.log('No token available, proceeding without authentication');
-  
-  // Try to reload the session from localStorage directly
-  if (typeof localStorage !== 'undefined') {
-    const sessionData = localStorage.getItem('auth_session');
-    console.log('Direct localStorage check:', sessionData ? 'session found' : 'no session');
-  }
-  
-  return next(req);
 };

@@ -58,15 +58,18 @@ export class AdminService {
     );
   }
 
-  // Updated to use the service-orders controller instead of admin controller
   getAllServiceOrders(): Observable<ServiceOrder[]> {
-    return this.http.get<ServiceOrder[]>(`${this.serviceOrdersUrl}/admin/all`).pipe(
-      catchError(error => {
-        console.error('Error fetching service orders:', error);
+  return this.http.get<ServiceOrder[]>(`${environment.apiUrl}/admin/service-orders`).pipe(
+    catchError(error => {
+      console.error('Error fetching service orders:', error);
+      if (error.status === 401) {
+        // Handle unauthorized specifically
         return of([]);
-      })
-    );
-  }
+      }
+      return of([]);
+    })
+  );
+}
 
   // This method may need updating depending on how the backend handles status filtering
   getAllServicesByStatus(status: string): Observable<ServiceOrder[]> {

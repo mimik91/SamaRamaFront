@@ -165,16 +165,34 @@ export class AuthService {
     }
   }
 
-  getToken(): string | null {
-    const currentUser = this.currentUserSubject.value;
-    if (!currentUser) {
-      // Try to load from storage in case it wasn't loaded yet
-      this.loadSession();
-    }
-    const token = this.currentUserSubject.value?.token || null;
-    console.log('AuthService.getToken() returned:', token ? 'token exists' : 'no token');
-    return token;
+  private isTokenExpired(token: string): boolean {
+  try {
+    // Extract the expiration time from JWT
+    const expiry = JSON.parse(atob(token.split('.')[1])).exp;
+    return (Math.floor((new Date).getTime() / 1000)) >= expiry;
+  } catch (e) {
+    return true; // If we can't decode the token, consider it expired
   }
+}
+
+  getToken(): string | null {
+  const currentUser = this.currentUserSubject.value;
+  
+  if (!currentUser) {
+    this.loadSession();
+  }
+  
+  const user = this.currentUserSubject.value;
+  if (!user) return null;
+  
+  if (user.expiresAt < Date.now() || this.isTokenExpired(user.token)) {
+    console.log('Token expired, clearing session');
+    this.clearSession();
+    return null;
+  }
+  
+  return user.token;
+}
   
   getUserRole(): string | null {
     const currentUser = this.currentUserSubject.value;
@@ -198,7 +216,7 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.currentUserSubject.value;
+    return !!this.getToken();
   }
   
   isClient(): boolean {

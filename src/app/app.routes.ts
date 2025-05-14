@@ -22,7 +22,6 @@ import { PasswordResetRequestComponent } from './auth/password-reset-request/pas
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { RenderMode } from '@angular/ssr';
 import { AdminServiceSlotsComponent } from './admin/service-slots/admin-service-slots.component';
-import { AdminOrderDetailsComponent } from './admin/admin-orders/admin-order-details/admin-order-details.component';
 
 
 export const routes: Routes = [
@@ -65,5 +64,4 @@ export const routes: Routes = [
     
     // Account route - dostępna dla zalogowanych użytkowników
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},
-    {path: 'admin/order-details/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard], data: { noPrerender: true, RenderMode: 'dynamic'} },
 ];

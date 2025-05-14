@@ -65,5 +65,5 @@ export const routes: Routes = [
     
     // Account route - dostępna dla zalogowanych użytkowników
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},
-    {path: 'admin/order-details/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard], data: { renderMode: 'client' } },
+    {path: 'admin/order-details/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard], data: { noPrerender: true } },
 ];

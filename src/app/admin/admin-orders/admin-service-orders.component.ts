@@ -94,13 +94,11 @@ export class AdminServiceOrdersComponent implements OnInit {
   }
 
   viewOrderDetails(orderId: number): void {
-    console.log(`viewOrderDetails called with ID: ${orderId}`);
     this.router.navigate(['/admin/order-details', orderId]);
     
     // Use a short timeout to ensure notification displays before navigation
     setTimeout(() => {
-      console.log(`Navigating to /admin/orders/${orderId}`);
-      this.router.navigate(['/admin/orders', orderId]);
+      this.router.navigate(['/admin/order-details', orderId]);
     }, 100);
   }
 

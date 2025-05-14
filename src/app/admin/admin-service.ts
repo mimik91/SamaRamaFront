@@ -59,7 +59,7 @@ export class AdminService {
   }
 
   getAllServiceOrders(): Observable<ServiceOrder[]> {
-  return this.http.get<ServiceOrder[]>(`${environment.apiUrl}/admin/service-orders`).pipe(
+  return this.http.get<ServiceOrder[]>(`${this.serviceOrdersUrl}/admin/all`).pipe(
     catchError(error => {
       console.error('Error fetching service orders:', error);
       if (error.status === 401) {

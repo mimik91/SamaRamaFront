@@ -21,6 +21,8 @@ export class PasswordResetRequestComponent {
   isSubmitting = false;
   errorMessage = '';
   successMessage = '';
+  requiresVerification = false;
+  isGuestUser = false;
 
   constructor() {
     this.resetForm = this.fb.group({
@@ -33,14 +35,25 @@ export class PasswordResetRequestComponent {
       this.isSubmitting = true;
       this.errorMessage = '';
       this.successMessage = '';
+      this.requiresVerification = false;
+      this.isGuestUser = false;
 
       const email = this.resetForm.get('email')?.value;
 
       this.passwordResetService.requestPasswordReset(email).subscribe({
-        next: () => {
+        next: (response) => {
           this.isSubmitting = false;
-          this.successMessage = 'Wysłaliśmy instrukcje resetowania hasła na podany adres email.';
-          this.resetForm.reset();
+          this.successMessage = response.message;
+          
+          // Check if the account needs verification first
+          if (response.requiresVerification) {
+            this.requiresVerification = true;
+          }
+          
+          // Check if this is a guest user
+          if (response.isGuestUser) {
+            this.isGuestUser = true;
+          }
         },
         error: (error) => {
           this.isSubmitting = false;
@@ -63,5 +76,11 @@ export class PasswordResetRequestComponent {
 
   goToLogin(): void {
     this.router.navigate(['/login']);
+  }
+  
+  navigateToRegistration(): void {
+    // Pre-fill the email in the registration form
+    const email = this.resetForm.get('email')?.value;
+    this.router.navigate(['/register'], { queryParams: { email } });
   }
 }

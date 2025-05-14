@@ -13,6 +13,12 @@ export interface PasswordResetDto {
   newPassword: string;
 }
 
+export interface PasswordResetResponse {
+  message: string;
+  requiresVerification?: boolean;
+  isGuestUser?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,9 +30,9 @@ export class PasswordResetService {
    * Wysyła żądanie resetowania hasła
    * @param email Adres email użytkownika
    */
-  requestPasswordReset(email: string): Observable<any> {
+  requestPasswordReset(email: string): Observable<PasswordResetResponse> {
     const request: PasswordResetRequestDto = { email };
-    return this.http.post(`${this.apiUrl}/reset-request`, request).pipe(
+    return this.http.post<PasswordResetResponse>(`${this.apiUrl}/reset-request`, request).pipe(
       catchError(error => {
         console.error('Error requesting password reset:', error);
         return throwError(() => error);

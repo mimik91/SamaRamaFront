@@ -72,8 +72,6 @@ export class LoginComponent {
               this.router.navigate(['/admin-dashboard']);
             } else if (this.authService.isClient()) {
               this.router.navigate(['/bicycles']);
-            } else if (this.authService.isService()) {
-              this.router.navigate(['/service-panel']);
             } else {
               // Domyślne przekierowanie jeśli nie rozpoznano roli
               this.router.navigate(['/bicycles']);

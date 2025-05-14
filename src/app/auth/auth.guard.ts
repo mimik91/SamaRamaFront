@@ -71,13 +71,7 @@ export const clientGuard: CanActivateFn = (route, state) => {
   if (authService.isLoggedIn() && (authService.isClient() || authService.isAdmin())) {
     return true;
   }
-  
-  if (authService.isService()) {
-    router.navigate(['/service-panel']);
-  } else {
-    router.navigate(['/login']);
-  }
-  
+  router.navigate(['/login']);
   return false;
 };
 
@@ -91,7 +85,7 @@ export const serviceGuard: CanActivateFn = (route, state) => {
     return true;
   }
   
-  if (authService.isLoggedIn() && (authService.isService() || authService.isAdmin())) {
+  if (authService.isLoggedIn() && authService.isAdmin()) {
     return true;
   }
   
@@ -121,8 +115,6 @@ export const adminGuard: CanActivateFn = (route, state) => {
   // Redirect based on role
   if (authService.isClient()) {
     router.navigate(['/welcome']);
-  } else if (authService.isService()) {
-    router.navigate(['/service-panel']);
   } else {
     router.navigate(['/login']);
   }

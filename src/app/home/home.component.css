@@ -358,62 +358,226 @@
   box-shadow: 0 6px 8px rgba(49, 130, 206, 0.3);
 }
 
-/* Responsywność dla urządzeń mobilnych */
-@media screen and (max-width: 768px) {
-  .hero-section {
-    margin-top: 0; /* Bez marginesu na mobilnych urządzeniach */
-  }
-  
-  .home-container {
-    margin-top: -30px; /* Mniejsze przesunięcie w górę na urządzeniach mobilnych */
-    padding: 20px 15px;
-  }
-  
-  .form-container {
-    padding: 20px 15px;
-  }
-  
-  .bike-form-group {
-    padding: 15px 12px;
-  }
-  
-  .form-header h2 {
-    font-size: 1rem;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .submit-btn, .explore-btn {
-    width: 100%;
-  }
-  
-  .success-message {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .success-icon {
-    margin-right: 0;
-    margin-bottom: 15px;
-  }
-  
-  .success-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .reset-btn, .login-btn {
-    width: 100%;
-  }
+/* Style dla menu na dole strony */
+.bottom-menu {
+  background-color: #fff;
+  padding: 20px 0;
+  margin-top: 50px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 10px 10px 0 0;
+}
 
+.menu-items {
+  display: flex;
+  justify-content: space-between;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+  width: 33.33%;
+}
+
+.menu-item:hover {
+  transform: translateY(-5px);
+}
+
+.menu-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  background-color: #f1f5f9;
+  transition: all 0.3s;
+}
+
+.menu-item:nth-child(1) .menu-icon {
+  color: #ef4444;
+}
+
+.menu-item:nth-child(2) .menu-icon {
+  color: #3b82f6;
+}
+
+.menu-item:nth-child(3) .menu-icon {
+  color: #22c55e;
+}
+
+.menu-item:hover .menu-icon {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.menu-item h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Style dla sekcji treści */
+.content-section {
+  padding: 60px 0;
+  border-top: 1px solid #e2e8f0;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.content-section h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 40px;
+  color: #1e293b;
+}
+
+.section-subtitle {
+  text-align: center;
+  color: #64748b;
+  margin-bottom: 30px;
+}
+
+/* Style dla sekcji "Jak działamy" */
+.process-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.step {
+  display: flex;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  color: white;
+  font-weight: bold;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex-grow: 1;
+}
+
+.step-content h3 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.step-content p {
+  margin: 0;
+  color: #64748b;
+}
+
+.service-list {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  color: #64748b;
+}
+
+.service-list li {
+  margin-bottom: 5px;
+}
+
+/* Style dla sekcji "Co zyskujesz" */
+.benefits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.benefit {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.benefit-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+}
+
+.benefit:nth-child(1) .benefit-icon {
+  color: #ef4444;
+}
+
+.benefit:nth-child(2) .benefit-icon {
+  color: #3b82f6;
+}
+
+.benefit:nth-child(3) .benefit-icon {
+  color: #22c55e;
+}
+
+.benefit h3 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  color: #1e293b;
+}
+
+.benefit p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+/* Responsywność */
+@media screen and (max-width: 768px) {
+  .menu-items {
+    padding: 0 10px;
+  }
+  
+  .menu-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .menu-item h3 {
+    font-size: 0.9rem;
+  }
+  
+  .benefits {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .step {
+    flex-direction: column;
+  }
+  
+  .step-number {
+    margin: 0 0 15px;
+  }
+  
   .add-btn:hover:not(:disabled) {
     background-color: #219653;
     transform: translateY(-2px);

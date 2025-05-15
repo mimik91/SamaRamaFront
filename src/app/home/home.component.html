@@ -1,111 +1,123 @@
+<div class="hero-section">
+  <img src="../../assets/images/home-image.jpg" alt="CycloPick Home Image" class="hero-image" onerror="this.src='https://placehold.co/1600x500/57BCD8/FFFFFF?text=CycloPick+Serwis+Rowerowy'">
+</div>
+
+<!-- Główna treść strony -->
 <div class="home-container">
-    <div class="header">
-      <h1>
-        <app-cyclopick-logo [height]="'240px'" [textSize]="'2rem'" [textColor]="'#2c3e50'"></app-cyclopick-logo>
-        - Serwis rowerowy
-      </h1>
-      <p class="subtitle">Dodaj informacje o swoim rowerze i zamów serwis</p>
+  <div class="header">
+    <h1>
+      <app-cyclopick-logo [height]="'240px'" [textSize]="'2rem'" [textColor]="'#2c3e50'"></app-cyclopick-logo>
+      - Serwis rowerowy
+    </h1>
+    <p class="subtitle">Dodaj informacje o swoim rowerze i zamów serwis</p>
+  </div>
+
+  <!-- Komunikat o sukcesie po zapisaniu formularza -->
+  <div *ngIf="formSubmitted" class="success-message">
+    <div class="success-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
     </div>
-  
-    <!-- Komunikat o sukcesie po zapisaniu formularza -->
-    <div *ngIf="formSubmitted" class="success-message">
-      <div class="success-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-          <polyline points="22 4 12 14.01 9 11.01"></polyline>
-        </svg>
-      </div>
-      <div class="success-content">
-        <h3>Zamówienie wysłane pomyślnie!</h3>
-        <p>Twoje zamówienie zostało przyjęte. Wkrótce skontaktujemy się z Tobą w sprawie szczegółów.</p>
-        <div class="success-actions">
-          <button type="button" class="reset-btn" (click)="resetForm()">Nowe zamówienie</button>
-          <button type="button" class="login-btn" (click)="navigateTo('/login')">Przejdź do logowania</button>
-        </div>
+    <div class="success-content">
+      <h3>Zamówienie wysłane pomyślnie!</h3>
+      <p>Twoje zamówienie zostało przyjęte. Wkrótce skontaktujemy się z Tobą w sprawie szczegółów.</p>
+      <div class="success-actions">
+        <button type="button" class="reset-btn" (click)="resetForm()">Nowe zamówienie</button>
+        <button type="button" class="login-btn" (click)="navigateTo('/login')">Przejdź do logowania</button>
       </div>
     </div>
-  
-    <div class="form-container" *ngIf="!formSubmitted">
-      <form [formGroup]="bikeForm" (ngSubmit)="onSubmit()">
-        <div formArrayName="bikes">
-          <div *ngFor="let bikeGroup of bikesArray.controls; let i = index" class="bike-form-group">
-            <div [formGroupName]="i" class="bike-form-content">
-              <div class="form-header">
-                <h2>Rower #{{ i + 1 }}</h2>
-                <button 
-                  *ngIf="bikesArray.length > 1" 
-                  type="button" 
-                  class="remove-btn" 
-                  (click)="removeBike(i)"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </div>
-  
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="brand-{{i}}">Marka *</label>
-                  <select 
-                    id="brand-{{i}}" 
-                    formControlName="brand" 
-                    [class.is-invalid]="isFieldInvalid(i, 'brand')"
-                    [attr.disabled]="loadingBrands ? '' : null"
-                  >
-                    <option value="" disabled>-- Wybierz markę --</option>
-                    <option *ngIf="loadingBrands" value="" disabled>Ładowanie...</option>
-                    <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
-                    <option value="Inna">Inna marka</option>
-                  </select>
-                  <div *ngIf="isFieldInvalid(i, 'brand')" class="error-message">
-                    Marka jest wymagana
-                  </div>
-                </div>
-  
-                <div class="form-group">
-                  <label for="model-{{i}}">Model</label>
-                  <input 
-                    type="text" 
-                    id="model-{{i}}" 
-                    formControlName="model"
-                    placeholder="Wpisz model roweru"
-                  >
-                </div>
-              </div>
-  
+  </div>
+
+  <div class="form-container" *ngIf="!formSubmitted">
+    <form [formGroup]="bikeForm" (ngSubmit)="onSubmit()">
+      <div formArrayName="bikes">
+        <div *ngFor="let bikeGroup of bikesArray.controls; let i = index" class="bike-form-group">
+          <div [formGroupName]="i" class="bike-form-content">
+            <div class="form-header">
+              <h2>Rower #{{ i + 1 }}</h2>
+              <button 
+                *ngIf="bikesArray.length > 1" 
+                type="button" 
+                class="remove-btn" 
+                (click)="removeBike(i)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div class="form-grid">
               <div class="form-group">
-                <label for="additionalInfo-{{i}}">Dodatkowe informacje</label>
-                <textarea 
-                  id="additionalInfo-{{i}}" 
-                  formControlName="additionalInfo" 
-                  rows="2"
-                  placeholder="Opisz problem lub podaj inne informacje o rowerze"
-                ></textarea>
+                <label for="brand-{{i}}">Marka *</label>
+                <select 
+                  id="brand-{{i}}" 
+                  formControlName="brand" 
+                  [class.is-invalid]="isFieldInvalid(i, 'brand')"
+                  [attr.disabled]="loadingBrands ? '' : null"
+                >
+                  <option value="" disabled>-- Wybierz markę --</option>
+                  <option *ngIf="loadingBrands" value="" disabled>Ładowanie...</option>
+                  <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
+                  <option value="Inna">Inna marka</option>
+                </select>
+                <div *ngIf="isFieldInvalid(i, 'brand')" class="error-message">
+                  Marka jest wymagana
+                </div>
               </div>
+
+              <div class="form-group">
+                <label for="model-{{i}}">Model</label>
+                <input 
+                  type="text" 
+                  id="model-{{i}}" 
+                  formControlName="model"
+                  placeholder="Wpisz model roweru"
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="additionalInfo-{{i}}">Dodatkowe informacje</label>
+              <textarea 
+                id="additionalInfo-{{i}}" 
+                formControlName="additionalInfo" 
+                rows="2"
+                placeholder="Opisz problem lub podaj inne informacje o rowerze"
+              ></textarea>
             </div>
           </div>
         </div>
-  
-        <div class="form-actions">
-            <button type="button" class="add-btn" (click)="addBike()" [disabled]="!canAddMoreBikes()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Dodaj kolejny rower
-            </button>
-          
-          <div class="action-buttons">
-            <button type="button" class="submit-btn" (click)="goToServiceOrder()">
-              Zamów serwis
-            </button>
-            <button type="button" class="login-btn" (click)="navigateTo('/login')">
-              Zaloguj się
-            </button>
-          </div>
+      </div>
+
+      <div class="form-actions">
+          <button type="button" class="add-btn" (click)="addBike()" [disabled]="!canAddMoreBikes()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Dodaj kolejny rower
+          </button>
+        
+        <div class="action-buttons">
+          <button type="button" class="submit-btn" (click)="goToServiceOrder()">
+            Zamów serwis
+          </button>
+          <button type="button" class="login-btn" (click)="navigateTo('/login')">
+            Zaloguj się
+          </button>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   </div>
+  
+  <!-- Sekcja dla serwisów rowerowych -->
+  <div class="service-promo-box">
+    <h2>Jesteś serwisem rowerowym?</h2>
+    <p>Dołącz do naszej platformy i docieraj do klientów w Twojej okolicy. Oferujemy proste zarządzanie zleceniami i szybkie płatności.</p>
+    <button type="button" class="service-promo-btn" (click)="navigateTo('/register-service')">Zarejestruj swój serwis</button>
+  </div>
+</div>

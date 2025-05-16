@@ -1,20 +1,5 @@
-<div class="hero-section">
-  <img src="../../assets/images/home-image.jpg?v=20250516" alt="CycloPick Home Image" class="hero-image" onerror="this.src='https://placehold.co/1600x500/57BCD8/FFFFFF?text=CycloPick+Serwis+Rowerowy'">
+<app-home-hero></app-home-hero>
 
-  <!-- Nowa nakładka na zdjęcie z tekstem i przyciskami -->
-  <div class="hero-overlay">
-    <div class="hero-content">
-      <h1 class="hero-title">CycloPick.pl</h1>
-      <p class="hero-subtitle">Naprawiamy gdy Ty odpoczywasz - wygodny serwis rowerowy</p>
-      <div class="hero-buttons">
-        <button type="button" class="hero-btn learn-more-btn" (click)="scrollToSection('how-it-works')">Dowiedz się więcej</button>
-        <button type="button" class="hero-btn order-btn" (click)="scrollToSection('order-form')">Zamów serwis</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Główna treść strony - bez białych marginesów -->
 <div class="home-container full-width">
   <!-- Komunikat o sukcesie po zapisaniu formularza -->
   <div *ngIf="formSubmitted" class="success-message">
@@ -34,79 +19,77 @@
     </div>
   </div>
 
-  <!-- Usunięto menu ikon na dole strony -->
-
-  <!-- Sekcja "Jak działamy" ze zdjęciami zamiast listy -->
-  <section id="how-it-works" class="content-section">
-    <h2>Jak działamy</h2>
-    <div class="process-images">
-      <!-- Zdjęcie 1 -->
-      <div class="process-image-container">
-        <div class="process-image">
-          <img src="../../assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg" alt="Przyjmowanie zamówienia">
-          <div class="image-overlay">
-            <p>Szybki i prosty proces zamówienia online</p>
-          </div>
+<!-- Sekcja "Jak działamy" z dużymi zdjęciami jak na zrzucie ekranu -->
+<section id="how-it-works" class="content-section">
+  <h2>Jak działamy</h2>
+  <div class="process-images">
+    <!-- Zdjęcie 1 -->
+    <div class="process-image-container">
+      <div class="process-image">
+        <img src="../../assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg" alt="Przyjmowanie zamówienia">
+        <div class="image-overlay">
+          <p>Szybki i prosty proces zamówienia online</p>
         </div>
-        <p class="image-caption">Przyjmujemy zamówienia</p>
       </div>
-      
-      <!-- Zdjęcie 2 -->
-      <div class="process-image-container">
-        <div class="process-image">
-          <img src="../../assets/images/jak-dzialamy/odbieramy.jpg" alt="Odbieramy rower">
-          <div class="image-overlay">
-            <p>Bezpośrednio spod Twoich drzwi, w dogodnym terminie</p>
-          </div>
-        </div>
-        <p class="image-caption">Odbieramy rower od klienta</p>
-      </div>
-      
-      <!-- Zdjęcie 3 -->
-      <div class="process-image-container">
-        <div class="process-image">
-          <img src="../../assets/images/jak-dzialamy/transport.jpg" alt="Transport roweru">
-          <div class="image-overlay">
-            <p>Bezpieczny transport do naszego profesjonalnego serwisu</p>
-          </div>
-        </div>
-        <p class="image-caption">Zawozimy rower do serwisu</p>
-      </div>
-      
-      <!-- Zdjęcie 4 -->
-      <div class="process-image-container">
-        <div class="process-image">
-          <img src="../../assets/images/jak-dzialamy/serwis.jpg" alt="Przegląd roweru">
-          <div class="image-overlay">
-            <p>Kompleksowa diagnostyka przez doświadczonych mechaników</p>
-          </div>
-        </div>
-        <p class="image-caption">Serwis dokonuje przeglądu roweru</p>
-      </div>
-      
-      <!-- Zdjęcie 5 -->
-      <div class="process-image-container">
-        <div class="process-image">
-          <img src="../../assets/images/jak-dzialamy/serwis2.jpg" alt="Serwis roweru">
-          <div class="image-overlay">
-            <p>Regulacja przerzutek i hamulców, smarowanie łańcucha, sprawdzenie opon</p>
-          </div>
-        </div>
-        <p class="image-caption">Wykonujemy pełen serwis</p>
-      </div>
-      
-      <!-- Zdjęcie 6 -->
-      <div class="process-image-container">
-        <div class="process-image">
-          <img src="../../assets/images/jak-dzialamy/zwrot.jpg" alt="Zwrot roweru">
-          <div class="image-overlay">
-            <p>Dostarczamy Twój rower pod same drzwi, gotowy do jazdy</p>
-          </div>
-        </div>
-        <p class="image-caption">Przywozimy rower z powrotem</p>
-      </div>
+      <p class="image-caption">Przyjmujemy zamówienia</p>
     </div>
-  </section>
+    
+    <!-- Zdjęcie 2 -->
+    <div class="process-image-container">
+      <div class="process-image">
+        <img src="../../assets/images/jak-dzialamy/odbieramy.jpg" alt="Odbieramy rower">
+        <div class="image-overlay">
+          <p>Bezpośrednio spod Twoich drzwi, w dogodnym terminie</p>
+        </div>
+      </div>
+      <p class="image-caption">Odbieramy rower od klienta</p>
+    </div>
+    
+    <!-- Zdjęcie 3 -->
+    <div class="process-image-container">
+      <div class="process-image">
+        <img src="../../assets/images/jak-dzialamy/transport.jpg" alt="Transport roweru">
+        <div class="image-overlay">
+          <p>Bezpieczny transport do naszego profesjonalnego serwisu</p>
+        </div>
+      </div>
+      <p class="image-caption">Zawozimy rower do serwisu</p>
+    </div>
+    
+    <!-- Zdjęcie 4 -->
+    <div class="process-image-container">
+      <div class="process-image">
+        <img src="../../assets/images/jak-dzialamy/serwis.jpg" alt="Przegląd roweru">
+        <div class="image-overlay">
+          <p>Kompleksowa diagnostyka przez doświadczonych mechaników</p>
+        </div>
+      </div>
+      <p class="image-caption">Serwis dokonuje przeglądu roweru</p>
+    </div>
+    
+    <!-- Zdjęcie 5 -->
+    <div class="process-image-container">
+      <div class="process-image">
+        <img src="../../assets/images/jak-dzialamy/serwis2.jpg" alt="Serwis roweru">
+        <div class="image-overlay">
+          <p>Regulacja przerzutek i hamulców, smarowanie łańcucha, sprawdzenie opon</p>
+        </div>
+      </div>
+      <p class="image-caption">Wykonujemy pełen serwis</p>
+    </div>
+    
+    <!-- Zdjęcie 6 -->
+    <div class="process-image-container">
+      <div class="process-image">
+        <img src="../../assets/images/jak-dzialamy/zwrot.jpg" alt="Zwrot roweru">
+        <div class="image-overlay">
+          <p>Dostarczamy Twój rower pod same drzwi, gotowy do jazdy</p>
+        </div>
+      </div>
+      <p class="image-caption">Przywozimy rower z powrotem</p>
+    </div>
+  </div>
+</section>
 
   <!-- Przeniesiona zawartość z czerwonego kółka -->
   <section id="benefits" class="content-section">

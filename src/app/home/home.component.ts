@@ -5,11 +5,17 @@ import { Router } from '@angular/router';
 import { EnumerationService } from '../core/enumeration.service';
 import { BikeFormService, BikeFormData } from './bike-form.service';
 import { ServiceSlotService } from '../service-slots/service-slot.service';
+import { HomeHeroComponent } from './home-hero.component';
+import { NotificationService } from '../core/notification.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    HomeHeroComponent
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -19,6 +25,7 @@ export class HomeComponent implements OnInit {
   private enumerationService = inject(EnumerationService);
   private bikeFormService = inject(BikeFormService);
   private serviceSlotService = inject(ServiceSlotService);
+  private notificationService = inject(NotificationService);
 
   bikeForm: FormGroup;
   brands: string[] = [];
@@ -115,8 +122,7 @@ export class HomeComponent implements OnInit {
     if (this.canAddMoreBikes()) {
       this.bikesArray.push(this.createBikeFormGroup());
     } else {
-      console.log(`Osiągnięto maksymalną liczbę rowerów (${this.maxBikesPerOrder})`);
-      alert(`Możesz dodać maksymalnie ${this.maxBikesPerOrder} rowerów. Aby dodać więcej, zarejestruj się lub zaloguj.`);
+      this.notificationService.warning(`Możesz dodać maksymalnie ${this.maxBikesPerOrder} rowerów. Aby dodać więcej, zarejestruj się lub zaloguj.`);
     }
   }
 
@@ -132,10 +138,6 @@ export class HomeComponent implements OnInit {
   }
 
   onSubmit(): void {
-    console.log('onSubmit wywołana');
-    console.log('Stan formularza:', this.bikeForm.valid ? 'Formularz poprawny' : 'Formularz niepoprawny');
-    console.log('Wartości formularza:', this.bikeForm.value);
-    
     if (this.bikeForm.valid) {
       // Konwertujemy dane formularza do formatu używanego przez serwis
       const bikesData: BikeFormData[] = this.bikesArray.controls.map(control => {
@@ -149,25 +151,12 @@ export class HomeComponent implements OnInit {
       // Zapisujemy dane formularza w serwisie
       this.bikeFormService.setBikesData(bikesData);
       
-      console.log('Form data saved:', bikesData);
-      console.log('Przekierowuję do /guest-order');
-      
       // Przekieruj do formularza zamówienia dla gości
       this.router.navigate(['/guest-order']);
     } else {
-      console.log('Formularz niepoprawny - sprawdzam błędy:');
-      
-      // Sprawdź błędy w kontrolkach
-      this.bikesArray.controls.forEach((control, index) => {
-        const brandControl = control.get('brand');
-        console.log(`Rower ${index + 1}, marka:`, 
-          brandControl?.value, 
-          brandControl?.valid ? 'poprawna' : 'niepoprawna', 
-          brandControl?.errors);
-      });
-      
       // Oznacz wszystkie pola jako dotknięte, aby pokazać błędy walidacji
       this.markFormGroupTouched(this.bikeForm);
+      this.notificationService.warning('Proszę wypełnić wszystkie wymagane pola formularza.');
     }
   }
 
@@ -185,8 +174,6 @@ export class HomeComponent implements OnInit {
 
   // Metoda wywoływana bezpośrednio przez przycisk
   goToServiceOrder(): void {
-    console.log('goToServiceOrder wywołana');
-    
     // Zapisujemy dane formularza, niezależnie od walidacji
     const bikesData: BikeFormData[] = this.bikesArray.controls.map(control => {
       return {
@@ -198,24 +185,12 @@ export class HomeComponent implements OnInit {
     
     // Zapisujemy dane formularza w serwisie
     this.bikeFormService.setBikesData(bikesData);
-    console.log('Form data saved:', bikesData);
     
-    // Bezpośrednie przekierowanie, bez sprawdzania walidacji
-    try {
-      window.location.href = '/guest-order';
-      console.log('Przekierowano przez window.location');
-    } catch (e) {
-      console.error('Błąd przekierowania przez window.location:', e);
-      
-      try {
-        this.router.navigate(['/guest-order']).then(
-          success => console.log('Przekierowanie udane:', success),
-          error => console.error('Błąd przekierowania:', error)
-        ).catch(e => console.error('Wyjątek podczas przekierowania:', e));
-      } catch (e) {
-        console.error('Błąd w router.navigate:', e);
-      }
-    }
+    // Pokazujemy powiadomienie o sukcesie
+    this.notificationService.success('Dane roweru zostały zapisane');
+    
+    // Przekierowanie
+    this.router.navigate(['/guest-order']);
   }
 
   // Metoda do resetowania formularza
@@ -237,6 +212,9 @@ export class HomeComponent implements OnInit {
     
     // Czyścimy dane w serwisie
     this.bikeFormService.clearData();
+    
+    // Pokaż powiadomienie
+    this.notificationService.info('Formularz został zresetowany');
   }
 
   navigateTo(route: string): void {

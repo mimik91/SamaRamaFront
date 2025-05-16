@@ -1,5 +1,4 @@
-// src/app/core/navigation/navigation.component.ts
-import { Component, inject, OnInit, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
@@ -40,8 +39,6 @@ export class NavigationComponent implements OnInit {
 
     // Pobierz aktualny URL
     this.currentUrl = this.router.url;
-    console.log('Navigation component initialized');
-    console.log('Current URL:', this.currentUrl);
   }
   
   // Zamknij menu mobilne gdy rozmiar ekranu przekracza 768px
@@ -79,10 +76,10 @@ export class NavigationComponent implements OnInit {
   }
   
   navigateToHome(event: Event): void {
-  event.preventDefault();
-  this.router.navigate(['/']);
-  this.closeMobileMenu();
-}
+    event.preventDefault();
+    this.router.navigate(['/']);
+    this.closeMobileMenu();
+  }
 
   // Sprawdza, czy jesteśmy na stronie logowania lub rejestracji
   isAuthPage(): boolean {

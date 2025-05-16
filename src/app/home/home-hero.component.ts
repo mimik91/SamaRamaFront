@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -8,8 +8,17 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="hero-section">
-      <img src="../../assets/images/home-image.jpg" alt="CycloPick Home Image" class="hero-image" 
+      <!-- Użycie *ngIf="isBrowser" dla obrazu -->
+      <img *ngIf="isBrowser" 
+           src="assets/images/home-image.jpg" 
+           alt="CycloPick Home Image" 
+           class="hero-image" 
            onerror="this.src='https://placehold.co/1600x500/57BCD8/FFFFFF?text=CycloPick+Serwis+Rowerowy'">
+      
+      <!-- Fallback dla SSR -->
+      <div *ngIf="!isBrowser" class="hero-image-placeholder">
+        CycloPick Serwis Rowerowy
+      </div>
       
       <!-- Nakładka na zdjęcie z tekstem i przyciskami -->
       <div class="hero-overlay">
@@ -49,6 +58,21 @@ import { RouterModule } from '@angular/router';
       vertical-align: top;
       margin: 0;
       padding: 0;
+      filter: brightness(0.8);
+    }
+    
+    /* Placeholder dla SSR */
+    .hero-image-placeholder {
+      width: 100%;
+      height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #57BCD8;
+      color: #FFFFFF;
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
       filter: brightness(0.8);
     }
     
@@ -178,19 +202,28 @@ import { RouterModule } from '@angular/router';
   `]
 })
 export class HomeHeroComponent {
-  // Method to scroll to a section with ID
+  // Flaga do sprawdzania środowiska
+  isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
+
+  // Method to scroll to a section with ID - działa tylko w przeglądarce
   scrollToSection(sectionId: string): void {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      // Add offset to account for navbar and other elements
-      const offset = 80; 
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-      
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+    if (this.isBrowser) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        // Add offset to account for navbar and other elements
+        const offset = 80; 
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - offset;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
     }
   }
 }

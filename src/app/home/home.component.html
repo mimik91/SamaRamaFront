@@ -26,7 +26,10 @@
     <!-- Zdjęcie 1 -->
     <div class="process-image-container">
       <div class="process-image">
-        <img src="../../assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg" alt="Przyjmowanie zamówienia">
+        <!-- Użycie *ngIf="isBrowser" zapewnia, że obrazy są ładowane tylko po stronie klienta -->
+        <img *ngIf="isBrowser" src="assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg" alt="Przyjmowanie zamówienia">
+        <!-- Fallback gdy SSR jest aktywne -->
+        <div *ngIf="!isBrowser" class="placeholder-image">Ładowanie obrazu...</div>
         <div class="image-overlay">
           <p>Szybki i prosty proces zamówienia online</p>
         </div>
@@ -37,7 +40,8 @@
     <!-- Zdjęcie 2 -->
     <div class="process-image-container">
       <div class="process-image">
-        <img src="../../assets/images/jak-dzialamy/odbieramy.jpg" alt="Odbieramy rower">
+        <img *ngIf="isBrowser" src="assets/images/jak-dzialamy/odbieramy.jpg" alt="Odbieramy rower">
+        <div *ngIf="!isBrowser" class="placeholder-image">Ładowanie obrazu...</div>
         <div class="image-overlay">
           <p>Bezpośrednio spod Twoich drzwi, w dogodnym terminie</p>
         </div>
@@ -48,7 +52,8 @@
     <!-- Zdjęcie 3 -->
     <div class="process-image-container">
       <div class="process-image">
-        <img src="../../assets/images/jak-dzialamy/transport.jpg" alt="Transport roweru">
+        <img *ngIf="isBrowser" src="assets/images/jak-dzialamy/transport.jpg" alt="Transport roweru">
+        <div *ngIf="!isBrowser" class="placeholder-image">Ładowanie obrazu...</div>
         <div class="image-overlay">
           <p>Bezpieczny transport do naszego profesjonalnego serwisu</p>
         </div>
@@ -59,7 +64,8 @@
     <!-- Zdjęcie 4 -->
     <div class="process-image-container">
       <div class="process-image">
-        <img src="../../assets/images/jak-dzialamy/serwis.jpg" alt="Przegląd roweru">
+        <img *ngIf="isBrowser" src="assets/images/jak-dzialamy/serwis.jpg" alt="Przegląd roweru">
+        <div *ngIf="!isBrowser" class="placeholder-image">Ładowanie obrazu...</div>
         <div class="image-overlay">
           <p>Kompleksowa diagnostyka przez doświadczonych mechaników</p>
         </div>
@@ -70,7 +76,8 @@
     <!-- Zdjęcie 5 -->
     <div class="process-image-container">
       <div class="process-image">
-        <img src="../../assets/images/jak-dzialamy/serwis2.jpg" alt="Serwis roweru">
+        <img *ngIf="isBrowser" src="assets/images/jak-dzialamy/serwis2.jpg" alt="Serwis roweru">
+        <div *ngIf="!isBrowser" class="placeholder-image">Ładowanie obrazu...</div>
         <div class="image-overlay">
           <p>Regulacja przerzutek i hamulców, smarowanie łańcucha, sprawdzenie opon</p>
         </div>
@@ -81,7 +88,8 @@
     <!-- Zdjęcie 6 -->
     <div class="process-image-container">
       <div class="process-image">
-        <img src="../../assets/images/jak-dzialamy/zwrot.jpg" alt="Zwrot roweru">
+        <img *ngIf="isBrowser" src="assets/images/jak-dzialamy/zwrot.jpg" alt="Zwrot roweru">
+        <div *ngIf="!isBrowser" class="placeholder-image">Ładowanie obrazu...</div>
         <div class="image-overlay">
           <p>Dostarczamy Twój rower pod same drzwi, gotowy do jazdy</p>
         </div>

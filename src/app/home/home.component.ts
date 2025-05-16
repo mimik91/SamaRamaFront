@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { EnumerationService } from '../core/enumeration.service';
@@ -7,6 +7,7 @@ import { BikeFormService, BikeFormData } from './bike-form.service';
 import { ServiceSlotService } from '../service-slots/service-slot.service';
 import { HomeHeroComponent } from './home-hero.component';
 import { NotificationService } from '../core/notification.service';
+import { ProcessCarouselComponent } from './process-carousel.component';
 
 @Component({
   selector: 'app-home',
@@ -14,7 +15,8 @@ import { NotificationService } from '../core/notification.service';
   imports: [
     CommonModule, 
     ReactiveFormsModule,
-    HomeHeroComponent
+    HomeHeroComponent,
+    ProcessCarouselComponent
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -27,9 +29,6 @@ export class HomeComponent implements OnInit {
   private serviceSlotService = inject(ServiceSlotService);
   private notificationService = inject(NotificationService);
 
-  // Dodana flaga do sprawdzania środowiska
-  isBrowser: boolean;
-
   bikeForm: FormGroup;
   brands: string[] = [];
   loadingBrands = true;
@@ -39,10 +38,7 @@ export class HomeComponent implements OnInit {
   maxBikesPerOrder = 5; // Default value
   loadingMaxBikes = true;
   
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    // Inicjalizacja flagi isBrowser
-    this.isBrowser = isPlatformBrowser(platformId);
-    
+  constructor() {
     this.bikeForm = this.fb.group({
       bikes: this.fb.array([this.createBikeFormGroup()])
     });
@@ -52,23 +48,20 @@ export class HomeComponent implements OnInit {
     this.loadBrands();
     this.loadMaxBikesConfiguration();
     
-    // Sprawdź, czy jesteśmy w środowisku przeglądarki zanim użyjesz BikeFormService
-    if (this.isBrowser) {
-      // Sprawdzamy, czy mamy zapisane dane formularza w serwisie
-      const savedBikesData = this.bikeFormService.getBikesDataValue();
-      if (savedBikesData.length > 0) {
-        // Jeśli mamy dane, usuwamy domyślny, pusty formularz
-        while (this.bikesArray.length !== 0) {
-          this.bikesArray.removeAt(0);
-        }
-        
-        // Dodajemy formularze bazując na zapisanych danych
-        savedBikesData.forEach(bikeData => {
-          const bikeGroup = this.createBikeFormGroup();
-          bikeGroup.patchValue(bikeData);
-          this.bikesArray.push(bikeGroup);
-        });
+    // Sprawdzamy, czy mamy zapisane dane formularza w serwisie
+    const savedBikesData = this.bikeFormService.getBikesDataValue();
+    if (savedBikesData.length > 0) {
+      // Jeśli mamy dane, usuwamy domyślny, pusty formularz
+      while (this.bikesArray.length !== 0) {
+        this.bikesArray.removeAt(0);
       }
+      
+      // Dodajemy formularze bazując na zapisanych danych
+      savedBikesData.forEach(bikeData => {
+        const bikeGroup = this.createBikeFormGroup();
+        bikeGroup.patchValue(bikeData);
+        this.bikesArray.push(bikeGroup);
+      });
     }
   }
 
@@ -147,7 +140,7 @@ export class HomeComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.bikeForm.valid && this.isBrowser) {
+    if (this.bikeForm.valid) {
       // Konwertujemy dane formularza do formatu używanego przez serwis
       const bikesData: BikeFormData[] = this.bikesArray.controls.map(control => {
         return {
@@ -157,7 +150,7 @@ export class HomeComponent implements OnInit {
         };
       });
       
-      // Zapisujemy dane formularza w serwisie tylko jeśli jesteśmy w przeglądarce
+      // Zapisujemy dane formularza w serwisie
       this.bikeFormService.setBikesData(bikesData);
       
       // Przekieruj do formularza zamówienia dla gości
@@ -183,22 +176,20 @@ export class HomeComponent implements OnInit {
 
   // Metoda wywoływana bezpośrednio przez przycisk
   goToServiceOrder(): void {
-    // Zapisujemy dane formularza, niezależnie od walidacji, tylko jeśli jesteśmy w przeglądarce
-    if (this.isBrowser) {
-      const bikesData: BikeFormData[] = this.bikesArray.controls.map(control => {
-        return {
-          brand: control.get('brand')?.value || 'Nieznana',
-          model: control.get('model')?.value || '',
-          additionalInfo: control.get('additionalInfo')?.value || ''
-        };
-      });
-      
-      // Zapisujemy dane formularza w serwisie
-      this.bikeFormService.setBikesData(bikesData);
-      
-      // Pokazujemy powiadomienie o sukcesie
-      this.notificationService.success('Dane roweru zostały zapisane');
-    }
+    // Zapisujemy dane formularza, niezależnie od walidacji
+    const bikesData: BikeFormData[] = this.bikesArray.controls.map(control => {
+      return {
+        brand: control.get('brand')?.value || 'Nieznana',
+        model: control.get('model')?.value || '',
+        additionalInfo: control.get('additionalInfo')?.value || ''
+      };
+    });
+    
+    // Zapisujemy dane formularza w serwisie
+    this.bikeFormService.setBikesData(bikesData);
+    
+    // Pokazujemy powiadomienie o sukcesie
+    this.notificationService.success('Dane roweru zostały zapisane');
     
     // Przekierowanie
     this.router.navigate(['/guest-order']);
@@ -221,10 +212,8 @@ export class HomeComponent implements OnInit {
     // Resetujemy stan formularza
     this.formSubmitted = false;
     
-    // Czyścimy dane w serwisie tylko jeśli jesteśmy w przeglądarce
-    if (this.isBrowser) {
-      this.bikeFormService.clearData();
-    }
+    // Czyścimy dane w serwisie
+    this.bikeFormService.clearData();
     
     // Pokaż powiadomienie
     this.notificationService.info('Formularz został zresetowany');
@@ -236,20 +225,17 @@ export class HomeComponent implements OnInit {
   
   // Metoda do przewijania do sekcji
   scrollToSection(sectionId: string): void {
-    // Wykonaj przewijanie tylko jeśli jesteśmy w przeglądarce
-    if (this.isBrowser) {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        // Dodajemy offset, aby uwzględnić navbar i inne elementy
-        const offset = 80; 
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - offset;
-        
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
+    const element = document.getElementById(sectionId);
+    if (element) {
+      // Dodajemy offset, aby uwzględnić navbar i inne elementy
+      const offset = 80; 
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   }
 }

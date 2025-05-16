@@ -4,13 +4,12 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } fr
 import { Router } from '@angular/router';
 import { EnumerationService } from '../core/enumeration.service';
 import { BikeFormService, BikeFormData } from './bike-form.service';
-import { CycloPickLogoComponent } from '../shared/cyclopick-logo/cyclopick-logo.component';
 import { ServiceSlotService } from '../service-slots/service-slot.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CycloPickLogoComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })

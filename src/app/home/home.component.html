@@ -1,17 +1,21 @@
 <div class="hero-section">
   <img src="../../assets/images/home-image.jpg" alt="CycloPick Home Image" class="hero-image" onerror="this.src='https://placehold.co/1600x500/57BCD8/FFFFFF?text=CycloPick+Serwis+Rowerowy'">
+  
+  <!-- Nowa nakładka na zdjęcie z tekstem i przyciskami -->
+  <div class="hero-overlay">
+    <div class="hero-content">
+      <h1 class="hero-title">CycloPick.pl</h1>
+      <p class="hero-subtitle">Naprawiamy gdy Ty odpoczywasz - wygodny serwis rowerowy</p>
+      <div class="hero-buttons">
+        <button type="button" class="hero-btn learn-more-btn" (click)="scrollToSection('how-it-works')">Dowiedz się więcej</button>
+        <button type="button" class="hero-btn order-btn" (click)="scrollToSection('order-form')">Zamów serwis</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Główna treść strony -->
-<div class="home-container">
-  <div class="header">
-    <h1>
-      <app-cyclopick-logo [height]="'240px'" [textSize]="'2rem'" [textColor]="'#2c3e50'"></app-cyclopick-logo>
-      - Serwis rowerowy
-    </h1>
-    <p class="subtitle">Dodaj informacje o swoim rowerze i zamów serwis</p>
-  </div>
-
+<!-- Główna treść strony - bez białych marginesów -->
+<div class="home-container full-width">
   <!-- Komunikat o sukcesie po zapisaniu formularza -->
   <div *ngIf="formSubmitted" class="success-message">
     <div class="success-icon">
@@ -30,198 +34,81 @@
     </div>
   </div>
 
-  <div class="form-container" *ngIf="!formSubmitted">
-    <form [formGroup]="bikeForm" (ngSubmit)="onSubmit()">
-      <div formArrayName="bikes">
-        <div *ngFor="let bikeGroup of bikesArray.controls; let i = index" class="bike-form-group">
-          <div [formGroupName]="i" class="bike-form-content">
-            <div class="form-header">
-              <h2>Rower #{{ i + 1 }}</h2>
-              <button 
-                *ngIf="bikesArray.length > 1" 
-                type="button" 
-                class="remove-btn" 
-                (click)="removeBike(i)"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
+  <!-- Usunięto menu ikon na dole strony -->
 
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="brand-{{i}}">Marka *</label>
-                <select 
-                  id="brand-{{i}}" 
-                  formControlName="brand" 
-                  [class.is-invalid]="isFieldInvalid(i, 'brand')"
-                  [attr.disabled]="loadingBrands ? '' : null"
-                >
-                  <option value="" disabled>-- Wybierz markę --</option>
-                  <option *ngIf="loadingBrands" value="" disabled>Ładowanie...</option>
-                  <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
-                  <option value="Inna">Inna marka</option>
-                </select>
-                <div *ngIf="isFieldInvalid(i, 'brand')" class="error-message">
-                  Marka jest wymagana
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="model-{{i}}">Model</label>
-                <input 
-                  type="text" 
-                  id="model-{{i}}" 
-                  formControlName="model"
-                  placeholder="Wpisz model roweru"
-                >
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="additionalInfo-{{i}}">Dodatkowe informacje</label>
-              <textarea 
-                id="additionalInfo-{{i}}" 
-                formControlName="additionalInfo" 
-                rows="2"
-                placeholder="Opisz problem lub podaj inne informacje o rowerze"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-actions">
-          <button type="button" class="add-btn" (click)="addBike()" [disabled]="!canAddMoreBikes()">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              Dodaj kolejny rower
-          </button>
-        
-        <div class="action-buttons">
-          <button type="button" class="submit-btn" (click)="goToServiceOrder()">
-            Zamów serwis
-          </button>
-          <button type="button" class="login-btn" (click)="navigateTo('/login')">
-            Zaloguj się
-          </button>
-        </div>
-      </div>
-    </form>
-  </div>
-  
-  <!-- Sekcja dla serwisów rowerowych -->
-  <div class="service-promo-box">
-    <h2>Jesteś serwisem rowerowym?</h2>
-    <p>Dołącz do naszej platformy i docieraj do klientów w Twojej okolicy. Oferujemy proste zarządzanie zleceniami i szybkie płatności.</p>
-    <button type="button" class="service-promo-btn" (click)="navigateTo('/register-service')">Zarejestruj swój serwis</button>
-  </div>
-
-  <!-- Menu ikon na dole strony -->
-  <div class="bottom-menu">
-    <div class="menu-items">
-      <!-- Jak działamy -->
-      <div class="menu-item" >
-        <div class="menu-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0 -20 0"></path>
-            <path d="M12 16v-4"></path>
-            <path d="M12 8h.01"></path>
-          </svg>
-        </div>
-        <h3>Jak działamy</h3>
-      </div>
-      
-      <!-- Co zyskujesz -->
-      <div class="menu-item" >
-        <div class="menu-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 12l2 2l4 -4"></path>
-            <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path>
-          </svg>
-        </div>
-        <h3>Co zyskujesz</h3>
-      </div>
-      
-      <!-- Zamów -->
-      <div class="menu-item">
-        <div class="menu-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 6h3a1 1 0 0 1 1 1v11a2 2 0 0 1 -4 0v-13a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1v12a3 3 0 0 0 3 3h11"></path>
-            <path d="M8 8l4 0"></path>
-            <path d="M8 12l4 0"></path>
-            <path d="M8 16l4 0"></path>
-          </svg>
-        </div>
-        <h3>Zamów</h3>
-      </div>
-    </div>
-  </div>
-
-  <!-- Sekcje treści, które będą widoczne po przewinięciu -->
+  <!-- Sekcja "Jak działamy" ze zdjęciami zamiast listy -->
   <section id="how-it-works" class="content-section">
     <h2>Jak działamy</h2>
-    <div class="process-steps">
-      <div class="step">
-        <div class="step-number">1</div>
-        <div class="step-content">
-          <h3>Przyjmujemy zamówienia</h3>
-          <p>Szybki i prosty proces zamówienia online</p>
+    <div class="process-images">
+      <!-- Zdjęcie 1 -->
+      <div class="process-image-container">
+        <div class="process-image">
+          <img src="../../assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg" alt="Przyjmowanie zamówienia">
+          <div class="image-overlay">
+            <p>Szybki i prosty proces zamówienia online</p>
+          </div>
         </div>
+        <p class="image-caption">Przyjmujemy zamówienia</p>
       </div>
       
-      <div class="step">
-        <div class="step-number">2</div>
-        <div class="step-content">
-          <h3>Odbieramy rower od klienta</h3>
-          <p>Bezpośrednio spod Twoich drzwi, w dogodnym terminie</p>
+      <!-- Zdjęcie 2 -->
+      <div class="process-image-container">
+        <div class="process-image">
+          <img src="../../assets/images/jak-dzialamy/odbieramy.jpg" alt="Odbieramy rower">
+          <div class="image-overlay">
+            <p>Bezpośrednio spod Twoich drzwi, w dogodnym terminie</p>
+          </div>
         </div>
+        <p class="image-caption">Odbieramy rower od klienta</p>
       </div>
       
-      <div class="step">
-        <div class="step-number">3</div>
-        <div class="step-content">
-          <h3>Zawozimy rower do serwisu</h3>
-          <p>Bezpieczny transport do naszego profesjonalnego serwisu</p>
+      <!-- Zdjęcie 3 -->
+      <div class="process-image-container">
+        <div class="process-image">
+          <img src="../../assets/images/jak-dzialamy/transport.jpg" alt="Transport roweru">
+          <div class="image-overlay">
+            <p>Bezpieczny transport do naszego profesjonalnego serwisu</p>
+          </div>
         </div>
+        <p class="image-caption">Zawozimy rower do serwisu</p>
       </div>
       
-      <div class="step">
-        <div class="step-number">4</div>
-        <div class="step-content">
-          <h3>Serwis dokonuje przeglądu roweru</h3>
-          <p>Kompleksowa diagnostyka przez doświadczonych mechaników</p>
+      <!-- Zdjęcie 4 -->
+      <div class="process-image-container">
+        <div class="process-image">
+          <img src="../../assets/images/jak-dzialamy/serwis.jpg" alt="Przegląd roweru">
+          <div class="image-overlay">
+            <p>Kompleksowa diagnostyka przez doświadczonych mechaników</p>
+          </div>
         </div>
+        <p class="image-caption">Serwis dokonuje przeglądu roweru</p>
       </div>
       
-      <div class="step">
-        <div class="step-number">5</div>
-        <div class="step-content">
-          <h3>Wykonujemy pełen serwis</h3>
-          <ul class="service-list">
-            <li>Regulacja przerzutek i hamulców</li>
-            <li>Smarowanie łańcucha</li>
-            <li>Sprawdzenie opon, linek i pancerzy</li>
-            <li>Kasowanie luzów</li>
-            <li>Wychwycenie ewentualnych napraw</li>
-          </ul>
+      <!-- Zdjęcie 5 -->
+      <div class="process-image-container">
+        <div class="process-image">
+          <img src="../../assets/images/jak-dzialamy/serwis2.jpg" alt="Serwis roweru">
+          <div class="image-overlay">
+            <p>Regulacja przerzutek i hamulców, smarowanie łańcucha, sprawdzenie opon</p>
+          </div>
         </div>
+        <p class="image-caption">Wykonujemy pełen serwis</p>
       </div>
       
-      <div class="step">
-        <div class="step-number">6</div>
-        <div class="step-content">
-          <h3>Przywozimy rower z powrotem</h3>
-          <p>Dostarczamy Twój rower pod same drzwi, gotowy do jazdy</p>
+      <!-- Zdjęcie 6 -->
+      <div class="process-image-container">
+        <div class="process-image">
+          <img src="../../assets/images/jak-dzialamy/zwrot.jpg" alt="Zwrot roweru">
+          <div class="image-overlay">
+            <p>Dostarczamy Twój rower pod same drzwi, gotowy do jazdy</p>
+          </div>
         </div>
+        <p class="image-caption">Przywozimy rower z powrotem</p>
       </div>
     </div>
   </section>
 
+  <!-- Przeniesiona zawartość z czerwonego kółka -->
   <section id="benefits" class="content-section">
     <h2>Co zyskujesz</h2>
     <div class="benefits">
@@ -264,15 +151,96 @@
     <h2>Zamów serwis</h2>
     <p class="section-subtitle">Wypełnij formularz poniżej, aby zamówić odbiór i serwis Twojego roweru</p>
     
-    <!-- Referencja do istniejącego formularza -->
+    <!-- Formularz zamówienia -->
     <div class="form-container" *ngIf="!formSubmitted">
       <form [formGroup]="bikeForm" (ngSubmit)="onSubmit()">
-        <div class="action-buttons">
-          <button type="button" class="submit-btn" (click)="goToServiceOrder()">
-            Zamów serwis teraz
+        <div formArrayName="bikes">
+          <div *ngFor="let bikeGroup of bikesArray.controls; let i = index" class="bike-form-group">
+            <div [formGroupName]="i" class="bike-form-content">
+              <div class="form-header">
+                <h2>Rower #{{ i + 1 }}</h2>
+                <button 
+                  *ngIf="bikesArray.length > 1" 
+                  type="button" 
+                  class="remove-btn" 
+                  (click)="removeBike(i)"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="brand-{{i}}">Marka *</label>
+                  <select 
+                    id="brand-{{i}}" 
+                    formControlName="brand" 
+                    [class.is-invalid]="isFieldInvalid(i, 'brand')"
+                    [attr.disabled]="loadingBrands ? '' : null"
+                  >
+                    <option value="" disabled>-- Wybierz markę --</option>
+                    <option *ngIf="loadingBrands" value="" disabled>Ładowanie...</option>
+                    <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
+                    <option value="Inna">Inna marka</option>
+                  </select>
+                  <div *ngIf="isFieldInvalid(i, 'brand')" class="error-message">
+                    Marka jest wymagana
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="model-{{i}}">Model</label>
+                  <input 
+                    type="text" 
+                    id="model-{{i}}" 
+                    formControlName="model"
+                    placeholder="Wpisz model roweru"
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="additionalInfo-{{i}}">Dodatkowe informacje</label>
+                <textarea 
+                  id="additionalInfo-{{i}}" 
+                  formControlName="additionalInfo" 
+                  rows="2"
+                  placeholder="Opisz problem lub podaj inne informacje o rowerze"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="add-btn" (click)="addBike()" [disabled]="!canAddMoreBikes()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Dodaj kolejny rower
           </button>
+        
+          <div class="action-buttons">
+            <button type="button" class="submit-btn" (click)="goToServiceOrder()">
+              Zamów serwis
+            </button>
+            <button type="button" class="login-btn" (click)="navigateTo('/login')">
+              Zaloguj się
+            </button>
+          </div>
         </div>
       </form>
     </div>
   </section>
+  
+  <!-- Panel serwisowy przeniesiony na koniec -->
+  <div class="service-promo-box">
+    <h2>Jesteś serwisem rowerowym?</h2>
+    <p>Dołącz do naszej platformy i docieraj do klientów w Twojej okolicy.</p>
+    <button type="button" class="service-promo-btn" (click)="navigateTo('/register-service')">Zarejestruj swój serwis</button>
+  </div>
 </div>

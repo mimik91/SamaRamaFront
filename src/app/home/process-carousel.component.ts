@@ -144,7 +144,7 @@ interface ProcessImage {
       position: relative;
       overflow: hidden;
       height: 525px; /* Nowa wysokość */
-      width: 350px; /* Nowa szerokość */
+      width: 788px; /* Nowa szerokość */
       border-radius: 8px; /* Dodane łagodne zaokrąglenie rogów */
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtelny cień */
     }

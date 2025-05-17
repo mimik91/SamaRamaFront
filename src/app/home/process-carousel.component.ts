@@ -21,7 +21,7 @@ interface ProcessImage {
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
       </button>
-      <button class="arrow-btn next-btn" (click)="nextSlide()" [disabled]="activeIndex >= images.length - visibleSlides">
+      <button class="arrow-btn next-btn" (click)="nextSlide()" [disabled]="activeIndex >= Math.max(0, images.length - visibleSlides)">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
@@ -72,8 +72,8 @@ interface ProcessImage {
   styles: [`
     .carousel-container {
       position: relative;
-      width: 100%;
-      max-width: 2200px; /* Zwiększona maksymalna szerokość, aby zmieścić 6 zdjęć */
+      width: 95%;
+      max-width: 5650px; /* Zwiększona maksymalna szerokość */
       margin: 0 auto; /* Wycentrowanie na ekranie */
       overflow: hidden;
       padding: 0 40px; /* Miejsce na strzałki */
@@ -85,6 +85,7 @@ interface ProcessImage {
       justify-content: flex-start; /* Zmieniono na flex-start, aby zawsze pokazywać pierwsze zdjęcie */
       width: 100%;
       overflow: hidden;
+      position: relative; /* Dodano pozycję, aby zapobiec przewijaniu poza granicami */
     }
     
     /* Strzałki nawigacyjne */
@@ -132,8 +133,8 @@ interface ProcessImage {
     
     .carousel-slide {
       flex: 0 0 auto;
-      width: 350px;
-      padding: 0 5px;
+      width: 920px; /* Zwiększona szerokość slajdu, aby pomieścić zdjęcie 900px + padding */
+      padding: 0 10px;
       display: flex;
       flex-direction: column;
       align-items: center; /* Wycentrowanie zawartości slajdu */
@@ -143,8 +144,8 @@ interface ProcessImage {
     .process-image {
       position: relative;
       overflow: hidden;
-      height: 525px; /* Nowa wysokość */
-      width: 788px; /* Nowa szerokość */
+      height: 600px; /* Nowa wysokość */
+      width: 900px; /* Nowa szerokość */
       border-radius: 8px; /* Dodane łagodne zaokrąglenie rogów */
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtelny cień */
     }
@@ -159,23 +160,23 @@ interface ProcessImage {
     /* Przyciski na zdjęciach */
     .image-buttons {
       position: absolute;
-      bottom: 20px;
+      bottom: 30px;
       left: 0;
       right: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 15px;
       padding: 0 20px;
       z-index: 5;
     }
     
     .image-btn {
-      width: 90%;
-      padding: 10px 12px;
-      border-radius: 20px;
-      font-size: 0.95rem;
+      width: 70%;
+      padding: 12px 16px;
+      border-radius: 25px;
+      font-size: 1.1rem;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
@@ -212,7 +213,7 @@ interface ProcessImage {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 25px;
+      padding: 30px;
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
@@ -226,17 +227,17 @@ interface ProcessImage {
     
     .image-overlay p {
       color: white;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       text-align: center;
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.6;
     }
     
     .image-caption {
       font-weight: 600;
       color: #2c3e50;
-      margin: 10px 0 0;
-      font-size: 1.2rem;
+      margin: 15px 0 0;
+      font-size: 1.3rem;
       text-align: center;
     }
     
@@ -244,13 +245,13 @@ interface ProcessImage {
     .carousel-indicators {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin-top: 15px;
+      gap: 10px;
+      margin-top: 20px;
     }
     
     .indicator-dot {
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       background-color: #e2e8f0;
       border: none;
@@ -264,53 +265,82 @@ interface ProcessImage {
     }
     
     /* Responsywność */
+    @media screen and (max-width: 1200px) {
+      .carousel-slide {
+        width: 620px;
+      }
+      
+      .process-image {
+        height: 420px;
+        width: 600px;
+      }
+      
+      .image-btn {
+        width: 80%;
+        padding: 10px 14px;
+        font-size: 1rem;
+      }
+    }
+    
     @media screen and (max-width: 768px) {
       .carousel-container {
         padding: 0 30px;
       }
       
       .arrow-btn {
-        width: 30px;
-        height: 30px;
+        width: 34px;
+        height: 34px;
       }
       
       .arrow-btn svg {
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
       }
       
       .carousel-slide {
-        width: 300px;
+        width: 320px;
       }
       
       .process-image {
-        height: 450px; /* Nieco niższa wysokość na urządzeniach mobilnych */
-        width: 300px; /* Mniejsza szerokość na urządzeniach mobilnych */
+        height: 220px;
+        width: 300px;
       }
       
       .image-buttons {
         bottom: 15px;
+        gap: 10px;
       }
       
       .image-btn {
+        width: 85%;
         padding: 8px 12px;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
       }
     }
     
     @media screen and (max-width: 480px) {
       .carousel-slide {
-        width: 250px;
+        width: 270px;
       }
       
       .process-image {
-        height: 375px; /* Jeszcze niższa wysokość na małych ekranach */
-        width: 250px; /* Jeszcze mniejsza szerokość na małych ekranach */
+        height: 200px;
+        width: 250px;
       }
       
       .image-btn {
-        padding: 6px 10px;
-        font-size: 0.8rem;
+        width: 90%;
+        padding: 7px 10px;
+        font-size: 0.85rem;
+      }
+      
+      .image-overlay p {
+        font-size: 0.9rem;
+      }
+      
+      .image-caption {
+        font-size: 1rem;
+        margin-top: 10px;
       }
     }
   `]
@@ -356,8 +386,9 @@ export class ProcessCarouselComponent implements OnInit {
   ];
 
   activeIndex = 0;
-  visibleSlides = 6; // Domyślnie 6 widocznych slajdów na dużych ekranach
-  slideWidth = 350; // Stała szerokość slajdu
+  visibleSlides = 2; // Zmniejszona liczba widocznych slajdów ze względu na większe wymiary
+  slideWidth = 920; // Zwiększona szerokość slajdu
+  taus = 1000;
   isMobile = false;
   activeOverlays: boolean[] = [];
   Math = Math; // Aby móc użyć Math w szablonie
@@ -369,6 +400,14 @@ export class ProcessCarouselComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateScreenSize();
+    
+    // Dodane: sprawdzenie czy istnieje maksymalna liczba slajdów
+    // i ustawienie początkowego stanu karuzeli
+    const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
+    if (this.activeIndex > maxIndex) {
+      this.activeIndex = maxIndex;
+    }
+    
     console.log('Carousel initialized');
   }
 
@@ -378,24 +417,30 @@ export class ProcessCarouselComponent implements OnInit {
     
     if (width <= 480) {
       this.visibleSlides = 1;
-      this.slideWidth = 250;
+      this.slideWidth = 270;
       this.isMobile = true;
     } else if (width <= 768) {
-      this.visibleSlides = 2;
-      this.slideWidth = 300;
+      this.visibleSlides = 1;
+      this.slideWidth = 320;
       this.isMobile = true;
     } else if (width <= 1200) {
-      this.visibleSlides = 3;
-      this.slideWidth = 350;
+      this.visibleSlides = 1;
+      this.slideWidth = 620;
       this.isMobile = false;
     } else if (width <= 1600) {
-      this.visibleSlides = 4;
-      this.slideWidth = 350;
+      this.visibleSlides = 2;
+      this.slideWidth = 920;
       this.isMobile = false;
     } else {
-      this.visibleSlides = 6; // 6 slajdów na największych ekranach
-      this.slideWidth = 350;
+      this.visibleSlides = 2; // Zmniejszona liczba ze względu na większe zdjęcia
+      this.slideWidth = 920;
       this.isMobile = false;
+    }
+    
+    // Sprawdź, czy aktualny indeks nie przekracza dozwolonego limitu
+    const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
+    if (this.activeIndex > maxIndex) {
+      this.activeIndex = maxIndex;
     }
     
     console.log(`Screen size updated: ${width}px, ${this.visibleSlides} visible slides, mobile: ${this.isMobile}`);
@@ -408,7 +453,9 @@ export class ProcessCarouselComponent implements OnInit {
   }
 
   nextSlide(): void {
-    if (this.activeIndex < this.images.length - this.visibleSlides) {
+    // Zmodyfikowana logika - ogranicza przesuwanie do ostatniego dostępnego slajdu
+    const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
+    if (this.activeIndex < maxIndex) {
       this.activeIndex++;
       console.log(`Next slide: ${this.activeIndex}`);
     }
@@ -427,10 +474,10 @@ export class ProcessCarouselComponent implements OnInit {
   }
 
   goToDot(dotIndex: number): void {
-    this.activeIndex = dotIndex * this.visibleSlides;
-    if (this.activeIndex > this.images.length - this.visibleSlides) {
-      this.activeIndex = this.images.length - this.visibleSlides;
-    }
+    const newIndex = dotIndex * this.visibleSlides;
+    // Upewnij się, że nie przekraczamy maksymalnego indeksu
+    const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
+    this.activeIndex = Math.min(newIndex, maxIndex);
     console.log(`Go to dot: ${dotIndex}, slide: ${this.activeIndex}`);
   }
 

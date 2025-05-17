@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -27,9 +27,12 @@ interface ProcessImage {
         </svg>
       </button>
       
-      <!-- Kontener zdjęć -->
-      <div class="carousel-track-wrapper">
-        <div class="carousel-track" [ngStyle]="{'transform': 'translateX(-' + activeIndex * slideWidth + 'px)'}">
+      <!-- Kontener zdjęć z obsługą dotknięć -->
+      <div #trackWrapper class="carousel-track-wrapper" 
+           (touchstart)="onTouchStart($event)"
+           (touchmove)="onTouchMove($event)"
+           (touchend)="onTouchEnd()">
+        <div class="carousel-track" [ngStyle]="{'transform': 'translateX(' + translateX + 'px)'}">
           <div class="carousel-slide" *ngFor="let image of images; let i = index">
             <div class="process-image">
               <img [src]="image.src" [alt]="image.alt">
@@ -86,6 +89,7 @@ interface ProcessImage {
       width: 100%;
       overflow: hidden;
       position: relative; /* Dodano pozycję, aby zapobiec przewijaniu poza granicami */
+      touch-action: pan-y; /* Pozwala na przewijanie strony w pionie, ale obsługuje swipe w poziomie */
     }
     
     /* Strzałki nawigacyjne */
@@ -129,6 +133,7 @@ interface ProcessImage {
     .carousel-track {
       display: flex;
       transition: transform 0.5s ease-in-out;
+      will-change: transform; /* Optymalizacja wydajności */
     }
     
     .carousel-slide {
@@ -157,14 +162,14 @@ interface ProcessImage {
       transition: transform 0.3s ease;
     }
     
-    /* Przyciski na zdjęciach */
+    /* Przyciski na zdjęciach - zmienione aby były obok siebie */
     .image-buttons {
       position: absolute;
       bottom: 30px;
       left: 0;
       right: 0;
       display: flex;
-      flex-direction: column;
+      flex-direction: row; /* Przyciski obok siebie */
       align-items: center;
       justify-content: center;
       gap: 15px;
@@ -173,10 +178,10 @@ interface ProcessImage {
     }
     
     .image-btn {
-      width: 70%;
-      padding: 12px 16px;
+      width: auto; /* Zmienione z 70% na auto */
+      padding: 10px 16px; /* Zmniejszony padding */
       border-radius: 25px;
-      font-size: 1.1rem;
+      font-size: 0.95rem; /* Mniejsza czcionka */
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
@@ -276,9 +281,9 @@ interface ProcessImage {
       }
       
       .image-btn {
-        width: 80%;
-        padding: 10px 14px;
-        font-size: 1rem;
+        width: auto; /* Auto zamiast 80% */
+        padding: 8px 14px; /* Zmniejszony padding */
+        font-size: 0.9rem;
       }
     }
     
@@ -312,9 +317,9 @@ interface ProcessImage {
       }
       
       .image-btn {
-        width: 85%;
-        padding: 8px 12px;
-        font-size: 0.9rem;
+        width: auto; /* Auto zamiast 85% */
+        padding: 6px 10px; /* Zmniejszony padding */
+        font-size: 0.8rem;
       }
     }
     
@@ -329,9 +334,9 @@ interface ProcessImage {
       }
       
       .image-btn {
-        width: 90%;
-        padding: 7px 10px;
-        font-size: 0.85rem;
+        width: auto; /* Auto zamiast 90% */
+        padding: 5px 8px; /* Zmniejszony padding */
+        font-size: 0.75rem;
       }
       
       .image-overlay p {
@@ -346,6 +351,8 @@ interface ProcessImage {
   `]
 })
 export class ProcessCarouselComponent implements OnInit {
+  @ViewChild('trackWrapper') trackWrapper!: ElementRef;
+  
   images: ProcessImage[] = [
     {
       src: '../../assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg',
@@ -392,6 +399,14 @@ export class ProcessCarouselComponent implements OnInit {
   isMobile = false;
   activeOverlays: boolean[] = [];
   Math = Math; // Aby móc użyć Math w szablonie
+  
+  // Zmienne dla obsługi swipe'ów
+  touchStartX = 0;
+  touchEndX = 0;
+  minSwipeDistance = 50; // Minimalna odległość przesunięcia uznawana za swipe
+  isSwiping = false;
+  translateX = 0; // Pozycja śledzenia karuzeli
+  dragOffset = 0; // Przesunięcie podczas przeciągania
 
   constructor(private router: Router) {
     // Inicjalizacja tabeli active overlays
@@ -408,7 +423,15 @@ export class ProcessCarouselComponent implements OnInit {
       this.activeIndex = maxIndex;
     }
     
+    // Inicjalizacja translateX
+    this.updateTranslateX();
+    
     console.log('Carousel initialized');
+  }
+
+  // Aktualizacja translateX na podstawie aktualnego indeksu
+  updateTranslateX(): void {
+    this.translateX = -this.activeIndex * this.slideWidth;
   }
 
   @HostListener('window:resize')
@@ -443,6 +466,9 @@ export class ProcessCarouselComponent implements OnInit {
       this.activeIndex = maxIndex;
     }
     
+    // Aktualizacja translateX
+    this.updateTranslateX();
+    
     console.log(`Screen size updated: ${width}px, ${this.visibleSlides} visible slides, mobile: ${this.isMobile}`);
   }
 
@@ -457,6 +483,7 @@ export class ProcessCarouselComponent implements OnInit {
     const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
     if (this.activeIndex < maxIndex) {
       this.activeIndex++;
+      this.updateTranslateX();
       console.log(`Next slide: ${this.activeIndex}`);
     }
   }
@@ -464,12 +491,14 @@ export class ProcessCarouselComponent implements OnInit {
   prevSlide(): void {
     if (this.activeIndex > 0) {
       this.activeIndex--;
+      this.updateTranslateX();
       console.log(`Previous slide: ${this.activeIndex}`);
     }
   }
 
   goToSlide(index: number): void {
     this.activeIndex = index;
+    this.updateTranslateX();
     console.log(`Go to slide: ${this.activeIndex}`);
   }
 
@@ -478,6 +507,7 @@ export class ProcessCarouselComponent implements OnInit {
     // Upewnij się, że nie przekraczamy maksymalnego indeksu
     const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
     this.activeIndex = Math.min(newIndex, maxIndex);
+    this.updateTranslateX();
     console.log(`Go to dot: ${dotIndex}, slide: ${this.activeIndex}`);
   }
 
@@ -497,5 +527,68 @@ export class ProcessCarouselComponent implements OnInit {
       this.router.navigate(['/guest-order']);
       console.log('Order form not found, navigating to guest-order');
     }
+  }
+  
+  // Obsługa dotknięć - start
+  onTouchStart(event: TouchEvent): void {
+    this.touchStartX = event.touches[0].clientX;
+    this.isSwiping = true;
+    this.dragOffset = 0;
+    
+    // Zatrzymaj animację podczas przeciągania
+    const track = this.trackWrapper.nativeElement.querySelector('.carousel-track');
+    if (track) {
+      track.style.transition = 'none';
+    }
+  }
+  
+  // Obsługa dotknięć - przesuwanie
+  onTouchMove(event: TouchEvent): void {
+    if (!this.isSwiping) return;
+    
+    const currentX = event.touches[0].clientX;
+    this.dragOffset = currentX - this.touchStartX;
+    
+    // Ograniczenie przeciągania poza granice
+    const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
+    const minTranslate = -maxIndex * this.slideWidth;
+    
+    let newTranslate = -this.activeIndex * this.slideWidth + this.dragOffset;
+    
+    // Dodanie "oporu" przy próbie przeciągnięcia poza granice
+    if (newTranslate > 0) {
+      newTranslate = this.dragOffset / 3; // Efekt oporu na początku
+    } else if (newTranslate < minTranslate) {
+      const overDrag = newTranslate - minTranslate;
+      newTranslate = minTranslate + overDrag / 3; // Efekt oporu na końcu
+    }
+    
+    // Aktualizacja pozycji
+    this.translateX = newTranslate;
+  }
+  
+  // Obsługa dotknięć - koniec
+  onTouchEnd(): void {
+    if (!this.isSwiping) return;
+    
+    // Przywrócenie animacji
+    const track = this.trackWrapper.nativeElement.querySelector('.carousel-track');
+    if (track) {
+      track.style.transition = 'transform 0.5s ease-in-out';
+    }
+    
+    // Sprawdzenie czy przesunięcie było wystarczająco duże aby uznać je za swipe
+    if (Math.abs(this.dragOffset) > this.minSwipeDistance) {
+      if (this.dragOffset > 0) {
+        this.prevSlide(); // Swipe w prawo - poprzedni slajd
+      } else {
+        this.nextSlide(); // Swipe w lewo - następny slajd
+      }
+    } else {
+      // Jeśli przesunięcie było zbyt małe, wróć do aktualnego slajdu
+      this.updateTranslateX();
+    }
+    
+    this.isSwiping = false;
   }
 }

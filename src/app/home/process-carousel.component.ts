@@ -14,7 +14,7 @@ interface ProcessImage {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div *ngIf="isBrowser" class="carousel-container">
+    <div class="carousel-container">
       <!-- Strzałki nawigacyjne -->
       <button class="arrow-btn prev-btn" (click)="prevSlide()" [disabled]="activeIndex === 0">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -70,11 +70,6 @@ interface ProcessImage {
           ></button>
         </ng-container>
       </div>
-    </div>
-
-    <!-- Placeholder dla SSR -->
-    <div *ngIf="!isBrowser" class="ssr-carousel-placeholder">
-      <div class="ssr-placeholder-text">Ładowanie galerii procesów...</div>
     </div>
   `,
   styles: [`
@@ -274,24 +269,6 @@ interface ProcessImage {
       transform: scale(1.2);
     }
     
-    /* Placeholder dla SSR */
-    .ssr-carousel-placeholder {
-      width: 95%;
-      max-width: 900px;
-      height: 300px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f8f9fa;
-      border-radius: 8px;
-    }
-    
-    .ssr-placeholder-text {
-      font-size: 1.2rem;
-      color: #6c757d;
-    }
-    
     /* Responsywność */
     @media screen and (max-width: 1200px) {
       .carousel-slide {
@@ -312,7 +289,8 @@ interface ProcessImage {
     
     @media screen and (max-width: 768px) {
       .carousel-container {
-        padding: 0 30px;
+        padding: 0 15px;
+        width: 100%;
       }
       
       .arrow-btn {
@@ -326,12 +304,12 @@ interface ProcessImage {
       }
       
       .carousel-slide {
-        width: 320px;
+        width: 480px; /* Zwiększone o ~150% z 320px */
       }
       
       .process-image {
-        height: 220px;
-        width: 300px;
+        height: 330px; /* Zwiększone o ~150% z 220px */
+        width: 450px; /* Zwiększone o ~150% z 300px */
       }
       
       .image-buttons {
@@ -347,13 +325,17 @@ interface ProcessImage {
     }
     
     @media screen and (max-width: 480px) {
+      .carousel-container {
+        padding: 0 10px;
+      }
+      
       .carousel-slide {
-        width: 270px;
+        width: 405px; /* Zwiększone o ~150% z 270px */
       }
       
       .process-image {
-        height: 200px;
-        width: 250px;
+        height: 300px; /* Zwiększone o ~150% z 200px */
+        width: 375px; /* Zwiększone o ~150% z 250px */
       }
       
       .image-btn {
@@ -376,10 +358,10 @@ interface ProcessImage {
 export class ProcessCarouselComponent implements OnInit {
   @ViewChild('trackWrapper') trackWrapper!: ElementRef;
   
-  // Dodanie zmiennej isBrowser
-  isBrowser: boolean = false;
+  // Dodajemy flagę isBrowser, aby sprawdzić czy kod jest wykonywany w przeglądarce
+  isBrowser: boolean;
   
-  images: ProcessImage[] = [
+ images: ProcessImage[] = [
     {
       src: '../../assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg',
       alt: 'Przyjmowanie zamówienia',
@@ -408,7 +390,7 @@ export class ProcessCarouselComponent implements OnInit {
       src: '../../assets/images/jak-dzialamy/serwis2.jpg',
       alt: 'Serwis roweru',
       caption: 'Wykonujemy serwis',
-      description: 'Kompleksowy serwis Twojego roweru! Zadbamy o każdy detal, aby Twój rower działał płynnie i bezpiecznie. W ramach serwisu wykonamy: <br> ✅ Regulację hamulców i przerzutek <br> ✅ Smarowanie łańcucha i piast <br> ✅ Sprawdzenie ciśnienia w oponach oraz ich stanu <br> ✅ Kontrolę luzów sterów, połączeń śrubowych oraz elementów ruchomych <br> ✅ Dokręcenie mechanizmu korbowego, piast, pedałów i sterów <br> ✅ Sprawdzenie linek, pancerzy i skręcenia całej konstrukcji <br><br> 🔧 Dodatkowe naprawy również są możliwe – ustalimy je wcześniej, aby wszystko było dopięte na ostatni guzik!'
+      description: 'W ramach serwisu wykonamy: <br> ✅ Regulację hamulców i przerzutek <br> ✅ Smarowanie łańcucha i piast <br> ✅ Sprawdzenie ciśnienia i stanu opon <br> ✅ Kontrolę luzów sterów, połączeń śrubowych oraz elementów ruchomych <br> ✅ Dokręcenie mechanizmu korbowego, piast, pedałów i sterów <br> ✅ Sprawdzenie linek, pancerzy i skręcenia całej konstrukcji <br><br> 🔧 Dodatkowe naprawy również są możliwe'
     },
     {
       src: '../../assets/images/jak-dzialamy/zwrot.jpg',
@@ -436,17 +418,14 @@ export class ProcessCarouselComponent implements OnInit {
 
   constructor(
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object // Dodaj PLATFORM_ID
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // Sprawdź czy jesteśmy w przeglądarce
     this.isBrowser = isPlatformBrowser(this.platformId);
-    
-    // Inicjalizacja tabeli active overlays
     this.activeOverlays = new Array(this.images.length).fill(false);
   }
 
   ngOnInit(): void {
-    // Wykonuj operacje tylko w środowisku przeglądarki
+    // Wykonuj tylko w przeglądarce
     if (this.isBrowser) {
       this.updateScreenSize();
       
@@ -461,6 +440,11 @@ export class ProcessCarouselComponent implements OnInit {
       this.updateTranslateX();
       
       console.log('Carousel initialized');
+    } else {
+      // Ustawienia domyślne dla SSR
+      this.visibleSlides = 1;
+      this.slideWidth = 320;
+      this.translateX = 0;
     }
   }
 
@@ -471,18 +455,18 @@ export class ProcessCarouselComponent implements OnInit {
 
   @HostListener('window:resize')
   updateScreenSize(): void {
-    // Sprawdź czy jesteśmy w przeglądarce
+    // Wykonuj tylko w przeglądarce
     if (!this.isBrowser) return;
     
     const width = window.innerWidth;
     
     if (width <= 480) {
       this.visibleSlides = 1;
-      this.slideWidth = 270;
+      this.slideWidth = 405; // Zwiększone o ~150% z 270px
       this.isMobile = true;
     } else if (width <= 768) {
       this.visibleSlides = 1;
-      this.slideWidth = 320;
+      this.slideWidth = 480; // Zwiększone o ~150% z 320px
       this.isMobile = true;
     } else if (width <= 1200) {
       this.visibleSlides = 1;
@@ -556,7 +540,7 @@ export class ProcessCarouselComponent implements OnInit {
 
   // Metoda do przewijania do formularza zamówienia
   scrollToOrderForm(): void {
-    // Sprawdź czy jesteśmy w przeglądarce
+    // Wykonuj tylko w przeglądarce
     if (!this.isBrowser) return;
     
     const orderFormSection = document.getElementById('order-form');
@@ -572,7 +556,7 @@ export class ProcessCarouselComponent implements OnInit {
   
   // Obsługa dotknięć - start
   onTouchStart(event: TouchEvent): void {
-    if (!this.isBrowser) return;
+    if (!this.isBrowser || !this.trackWrapper) return;
     
     this.touchStartX = event.touches[0].clientX;
     this.isSwiping = true;
@@ -612,7 +596,7 @@ export class ProcessCarouselComponent implements OnInit {
   
   // Obsługa dotknięć - koniec
   onTouchEnd(): void {
-    if (!this.isBrowser || !this.isSwiping) return;
+    if (!this.isBrowser || !this.isSwiping || !this.trackWrapper) return;
     
     // Przywrócenie animacji
     const track = this.trackWrapper.nativeElement.querySelector('.carousel-track');

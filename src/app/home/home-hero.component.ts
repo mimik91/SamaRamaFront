@@ -25,7 +25,7 @@ import { RouterModule } from '@angular/router';
         <div class="hero-content">
           <h1 class="hero-title">CycloPick.pl</h1>
           <p class="hero-subtitle">Naprawiamy a Ty robisz co chcesz</p>
-          <p class="hero-description">wygodny serwis rowerowy</p>
+          <p class="hero-description">Serwis rowerowy najbliżej Ciebie</p>
           <div class="hero-buttons">
             <button type="button" class="hero-btn learn-more-btn" (click)="scrollToSection('how-it-works')">
               Dowiedz się więcej

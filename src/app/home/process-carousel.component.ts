@@ -43,7 +43,7 @@ interface ProcessImage {
               </div>
               
               <div class="image-overlay" [class.active]="activeOverlays[i]" (click)="toggleOverlay(i)">
-                <p>{{image.description}}</p>
+                <p [innerHTML]="image.description"></p>
               </div>
             </div>
             <p class="image-caption">{{image.caption}}</p>
@@ -357,38 +357,38 @@ export class ProcessCarouselComponent implements OnInit {
     {
       src: '../../assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg',
       alt: 'Przyjmowanie zamówienia',
-      caption: 'Przyjmujemy zamówienia',
-      description: 'Szybki i prosty proces zamówienia online'
+      caption: 'Przyjmujemy zamówienie',
+      description: 'Zamów tak, jak Ci wygodnie! Telefon, e-mail, Messenger, a może wygodny formularz online? Wybierz najdogodniejszy sposób.'
     },
     {
       src: '../../assets/images/jak-dzialamy/odbieramy.jpg',
       alt: 'Odbieramy rower',
       caption: 'Odbieramy rower od klienta',
-      description: 'Bezpośrednio spod Twoich drzwi, w dogodnym terminie'
+      description: 'Wygodny odbiór roweru! Przyjedziemy po Twój rower prosto pod dom lub inne wygodne miejsce – od niedzieli do czwartku, między 18:00 a 22:00. Ty decydujesz, gdzie go odbierzemy!'
     },
     {
       src: '../../assets/images/jak-dzialamy/transport.jpg',
       alt: 'Transport roweru',
       caption: 'Zawozimy rower do serwisu',
-      description: 'Bezpieczny transport do naszego profesjonalnego serwisu'
+      description: 'Bezpieczny transport* do serwisu! Twój rower** trafi do stacjonarnego serwisu, wyposażonego w profesjonalne narzędzia diagnostyczne i naprawcze. <br><br> *Przewóz rowerów z karbonowymi ramami dostępny od 2025 roku. <br> **Przewóz rowerów niestandardowych po uzgodnieniu'
     },
     {
       src: '../../assets/images/jak-dzialamy/serwis.jpg',
       alt: 'Przegląd roweru',
       caption: 'Serwis dokonuje przeglądu roweru',
-      description: 'Kompleksowa diagnostyka przez doświadczonych mechaników'
+      description: 'Dokładny przegląd i indywidualne podejście! Nasz serwisant sprawdzi kluczowe elementy Twojego roweru. Jeśli wykryjemy usterki wymagające dodatkowych napraw, które wykraczają poza standardowy zakres serwisu, skontaktujemy się z Tobą, aby wspólnie zdecydować o dalszych działaniach.'
     },
     {
       src: '../../assets/images/jak-dzialamy/serwis2.jpg',
       alt: 'Serwis roweru',
-      caption: 'Wykonujemy pełen serwis',
-      description: 'Regulacja przerzutek i hamulców, smarowanie łańcucha, sprawdzenie opon'
+      caption: 'Wykonujemy serwis',
+      description: 'Kompleksowy serwis Twojego roweru! Zadbamy o każdy detal, aby Twój rower działał płynnie i bezpiecznie. W ramach serwisu wykonamy: <br> ✅ Regulację hamulców i przerzutek <br> ✅ Smarowanie łańcucha i piast <br> ✅ Sprawdzenie ciśnienia w oponach oraz ich stanu <br> ✅ Kontrolę luzów sterów, połączeń śrubowych oraz elementów ruchomych <br> ✅ Dokręcenie mechanizmu korbowego, piast, pedałów i sterów <br> ✅ Sprawdzenie linek, pancerzy i skręcenia całej konstrukcji <br><br> 🔧 Dodatkowe naprawy również są możliwe – ustalimy je wcześniej, aby wszystko było dopięte na ostatni guzik!'
     },
     {
       src: '../../assets/images/jak-dzialamy/zwrot.jpg',
       alt: 'Zwrot roweru',
       caption: 'Przywozimy rower z powrotem',
-      description: 'Dostarczamy Twój rower pod same drzwi, gotowy do jazdy'
+      description: 'Wygodny zwrot roweru! Oddajemy rower dokładnie tam, skąd go odebraliśmy – lub w inne, wcześniej ustalone miejsce. Wszystko w dogodnych godzinach: od 18:00 do 22:00.'
     }
   ];
 

@@ -1,5 +1,5 @@
-import { Component, OnInit, HostListener, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, HostListener, ElementRef, ViewChild, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 
 interface ProcessImage {
@@ -14,7 +14,7 @@ interface ProcessImage {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="carousel-container">
+    <div *ngIf="isBrowser" class="carousel-container">
       <!-- Strzałki nawigacyjne -->
       <button class="arrow-btn prev-btn" (click)="prevSlide()" [disabled]="activeIndex === 0">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -43,7 +43,7 @@ interface ProcessImage {
               </div>
               
               <div class="image-overlay" [class.active]="activeOverlays[i]" (click)="toggleOverlay(i)">
-                <p [innerHTML]="image.description"></p>
+                <p>{{image.description}}</p>
               </div>
             </div>
             <p class="image-caption">{{image.caption}}</p>
@@ -70,6 +70,11 @@ interface ProcessImage {
           ></button>
         </ng-container>
       </div>
+    </div>
+
+    <!-- Placeholder dla SSR -->
+    <div *ngIf="!isBrowser" class="ssr-carousel-placeholder">
+      <div class="ssr-placeholder-text">Ładowanie galerii procesów...</div>
     </div>
   `,
   styles: [`
@@ -269,6 +274,24 @@ interface ProcessImage {
       transform: scale(1.2);
     }
     
+    /* Placeholder dla SSR */
+    .ssr-carousel-placeholder {
+      width: 95%;
+      max-width: 900px;
+      height: 300px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .ssr-placeholder-text {
+      font-size: 1.2rem;
+      color: #6c757d;
+    }
+    
     /* Responsywność */
     @media screen and (max-width: 1200px) {
       .carousel-slide {
@@ -353,42 +376,45 @@ interface ProcessImage {
 export class ProcessCarouselComponent implements OnInit {
   @ViewChild('trackWrapper') trackWrapper!: ElementRef;
   
+  // Dodanie zmiennej isBrowser
+  isBrowser: boolean = false;
+  
   images: ProcessImage[] = [
     {
       src: '../../assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg',
       alt: 'Przyjmowanie zamówienia',
-      caption: 'Przyjmujemy zamówienie',
-      description: 'Zamów tak, jak Ci wygodnie! Telefon, e-mail, Messenger, a może wygodny formularz online? Wybierz najdogodniejszy sposób.'
+      caption: 'Przyjmujemy zamówienia',
+      description: 'Szybki i prosty proces zamówienia online'
     },
     {
       src: '../../assets/images/jak-dzialamy/odbieramy.jpg',
       alt: 'Odbieramy rower',
       caption: 'Odbieramy rower od klienta',
-      description: 'Wygodny odbiór roweru! Przyjedziemy po Twój rower prosto pod dom lub inne wygodne miejsce – od niedzieli do czwartku, między 18:00 a 22:00. Ty decydujesz, gdzie go odbierzemy!'
+      description: 'Bezpośrednio spod Twoich drzwi, w dogodnym terminie'
     },
     {
       src: '../../assets/images/jak-dzialamy/transport.jpg',
       alt: 'Transport roweru',
       caption: 'Zawozimy rower do serwisu',
-      description: 'Bezpieczny transport* do serwisu! Twój rower** trafi do stacjonarnego serwisu, wyposażonego w profesjonalne narzędzia diagnostyczne i naprawcze. <br><br> *Przewóz rowerów z karbonowymi ramami dostępny od 2025 roku. <br> **Przewóz rowerów niestandardowych po uzgodnieniu'
+      description: 'Bezpieczny transport do naszego profesjonalnego serwisu'
     },
     {
       src: '../../assets/images/jak-dzialamy/serwis.jpg',
       alt: 'Przegląd roweru',
       caption: 'Serwis dokonuje przeglądu roweru',
-      description: 'Dokładny przegląd i indywidualne podejście! Nasz serwisant sprawdzi kluczowe elementy Twojego roweru. Jeśli wykryjemy usterki wymagające dodatkowych napraw, które wykraczają poza standardowy zakres serwisu, skontaktujemy się z Tobą, aby wspólnie zdecydować o dalszych działaniach.'
+      description: 'Kompleksowa diagnostyka przez doświadczonych mechaników'
     },
     {
       src: '../../assets/images/jak-dzialamy/serwis2.jpg',
       alt: 'Serwis roweru',
-      caption: 'Wykonujemy serwis',
-      description: 'Kompleksowy serwis Twojego roweru! Zadbamy o każdy detal, aby Twój rower działał płynnie i bezpiecznie. W ramach serwisu wykonamy: <br> ✅ Regulację hamulców i przerzutek <br> ✅ Smarowanie łańcucha i piast <br> ✅ Sprawdzenie ciśnienia w oponach oraz ich stanu <br> ✅ Kontrolę luzów sterów, połączeń śrubowych oraz elementów ruchomych <br> ✅ Dokręcenie mechanizmu korbowego, piast, pedałów i sterów <br> ✅ Sprawdzenie linek, pancerzy i skręcenia całej konstrukcji <br><br> 🔧 Dodatkowe naprawy również są możliwe – ustalimy je wcześniej, aby wszystko było dopięte na ostatni guzik!'
+      caption: 'Wykonujemy pełen serwis',
+      description: 'Regulacja przerzutek i hamulców, smarowanie łańcucha, sprawdzenie opon'
     },
     {
       src: '../../assets/images/jak-dzialamy/zwrot.jpg',
       alt: 'Zwrot roweru',
       caption: 'Przywozimy rower z powrotem',
-      description: 'Wygodny zwrot roweru! Oddajemy rower dokładnie tam, skąd go odebraliśmy – lub w inne, wcześniej ustalone miejsce. Wszystko w dogodnych godzinach: od 18:00 do 22:00.'
+      description: 'Dostarczamy Twój rower pod same drzwi, gotowy do jazdy'
     }
   ];
 
@@ -408,25 +434,34 @@ export class ProcessCarouselComponent implements OnInit {
   translateX = 0; // Pozycja śledzenia karuzeli
   dragOffset = 0; // Przesunięcie podczas przeciągania
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object // Dodaj PLATFORM_ID
+  ) {
+    // Sprawdź czy jesteśmy w przeglądarce
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    
     // Inicjalizacja tabeli active overlays
     this.activeOverlays = new Array(this.images.length).fill(false);
   }
 
   ngOnInit(): void {
-    this.updateScreenSize();
-    
-    // Dodane: sprawdzenie czy istnieje maksymalna liczba slajdów
-    // i ustawienie początkowego stanu karuzeli
-    const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
-    if (this.activeIndex > maxIndex) {
-      this.activeIndex = maxIndex;
+    // Wykonuj operacje tylko w środowisku przeglądarki
+    if (this.isBrowser) {
+      this.updateScreenSize();
+      
+      // Dodane: sprawdzenie czy istnieje maksymalna liczba slajdów
+      // i ustawienie początkowego stanu karuzeli
+      const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
+      if (this.activeIndex > maxIndex) {
+        this.activeIndex = maxIndex;
+      }
+      
+      // Inicjalizacja translateX
+      this.updateTranslateX();
+      
+      console.log('Carousel initialized');
     }
-    
-    // Inicjalizacja translateX
-    this.updateTranslateX();
-    
-    console.log('Carousel initialized');
   }
 
   // Aktualizacja translateX na podstawie aktualnego indeksu
@@ -436,6 +471,9 @@ export class ProcessCarouselComponent implements OnInit {
 
   @HostListener('window:resize')
   updateScreenSize(): void {
+    // Sprawdź czy jesteśmy w przeglądarce
+    if (!this.isBrowser) return;
+    
     const width = window.innerWidth;
     
     if (width <= 480) {
@@ -518,6 +556,9 @@ export class ProcessCarouselComponent implements OnInit {
 
   // Metoda do przewijania do formularza zamówienia
   scrollToOrderForm(): void {
+    // Sprawdź czy jesteśmy w przeglądarce
+    if (!this.isBrowser) return;
+    
     const orderFormSection = document.getElementById('order-form');
     if (orderFormSection) {
       orderFormSection.scrollIntoView({ behavior: 'smooth' });
@@ -531,6 +572,8 @@ export class ProcessCarouselComponent implements OnInit {
   
   // Obsługa dotknięć - start
   onTouchStart(event: TouchEvent): void {
+    if (!this.isBrowser) return;
+    
     this.touchStartX = event.touches[0].clientX;
     this.isSwiping = true;
     this.dragOffset = 0;
@@ -544,7 +587,7 @@ export class ProcessCarouselComponent implements OnInit {
   
   // Obsługa dotknięć - przesuwanie
   onTouchMove(event: TouchEvent): void {
-    if (!this.isSwiping) return;
+    if (!this.isBrowser || !this.isSwiping) return;
     
     const currentX = event.touches[0].clientX;
     this.dragOffset = currentX - this.touchStartX;
@@ -569,7 +612,7 @@ export class ProcessCarouselComponent implements OnInit {
   
   // Obsługa dotknięć - koniec
   onTouchEnd(): void {
-    if (!this.isSwiping) return;
+    if (!this.isBrowser || !this.isSwiping) return;
     
     // Przywrócenie animacji
     const track = this.trackWrapper.nativeElement.querySelector('.carousel-track');

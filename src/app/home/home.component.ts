@@ -8,6 +8,8 @@ import { ServiceSlotService } from '../service-slots/service-slot.service';
 import { HomeHeroComponent } from './home-hero.component';
 import { NotificationService } from '../core/notification.service';
 import { ProcessCarouselComponent } from './process-carousel.component';
+import { PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-home',
@@ -28,6 +30,7 @@ export class HomeComponent implements OnInit {
   private bikeFormService = inject(BikeFormService);
   private serviceSlotService = inject(ServiceSlotService);
   private notificationService = inject(NotificationService);
+  private isBrowser: boolean;
 
   bikeForm: FormGroup;
   brands: string[] = [];
@@ -38,7 +41,9 @@ export class HomeComponent implements OnInit {
   maxBikesPerOrder = 5; // Default value
   loadingMaxBikes = true;
   
-  constructor() {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    
     this.bikeForm = this.fb.group({
       bikes: this.fb.array([this.createBikeFormGroup()])
     });
@@ -225,6 +230,8 @@ export class HomeComponent implements OnInit {
   
   // Metoda do przewijania do sekcji
   scrollToSection(sectionId: string): void {
+    if (!this.isBrowser) return;
+    
     const element = document.getElementById(sectionId);
     if (element) {
       // Dodajemy offset, aby uwzględnić navbar i inne elementy

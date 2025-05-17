@@ -358,44 +358,44 @@ interface ProcessImage {
 export class ProcessCarouselComponent implements OnInit {
   @ViewChild('trackWrapper') trackWrapper!: ElementRef;
   
-  // Dodajemy flagę isBrowser, aby sprawdzić czy kod jest wykonywany w przeglądarce
-  isBrowser: boolean;
+  // Bezpieczne odwołanie do obiektu window
+  private isBrowser: boolean;
   
- images: ProcessImage[] = [
+  images: ProcessImage[] = [
     {
       src: '../../assets/images/jak-dzialamy/przyjmowanie-zamowienia.jpg',
       alt: 'Przyjmowanie zamówienia',
-      caption: 'Przyjmujemy zamówienie',
+      caption: '1. Przyjmujemy zamówienie',
       description: 'Zamów tak, jak Ci wygodnie! Telefon, e-mail, Messenger, a może wygodny formularz online? Wybierz najdogodniejszy sposób.'
     },
     {
       src: '../../assets/images/jak-dzialamy/odbieramy.jpg',
       alt: 'Odbieramy rower',
-      caption: 'Odbieramy rower od klienta',
+      caption: '2. Odbieramy rower od klienta',
       description: 'Wygodny odbiór roweru! Przyjedziemy po Twój rower prosto pod dom lub inne wygodne miejsce – od niedzieli do czwartku, między 18:00 a 22:00. Ty decydujesz, gdzie go odbierzemy!'
     },
     {
       src: '../../assets/images/jak-dzialamy/transport.jpg',
       alt: 'Transport roweru',
-      caption: 'Zawozimy rower do serwisu',
+      caption: '3. Zawozimy rower do serwisu',
       description: 'Bezpieczny transport* do serwisu! Twój rower** trafi do stacjonarnego serwisu, wyposażonego w profesjonalne narzędzia diagnostyczne i naprawcze. <br><br> *Przewóz rowerów z karbonowymi ramami dostępny od 2025 roku. <br> **Przewóz rowerów niestandardowych po uzgodnieniu'
     },
     {
       src: '../../assets/images/jak-dzialamy/serwis.jpg',
       alt: 'Przegląd roweru',
-      caption: 'Serwis dokonuje przeglądu roweru',
+      caption: '4. Serwis dokonuje przeglądu roweru',
       description: 'Dokładny przegląd i indywidualne podejście! Nasz serwisant sprawdzi kluczowe elementy Twojego roweru. Jeśli wykryjemy usterki wymagające dodatkowych napraw, które wykraczają poza standardowy zakres serwisu, skontaktujemy się z Tobą, aby wspólnie zdecydować o dalszych działaniach.'
     },
     {
       src: '../../assets/images/jak-dzialamy/serwis2.jpg',
       alt: 'Serwis roweru',
-      caption: 'Wykonujemy serwis',
+      caption: '5. Wykonujemy serwis',
       description: 'W ramach serwisu wykonamy: <br> ✅ Regulację hamulców i przerzutek <br> ✅ Smarowanie łańcucha i piast <br> ✅ Sprawdzenie ciśnienia i stanu opon <br> ✅ Kontrolę luzów sterów, połączeń śrubowych oraz elementów ruchomych <br> ✅ Dokręcenie mechanizmu korbowego, piast, pedałów i sterów <br> ✅ Sprawdzenie linek, pancerzy i skręcenia całej konstrukcji <br><br> 🔧 Dodatkowe naprawy również są możliwe'
     },
     {
       src: '../../assets/images/jak-dzialamy/zwrot.jpg',
       alt: 'Zwrot roweru',
-      caption: 'Przywozimy rower z powrotem',
+      caption: '6. Przywozimy rower z powrotem',
       description: 'Wygodny zwrot roweru! Oddajemy rower dokładnie tam, skąd go odebraliśmy – lub w inne, wcześniej ustalone miejsce. Wszystko w dogodnych godzinach: od 18:00 do 22:00.'
     }
   ];
@@ -438,8 +438,6 @@ export class ProcessCarouselComponent implements OnInit {
       
       // Inicjalizacja translateX
       this.updateTranslateX();
-      
-      console.log('Carousel initialized');
     } else {
       // Ustawienia domyślne dla SSR
       this.visibleSlides = 1;
@@ -490,8 +488,6 @@ export class ProcessCarouselComponent implements OnInit {
     
     // Aktualizacja translateX
     this.updateTranslateX();
-    
-    console.log(`Screen size updated: ${width}px, ${this.visibleSlides} visible slides, mobile: ${this.isMobile}`);
   }
 
   // Generuje tablicę z liczbą kropek odpowiadającą liczbie grup zdjęć
@@ -506,7 +502,6 @@ export class ProcessCarouselComponent implements OnInit {
     if (this.activeIndex < maxIndex) {
       this.activeIndex++;
       this.updateTranslateX();
-      console.log(`Next slide: ${this.activeIndex}`);
     }
   }
 
@@ -514,14 +509,12 @@ export class ProcessCarouselComponent implements OnInit {
     if (this.activeIndex > 0) {
       this.activeIndex--;
       this.updateTranslateX();
-      console.log(`Previous slide: ${this.activeIndex}`);
     }
   }
 
   goToSlide(index: number): void {
     this.activeIndex = index;
     this.updateTranslateX();
-    console.log(`Go to slide: ${this.activeIndex}`);
   }
 
   goToDot(dotIndex: number): void {
@@ -530,12 +523,10 @@ export class ProcessCarouselComponent implements OnInit {
     const maxIndex = Math.max(0, this.images.length - this.visibleSlides);
     this.activeIndex = Math.min(newIndex, maxIndex);
     this.updateTranslateX();
-    console.log(`Go to dot: ${dotIndex}, slide: ${this.activeIndex}`);
   }
 
   toggleOverlay(index: number): void {
     this.activeOverlays[index] = !this.activeOverlays[index];
-    console.log(`Toggle overlay for slide: ${index}, active: ${this.activeOverlays[index]}`);
   }
 
   // Metoda do przewijania do formularza zamówienia
@@ -546,11 +537,9 @@ export class ProcessCarouselComponent implements OnInit {
     const orderFormSection = document.getElementById('order-form');
     if (orderFormSection) {
       orderFormSection.scrollIntoView({ behavior: 'smooth' });
-      console.log('Scrolling to order form');
     } else {
       // Fallback w przypadku gdy element nie zostanie znaleziony
       this.router.navigate(['/guest-order']);
-      console.log('Order form not found, navigating to guest-order');
     }
   }
   

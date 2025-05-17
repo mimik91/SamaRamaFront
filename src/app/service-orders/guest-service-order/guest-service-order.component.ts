@@ -1,5 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, PLATFORM_ID, Inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { 
   FormBuilder, 
   FormGroup, 
@@ -56,6 +56,7 @@ export class GuestServiceOrderComponent implements OnInit {
   private servicePackageService = inject(ServicePackageService);
   private enumerationService = inject(EnumerationService);
   private http = inject(HttpClient);
+  private isBrowser: boolean;
 
   // Ustawienia datepickera
   dateFilter = CustomDatePickerFilter.dateFilter;
@@ -94,7 +95,9 @@ export class GuestServiceOrderComponent implements OnInit {
   isSuccess = false;
   orderIds: number[] = [];
   
-  constructor() {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+    
     // Ustawienie minimalnej i maksymalnej daty
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);

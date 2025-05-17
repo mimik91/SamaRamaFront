@@ -20,15 +20,17 @@
   </div>
 
   <!-- Sekcja "Jak działamy" z karuzelą zdjęć -->
-  
   <section id="how-it-works" class="content-section full-width">
-    <h2>Jak działamy: </h2><h1>Wieczorem odbieramy Twój rower, następnego dnia go serwisujemy, a wieczorem odstawiamy go z powrotem pod Twój dom.</h1>
+    <h2>Jak działamy: </h2>
+    <h1>Wieczorem odbieramy Twój rower, następnego dnia go serwisujemy, a wieczorem odstawiamy go z powrotem pod Twój dom.</h1>
     <app-process-carousel></app-process-carousel>
   </section>
 
-  <!-- Przeniesiona zawartość z czerwonego kółka -->
+  <!-- Sekcja "Co zyskujesz" -->
   <section id="benefits" class="content-section">
     <h2>Co zyskujesz</h2>
+    <p class="section-subtitle">Profesjonalny serwis z dojazdem do Ciebie</p>
+    
     <div class="benefits">
       <div class="benefit">
         <div class="benefit-icon">
@@ -38,7 +40,7 @@
           </svg>
         </div>
         <h3>Express 24h</h3>
-        <p>Zawsze szybki serwis w 24h, bez dodatkowych opłat</p>
+        <p>Zawsze szybki serwis w 24h, bez dodatkowych opłat. Twój rower będzie gotowy następnego dnia.</p>
       </div>
       
       <div class="benefit">
@@ -48,7 +50,7 @@
           </svg>
         </div>
         <h3>Profesjonalny serwis</h3>
-        <p>Naprawiamy rowery w stacjonarnym serwisie z dostępem do wszystkich profesjonalnych narzędzi</p>
+        <p>Naprawiamy rowery w stacjonarnym serwisie z dostępem do wszystkich profesjonalnych narzędzi i części.</p>
       </div>
       
       <div class="benefit">
@@ -60,7 +62,17 @@
           </svg>
         </div>
         <h3>Pełna wygoda</h3>
-        <p>Zabieramy i przywozimy rower, nie potrzebujesz miejsca na naprawę ani nie musisz nadzorować procesu</p>
+        <p>Zabieramy i przywozimy rower, nie potrzebujesz miejsca na naprawę ani nie musisz nadzorować procesu.</p>
+      </div>
+      
+      <div class="benefit">
+        <div class="benefit-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+          </svg>
+        </div>
+        <h3>Monitoring statusu</h3>
+        <p>Otrzymujesz informacje na każdym etapie serwisu. Proces jest transparentny, a Ty masz pełną kontrolę.</p>
       </div>
     </div>
   </section>
@@ -76,6 +88,18 @@
           <div *ngFor="let bikeGroup of bikesArray.controls; let i = index" class="bike-form-group">
             <div [formGroupName]="i" class="bike-form-content">
               <div class="form-header">
+                <div class="form-header-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.5 20.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"></path>
+                    <path d="M2.5 20.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"></path>
+                    <path d="M2.5 14a.5.5 0 0 0 .5.5h6.5"></path>
+                    <path d="M18.5 17.5h1a3.5 3.5 0 0 0 0-7h-1"></path>
+                    <path d="M18.5 17.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"></path>
+                    <path d="M8.5 14l2-6"></path>
+                    <path d="M13.5 9h-2"></path>
+                    <path d="M13.5 9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"></path>
+                  </svg>
+                </div>
                 <h2>Rower #{{ i + 1 }}</h2>
                 <button 
                   *ngIf="bikesArray.length > 1" 
@@ -155,7 +179,7 @@
     </div>
   </section>
   
-  <!-- Panel serwisowy przeniesiony na koniec -->
+  <!-- Panel serwisowy -->
   <div class="service-promo-box">
     <h2>Jesteś serwisem rowerowym?</h2>
     <p>Dołącz do naszej platformy i docieraj do klientów w Twojej okolicy.</p>

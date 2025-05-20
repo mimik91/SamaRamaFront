@@ -1,0 +1,277 @@
+<div class="about-us-container">
+  <!-- Hero Section z jednym dużym zdjęciem -->
+  <section class="about-hero">
+    <div class="hero-content-wrapper">
+      <div class="hero-text">
+        <h1>O nas</h1>
+        <h2>Kim jesteśmy?</h2>
+        <p>
+          CycloPick to innowacyjna platforma łącząca właścicieli rowerów z profesjonalnymi serwisami. 
+          Działamy w <strong>Krakowie i okolicznych miejscowościach</strong>, zapewniając wygodne, 
+          przejrzyste i skuteczne rozwiązania serwisowe. Naszą misją jest uproszczenie procesu 
+          dbania o rower, abyś mógł cieszyć się jazdą bez zmartwień o jego stan techniczny.
+        </p>
+      </div>
+      <div class="hero-image-container">
+        <img [src]="heroImage.src" [alt]="heroImage.alt" class="hero-image">
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission Section -->
+  <section class="mission-section">
+    <div class="mission-container">
+      <div class="mission-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <h2>Nasza misja</h2>
+      <p>
+        Rower to coś więcej niż środek transportu – to pasja, styl życia i ekologiczny wybór. 
+        Naszym celem jest zapewnienie, by każdy rower był w idealnym stanie, gotowy na kolejne przygody.
+      </p>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works-section">
+    <h2>Jak działa CycloPick?</h2>
+    <p class="section-intro">
+      Proces serwisowania jest szybki i wygodny – oto jak to działa:
+    </p>
+    
+    <div class="steps-container">
+      <div *ngFor="let step of steps" class="step-card">
+        <div class="step-number">{{ step.number }}</div>
+        <div class="step-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.class]="'feather feather-' + step.icon">
+            <ng-container [ngSwitch]="step.icon">
+              <ng-container *ngSwitchCase="'file-text'">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </ng-container>
+              <ng-container *ngSwitchCase="'package'">
+                <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </ng-container>
+              <ng-container *ngSwitchCase="'calendar'">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </ng-container>
+              <ng-container *ngSwitchCase="'lock'">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </ng-container>
+              <ng-container *ngSwitchCase="'tool'">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+              </ng-container>
+              <ng-container *ngSwitchCase="'truck'">
+                <rect x="1" y="3" width="15" height="13"></rect>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+              </ng-container>
+            </ng-container>
+          </svg>
+        </div>
+        <div class="step-content">
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="process-summary">
+      <p>Proste, wygodne i bezproblemowe!</p>
+    </div>
+  </section>
+
+  <!-- Benefits Section -->
+  <section class="benefits-section">
+    <h2>Dlaczego warto wybrać CycloPick?</h2>
+    
+    <div class="benefits-container">
+      <div *ngFor="let benefit of benefits" class="benefit-card">
+        <div class="benefit-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.class]="'feather feather-' + benefit.icon">
+            <ng-container [ngSwitch]="benefit.icon">
+              <ng-container *ngSwitchCase="'clock'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </ng-container>
+              <ng-container *ngSwitchCase="'award'">
+                <circle cx="12" cy="8" r="7"></circle>
+                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+              </ng-container>
+              <ng-container *ngSwitchCase="'dollar-sign'">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </ng-container>
+              <ng-container *ngSwitchCase="'smartphone'">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+              </ng-container>
+              <ng-container *ngSwitchCase="'list'">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </ng-container>
+            </ng-container>
+          </svg>
+        </div>
+        <div class="benefit-content">
+          <h3>{{ benefit.title }}</h3>
+          <p>{{ benefit.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team Section -->
+  <section class="team-section">
+    <h2>Nasz zespół</h2>
+    <p>
+      CycloPick tworzą pasjonaci kolarstwa i technologii. Łączymy wieloletnie doświadczenie 
+      w mechanice rowerowej z nowoczesnym podejściem do obsługi klienta. Nasi serwisanci 
+      nieustannie podnoszą swoje kwalifikacje, aby sprostać wymaganiom coraz bardziej 
+      zaawansowanych konstrukcji rowerowych.
+    </p>
+  </section>
+
+  <!-- Service Area Section -->
+  <section class="service-area-section">
+    <h2>Obszar działania</h2>
+    <p>
+      Działamy w <strong>Krakowie oraz pobliskich miejscowościach</strong>:
+    </p>
+    
+    <div class="locations-grid">
+      <div *ngFor="let location of locationList" class="location-item">
+        <div class="location-marker">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </div>
+        <span>{{ location }}</span>
+      </div>
+    </div>
+    
+    <p class="expansion-note">
+      Systematycznie rozszerzamy nasz zasięg, aby docierać do coraz większej liczby rowerzystów!
+    </p>
+  </section>
+
+  <!-- Values Section -->
+  <section class="values-section">
+    <h2>Nasze wartości</h2>
+    
+    <div class="values-container">
+      <div *ngFor="let value of values" class="value-card">
+        <div class="value-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.class]="'feather feather-' + value.icon">
+            <ng-container [ngSwitch]="value.icon">
+              <ng-container *ngSwitchCase="'shield'">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </ng-container>
+              <ng-container *ngSwitchCase="'clock'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </ng-container>
+              <ng-container *ngSwitchCase="'leaf'">
+                <path d="M6 3h12l-4 12-4-12H6z"></path>
+                <path d="M6 21h12"></path>
+              </ng-container>
+              <ng-container *ngSwitchCase="'heart'">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </ng-container>
+              <ng-container *ngSwitchCase="'lightbulb'">
+                <path d="M9 18h6"></path>
+                <path d="M10 22h4"></path>
+                <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+              </ng-container>
+            </ng-container>
+          </svg>
+        </div>
+        <div class="value-content">
+          <h3>{{ value.name }}</h3>
+          <p>{{ value.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action Section -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2>Dołącz do społeczności CycloPick!</h2>
+      <p>
+        Nie pozwól, by drobne usterki odbierały Ci radość z jazdy – my zajmiemy się wszystkim.
+        Zarejestruj się już dziś i przekonaj się, jak wygodne może być dbanie o Twój rower! 🚴‍♂️
+      </p>
+      <div class="cta-buttons">
+        <button class="primary-btn" routerLink="/register">Zarejestruj się</button>
+        <button class="secondary-btn" routerLink="/" [queryParams]="{section: 'order-form'}">Zamów serwis</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contact-section">
+    <h2>Kontakt</h2>
+    
+    <div class="contact-details">
+      <div class="contact-item">
+        <div class="contact-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        </div>
+        <div class="contact-text">
+          <h3>E-mail:</h3>
+          <p>cyclopick{{'@'}}gmail.com</p>
+        </div>
+      </div>
+      
+      <div class="contact-item">
+        <div class="contact-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+        </div>
+        <div class="contact-text">
+          <h3>Telefon:</h3>
+          <p>+48 72 345 25 87</p>
+        </div>
+      </div>
+      
+      <div class="contact-item">
+        <div class="contact-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <div class="contact-text">
+          <h3>Godziny obsługi:</h3>
+          <p>Obsługujemy zgłoszenia od poniedziałku do piątku<br>w godzinach 8:00–18:00</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

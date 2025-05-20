@@ -21,6 +21,8 @@ import { ServiceRegistrationComponent } from './service-registration/service-reg
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { AdminServiceSlotsComponent } from './admin/service-slots/admin-service-slots.component';
+import { AboutUsComponent } from './about-us/about-us.component';
+
 
 
 export const routes: Routes = [
@@ -63,4 +65,5 @@ export const routes: Routes = [
     
     // Account route - dostępna dla zalogowanych użytkowników
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},
+    {path: 'about', component: AboutUsComponent}
 ];

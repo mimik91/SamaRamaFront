@@ -20,6 +20,7 @@
       <ng-container *ngIf="authService.isLoggedIn() && authService.isClient() && !authService.hasAdminPrivileges()">
         <a routerLink="/bicycles" routerLinkActive="active" (click)="closeMobileMenu()">Moje rowery</a>
         <a routerLink="/service-appointments" routerLinkActive="active" (click)="closeMobileMenu()">Moje zamówienia</a>
+        <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">O nas</a>
       </ng-container>
     
       
@@ -32,6 +33,7 @@
       
       <!-- Menu dla niezalogowanych -->
       <ng-container *ngIf="!authService.isLoggedIn()">
+        <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">O nas</a>
         <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Logowanie klienta</a>
         <a routerLink="/register" routerLinkActive="active" (click)="closeMobileMenu()">Rejestracja</a>
       </ng-container>
@@ -60,7 +62,7 @@
       <!-- Menu dla strony rejestracji klienta -->
       <ng-container *ngIf="isRegisterPage()">
         <a routerLink="/login">Logowanie klienta</a>
-        <a routerLink="/register-serviceman">Rejestracja serwisu</a>
+        <a routerLink="/register-service">Rejestracja serwisu</a>
       </ng-container>
 
       <!-- Menu dla strony rejestracji serwisu -->

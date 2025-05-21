@@ -73,13 +73,13 @@ export class AboutUsComponent implements OnInit {
     {
       number: 3,
       title: 'Ustal termin odbioru',
-      description: 'Wskaż dogodny dzień, a my odbierzemy Twój rower spod wskazanego adresu.',
+      description: 'Wskaż dogodny dzień, a my odbierzemy Twój rower spod wskazanego adresu w godzinach 18:00 - 22:00.',
       icon: 'calendar'
     },
     {
       number: 4,
       title: 'Bezpieczne przekazanie',
-      description: 'Przypnij rower zapięciem na szyfr i prześlij nam lokalizację oraz kod.',
+      description: 'Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia.',
       icon: 'lock'
     },
     {

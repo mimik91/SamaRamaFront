@@ -76,7 +76,7 @@ onSubmit(): void {
   console.log(`Długość danych: ${serviceData.length}/${this.maxDataLength} znaków`);
   
   // Wyślij dane do API - ZMIENIONY ENDPOINT
-  this.http.post(`${environment.apiUrl}/admin/service-registration`, [serviceData])
+  this.http.post(`${environment.apiUrl}/guest-orders/service-registration`, [serviceData])
     .subscribe({
       next: () => {
         this.isSubmitting = false;

@@ -7,7 +7,6 @@ import { BikeFormService, BikeFormData } from './bike-form.service';
 import { ServiceSlotService } from '../service-slots/service-slot.service';
 import { HomeHeroComponent } from './home-hero.component';
 import { NotificationService } from '../core/notification.service';
-import { ProcessCarouselComponent } from './process-carousel.component';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -20,7 +19,6 @@ import { ActivatedRoute } from '@angular/router';
     CommonModule, 
     ReactiveFormsModule,
     HomeHeroComponent,
-    ProcessCarouselComponent
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -34,6 +32,45 @@ export class HomeComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private route = inject(ActivatedRoute);
   private isBrowser: boolean;
+
+  steps = [
+    {
+      number: 1,
+      title: 'Zarejestruj rower',
+      description: 'Dodaj jednoślad do systemu, podając podstawowe informacje.',
+      icon: 'file-text'
+    },
+    {
+      number: 2,
+      title: 'Wybierz pakiet serwisowy',
+      description: 'Od podstawowego przeglądu po kompleksową obsługę.',
+      icon: 'package'
+    },
+    {
+      number: 3,
+      title: 'Ustal termin odbioru',
+      description: 'Wskaż dogodny dzień, a my odbierzemy Twój rower spod wskazanego adresu w godzinach 18:00 - 22:00.',
+      icon: 'calendar'
+    },
+    {
+      number: 4,
+      title: 'Bezpieczne przekazanie',
+      description: 'Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia.',
+      icon: 'lock'
+    },
+    {
+      number: 5,
+      title: 'Serwisowanie',
+      description: 'Dostarczymy rower do certyfikowanego serwisu, który oceni jego stan i skontaktuje się z Tobą w przypadku dodatkowych napraw.',
+      icon: 'tool'
+    },
+    {
+      number: 6,
+      title: 'Zwrot roweru',
+      description: 'Po zakończeniu serwisowania dostarczymy go z powrotem pod wskazany adres, gotowego do jazdy.',
+      icon: 'truck'
+    }
+  ];
   
 
   bikeForm: FormGroup;

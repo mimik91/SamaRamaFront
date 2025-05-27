@@ -196,6 +196,13 @@
   padding: 60px 0 30px;
 }
 
+/* Ograniczona szerokość dla sekcji "Jak działamy" - podobna do sekcji formularza */
+.how-it-works-limited {
+  max-width: 1200px;
+  padding: 60px 20px 30px;
+  margin: 0 auto;
+}
+
 .content-section h2 {
   font-size: 2.5rem;
   color: #2c3e50;
@@ -211,63 +218,6 @@
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
-  text-align: center;
-}
-
-/* Benefits Section */
-.benefits {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.benefit {
-  padding: 30px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-top: 4px solid #3498db;
-  height: 100%;
-}
-
-.benefit:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.benefit-icon {
-  width: 64px;
-  height: 64px;
-  background-color: #f0f9ff;
-  color: #3498db;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
-  transition: transform 0.3s ease;
-}
-
-.benefit:hover .benefit-icon {
-  transform: scale(1.1);
-}
-
-.benefit h3 {
-  font-size: 1.4rem;
-  color: #2c3e50;
-  margin-bottom: 15px;
-  font-weight: 600;
-  text-align: center;
-}
-
-.benefit p {
-  color: #64748b;
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.6;
   text-align: center;
 }
 
@@ -666,8 +616,8 @@
     font-size: 3.5rem;
   }
   
-  .benefits {
-    grid-template-columns: repeat(2, 1fr);
+  .how-it-works-limited {
+    padding: 60px 15px 30px;
   }
 }
 
@@ -707,9 +657,8 @@
     padding: 40px 0 20px;
   }
   
-  .benefits {
-    grid-template-columns: 1fr;
-    padding: 0 20px;
+  .how-it-works-limited {
+    padding: 40px 15px 20px;
   }
   
   .form-container {
@@ -778,6 +727,10 @@
     padding: 30px 0 15px;
   }
   
+  .how-it-works-limited {
+    padding: 30px 10px 15px;
+  }
+  
   .form-header {
     flex-wrap: wrap;
   }
@@ -791,10 +744,4 @@
   .bike-form-group {
     padding: 15px;
   }
-  
-  .benefit {
-    padding: 20px;
-  }
-
-  
 }

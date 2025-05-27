@@ -19,9 +19,9 @@
     </div>
   </div>
 
-  <!-- Sekcja "Jak działamy" z karuzelą zdjęć -->
-  <section id="how-it-works" class="content-section full-width">
-    <h2>Jak działamy: </h2>
+  <!-- Sekcja "Jak działamy" z ograniczoną szerokością -->
+  <section id="how-it-works" class="content-section how-it-works-limited">
+    <h2>Jak działamy</h2>
     <h1>Wieczorem odbieramy Twój rower, następnego dnia go serwisujemy, a wieczorem odstawiamy go z powrotem pod Twój dom.</h1>
     
     <div class="steps-container">
@@ -49,9 +49,9 @@
                 <line x1="8" y1="2" x2="8" y2="6"></line>
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </ng-container>
-              <ng-container *ngSwitchCase="'lock'">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              <ng-container *ngSwitchCase="'clock'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
               </ng-container>
               <ng-container *ngSwitchCase="'tool'">
                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
@@ -76,57 +76,6 @@
       <p>Proste, wygodne i bezproblemowe!</p>
     </div>
     
-  </section>
-
-  <!-- Sekcja "Co zyskujesz" -->
-  <section id="benefits" class="content-section">
-    <h2>Co zyskujesz</h2>
-    <p class="section-subtitle">Profesjonalny serwis z dojazdem do Ciebie</p>
-    
-    <div class="benefits">
-      <div class="benefit">
-        <div class="benefit-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-        </div>
-        <h3>Express 24h</h3>
-        <p>Zawsze szybki serwis w 24h, bez dodatkowych opłat. Twój rower będzie gotowy następnego dnia.</p>
-      </div>
-      
-      <div class="benefit">
-        <div class="benefit-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-          </svg>
-        </div>
-        <h3>Profesjonalny serwis</h3>
-        <p>Naprawiamy rowery w stacjonarnym serwisie z dostępem do wszystkich profesjonalnych narzędzi i części.</p>
-      </div>
-      
-      <div class="benefit">
-        <div class="benefit-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-          </svg>
-        </div>
-        <h3>Pełna wygoda</h3>
-        <p>Zabieramy i przywozimy rower, nie potrzebujesz miejsca na naprawę ani nie musisz nadzorować procesu.</p>
-      </div>
-      
-      <div class="benefit">
-        <div class="benefit-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-          </svg>
-        </div>
-        <h3>Monitoring statusu</h3>
-        <p>Otrzymujesz informacje na każdym etapie serwisu. Proces jest transparentny, a Ty masz pełną kontrolę.</p>
-      </div>
-    </div>
   </section>
 
   <section id="order-form" class="content-section">

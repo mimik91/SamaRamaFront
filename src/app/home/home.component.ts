@@ -36,39 +36,39 @@ export class HomeComponent implements OnInit {
   steps = [
     {
       number: 1,
-      title: 'Zarejestruj rower',
+      title: 'Umów się na serwis w swoim serwisie rowerowym',
+      description: 'Skontaktuj się z wybranym serwisem i umów termin na serwis Twojego roweru.',
+      icon: 'calendar'
+    },
+    {
+      number: 2,
+      title: 'Zarejestruj rower w systemie',
       description: 'Dodaj jednoślad do systemu, podając podstawowe informacje.',
       icon: 'file-text'
     },
     {
-      number: 2,
-      title: 'Wybierz pakiet serwisowy',
-      description: 'Od podstawowego przeglądu po kompleksową obsługę.',
-      icon: 'package'
-    },
-    {
       number: 3,
-      title: 'Ustal termin odbioru',
-      description: 'Wskaż dogodny dzień, a my odbierzemy Twój rower spod wskazanego adresu w godzinach 18:00 - 22:00.',
-      icon: 'calendar'
+      title: 'Wybierz termin odbioru',
+      description: 'Wskaż dogodny dzień odbioru (dzień przed umówionym serwisem), a my odbierzemy Twój rower spod wskazanego adresu w godzinach 18:00 - 22:00.',
+      icon: 'clock'
     },
     {
       number: 4,
-      title: 'Bezpieczne przekazanie',
+      title: 'Odbierzemy od Ciebie rower',
       description: 'Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia.',
-      icon: 'lock'
+      icon: 'package'
     },
     {
       number: 5,
-      title: 'Serwisowanie',
-      description: 'Dostarczymy rower do certyfikowanego serwisu, który oceni jego stan i skontaktuje się z Tobą w przypadku dodatkowych napraw.',
-      icon: 'tool'
+      title: 'Dostarczymy rower do wybranego serwisu',
+      description: 'Bezpiecznie przewieziemy Twój rower do umówionego serwisu na wyznaczony termin.',
+      icon: 'truck'
     },
     {
       number: 6,
-      title: 'Zwrot roweru',
-      description: 'Po zakończeniu serwisowania dostarczymy go z powrotem pod wskazany adres, gotowego do jazdy.',
-      icon: 'truck'
+      title: 'Po zakończeniu serwisu odbierzemy i dostarczymy rower z powrotem',
+      description: 'Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy.',
+      icon: 'tool'
     }
   ];
   

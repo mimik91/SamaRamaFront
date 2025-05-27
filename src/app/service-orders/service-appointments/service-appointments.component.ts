@@ -60,7 +60,20 @@ export class ServiceAppointmentsComponent implements OnInit {
     }
   }
 
-  
+  // DODANA METODA - ta była brakująca
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'PENDING': return 'status-pending';
+      case 'CONFIRMED': return 'status-confirmed';
+      case 'PICKED_UP': return 'status-picked-up';
+      case 'IN_SERVICE': return 'status-in-service';
+      case 'COMPLETED': return 'status-completed';
+      case 'DELIVERED': return 'status-delivered';
+      case 'CANCELLED': return 'status-cancelled';
+      default: return '';
+    }
+  }
+
   // Get bicycle display name from the actual API response structure
   getBicycleDisplayName(order: any): string {
     if (order.bicycleBrand || order.bicycleModel) {

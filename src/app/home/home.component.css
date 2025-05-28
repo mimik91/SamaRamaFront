@@ -744,4 +744,25 @@
   .bike-form-group {
     padding: 15px;
   }
+
+  .content-section {
+  padding: 60px 0;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Sekcja z mapą */
+.map-section {
+  padding: 60px 20px;
+  background-color: #f8fafc;
+  margin: 0;
+  max-width: 100%;
+}
+
+#how-it-works {
+  overflow: hidden;
+  width: 100%;
+  padding: 60px 0 30px;
+}
 }

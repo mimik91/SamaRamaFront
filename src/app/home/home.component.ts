@@ -6,6 +6,7 @@ import { EnumerationService } from '../core/enumeration.service';
 import { BikeFormService, BikeFormData } from './bike-form.service';
 import { ServiceSlotService } from '../service-slots/service-slot.service';
 import { HomeHeroComponent } from './home-hero.component';
+import { ServicesMapComponent } from '../shared/services-map/services-map.component';
 import { NotificationService } from '../core/notification.service';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -19,6 +20,7 @@ import { ActivatedRoute } from '@angular/router';
     CommonModule, 
     ReactiveFormsModule,
     HomeHeroComponent,
+    ServicesMapComponent,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']

@@ -286,33 +286,29 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
       popupAnchor: [0, -10]
     });
 
-    
-      validPins.forEach(pin => {
-        // DODAJ TEN LOG:
-        console.log('🔍 Pin data structure:', pin);
-        console.log('🔍 Pin properties:', Object.keys(pin));
-        
-        try {
-          const marker = L.marker([pin.latitude, pin.longitude], { icon: serviceIcon })
-            .addTo(this.map);
+    // Dodaj markery
+    validPins.forEach(pin => {
+      // DODAJ TEN LOG:
+      console.log('🔍 Pin data structure:', pin);
+      console.log('🔍 Pin properties:', Object.keys(pin));
+      
+      try {
+        const marker = L.marker([pin.latitude, pin.longitude], { icon: serviceIcon })
+          .addTo(this.map);
 
-          this.markers.set(pin.id, marker);
+        this.markers.set(pin.id, marker);
 
-          marker.on('click', () => {
-            console.log('🔴 MARKER CLICKED! Pin object:', pin);
-            
-            // UŻYJ showSimplePopup zamiast loadAndShowServiceDetails:
-            this.showSimplePopup(pin, marker);
-          });
-        } catch (error) {
-          console.error(`Error adding marker for pin ${pin.id}:`, error);
-        }
-      });
+        marker.on('click', () => {
+          console.log('🔴 MARKER CLICKED! Pin object:', pin);
+          
+          // UŻYJ loadServiceDetailsFromAPI zamiast showSimplePopup:
+          this.loadServiceDetailsFromAPI(pin.id, marker);
+        });
 
-  } catch (error) {
-    console.error(`Error adding marker for pin ${pin.id}:`, error);
-  }
-});
+      } catch (error) {
+        console.error(`Error adding marker for pin ${pin.id}:`, error);
+      }
+    });
 
     // Dopasuj widok jeśli jest więcej niż jeden marker
     if (validPins.length > 1) {
@@ -333,7 +329,7 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
   private showSimplePopup(pin: MapPin, marker: any): void {
     const popupContent = `
       <div style="font-family: Arial, sans-serif; min-width: 200px;">
-        <h4 style="margin: 0 0 10px 0; color: #333;">${pin.name}</h4>
+        <h4 style="margin: 0 0 10px 0; color: #333;">${pin.name || 'Serwis bez nazwy'}</h4>
         ${pin.address ? `<p style="margin: 5px 0; color: #666;"><strong>Adres:</strong> ${pin.address}</p>` : ''}
         ${pin.phoneNumber ? `<p style="margin: 5px 0;"><strong>Telefon:</strong> <a href="tel:${pin.phoneNumber}" style="color: #27ae60;">${pin.phoneNumber}</a></p>` : ''}
         ${pin.email ? `<p style="margin: 5px 0;"><strong>Email:</strong> <a href="mailto:${pin.email}" style="color: #e67e22;">${pin.email}</a></p>` : ''}
@@ -344,6 +340,82 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
     marker.bindPopup(popupContent, {
       maxWidth: 300,
       className: 'simple-service-popup'
+    }).openPopup();
+  }
+
+  /**
+   * Ładuje szczegóły serwisu z API i pokazuje popup
+   */
+  private loadServiceDetailsFromAPI(serviceId: number, marker: any): void {
+    console.log('🟡 loadServiceDetailsFromAPI called with ID:', serviceId);
+    
+    // Pokaż loading popup
+    const loadingContent = `
+      <div style="text-align: center; padding: 20px;">
+        <div style="border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #3498db; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+        <p>Ładowanie szczegółów serwisu...</p>
+      </div>
+    `;
+    
+    marker.bindPopup(loadingContent, {
+      maxWidth: 300,
+      className: 'loading-popup-container'
+    }).openPopup();
+
+    // TUTAJ JEST HTTP REQUEST:
+    console.log('🚀 Making HTTP request to API...');
+    this.mapService.getServiceDetails(serviceId).subscribe({
+      next: (serviceDetails) => {
+        console.log('✅ HTTP Response received:', serviceDetails);
+        if (serviceDetails) {
+          this.showDetailedPopup(serviceDetails, marker);
+        } else {
+          this.showErrorPopup(marker, 'Nie znaleziono szczegółów serwisu');
+        }
+      },
+      error: (error) => {
+        console.error('❌ HTTP Request failed:', error);
+        this.showErrorPopup(marker, 'Nie udało się załadować szczegółów serwisu');
+      }
+    });
+  }
+
+  /**
+   * Pokazuje szczegółowy popup z danymi z API
+   */
+  private showDetailedPopup(serviceDetails: any, marker: any): void {
+    const popupContent = `
+      <div style="font-family: Arial, sans-serif; min-width: 250px;">
+        <h4 style="margin: 0 0 10px 0; color: #333;">${serviceDetails.name}</h4>
+        <p><strong>ID:</strong> ${serviceDetails.id}</p>
+        <p><strong>Email:</strong> ${serviceDetails.email}</p>
+        <p><strong>Telefon:</strong> ${serviceDetails.phoneNumber}</p>
+        <p><strong>Miasto:</strong> ${serviceDetails.city}</p>
+        <p><strong>Ulica:</strong> ${serviceDetails.street} ${serviceDetails.building}</p>
+        ${serviceDetails.verified ? '<p style="color: green;"><strong>✅ Zweryfikowany</strong></p>' : ''}
+      </div>
+    `;
+
+    marker.bindPopup(popupContent, {
+      maxWidth: 350,
+      className: 'detailed-service-popup'
+    }).openPopup();
+  }
+
+  /**
+   * Pokazuje popup z błędem
+   */
+  private showErrorPopup(marker: any, errorMessage: string): void {
+    const errorContent = `
+      <div style="text-align: center; padding: 15px; color: #e74c3c;">
+        <div style="font-size: 2rem; margin-bottom: 10px;">⚠️</div>
+        <p>${errorMessage}</p>
+      </div>
+    `;
+    
+    marker.bindPopup(errorContent, {
+      maxWidth: 250,
+      className: 'error-popup-container'
     }).openPopup();
   }
 

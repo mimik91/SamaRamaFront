@@ -384,17 +384,62 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
    * Pokazuje szczegółowy popup z danymi z API
    */
   private showDetailedPopup(serviceDetails: any, marker: any): void {
-    const popupContent = `
+    // Buduj adres tylko z dostępnych części
+    const addressParts = [];
+    if (serviceDetails.street) addressParts.push(serviceDetails.street);
+    if (serviceDetails.building) addressParts.push(serviceDetails.building);
+    if (serviceDetails.flat) addressParts.push(`m. ${serviceDetails.flat}`);
+    const fullAddress = addressParts.join(' ');
+    
+    // Buduj zawartość popup-a tylko z dostępnymi danymi
+    let popupContent = `
       <div style="font-family: Arial, sans-serif; min-width: 250px;">
-        <h4 style="margin: 0 0 10px 0; color: #333;">${serviceDetails.name}</h4>
-        <p><strong>ID:</strong> ${serviceDetails.id}</p>
-        <p><strong>Email:</strong> ${serviceDetails.email}</p>
-        <p><strong>Telefon:</strong> ${serviceDetails.phoneNumber}</p>
-        <p><strong>Miasto:</strong> ${serviceDetails.city}</p>
-        <p><strong>Ulica:</strong> ${serviceDetails.street} ${serviceDetails.building}</p>
-        ${serviceDetails.verified ? '<p style="color: green;"><strong>✅ Zweryfikowany</strong></p>' : ''}
-      </div>
+        <h4 style="margin: 0 0 15px 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px;">${serviceDetails.name}</h4>
     `;
+    
+    // Adres (jeśli dostępny)
+    if (fullAddress) {
+      popupContent += `<p style="margin: 8px 0;"><strong>📍 Adres:</strong> ${fullAddress}</p>`;
+    }
+    
+    // Miasto (jeśli dostępne)
+    if (serviceDetails.city) {
+      popupContent += `<p style="margin: 8px 0;"><strong>🏙️ Miasto:</strong> ${serviceDetails.city}</p>`;
+    }
+    
+    // Kod pocztowy (jeśli dostępny)
+    if (serviceDetails.postalCode) {
+      popupContent += `<p style="margin: 8px 0;"><strong>📮 Kod:</strong> ${serviceDetails.postalCode}</p>`;
+    }
+    
+    // Telefon (jeśli dostępny)
+    if (serviceDetails.phoneNumber) {
+      popupContent += `<p style="margin: 8px 0;"><strong>📞 Telefon:</strong> <a href="tel:${serviceDetails.phoneNumber}" style="color: #27ae60; text-decoration: none;">${serviceDetails.phoneNumber}</a></p>`;
+    }
+    
+    // Telefon służbowy (jeśli dostępny)
+    if (serviceDetails.businessPhone) {
+      popupContent += `<p style="margin: 8px 0;"><strong>📱 Tel. służbowy:</strong> <a href="tel:${serviceDetails.businessPhone}" style="color: #27ae60; text-decoration: none;">${serviceDetails.businessPhone}</a></p>`;
+    }
+    
+    // Email (jeśli dostępny)
+    if (serviceDetails.email) {
+      popupContent += `<p style="margin: 8px 0;"><strong>✉️ Email:</strong> <a href="mailto:${serviceDetails.email}" style="color: #e67e22; text-decoration: none;">${serviceDetails.email}</a></p>`;
+    }
+    
+    // Opis (jeśli dostępny)
+    if (serviceDetails.description && serviceDetails.description.trim()) {
+      popupContent += `<div style="margin: 15px 0 0 0; padding: 10px; background-color: #f8f9fa; border-radius: 4px; border-left: 3px solid #007bff;">
+        <p style="margin: 0; color: #666; font-size: 0.9em; line-height: 1.4;">${serviceDetails.description}</p>
+      </div>`;
+    }
+    
+    // Status weryfikacji (tylko jeśli zweryfikowany)
+    if (serviceDetails.verified) {
+      popupContent += `<p style="color: #28a745; margin: 12px 0 0 0; font-weight: 500;"><strong>✅ Zweryfikowany serwis</strong></p>`;
+    }
+    
+    popupContent += `</div>`;
 
     marker.bindPopup(popupContent, {
       maxWidth: 350,

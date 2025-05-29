@@ -20,12 +20,33 @@
   </div>
 
   <!-- Sekcja "Jak działamy" z ograniczoną szerokością -->
-  <section id="how-it-works" class="content-section how-it-works-limited">
+ <section id="how-it-works" class="content-section how-it-works-limited">
     <h2>Jak działamy</h2>
-    <h1>Wieczorem odbieramy Twój rower, następnego dnia go serwisujemy, a wieczorem odstawiamy go z powrotem pod Twój dom.</h1>
+    
+    <!-- Przyciski przełączania widoku - przeniesione nad napis -->
+    <div class="view-switcher">
+      <button 
+        type="button" 
+        class="view-btn hero-btn" 
+        [class.active]="activeHowItWorksView === 'service'"
+        (click)="switchHowItWorksView('service')"
+      >
+        Serwis
+      </button>
+      <button 
+        type="button" 
+        class="view-btn hero-btn" 
+        [class.active]="activeHowItWorksView === 'transport'"
+        (click)="switchHowItWorksView('transport')"
+      >
+        Transport Rowerów
+      </button>
+    </div>
+    
+    <h1>Wieczorem odbieramy Twój rower i zawozimy do serwisu, w dniu zakończenia serwisu odbieramy rower od serwisu i wieczorem odstawiamy go z powrotem pod Twój dom.</h1>
     
     <div class="steps-container">
-      <div *ngFor="let step of steps" class="step-card">
+      <div *ngFor="let step of currentSteps" class="step-card">
         <div class="step-number">{{ step.number }}</div>
         <div class="step-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.class]="'feather feather-' + step.icon">
@@ -70,6 +91,27 @@
           <p>{{ step.description }}</p>
         </div>
       </div>
+    </div>
+    
+    <!-- Przyciski akcji w zależności od wybranego widoku -->
+    <div class="how-it-works-actions">
+      <button 
+        *ngIf="activeHowItWorksView === 'service'" 
+        type="button" 
+        class="hero-btn order-btn" 
+        (click)="scrollToSection('order-form')"
+      >
+        Zamów serwis
+      </button>
+      
+      <button 
+        *ngIf="activeHowItWorksView === 'transport'" 
+        type="button" 
+        class="hero-btn learn-more-btn" 
+        (click)="scrollToSection('services-map')"
+      >
+        Wybierz swój serwis
+      </button>
     </div>
     
     <div class="process-summary">

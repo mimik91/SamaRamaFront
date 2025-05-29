@@ -35,7 +35,10 @@ export class HomeComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private isBrowser: boolean;
 
-  steps = [
+  // Aktywny widok sekcji "Jak działamy"
+  activeHowItWorksView: 'transport' | 'service' = 'service';
+
+  transportSteps = [
     {
       number: 1,
       title: 'Umów się na serwis w swoim serwisie rowerowym',
@@ -73,6 +76,44 @@ export class HomeComponent implements OnInit {
       icon: 'tool'
     }
   ];
+
+  serviceSteps = [
+    {
+      number: 1,
+      title: 'Zarejestruj rower w systemie',
+      description: 'Dodaj jednoślad do systemu, podając podstawowe informacje.',
+      icon: 'file-text'
+    },
+    {
+      number: 2,
+      title: 'Wybierz termin odbioru',
+      description: 'Wskaż dogodny dzień odbioru, a my odbierzemy Twój rower spod wskazanego adresu w godzinach 18:00 - 22:00.',
+      icon: 'clock'
+    },
+    {
+      number: 3,
+      title: 'Odbierzemy od Ciebie rower',
+      description: 'Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia.',
+      icon: 'package'
+    },
+    {
+      number: 4,
+      title: 'Bezpiecznie przewieziemy Twój rower do współpracującego z nami serwisu',
+      description: 'Bezpiecznie przewieziemy Twój rower do współpracującego z nami serwisu.',
+      icon: 'truck'
+    },
+    {
+      number: 5,
+      title: 'Po zakończeniu serwisu odbierzemy i dostarczymy rower z powrotem',
+      description: 'Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy.',
+      icon: 'tool'
+    }
+  ];
+
+  // Getter dla aktualnych kroków
+  get currentSteps() {
+    return this.activeHowItWorksView === 'transport' ? this.transportSteps : this.serviceSteps;
+  }
   
 
   bikeForm: FormGroup;
@@ -299,5 +340,10 @@ export class HomeComponent implements OnInit {
         behavior: 'smooth'
       });
     }
+  }
+
+  // Metoda do przełączania widoku sekcji "Jak działamy"
+  switchHowItWorksView(view: 'transport' | 'service'): void {
+    this.activeHowItWorksView = view;
   }
 }

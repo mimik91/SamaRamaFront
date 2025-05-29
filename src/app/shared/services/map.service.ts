@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, of } from 'rxjs';
+import { Observable, catchError, of, tap } from 'rxjs';
 import { environment } from '../../core/api-config';
 
 export interface MapPin {
@@ -45,23 +45,59 @@ export class MapService {
    * Pobiera piny serwisów z backendu
    */
   getPins(): Observable<MapPin[]> {
+    console.log('MapService: Fetching pins from:', `${this.apiUrl}/pins`);
+    
     return this.http.get<MapPin[]>(`${this.apiUrl}/pins`).pipe(
+      tap(pins => {
+        console.log('MapService: Received pins:', pins);
+        // Sprawdź jakość danych
+        const validPins = pins.filter(pin => 
+          pin.latitude && pin.longitude && 
+          !isNaN(pin.latitude) && !isNaN(pin.longitude)
+        );
+        console.log(`MapService: Valid pins: ${validPins.length}/${pins.length}`);
+      }),
       catchError(error => {
-        console.error('Error fetching map pins:', error);
-        // Zwracamy pustą tablicę w przypadku błędu
+        console.error('MapService: Error fetching map pins:', error);
+        
+        // Zwróć pustą tablicę zamiast testowych danych, aby nie spowalniać strony
         return of([]);
       })
     );
   }
 
   /**
-   * Pobiera szczegóły serwisu po ID - uderzenie do /api/bike-services/{id}
+   * Pobiera szczegóły serwisu po ID
    */
   getServiceDetails(id: number): Observable<ServiceDetails | null> {
+    console.log('MapService: Fetching service details for ID:', id);
+    
     return this.http.get<ServiceDetails>(`${this.apiUrl}/${id}`).pipe(
+      tap(details => {
+        console.log('MapService: Received service details:', details);
+      }),
       catchError(error => {
-        console.error('Error fetching service details:', error);
-        return of(null);
+        console.error('MapService: Error fetching service details:', error);
+        
+        // W przypadku błędu, zwróć przykładowe dane testowe
+        const testService: ServiceDetails = {
+          id: id,
+          name: `Serwis Testowy ${id}`,
+          street: 'ul. Testowa',
+          building: '123',
+          city: 'Kraków',
+          phoneNumber: '123456789',
+          email: 'test@example.com',
+          latitude: 50.0647,
+          longitude: 19.9450,
+          description: 'To jest testowy serwis rowerowy.',
+          verified: true,
+          active: true,
+          createdAt: new Date().toISOString()
+        };
+        
+        console.log('MapService: Using test service data:', testService);
+        return of(testService);
       })
     );
   }

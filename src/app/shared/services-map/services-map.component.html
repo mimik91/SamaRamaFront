@@ -6,16 +6,38 @@
   </div>
   
   <div #mapContainer class="map-wrapper" id="services-map">
-    <div *ngIf="!isBrowser || loading" class="map-placeholder">
-      <div class="loading-spinner" *ngIf="loading"></div>
-      <p *ngIf="loading">Ładowanie mapy...</p>
-      <p *ngIf="!isBrowser">Mapa będzie dostępna po załadowaniu strony</p>
+    <!-- Show map button - lazy loading -->
+    <div *ngIf="!mapVisible && !loading && !mapError && isBrowser" class="map-placeholder">
+      <div class="map-icon">🗺️</div>
+      <p>Kliknij aby załadować mapę</p>
+      <button class="show-map-button" (click)="showMap()">Pokaż mapę serwisów</button>
+    </div>
+    
+    <!-- Loading state -->
+    <div *ngIf="loading && !mapError" class="map-placeholder">
+      <div class="loading-spinner"></div>
+      <p>Ładowanie mapy...</p>
+    </div>
+    
+    <!-- Error state -->
+    <div *ngIf="mapError" class="map-placeholder error-state">
+      <div class="error-icon">⚠️</div>
+      <p>Nie udało się załadować mapy</p>
+      <button class="retry-button" (click)="retryMapLoad()">Spróbuj ponownie</button>
+    </div>
+    
+    <!-- Fallback for non-browser environment -->
+    <div *ngIf="!isBrowser" class="map-placeholder">
+      <p>Mapa będzie dostępna po załadowaniu strony w przeglądarce</p>
     </div>
   </div>
   
-  <div class="map-info" *ngIf="pins.length > 0">
-    <p class="services-count">
+  <div class="map-info" *ngIf="pins.length > 0 || (!loading && !mapError)">
+    <p class="services-count" *ngIf="pins.length > 0">
       <strong>{{ pins.length }}</strong> {{ pins.length === 1 ? 'serwis' : 'serwisów' }} w okolicy
+    </p>
+    <p class="services-count" *ngIf="pins.length === 0 && !loading">
+      Sprawdź dostępne serwisy na mapie
     </p>
   </div>
 </div>

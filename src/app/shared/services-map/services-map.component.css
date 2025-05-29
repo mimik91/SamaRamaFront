@@ -34,6 +34,7 @@
   position: relative;
   height: 450px;
   width: 100%;
+  min-height: 450px; /* Zapobiega zmianie wysokości */
 }
 
 .map-placeholder {
@@ -44,6 +45,57 @@
   height: 100%;
   background-color: #f1f5f9;
   color: #64748b;
+  min-height: 450px; /* Utrzymuje stałą wysokość */
+}
+
+.map-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+}
+
+.show-map-button {
+  padding: 12px 24px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  margin-top: 15px;
+}
+
+.show-map-button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.error-state {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.retry-button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: #2980b9;
 }
 
 .loading-spinner {
@@ -74,7 +126,19 @@
   font-size: 0.95rem;
 }
 
+/* Upewnij się, że mapa zajmuje całą przestrzeń */
+#services-map {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 /* Niestandardowe style dla popupów Leaflet */
+:global(.leaflet-container) {
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
+}
+
 :global(.leaflet-popup-content-wrapper) {
   border-radius: 8px !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
@@ -109,6 +173,17 @@
   color: #e74c3c;
 }
 
+/* Zapobieganie problemom z CSS reset */
+:global(.leaflet-control-container) {
+  font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif !important;
+}
+
+/* Zapewnienie, że mapa ma prawidłowy rozmiar */
+:global(.leaflet-map-pane) {
+  left: 0 !important;
+  top: 0 !important;
+}
+
 /* Responsive design */
 @media screen and (max-width: 768px) {
   .map-container {
@@ -118,6 +193,11 @@
   
   .map-wrapper {
     height: 350px;
+    min-height: 350px;
+  }
+  
+  .map-placeholder {
+    min-height: 350px;
   }
   
   .map-header {
@@ -132,5 +212,10 @@
 @media screen and (max-width: 480px) {
   .map-wrapper {
     height: 300px;
+    min-height: 300px;
+  }
+  
+  .map-placeholder {
+    min-height: 300px;
   }
 }

@@ -14,13 +14,18 @@ declare var L: any;
   styleUrls: ['./services-map.component.css']
 })
 export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('mapContainer') mapContainer!: ElementRef;
+  @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
   
   private map: any;
-  private markers: Map<number, any> = new Map(); // Przechowywanie markerów
+  private markers: Map<number, any> = new Map();
+  private isMapInitialized = false;
+  private initializationPromise: Promise<void> | null = null;
+  
   isBrowser: boolean;
   pins: MapPin[] = [];
   loading = true;
+  mapError = false;
+  mapVisible = false;
   
   // Współrzędne Krakowa
   private readonly KRAKOW_CENTER = {
@@ -37,375 +42,333 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.loadPins();
+    // Nie ładuj nic w ngOnInit - to blokuje stronę
+    if (this.isBrowser) {
+      // Załaduj dane asynchronicznie z opóźnieniem
+      setTimeout(() => {
+        this.loadPinsAsync();
+      }, 100);
+    }
   }
 
   ngAfterViewInit(): void {
-    if (this.isBrowser) {
-      this.loadLeafletScript().then(() => {
-        this.initializeMap();
-      }).catch(error => {
-        console.error('Failed to load Leaflet:', error);
-        this.loading = false;
-        this.notificationService.error('Nie udało się załadować mapy');
-      });
+    if (this.isBrowser && this.mapContainer) {
+      // Inicjalizuj mapę z większym opóźnieniem, aby nie blokować renderowania
+      setTimeout(() => {
+        this.initializeMapAsync();
+      }, 500);
     }
   }
 
   ngOnDestroy(): void {
+    this.destroyMap();
+  }
+
+  private destroyMap(): void {
     if (this.map) {
-      this.map.remove();
+      try {
+        this.map.remove();
+        this.map = null;
+        this.isMapInitialized = false;
+      } catch (error) {
+        console.error('Error destroying map:', error);
+      }
     }
   }
 
-  private loadLeafletScript(): Promise<void> {
+  /**
+   * Asynchroniczne ładowanie pinów
+   */
+  private async loadPinsAsync(): Promise<void> {
+    try {
+      this.pins = await this.mapService.getPins().toPromise() || [];
+      console.log('Pins loaded:', this.pins.length);
+      
+      // Jeśli mapa jest już zainicjalizowana, dodaj piny
+      if (this.isMapInitialized && this.map && this.pins.length > 0) {
+        this.addPinsToMap();
+      }
+    } catch (error) {
+      console.error('Error loading pins:', error);
+      // Nie pokazuj błędu od razu - może być problem z API
+      this.pins = [];
+    }
+  }
+
+  /**
+   * Asynchroniczne inicjalizowanie mapy
+   */
+  private async initializeMapAsync(): Promise<void> {
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+
+    this.initializationPromise = this.performMapInitialization();
+    return this.initializationPromise;
+  }
+
+  private async performMapInitialization(): Promise<void> {
+    try {
+      // Sprawdź czy kontener istnieje
+      if (!this.mapContainer?.nativeElement) {
+        console.log('Map container not ready, skipping initialization');
+        this.loading = false;
+        return;
+      }
+
+      // Załaduj Leaflet tylko jeśli jeszcze nie jest załadowany
+      await this.loadLeafletIfNeeded();
+      
+      // Inicjalizuj mapę
+      await this.initializeMap();
+      
+      this.loading = false;
+      this.mapVisible = true;
+      
+    } catch (error) {
+      console.error('Failed to initialize map:', error);
+      this.mapError = true;
+      this.loading = false;
+      // Nie pokazuj notification od razu - może być normalny przypadek
+    }
+  }
+
+  /**
+   * Ładuje Leaflet tylko jeśli jest potrzebny
+   */
+  private async loadLeafletIfNeeded(): Promise<void> {
+    // Jeśli Leaflet już istnieje, nie ładuj ponownie
+    if (typeof L !== 'undefined') {
+      return Promise.resolve();
+    }
+
     return new Promise((resolve, reject) => {
-      // Sprawdź czy Leaflet jest już załadowany
-      if (typeof L !== 'undefined') {
-        resolve();
+      // Sprawdź czy już ładujemy
+      if (document.querySelector('script[src*="leaflet.js"]')) {
+        // Czekaj na załadowanie
+        const checkInterval = setInterval(() => {
+          if (typeof L !== 'undefined') {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 100);
+        
+        // Timeout po 10 sekundach
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          reject(new Error('Leaflet loading timeout'));
+        }, 10000);
         return;
       }
 
       // Załaduj CSS
-      const cssLink = document.createElement('link');
-      cssLink.rel = 'stylesheet';
-      cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      cssLink.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-      cssLink.crossOrigin = '';
-      document.head.appendChild(cssLink);
+      if (!document.querySelector('link[href*="leaflet.css"]')) {
+        const cssLink = document.createElement('link');
+        cssLink.rel = 'stylesheet';
+        cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        cssLink.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+        cssLink.crossOrigin = '';
+        document.head.appendChild(cssLink);
+      }
 
       // Załaduj JavaScript
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
       script.crossOrigin = '';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Leaflet script'));
+      script.async = true; // Ważne - asynchroniczne ładowanie
+      
+      script.onload = () => {
+        setTimeout(() => {
+          if (typeof L !== 'undefined') {
+            resolve();
+          } else {
+            reject(new Error('Leaflet loaded but not available'));
+          }
+        }, 100);
+      };
+      
+      script.onerror = () => reject(new Error('Failed to load Leaflet'));
       document.head.appendChild(script);
     });
   }
 
-  private initializeMap(): void {
-    if (!this.mapContainer) {
-      console.error('Map container not found');
+  /**
+   * Inicjalizuje mapę
+   */
+  private async initializeMap(): Promise<void> {
+    if (!this.mapContainer?.nativeElement || this.isMapInitialized) {
       return;
     }
 
-    try {
-      // Inicjalizacja mapy z centrum na Krakowie
-      this.map = L.map(this.mapContainer.nativeElement, {
-        center: [this.KRAKOW_CENTER.lat, this.KRAKOW_CENTER.lng],
-        zoom: 12,
-        zoomControl: true,
-        scrollWheelZoom: true,
-        doubleClickZoom: true,
-        touchZoom: true
-      });
-
-      // Dodanie warstwy OpenStreetMap
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
-      }).addTo(this.map);
-
-      // Dodanie pinów jeśli są już załadowane
-      if (this.pins.length > 0) {
-        this.addPinsToMap();
+    const containerElement = this.mapContainer.nativeElement;
+    
+    // Sprawdź wymiary kontenera
+    if (containerElement.offsetWidth === 0 || containerElement.offsetHeight === 0) {
+      // Spróbuj ponownie po krótkim czasie
+      await new Promise(resolve => setTimeout(resolve, 200));
+      if (containerElement.offsetWidth === 0 || containerElement.offsetHeight === 0) {
+        throw new Error('Map container has no dimensions');
       }
-
-      this.loading = false;
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      this.loading = false;
-      this.notificationService.error('Nie udało się załadować mapy');
     }
-  }
 
-  private loadPins(): void {
-    this.mapService.getPins().subscribe({
-      next: (pins) => {
-        this.pins = pins;
-        console.log('Loaded pins:', pins);
-        
-        // Jeśli mapa jest już inicjalizowana, dodaj piny
-        if (this.map && pins.length > 0) {
-          this.addPinsToMap();
-        }
-        
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading pins:', error);
-        this.loading = false;
-        this.notificationService.error('Nie udało się załadować lokalizacji serwisów');
-      }
+    // Inicjalizuj mapę
+    this.map = L.map(containerElement, {
+      center: [this.KRAKOW_CENTER.lat, this.KRAKOW_CENTER.lng],
+      zoom: 12,
+      zoomControl: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      touchZoom: true,
+      preferCanvas: false,
+      attributionControl: true
     });
+
+    // Dodaj warstwę map
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(this.map);
+
+    this.isMapInitialized = true;
+
+    // Dodaj piny jeśli są dostępne
+    if (this.pins.length > 0) {
+      // Dodaj małe opóźnienie dla płynności
+      setTimeout(() => {
+        this.addPinsToMap();
+      }, 100);
+    }
+
+    // Wymuś odświeżenie rozmiaru
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 200);
+
+    console.log('Map initialized successfully');
   }
 
+  /**
+   * Dodaje piny do mapy
+   */
   private addPinsToMap(): void {
-    if (!this.map || !this.pins.length) return;
+    if (!this.map || !this.pins.length || !this.isMapInitialized) {
+      return;
+    }
 
-    // Niestandardowa ikona pinezki - bardziej realistyczna i mniejsza
+    // Wyczyść istniejące markery
+    this.markers.forEach(marker => {
+      this.map.removeLayer(marker);
+    });
+    this.markers.clear();
+
+    // Filtruj prawidłowe piny
+    const validPins = this.pins.filter(pin => 
+      pin.latitude && pin.longitude && 
+      !isNaN(pin.latitude) && !isNaN(pin.longitude) &&
+      pin.latitude >= -90 && pin.latitude <= 90 &&
+      pin.longitude >= -180 && pin.longitude <= 180
+    );
+
+    if (validPins.length === 0) {
+      console.log('No valid pins to display');
+      return;
+    }
+
+    // Prosta ikona markera
     const serviceIcon = L.divIcon({
       className: 'custom-service-marker',
-      html: `
-        <div style="
-          position: relative;
-          width: 24px;
-          height: 32px;
-        ">
-          <div style="
-            background-color: #e74c3c;
-            width: 24px;
-            height: 24px;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            position: absolute;
-            top: 0;
-            left: 0;
-          "></div>
-          <div style="
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: rotate(45deg);
-            color: white;
-            font-size: 10px;
-          ">🔧</div>
-        </div>
-      `,
-      iconSize: [24, 32],
-      iconAnchor: [12, 32],
-      popupAnchor: [0, -32]
+      html: '<div style="background-color: #e74c3c; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [0, -10]
     });
 
-    // Dodanie markera dla każdego serwisu
-    this.pins.forEach(pin => {
-      const marker = L.marker([pin.latitude, pin.longitude], { icon: serviceIcon })
-        .addTo(this.map);
-
-      // Przechowuj marker w mapie dla łatwego dostępu
-      this.markers.set(pin.id, marker);
-
-      // Obsługa kliknięcia w marker - TUTAJ JEST UDERZENIE DO BACKENDU
-      marker.on('click', () => {
-        this.loadAndShowServiceDetails(pin.id, marker);
-      });
-    });
-
-    // Dopasowanie widoku do wszystkich markerów jeśli jest ich kilka
-    if (this.pins.length > 1) {
-      const group = new L.featureGroup(this.pins.map(pin => 
-        L.marker([pin.latitude, pin.longitude])
-      ));
-      this.map.fitBounds(group.getBounds().pad(0.1));
-    }
-  }
-
-  private loadAndShowServiceDetails(serviceId: number, marker: any): void {
-    // Pokaż loading popup
-    const loadingContent = `
-      <div class="loading-popup">
-        <div style="
-          border: 3px solid #f3f3f3;
-          border-radius: 50%;
-          border-top: 3px solid #3498db;
-          width: 30px;
-          height: 30px;
-          animation: spin 1s linear infinite;
-          margin: 0 auto 10px;
-        "></div>
-        <p>Ładowanie szczegółów serwisu...</p>
-      </div>
-    `;
     
-    marker.bindPopup(loadingContent, {
-      maxWidth: 300,
-      className: 'loading-popup-container'
-    }).openPopup();
+      validPins.forEach(pin => {
+        // DODAJ TEN LOG:
+        console.log('🔍 Pin data structure:', pin);
+        console.log('🔍 Pin properties:', Object.keys(pin));
+        
+        try {
+          const marker = L.marker([pin.latitude, pin.longitude], { icon: serviceIcon })
+            .addTo(this.map);
 
-    // 🎯 TUTAJ JEST UDERZENIE DO BACKENDU: GET /api/bike-services/{id}
-    this.mapService.getServiceDetails(serviceId).subscribe({
-      next: (serviceDetails) => {
-        if (serviceDetails) {
-          this.showServiceDetailsPopup(serviceDetails, marker);
-        } else {
-          this.showErrorPopup(marker, 'Nie znaleziono szczegółów serwisu');
+          this.markers.set(pin.id, marker);
+
+          marker.on('click', () => {
+            console.log('🔴 MARKER CLICKED! Pin object:', pin);
+            
+            // UŻYJ showSimplePopup zamiast loadAndShowServiceDetails:
+            this.showSimplePopup(pin, marker);
+          });
+        } catch (error) {
+          console.error(`Error adding marker for pin ${pin.id}:`, error);
         }
-      },
-      error: (error) => {
-        console.error('Error loading service details:', error);
-        this.showErrorPopup(marker, 'Nie udało się załadować szczegółów serwisu');
+      });
+
+  } catch (error) {
+    console.error(`Error adding marker for pin ${pin.id}:`, error);
+  }
+});
+
+    // Dopasuj widok jeśli jest więcej niż jeden marker
+    if (validPins.length > 1) {
+      try {
+        const group = new L.featureGroup(Array.from(this.markers.values()));
+        this.map.fitBounds(group.getBounds().pad(0.1));
+      } catch (error) {
+        console.error('Error fitting bounds:', error);
       }
-    });
+    }
+
+    console.log(`Added ${this.markers.size} markers to map`);
   }
 
-  private showServiceDetailsPopup(serviceDetails: any, marker: any): void {
-    // Funkcja pomocnicza do formatowania adresu
-    const formatAddress = (service: any): string => {
-      const parts = [];
-      if (service.street) parts.push(service.street);
-      if (service.building) parts.push(service.building);
-      if (service.flat) parts.push(`m. ${service.flat}`);
-      if (service.postalCode && service.city) {
-        parts.push(`${service.postalCode} ${service.city}`);
-      } else if (service.city) {
-        parts.push(service.city);
-      }
-      return parts.join(', ');
-    };
-
-    const fullAddress = formatAddress(serviceDetails);
-
+  /**
+   * Pokazuje prosty popup bez dodatkowych zapytań API
+   */
+  private showSimplePopup(pin: MapPin, marker: any): void {
     const popupContent = `
-      <div style="min-width: 280px; font-family: 'Segoe UI', Arial, sans-serif; max-width: 350px;">
-        <div style="
-          background: linear-gradient(135deg, #3498db, #2c3e50);
-          color: white;
-          padding: 15px;
-          margin: -10px -10px 15px -10px;
-          border-radius: 6px 6px 0 0;
-          text-align: center;
-        ">
-          <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600;">${serviceDetails.name}</h3>
-          ${serviceDetails.verified ? '<div style="margin-top: 5px; font-size: 0.8rem; opacity: 0.9;">✓ Zweryfikowany</div>' : ''}
-        </div>
-        
-        <div style="padding: 0 5px;">
-          ${fullAddress ? `
-            <div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
-              <div style="color: #3498db; margin-top: 2px; font-size: 1.1rem;">📍</div>
-              <div style="flex: 1;">
-                <div style="color: #2c3e50; font-size: 0.9rem; line-height: 1.4;">
-                  <strong>Adres:</strong><br>
-                  <span style="color: #555;">${fullAddress}</span>
-                </div>
-              </div>
-            </div>
-          ` : ''}
-          
-          ${serviceDetails.phoneNumber ? `
-            <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
-              <div style="color: #27ae60; font-size: 1.1rem;">📞</div>
-              <div style="flex: 1;">
-                <div style="color: #2c3e50; font-size: 0.9rem;">
-                  <strong>Telefon:</strong><br>
-                  <a href="tel:${serviceDetails.phoneNumber}" style="color: #27ae60; text-decoration: none; font-weight: 500;">${serviceDetails.phoneNumber}</a>
-                </div>
-              </div>
-            </div>
-          ` : ''}
-
-          ${serviceDetails.businessPhone ? `
-            <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
-              <div style="color: #27ae60; font-size: 1.1rem;">☎️</div>
-              <div style="flex: 1;">
-                <div style="color: #2c3e50; font-size: 0.9rem;">
-                  <strong>Tel. służbowy:</strong><br>
-                  <a href="tel:${serviceDetails.businessPhone}" style="color: #27ae60; text-decoration: none; font-weight: 500;">${serviceDetails.businessPhone}</a>
-                </div>
-              </div>
-            </div>
-          ` : ''}
-          
-          ${serviceDetails.email ? `
-            <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
-              <div style="color: #e67e22; font-size: 1.1rem;">✉️</div>
-              <div style="flex: 1;">
-                <div style="color: #2c3e50; font-size: 0.9rem;">
-                  <strong>Email:</strong><br>
-                  <a href="mailto:${serviceDetails.email}" style="color: #e67e22; text-decoration: none; font-weight: 500;">${serviceDetails.email}</a>
-                </div>
-              </div>
-            </div>
-          ` : ''}
-          
-          ${serviceDetails.description ? `
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ecf0f1;">
-              <div style="color: #2c3e50; font-size: 0.9rem;">
-                <strong>Opis:</strong>
-              </div>
-              <div style="color: #7f8c8d; font-size: 0.85rem; line-height: 1.4; margin-top: 5px; font-style: italic;">
-                ${serviceDetails.description}
-              </div>
-            </div>
-          ` : ''}
-
-          <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ecf0f1; text-align: center;">
-            <div style="display: flex; gap: 8px; justify-content: center;">
-              ${serviceDetails.phoneNumber ? `
-                <a href="tel:${serviceDetails.phoneNumber}" style="
-                  background: linear-gradient(135deg, #27ae60, #219a52);
-                  color: white;
-                  border: none;
-                  padding: 8px 12px;
-                  border-radius: 15px;
-                  text-decoration: none;
-                  font-size: 0.8rem;
-                  font-weight: 500;
-                  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 5px;
-                ">📞 Zadzwoń</a>
-              ` : ''}
-              
-              ${serviceDetails.email ? `
-                <a href="mailto:${serviceDetails.email}" style="
-                  background: linear-gradient(135deg, #e67e22, #d35400);
-                  color: white;
-                  border: none;
-                  padding: 8px 12px;
-                  border-radius: 15px;
-                  text-decoration: none;
-                  font-size: 0.8rem;
-                  font-weight: 500;
-                  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 5px;
-                ">✉️ Email</a>
-              ` : ''}
-            </div>
-          </div>
-        </div>
+      <div style="font-family: Arial, sans-serif; min-width: 200px;">
+        <h4 style="margin: 0 0 10px 0; color: #333;">${pin.name}</h4>
+        ${pin.address ? `<p style="margin: 5px 0; color: #666;"><strong>Adres:</strong> ${pin.address}</p>` : ''}
+        ${pin.phoneNumber ? `<p style="margin: 5px 0;"><strong>Telefon:</strong> <a href="tel:${pin.phoneNumber}" style="color: #27ae60;">${pin.phoneNumber}</a></p>` : ''}
+        ${pin.email ? `<p style="margin: 5px 0;"><strong>Email:</strong> <a href="mailto:${pin.email}" style="color: #e67e22;">${pin.email}</a></p>` : ''}
+        ${pin.description ? `<p style="margin: 10px 0 0 0; color: #666; font-size: 0.9em;">${pin.description}</p>` : ''}
       </div>
     `;
 
     marker.bindPopup(popupContent, {
-      maxWidth: 400,
-      className: 'service-details-popup'
+      maxWidth: 300,
+      className: 'simple-service-popup'
     }).openPopup();
   }
 
-  private showErrorPopup(marker: any, errorMessage: string): void {
-    const errorContent = `
-      <div class="error-popup">
-        <div style="color: #e74c3c; font-size: 2rem; margin-bottom: 10px;">⚠️</div>
-        <p>${errorMessage}</p>
-        <button onclick="this.closest('.leaflet-popup').style.display='none'" style="
-          background-color: #e74c3c;
-          color: white;
-          border: none;
-          padding: 6px 12px;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 0.9rem;
-          margin-top: 10px;
-        ">Zamknij</button>
-      </div>
-    `;
+  /**
+   * Metoda do ponownego ładowania mapy
+   */
+  retryMapLoad(): void {
+    this.mapError = false;
+    this.loading = true;
+    this.mapVisible = false;
+    this.destroyMap();
+    this.initializationPromise = null;
     
-    marker.bindPopup(errorContent, {
-      maxWidth: 250,
-      className: 'error-popup-container'
-    }).openPopup();
+    setTimeout(() => {
+      this.initializeMapAsync();
+    }, 100);
+  }
+
+  /**
+   * Pokazuje mapę na żądanie (lazy loading)
+   */
+  showMap(): void {
+    if (!this.mapVisible && !this.loading && !this.mapError) {
+      this.loading = true;
+      this.initializeMapAsync();
+    }
   }
 }

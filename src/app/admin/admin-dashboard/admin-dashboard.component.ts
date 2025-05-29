@@ -90,16 +90,18 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
   
-  navigateToModule(module: string): void {
-    // Navigate to admin submodules
-    if (module === 'orders') {
-      this.router.navigate(['/service-orders']);
-    } else if (module === 'packages') {
-      this.router.navigate(['/admin-service-packages']);
-    } else {
-      this.notificationService.info(`Moduł ${module} jest w przygotowaniu`);
-    }
+navigateToModule(module: string): void {
+  // Navigate to admin submodules
+  if (module === 'orders') {
+    this.router.navigate(['/service-orders']);
+  } else if (module === 'packages') {
+    this.router.navigate(['/admin-service-packages']);
+  } else if (module === 'services') {
+    this.router.navigate(['/admin-bike-services']);
+  } else {
+    this.notificationService.info(`Moduł ${module} jest w przygotowaniu`);
   }
+}
   
   // Navigate to enumerations manager
   navigateToEnumerationsManager(): void {

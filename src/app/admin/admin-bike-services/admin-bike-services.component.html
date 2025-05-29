@@ -1,0 +1,493 @@
+<div class="bike-services-container">
+  <div class="header">
+    <h1>Zarządzanie Serwisami Rowerowymi</h1>
+    <button class="back-btn" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Wróć do panelu
+    </button>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Ładowanie serwisów rowerowych...</p>
+  </div>
+  
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+  
+  <ng-container *ngIf="!loading && !error">
+    <div class="content-container">
+      <!-- Lista serwisów (lewa kolumna) -->
+      <div class="services-sidebar">
+        <div class="sidebar-header">
+          <h2>Serwisy rowerowe</h2>
+          <div class="header-actions">
+            <button class="import-btn" (click)="openImportDialog()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14,2 14,8 20,8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10,9 9,9 8,9"></polyline>
+              </svg>
+              Import CSV
+            </button>
+            <button class="add-service-btn" (click)="startAddingNew()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Dodaj nowy
+            </button>
+          </div>
+        </div>
+        
+        <!-- Filtry -->
+        <div class="filters-section">
+          <div class="search-filter">
+            <input 
+              type="text" 
+              placeholder="Szukaj serwisów..."
+              (input)="onSearch($event)"
+              class="search-input"
+            >
+          </div>
+          
+          <div class="status-filter">
+            <select (change)="onStatusFilterChange($event)" class="status-select">
+              <option value="all">Wszystkie</option>
+              <option value="active">Aktywne</option>
+              <option value="inactive">Nieaktywne</option>
+              <option value="verified">Zweryfikowane</option>
+              <option value="unverified">Niezweryfikowane</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="services-list">
+          <div *ngIf="filteredServices.length === 0" class="no-services-message">
+            Brak serwisów spełniających kryteria.
+          </div>
+          
+          <div
+            *ngFor="let service of filteredServices"
+            class="service-item"
+            [class.active]="selectedService?.id === service.id"
+            [class.inactive]="!service.active"
+            [class.unverified]="!service.verified"
+            (click)="selectService(service)"
+          >
+            <div class="service-item-header">
+              <span class="service-name">{{ service.name }}</span>
+              <div class="service-badges">
+                <span class="badge verified" *ngIf="service.verified">✓</span>
+                <span class="badge active" *ngIf="service.active">Aktywny</span>
+                <span class="badge inactive" *ngIf="!service.active">Nieaktywny</span>
+              </div>
+            </div>
+            <div class="service-city">{{ service.city }}</div>
+            <div class="service-email">{{ service.email }}</div>
+          </div>
+        </div>
+        
+        <div class="services-count">
+          Wyświetlone: {{ filteredServices.length }} z {{ bikeServices.length }} serwisów
+        </div>
+      </div>
+      
+      <!-- Szczegóły serwisu lub formularz edycji (prawa kolumna) -->
+      <div class="service-details-container">
+        <!-- Widok szczegółów serwisu -->
+        <div *ngIf="selectedService && !isEditing && !isAddingNew" class="service-details">
+          <div class="details-header">
+            <h2>{{ selectedService.name }}</h2>
+            <div class="header-actions">
+              <button class="edit-btn" (click)="startEditing()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edytuj
+              </button>
+              <button 
+                class="toggle-btn" 
+                [ngClass]="{'activate-btn': !selectedService.active, 'deactivate-btn': selectedService.active}"
+                (click)="toggleServiceStatus(selectedService.id, selectedService.active)"
+              >
+                {{ selectedService.active ? 'Dezaktywuj' : 'Aktywuj' }}
+              </button>
+              <button class="delete-btn" (click)="deleteService(selectedService.id)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
+                Usuń
+              </button>
+            </div>
+          </div>
+          
+          <div class="status-badges">
+            <span class="status-badge verified" *ngIf="selectedService.verified">Zweryfikowany</span>
+            <span class="status-badge unverified" *ngIf="!selectedService.verified">Niezweryfikowany</span>
+            <span class="status-badge active" *ngIf="selectedService.active">Aktywny</span>
+            <span class="status-badge inactive" *ngIf="!selectedService.active">Nieaktywny</span>
+          </div>
+          
+          <div class="details-section">
+            <h3>Informacje kontaktowe</h3>
+            <div class="detail-row">
+              <div class="detail-label">Email:</div>
+              <div class="detail-value">{{ selectedService.email }}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Telefon:</div>
+              <div class="detail-value">{{ selectedService.phoneNumber }}</div>
+            </div>
+            <div class="detail-row" *ngIf="selectedService.businessPhone">
+              <div class="detail-label">Telefon służbowy:</div>
+              <div class="detail-value">{{ selectedService.businessPhone }}</div>
+            </div>
+          </div>
+          
+          <div class="details-section">
+            <h3>Adres</h3>
+            <div class="detail-row">
+              <div class="detail-label">Pełny adres:</div>
+              <div class="detail-value">{{ getFullAddress(selectedService) }}</div>
+            </div>
+            <div class="detail-row" *ngIf="selectedService.latitude && selectedService.longitude">
+              <div class="detail-label">Współrzędne:</div>
+              <div class="detail-value">{{ selectedService.latitude }}, {{ selectedService.longitude }}</div>
+            </div>
+          </div>
+          
+          <div class="details-section" *ngIf="selectedService.description">
+            <h3>Opis</h3>
+            <div class="description">{{ selectedService.description }}</div>
+          </div>
+          
+          <div class="details-section">
+            <h3>Informacje systemowe</h3>
+            <div class="detail-row">
+              <div class="detail-label">Data utworzenia:</div>
+              <div class="detail-value">{{ formatDate(selectedService.createdAt) }}</div>
+            </div>
+            <div class="detail-row" *ngIf="selectedService.lastModifiedAt">
+              <div class="detail-label">Ostatnia modyfikacja:</div>
+              <div class="detail-value">{{ formatDate(selectedService.lastModifiedAt) }}</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Formularz dodawania/edycji serwisu -->
+        <div *ngIf="isEditing || isAddingNew" class="service-edit-form">
+          <h2>{{ isAddingNew ? 'Dodaj nowy serwis' : 'Edytuj serwis' }}</h2>
+          
+          <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
+            <div class="form-section">
+              <h3>Podstawowe informacje</h3>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="name">Nazwa serwisu*</label>
+                  <input 
+                    type="text" 
+                    id="name" 
+                    formControlName="name" 
+                    [class.is-invalid]="isFieldInvalid('name')"
+                  >
+                  <div *ngIf="isFieldInvalid('name')" class="error-message">
+                    Nazwa serwisu jest wymagana (2-100 znaków)
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="email">Email*</label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    formControlName="email" 
+                    [class.is-invalid]="isFieldInvalid('email')"
+                  >
+                  <div *ngIf="isFieldInvalid('email')" class="error-message">
+                    Podaj poprawny adres email
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="phoneNumber">Telefon*</label>
+                  <input 
+                    type="tel" 
+                    id="phoneNumber" 
+                    formControlName="phoneNumber" 
+                    [class.is-invalid]="isFieldInvalid('phoneNumber')"
+                    placeholder="123456789"
+                  >
+                  <div *ngIf="isFieldInvalid('phoneNumber')" class="error-message">
+                    Podaj poprawny numer telefonu (9 cyfr)
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="businessPhone">Telefon służbowy</label>
+                  <input 
+                    type="tel" 
+                    id="businessPhone" 
+                    formControlName="businessPhone" 
+                    [class.is-invalid]="isFieldInvalid('businessPhone')"
+                    placeholder="123456789"
+                  >
+                  <div *ngIf="isFieldInvalid('businessPhone')" class="error-message">
+                    Podaj poprawny numer telefonu (9 cyfr)
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-section">
+              <h3>Adres</h3>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="street">Ulica*</label>
+                  <input 
+                    type="text" 
+                    id="street" 
+                    formControlName="street" 
+                    [class.is-invalid]="isFieldInvalid('street')"
+                  >
+                  <div *ngIf="isFieldInvalid('street')" class="error-message">
+                    Ulica jest wymagana
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="building">Numer budynku*</label>
+                  <input 
+                    type="text" 
+                    id="building" 
+                    formControlName="building" 
+                    [class.is-invalid]="isFieldInvalid('building')"
+                  >
+                  <div *ngIf="isFieldInvalid('building')" class="error-message">
+                    Numer budynku jest wymagany
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="flat">Numer mieszkania</label>
+                  <input 
+                    type="text" 
+                    id="flat" 
+                    formControlName="flat"
+                  >
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="postalCode">Kod pocztowy</label>
+                  <input 
+                    type="text" 
+                    id="postalCode" 
+                    formControlName="postalCode" 
+                    [class.is-invalid]="isFieldInvalid('postalCode')"
+                    placeholder="12-345"
+                  >
+                  <div *ngIf="isFieldInvalid('postalCode')" class="error-message">
+                    Podaj poprawny kod pocztowy (12-345)
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="city">Miasto*</label>
+                  <input 
+                    type="text" 
+                    id="city" 
+                    formControlName="city" 
+                    [class.is-invalid]="isFieldInvalid('city')"
+                  >
+                  <div *ngIf="isFieldInvalid('city')" class="error-message">
+                    Miasto jest wymagane
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-section">
+              <h3>Lokalizacja (opcjonalnie)</h3>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="latitude">Szerokość geograficzna</label>
+                  <input 
+                    type="number" 
+                    id="latitude" 
+                    formControlName="latitude" 
+                    [class.is-invalid]="isFieldInvalid('latitude')"
+                    step="0.000001"
+                    placeholder="50.064650"
+                  >
+                  <div *ngIf="isFieldInvalid('latitude')" class="error-message">
+                    Podaj poprawną szerokość geograficzną (-90 do 90)
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="longitude">Długość geograficzna</label>
+                  <input 
+                    type="number" 
+                    id="longitude" 
+                    formControlName="longitude" 
+                    [class.is-invalid]="isFieldInvalid('longitude')"
+                    step="0.000001"
+                    placeholder="19.945000"
+                  >
+                  <div *ngIf="isFieldInvalid('longitude')" class="error-message">
+                    Podaj poprawną długość geograficzną (-180 do 180)
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-section">
+              <h3>Dodatkowe informacje</h3>
+              
+              <div class="form-group">
+                <label for="description">Opis serwisu</label>
+                <textarea 
+                  id="description" 
+                  formControlName="description" 
+                  [class.is-invalid]="isFieldInvalid('description')"
+                  rows="4"
+                  placeholder="Opis usług oferowanych przez serwis"
+                ></textarea>
+                <div *ngIf="isFieldInvalid('description')" class="error-message">
+                  Opis nie może przekraczać 1000 znaków
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group checkbox-group">
+                  <label for="verified" class="checkbox-label">
+                    <input type="checkbox" id="verified" formControlName="verified">
+                    Serwis zweryfikowany
+                  </label>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                  <label for="active" class="checkbox-label">
+                    <input type="checkbox" id="active" formControlName="active">
+                    Serwis aktywny
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="cancel-btn" (click)="cancelEdit()">Anuluj</button>
+              <button type="submit" class="save-btn" [disabled]="serviceForm.invalid || saving">
+                {{ saving ? 'Zapisywanie...' : 'Zapisz serwis' }}
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Placeholder gdy nie wybrano serwisu -->
+        <div *ngIf="!selectedService && !isAddingNew" class="no-selection-message">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+          <h3>Wybierz serwis z listy</h3>
+          <p>lub</p>
+          <button class="primary-btn" (click)="startAddingNew()">Dodaj nowy serwis</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  
+  <!-- Dialog importu CSV -->
+  <div class="modal-overlay" *ngIf="showImportDialogFlag" (click)="closeImportDialog()">
+    <div class="import-dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h3>Import serwisów z pliku CSV</h3>
+        <button class="close-btn" (click)="closeImportDialog()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="dialog-content">
+        <div class="file-upload-section">
+          <p class="upload-description">
+            Wybierz plik CSV z danymi serwisów. Plik powinien zawierać kolumny: name, street, building, city, phoneNumber, email.
+          </p>
+          
+          <div class="file-input-wrapper">
+            <input 
+              type="file" 
+              id="csvFile" 
+              accept=".csv"
+              (change)="onFileSelected($event)"
+              class="file-input"
+            >
+            <label for="csvFile" class="file-input-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14,2 14,8 20,8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              {{ selectedFile ? selectedFile.name : 'Wybierz plik CSV' }}
+            </label>
+          </div>
+          
+          <div class="file-info" *ngIf="selectedFile">
+            <p><strong>Plik:</strong> {{ selectedFile.name }}</p>
+            <p><strong>Rozmiar:</strong> {{ (selectedFile.size / 1024).toFixed(1) }} KB</p>
+          </div>
+        </div>
+        
+        <div class="csv-format-info">
+          <h4>Format pliku CSV:</h4>
+          <div class="format-example">
+            <code>
+              name,street,building,city,phoneNumber,email<br>
+              "Serwis Rowerowy ABC",Floriańska,10,Kraków,123456789,abc{{'@'}}example.com<br>
+              "Bike Service XYZ",Kazimierza,25,Kraków,987654321,xyz{{'@'}}example.com
+            </code>
+          </div>
+          <ul class="format-notes">
+            <li>Plik musi być w formacie CSV z separatorem przecinek</li>
+            <li>Pierwsza linia powinna zawierać nagłówki kolumn</li>
+            <li>Kolumny opcjonalne: flat, postalCode, businessPhone, description, latitude, longitude</li>
+            <li>Maksymalny rozmiar pliku: 10MB</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="dialog-actions">
+        <button class="cancel-btn" (click)="closeImportDialog()" [disabled]="isImporting">
+          Anuluj
+        </button>
+        <button 
+          class="import-btn" 
+          (click)="importFromCsv()" 
+          [disabled]="!selectedFile || isImporting"
+        >
+          {{ isImporting ? 'Importowanie...' : 'Importuj' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

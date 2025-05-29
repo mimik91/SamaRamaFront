@@ -13,6 +13,7 @@ import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard
 import { AdminServiceOrdersComponent } from './admin/admin-orders/admin-service-orders.component';
 import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/admin-enumerations-manager.component';
 import { AdminServicePackagesComponent } from './admin/admin-service-packages/admin-service-package.component';
+import { AdminBikeServicesComponent } from './admin/admin-bike-services/admin-bike-services.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
 import { ServiceOrderDetailsComponent } from './service-orders/service-order-details/service-order-details.component';
@@ -62,6 +63,7 @@ export const routes: Routes = [
     {path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard]},
     {path: 'admin-service-packages', component: AdminServicePackagesComponent, canActivate: [adminGuard]},
     {path: 'admin-service-slots', component: AdminServiceSlotsComponent, canActivate: [adminGuard]},
+    {path: 'admin-bike-services', component: AdminBikeServicesComponent, canActivate: [adminGuard]},
     
     // Account route - dostępna dla zalogowanych użytkowników
     {path: 'account', component: AccountComponent, canActivate: [authGuard]},

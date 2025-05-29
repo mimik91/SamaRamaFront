@@ -1,0 +1,21 @@
+<!-- src/app/shared/services-map/services-map.component.html -->
+<div class="map-container">
+  <div class="map-header">
+    <h3>Serwisy rowerowe w Krakowie</h3>
+    <p class="map-description">Znajdź najbliższy serwis rowerowy</p>
+  </div>
+  
+  <div #mapContainer class="map-wrapper" id="services-map">
+    <div *ngIf="!isBrowser || loading" class="map-placeholder">
+      <div class="loading-spinner" *ngIf="loading"></div>
+      <p *ngIf="loading">Ładowanie mapy...</p>
+      <p *ngIf="!isBrowser">Mapa będzie dostępna po załadowaniu strony</p>
+    </div>
+  </div>
+  
+  <div class="map-info" *ngIf="pins.length > 0">
+    <p class="services-count">
+      <strong>{{ pins.length }}</strong> {{ pins.length === 1 ? 'serwis' : 'serwisów' }} w okolicy
+    </p>
+  </div>
+</div>

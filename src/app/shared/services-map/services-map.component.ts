@@ -10,135 +10,15 @@ declare var L: any;
   selector: 'app-services-map',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="map-container">
-      <div class="map-header">
-        <h3>Serwisy rowerowe w Krakowie</h3>
-        <p class="map-description">Znajdź najbliższy serwis rowerowy</p>
-      </div>
-      
-      <div #mapContainer class="map-wrapper" id="services-map">
-        <div *ngIf="!isBrowser || loading" class="map-placeholder">
-          <div class="loading-spinner" *ngIf="loading"></div>
-          <p *ngIf="loading">Ładowanie mapy...</p>
-          <p *ngIf="!isBrowser">Mapa będzie dostępna po załadowaniu strony</p>
-        </div>
-      </div>
-      
-      <div class="map-info" *ngIf="pins.length > 0">
-        <p class="services-count">
-          <strong>{{ pins.length }}</strong> {{ pins.length === 1 ? 'serwis' : 'serwisów' }} w okolicy
-        </p>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .map-container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-    }
-    
-    .map-header {
-      padding: 20px;
-      background-color: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      text-align: center;
-    }
-    
-    .map-header h3 {
-      margin: 0 0 8px 0;
-      color: #2c3e50;
-      font-size: 1.4rem;
-      font-weight: 600;
-    }
-    
-    .map-description {
-      margin: 0;
-      color: #64748b;
-      font-size: 1rem;
-    }
-    
-    .map-wrapper {
-      position: relative;
-      height: 450px;
-      width: 100%;
-    }
-    
-    .map-placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      background-color: #f1f5f9;
-      color: #64748b;
-    }
-    
-    .loading-spinner {
-      border: 4px solid #f3f3f3;
-      border-radius: 50%;
-      border-top: 4px solid #3498db;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 15px;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .map-info {
-      padding: 15px 20px;
-      background-color: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      text-align: center;
-    }
-    
-    .services-count {
-      margin: 0;
-      color: #475569;
-      font-size: 0.95rem;
-    }
-    
-    /* Responsive design */
-    @media screen and (max-width: 768px) {
-      .map-container {
-        border-radius: 0;
-        margin: 0 -20px;
-      }
-      
-      .map-wrapper {
-        height: 350px;
-      }
-      
-      .map-header {
-        padding: 15px;
-      }
-      
-      .map-header h3 {
-        font-size: 1.2rem;
-      }
-    }
-    
-    @media screen and (max-width: 480px) {
-      .map-wrapper {
-        height: 300px;
-      }
-    }
-  `]
+  templateUrl: './services-map.component.html',
+  styleUrls: ['./services-map.component.css']
 })
 export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   
   private map: any;
-  isBrowser: boolean; // Zmienione z private na public
+  private markers: Map<number, any> = new Map(); // Przechowywanie markerów
+  isBrowser: boolean;
   pins: MapPin[] = [];
   loading = true;
   
@@ -265,30 +145,45 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
   private addPinsToMap(): void {
     if (!this.map || !this.pins.length) return;
 
-    // Niestandardowa ikona dla serwisów
+    // Niestandardowa ikona pinezki - bardziej realistyczna i mniejsza
     const serviceIcon = L.divIcon({
       className: 'custom-service-marker',
       html: `
         <div style="
-          background-color: #3498db;
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          border: 3px solid white;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: bold;
-          font-size: 12px;
+          position: relative;
+          width: 24px;
+          height: 32px;
         ">
-          🔧
+          <div style="
+            background-color: #e74c3c;
+            width: 24px;
+            height: 24px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            position: absolute;
+            top: 0;
+            left: 0;
+          "></div>
+          <div style="
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(45deg);
+            color: white;
+            font-size: 10px;
+          ">🔧</div>
         </div>
       `,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18],
-      popupAnchor: [0, -18]
+      iconSize: [24, 32],
+      iconAnchor: [12, 32],
+      popupAnchor: [0, -32]
     });
 
     // Dodanie markera dla każdego serwisu
@@ -296,27 +191,13 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
       const marker = L.marker([pin.latitude, pin.longitude], { icon: serviceIcon })
         .addTo(this.map);
 
-      // Popup z informacjami o serwisie
-      const popupContent = `
-        <div style="min-width: 200px;">
-          <h4 style="margin: 0 0 8px 0; color: #2c3e50;">${pin.name}</h4>
-          ${pin.address ? `<p style="margin: 4px 0; color: #64748b; font-size: 0.9rem;"><strong>Adres:</strong> ${pin.address}</p>` : ''}
-          ${pin.description ? `<p style="margin: 4px 0; color: #64748b; font-size: 0.9rem;">${pin.description}</p>` : ''}
-          <div style="margin-top: 10px; text-align: center;">
-            <button onclick="window.showServiceDetails(${pin.id})" style="
-              background-color: #3498db;
-              color: white;
-              border: none;
-              padding: 6px 12px;
-              border-radius: 4px;
-              cursor: pointer;
-              font-size: 0.9rem;
-            ">Zobacz szczegóły</button>
-          </div>
-        </div>
-      `;
+      // Przechowuj marker w mapie dla łatwego dostępu
+      this.markers.set(pin.id, marker);
 
-      marker.bindPopup(popupContent);
+      // Obsługa kliknięcia w marker - TUTAJ JEST UDERZENIE DO BACKENDU
+      marker.on('click', () => {
+        this.loadAndShowServiceDetails(pin.id, marker);
+      });
     });
 
     // Dopasowanie widoku do wszystkich markerów jeśli jest ich kilka
@@ -326,27 +207,205 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
       ));
       this.map.fitBounds(group.getBounds().pad(0.1));
     }
-
-    // Globalna funkcja do pokazywania szczegółów serwisu
-    (window as any).showServiceDetails = (serviceId: number) => {
-      this.showServiceDetails(serviceId);
-    };
   }
 
-  private showServiceDetails(serviceId: number): void {
+  private loadAndShowServiceDetails(serviceId: number, marker: any): void {
+    // Pokaż loading popup
+    const loadingContent = `
+      <div class="loading-popup">
+        <div style="
+          border: 3px solid #f3f3f3;
+          border-radius: 50%;
+          border-top: 3px solid #3498db;
+          width: 30px;
+          height: 30px;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 10px;
+        "></div>
+        <p>Ładowanie szczegółów serwisu...</p>
+      </div>
+    `;
+    
+    marker.bindPopup(loadingContent, {
+      maxWidth: 300,
+      className: 'loading-popup-container'
+    }).openPopup();
+
+    // 🎯 TUTAJ JEST UDERZENIE DO BACKENDU: GET /api/bike-services/{id}
     this.mapService.getServiceDetails(serviceId).subscribe({
-      next: (details) => {
-        if (details) {
-          // Tutaj możesz dodać logikę pokazywania szczegółów
-          // np. modal, przekierowanie, itp.
-          console.log('Service details:', details);
-          this.notificationService.info(`Szczegóły serwisu: ${details.name}`);
+      next: (serviceDetails) => {
+        if (serviceDetails) {
+          this.showServiceDetailsPopup(serviceDetails, marker);
+        } else {
+          this.showErrorPopup(marker, 'Nie znaleziono szczegółów serwisu');
         }
       },
       error: (error) => {
         console.error('Error loading service details:', error);
-        this.notificationService.error('Nie udało się załadować szczegółów serwisu');
+        this.showErrorPopup(marker, 'Nie udało się załadować szczegółów serwisu');
       }
     });
+  }
+
+  private showServiceDetailsPopup(serviceDetails: any, marker: any): void {
+    // Funkcja pomocnicza do formatowania adresu
+    const formatAddress = (service: any): string => {
+      const parts = [];
+      if (service.street) parts.push(service.street);
+      if (service.building) parts.push(service.building);
+      if (service.flat) parts.push(`m. ${service.flat}`);
+      if (service.postalCode && service.city) {
+        parts.push(`${service.postalCode} ${service.city}`);
+      } else if (service.city) {
+        parts.push(service.city);
+      }
+      return parts.join(', ');
+    };
+
+    const fullAddress = formatAddress(serviceDetails);
+
+    const popupContent = `
+      <div style="min-width: 280px; font-family: 'Segoe UI', Arial, sans-serif; max-width: 350px;">
+        <div style="
+          background: linear-gradient(135deg, #3498db, #2c3e50);
+          color: white;
+          padding: 15px;
+          margin: -10px -10px 15px -10px;
+          border-radius: 6px 6px 0 0;
+          text-align: center;
+        ">
+          <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600;">${serviceDetails.name}</h3>
+          ${serviceDetails.verified ? '<div style="margin-top: 5px; font-size: 0.8rem; opacity: 0.9;">✓ Zweryfikowany</div>' : ''}
+        </div>
+        
+        <div style="padding: 0 5px;">
+          ${fullAddress ? `
+            <div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+              <div style="color: #3498db; margin-top: 2px; font-size: 1.1rem;">📍</div>
+              <div style="flex: 1;">
+                <div style="color: #2c3e50; font-size: 0.9rem; line-height: 1.4;">
+                  <strong>Adres:</strong><br>
+                  <span style="color: #555;">${fullAddress}</span>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+          
+          ${serviceDetails.phoneNumber ? `
+            <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+              <div style="color: #27ae60; font-size: 1.1rem;">📞</div>
+              <div style="flex: 1;">
+                <div style="color: #2c3e50; font-size: 0.9rem;">
+                  <strong>Telefon:</strong><br>
+                  <a href="tel:${serviceDetails.phoneNumber}" style="color: #27ae60; text-decoration: none; font-weight: 500;">${serviceDetails.phoneNumber}</a>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          ${serviceDetails.businessPhone ? `
+            <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+              <div style="color: #27ae60; font-size: 1.1rem;">☎️</div>
+              <div style="flex: 1;">
+                <div style="color: #2c3e50; font-size: 0.9rem;">
+                  <strong>Tel. służbowy:</strong><br>
+                  <a href="tel:${serviceDetails.businessPhone}" style="color: #27ae60; text-decoration: none; font-weight: 500;">${serviceDetails.businessPhone}</a>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+          
+          ${serviceDetails.email ? `
+            <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+              <div style="color: #e67e22; font-size: 1.1rem;">✉️</div>
+              <div style="flex: 1;">
+                <div style="color: #2c3e50; font-size: 0.9rem;">
+                  <strong>Email:</strong><br>
+                  <a href="mailto:${serviceDetails.email}" style="color: #e67e22; text-decoration: none; font-weight: 500;">${serviceDetails.email}</a>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+          
+          ${serviceDetails.description ? `
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ecf0f1;">
+              <div style="color: #2c3e50; font-size: 0.9rem;">
+                <strong>Opis:</strong>
+              </div>
+              <div style="color: #7f8c8d; font-size: 0.85rem; line-height: 1.4; margin-top: 5px; font-style: italic;">
+                ${serviceDetails.description}
+              </div>
+            </div>
+          ` : ''}
+
+          <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ecf0f1; text-align: center;">
+            <div style="display: flex; gap: 8px; justify-content: center;">
+              ${serviceDetails.phoneNumber ? `
+                <a href="tel:${serviceDetails.phoneNumber}" style="
+                  background: linear-gradient(135deg, #27ae60, #219a52);
+                  color: white;
+                  border: none;
+                  padding: 8px 12px;
+                  border-radius: 15px;
+                  text-decoration: none;
+                  font-size: 0.8rem;
+                  font-weight: 500;
+                  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 5px;
+                ">📞 Zadzwoń</a>
+              ` : ''}
+              
+              ${serviceDetails.email ? `
+                <a href="mailto:${serviceDetails.email}" style="
+                  background: linear-gradient(135deg, #e67e22, #d35400);
+                  color: white;
+                  border: none;
+                  padding: 8px 12px;
+                  border-radius: 15px;
+                  text-decoration: none;
+                  font-size: 0.8rem;
+                  font-weight: 500;
+                  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 5px;
+                ">✉️ Email</a>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    marker.bindPopup(popupContent, {
+      maxWidth: 400,
+      className: 'service-details-popup'
+    }).openPopup();
+  }
+
+  private showErrorPopup(marker: any, errorMessage: string): void {
+    const errorContent = `
+      <div class="error-popup">
+        <div style="color: #e74c3c; font-size: 2rem; margin-bottom: 10px;">⚠️</div>
+        <p>${errorMessage}</p>
+        <button onclick="this.closest('.leaflet-popup').style.display='none'" style="
+          background-color: #e74c3c;
+          color: white;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          margin-top: 10px;
+        ">Zamknij</button>
+      </div>
+    `;
+    
+    marker.bindPopup(errorContent, {
+      maxWidth: 250,
+      className: 'error-popup-container'
+    }).openPopup();
   }
 }

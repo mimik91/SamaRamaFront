@@ -61,13 +61,9 @@ export const routes: Routes = [
     { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
     
     // Admin Orders Routes - POPRAWIONE NAZWY
+    
     { path: 'admin-orders', component: AdminOrdersComponent, canActivate: [adminGuard], data: { prerender: false }, title: 'Zarządzanie Zamówieniami - Panel Administracyjny'},
-    { 
-        path: 'admin-orders/:id', 
-        component: AdminOrderDetailsComponent, 
-        canActivate: [adminGuard],
-        title: 'Szczegóły Zamówienia - Panel Administracyjny'
-    },
+    { path: 'admin-orders/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard], data: { prerender: false }, title: 'Szczegóły Zamówienia - Panel Administracyjny'},
     
     // Pozostałe admin routes
     { path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard] },

@@ -91,9 +91,8 @@ export class AdminDashboardComponent implements OnInit {
   }
   
 navigateToModule(module: string): void {
-  // Navigate to admin submodules
   if (module === 'orders') {
-    this.router.navigate(['/service-orders']);
+    this.router.navigate(['/admin-orders']); // ✅ POPRAWNA ŚCIEŻKA
   } else if (module === 'packages') {
     this.router.navigate(['/admin-service-packages']);
   } else if (module === 'services') {

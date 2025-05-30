@@ -28,7 +28,7 @@
       <ng-container *ngIf="authService.isLoggedIn() && authService.hasAdminPrivileges()">
         <a routerLink="/admin-dashboard" routerLinkActive="active" (click)="closeMobileMenu()">Dashboard</a>
         <a routerLink="/admin" routerLinkActive="active" (click)="closeMobileMenu()">Panel administracyjny</a>
-        <a routerLink="/service-orders" routerLinkActive="active" (click)="closeMobileMenu()">Zamówienia</a>
+        <a routerLink="/admin-orders" routerLinkActive="active" (click)="closeMobileMenu()">Zamówienia</a>
       </ng-container>
       
       <!-- Menu dla niezalogowanych -->

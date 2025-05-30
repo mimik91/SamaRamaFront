@@ -14,7 +14,7 @@
     "serve:ssr:SamaRama": "node dist/sama-rama/server/server.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,css}\"",
-    "heroku-postbuild": "ng build"
+    "heroku-postbuild": "ng build --configuration production --no-prerender"
   },
   "private": true,
   "dependencies": {

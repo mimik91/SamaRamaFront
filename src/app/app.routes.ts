@@ -63,7 +63,7 @@ export const routes: Routes = [
     // Admin Orders Routes - POPRAWIONE NAZWY
     
     { path: 'admin-orders', component: AdminOrdersComponent, canActivate: [adminGuard] },
-    { path: 'admin-orders/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard], data: { RenderMode: 'client' } },
+
 
     // Pozostałe admin routes
     { path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard] },

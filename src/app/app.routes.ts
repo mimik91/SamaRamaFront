@@ -10,6 +10,7 @@ import { BicycleFormComponent } from './bicycles/bicycle-form/bicycle-form.compo
 import { BicycleDetailsComponent } from './bicycles/bicycle-details/bicycle-details.component';
 import { ServiceOrderFormComponent } from './service-orders/service-order-form/service-order-form.component';
 import { GuestServiceOrderComponent } from './service-orders/guest-service-order/guest-service-order.component';
+import { TransportOrderFormComponent } from './transport-orders/transport-order-form.component';
 import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/admin-enumerations-manager.component';
@@ -17,7 +18,6 @@ import { AdminServicePackagesComponent } from './admin/admin-service-packages/ad
 import { AdminBikeServicesComponent } from './admin/admin-bike-services/admin-bike-services.component';
 import { AdminServiceSlotsComponent } from './admin/service-slots/admin-service-slots.component';
 import { AdminOrdersComponent } from './admin/admin-orders/admin-orders.component';
-import { AdminOrderDetailsComponent } from './admin/admin-orders/admin-order-details/admin-order-details.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
 import { ServiceOrderDetailsComponent } from './service-orders/service-order-details/service-order-details.component';
@@ -51,6 +51,8 @@ export const routes: Routes = [
     
     // Service order routes for clients
     { path: 'order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard] },
+    { path: 'order-transport', component: TransportOrderFormComponent, canActivate: [clientGuard] },
+
     { path: 'service-appointments/:id', component: ServiceOrderDetailsComponent, canActivate: [clientGuard], data: { RenderMode: 'client' } },
     // Keep the old route for backward compatibility
     { path: 'bicycles/:id/order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard] },

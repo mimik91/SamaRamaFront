@@ -302,7 +302,7 @@ export class GuestServiceOrderComponent implements OnInit {
     console.log('Sending order data:', orderData);
     
     // Wyślij dane do API
-   this.http.post(`${environment.apiUrl}/guest-orders`, orderData)
+   this.http.post(`${environment.apiUrl}/guest-orders/service`, orderData)
       .subscribe({
         next: (response: any) => {
           console.log('Order submission successful:', response);

@@ -5,73 +5,104 @@ import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../core/api-config';
 
 export interface TransportOrderRequest {
-  bicycleIds: number[];
+  bicycleIds?: number[]; // dla zalogowanych
+  bicycles?: Array<{ // dla gości
+    brand: string;
+    model: string;
+    additionalInfo?: string;
+  }>;
+  
+  // === TRANSPORT ===
   pickupDate: string;
   pickupAddress: string;
-  deliveryAddress: string;
   pickupLatitude?: number;
   pickupLongitude?: number;
+  
+  deliveryAddress?: string; // opcjonalne - może być z targetService
   deliveryLatitude?: number;
   deliveryLongitude?: number;
-  additionalNotes?: string;
-  targetServiceId?: number;
-  transportType: 'TO_SERVICE_ONLY' | 'SERVICE_WITH_TRANSPORT';
+  
+  targetServiceId: number; // zewnętrzny serwis
   transportPrice?: number;
+  
   pickupTimeFrom?: string;
   pickupTimeTo?: string;
   estimatedTime?: number;
   transportNotes?: string;
-  // Dodatkowe pola dla niezalogowanych użytkowników
+  additionalNotes?: string;
+  
+  // === DANE GOŚCI ===
   clientEmail?: string;
-  clientName?: string;
   clientPhone?: string;
-  bicyclesData?: Array<{
-    brand: string;
-    model: string;
-    type: string;
-    frameMaterial?: string;
-    description?: string;
-  }>;
+  clientName?: string;
+  city?: string;
+}
+
+export interface GuestTransportOrderRequest {
+  // USUNIĘTE - już nie potrzebne, używamy TransportOrderRequest
 }
 
 export interface TransportOrderResponse {
   id: number;
-  bicycleIds: number[];
+  orderType: string;
+  bicycleId?: number;
+  bicycleBrand?: string;
+  bicycleModel?: string;
   clientEmail: string;
+  clientPhone?: string;
+  clientName?: string;
   pickupDate: string;
   pickupAddress: string;
   deliveryAddress: string;
-  status: string;
-  transportType: string;
   price: number;
   orderDate: string;
   additionalNotes?: string;
-  targetServiceId?: number;
-  targetServiceName?: string;
-  estimatedPickupTime?: string;
-  actualPickupTime?: string;
-  estimatedDeliveryTime?: string;
-  actualDeliveryTime?: string;
-  transportNotes?: string;
+  status: string;
+  serviceNotes?: string;
+  lastModifiedBy?: string;
   lastModifiedDate?: string;
+}
+
+export interface BikeService {
+  id: number;
+  name: string;
+  street?: string;
+  city?: string;
+  latitude?: number;
+  longitude?: number;
+  phoneNumber?: string;
+  email?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class TransportOrderService {
-  private apiUrl = `${environment.apiUrl}/transport-orders`;
+  // URL zaktualizowany do ClientOrderController
+  private apiUrl = `${environment.apiUrl}/orders/transport`;
   private http = inject(HttpClient);
 
   constructor() { }
 
   /**
-   * Tworzy nowe zamówienie transportowe
+   * Tworzy nowe zamówienie transportowe (dla zalogowanych użytkowników)
    */
-  createTransportOrder(orderData: TransportOrderRequest): Observable<TransportOrderResponse> {
-    return this.http.post<TransportOrderResponse>(this.apiUrl, orderData).pipe(
+  createTransportOrder(orderData: TransportOrderRequest): Observable<any> {
+    return this.http.post<any>(this.apiUrl, orderData).pipe(
       catchError(error => {
         console.error('Error creating transport order:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Tworzy zamówienie transportowe dla gości (niezalogowani użytkownicy)
+   */
+  createGuestTransportOrder(orderData: TransportOrderRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/guest`, orderData).pipe(
+      catchError(error => {
+        console.error('Error creating guest transport order:', error);
         return throwError(() => error);
       })
     );
@@ -81,7 +112,7 @@ export class TransportOrderService {
    * Pobiera wszystkie zamówienia transportowe użytkownika
    */
   getUserTransportOrders(): Observable<TransportOrderResponse[]> {
-    return this.http.get<TransportOrderResponse[]>(`${this.apiUrl}/user`).pipe(
+    return this.http.get<TransportOrderResponse[]>(this.apiUrl).pipe(
       catchError(error => {
         console.error('Error fetching user transport orders:', error);
         return throwError(() => error);
@@ -104,8 +135,8 @@ export class TransportOrderService {
   /**
    * Aktualizuje zamówienie transportowe
    */
-  updateTransportOrder(orderId: number, orderData: Partial<TransportOrderRequest>): Observable<TransportOrderResponse> {
-    return this.http.put<TransportOrderResponse>(`${this.apiUrl}/${orderId}`, orderData).pipe(
+  updateTransportOrder(orderId: number, orderData: Partial<TransportOrderRequest>): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${orderId}`, orderData).pipe(
       catchError(error => {
         console.error(`Error updating transport order ${orderId}:`, error);
         return throwError(() => error);
@@ -116,8 +147,8 @@ export class TransportOrderService {
   /**
    * Anuluje zamówienie transportowe
    */
-  cancelTransportOrder(orderId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${orderId}`).pipe(
+  cancelTransportOrder(orderId: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${orderId}`).pipe(
       catchError(error => {
         console.error(`Error cancelling transport order ${orderId}:`, error);
         return throwError(() => error);
@@ -128,8 +159,8 @@ export class TransportOrderService {
   /**
    * Zmienia status zamówienia transportowego
    */
-  updateTransportOrderStatus(orderId: number, status: string): Observable<TransportOrderResponse> {
-    return this.http.patch<TransportOrderResponse>(`${this.apiUrl}/${orderId}/status`, { status }).pipe(
+  updateTransportOrderStatus(orderId: number, status: string): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${orderId}/status`, { status }).pipe(
       catchError(error => {
         console.error(`Error updating transport order ${orderId} status:`, error);
         return throwError(() => error);
@@ -138,134 +169,53 @@ export class TransportOrderService {
   }
 
   /**
-   * Pobiera dostępne statusy zamówień transportowych
+   * Pobiera dostępne serwisy dla transportu
    */
-  getAvailableStatuses(): Array<{value: string, label: string}> {
-    return [
-      { value: 'PENDING', label: 'Oczekujące' },
-      { value: 'CONFIRMED', label: 'Potwierdzone' },
-      { value: 'PICKED_UP', label: 'Odebrane' },
-      { value: 'IN_TRANSPORT', label: 'W transporcie' },
-      { value: 'DELIVERED_TO_SERVICE', label: 'Dostarczone do serwisu' },
-      { value: 'COMPLETED', label: 'Zakończone' },
-      { value: 'CANCELLED', label: 'Anulowane' }
-    ];
+  getAvailableServices(): Observable<BikeService[]> {
+    return this.http.get<BikeService[]>(`${this.apiUrl}/available-services`).pipe(
+      catchError(error => {
+        console.error('Error fetching available services:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
-   * Sprawdza czy zamówienie można edytować
+   * Pobiera szczegóły serwisu
    */
-  canEditOrder(order: TransportOrderResponse): boolean {
-    return ['PENDING', 'CONFIRMED'].includes(order.status);
+  getServiceDetails(serviceId: number): Observable<BikeService> {
+    return this.http.get<BikeService>(`${this.apiUrl}/service/${serviceId}`).pipe(
+      catchError(error => {
+        console.error(`Error fetching service ${serviceId} details:`, error);
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
-   * Sprawdza czy zamówienie można anulować
+   * Oblicza koszt transportu (TYLKO transport)
    */
-  canCancelOrder(order: TransportOrderResponse): boolean {
-    return ['PENDING', 'CONFIRMED'].includes(order.status);
+  calculateTransportCost(request: {
+    bicycleCount: number;
+    distance?: number;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/calculate-cost`, request).pipe(
+      catchError(error => {
+        console.error('Error calculating transport cost:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
-   * Formatuje status do wyświetlenia
+   * Pobiera dostępne statusy transportu
    */
-  getStatusDisplayName(status: string): string {
-    const statusMap: Record<string, string> = {
-      'PENDING': 'Oczekujące',
-      'CONFIRMED': 'Potwierdzone',
-      'PICKED_UP': 'Odebrane',
-      'IN_TRANSPORT': 'W transporcie',
-      'DELIVERED_TO_SERVICE': 'Dostarczone do serwisu',
-      'COMPLETED': 'Zakończone',
-      'CANCELLED': 'Anulowane'
-    };
-
-    return statusMap[status] || status;
-  }
-
-  /**
-   * Formatuje typ transportu do wyświetlenia
-   */
-  getTransportTypeDisplayName(type: string): string {
-    const typeMap: Record<string, string> = {
-      'TO_SERVICE_ONLY': 'Transport do serwisu',
-      'SERVICE_WITH_TRANSPORT': 'Serwis z transportem'
-    };
-
-    return typeMap[type] || type;
-  }
-
-  /**
-   * Oblicza szacowany koszt transportu
-   */
-  calculateEstimatedCost(bicycleCount: number): number {
-    const baseCost = 50; // Koszt bazowy za transport
-    const perBikeCost = 20; // Koszt za każdy dodatkowy rower
-    
-    if (bicycleCount === 0) return 0;
-    return baseCost + (bicycleCount - 1) * perBikeCost;
-  }
-
-  /**
-   * Waliduje dane zamówienia transportowego
-   */
-  validateTransportOrder(orderData: TransportOrderRequest): string[] {
-    const errors: string[] = [];
-
-    // Walidacja danych klienta (dla niezalogowanych)
-    if (orderData.clientEmail && !orderData.clientEmail.includes('@')) {
-      errors.push('Podaj poprawny adres email');
-    }
-
-    if (orderData.clientName && orderData.clientName.trim().length < 2) {
-      errors.push('Imię i nazwisko musi mieć co najmniej 2 znaki');
-    }
-
-    if (orderData.clientPhone && !/^\d{9}$/.test(orderData.clientPhone)) {
-      errors.push('Numer telefonu musi mieć 9 cyfr');
-    }
-
-    // Walidacja rowerów
-    if (orderData.bicyclesData && orderData.bicyclesData.length > 0) {
-      orderData.bicyclesData.forEach((bike, index) => {
-        if (!bike.brand || bike.brand.trim().length < 2) {
-          errors.push(`Rower ${index + 1}: Marka jest wymagana`);
-        }
-        if (!bike.model || bike.model.trim().length < 2) {
-          errors.push(`Rower ${index + 1}: Model jest wymagany`);
-        }
-        if (!bike.type) {
-          errors.push(`Rower ${index + 1}: Typ roweru jest wymagany`);
-        }
-      });
-    } else if (!orderData.bicycleIds || orderData.bicycleIds.length === 0) {
-      errors.push('Wybierz co najmniej jeden rower');
-    }
-
-    if (!orderData.pickupDate) {
-      errors.push('Data odbioru jest wymagana');
-    } else {
-      const pickupDate = new Date(orderData.pickupDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      if (pickupDate <= today) {
-        errors.push('Data odbioru musi być w przyszłości');
-      }
-    }
-
-    if (!orderData.pickupAddress || orderData.pickupAddress.trim().length < 5) {
-      errors.push('Adres odbioru musi mieć co najmniej 5 znaków');
-    }
-
-    if (!orderData.deliveryAddress || orderData.deliveryAddress.trim().length < 5) {
-      errors.push('Adres dostarczenia musi mieć co najmniej 5 znaków');
-    }
-
-    if (!orderData.transportType) {
-      errors.push('Typ transportu jest wymagany');
-    }
-
-    return errors;
+  getTransportStatuses(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/statuses`).pipe(
+      catchError(error => {
+        console.error('Error fetching transport statuses:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

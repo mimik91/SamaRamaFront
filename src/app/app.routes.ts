@@ -1,4 +1,4 @@
-// Aktualizacja app.routes.ts z nowymi route'ami dla zamówień
+// Updated app.routes.ts z nową trasą dla zamówienia transportu
 
 import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
@@ -18,6 +18,7 @@ import { AdminServicePackagesComponent } from './admin/admin-service-packages/ad
 import { AdminBikeServicesComponent } from './admin/admin-bike-services/admin-bike-services.component';
 import { AdminServiceSlotsComponent } from './admin/service-slots/admin-service-slots.component';
 import { AdminOrdersComponent } from './admin/admin-orders/admin-orders.component';
+import { AdminOrderDetailsComponent } from './admin/admin-orders/admin-order-details/admin-order-details.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
 import { ServiceOrderDetailsComponent } from './service-orders/service-order-details/service-order-details.component';
@@ -51,8 +52,10 @@ export const routes: Routes = [
     
     // Service order routes for clients
     { path: 'order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard] },
-    { path: 'order-transport', component: TransportOrderFormComponent, canActivate: [clientGuard] },
-
+    
+    // 🆕 TRASA DLA ZAMÓWIENIA TRANSPORTU - DOSTĘPNA DLA WSZYSTKICH (BEZ GUARDA)
+    { path: 'order-transport', component: TransportOrderFormComponent },
+    
     { path: 'service-appointments/:id', component: ServiceOrderDetailsComponent, canActivate: [clientGuard], data: { RenderMode: 'client' } },
     // Keep the old route for backward compatibility
     { path: 'bicycles/:id/order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard] },
@@ -62,10 +65,9 @@ export const routes: Routes = [
     { path: 'admin', component: AdminPanelComponent, canActivate: [adminGuard] },
     { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
     
-    // Admin Orders Routes - POPRAWIONE NAZWY
-    
+    // Admin Orders Routes
     { path: 'admin-orders', component: AdminOrdersComponent, canActivate: [adminGuard] },
-
+    { path: 'admin-orders/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard] },
 
     // Pozostałe admin routes
     { path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard] },

@@ -332,8 +332,15 @@ export class TransportOrderFormComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
+  // NAPRAWIONA METODA - oblicza koszt transportu lokalnie
   getEstimatedTransportCost(): number {
     const selectedCount = this.getSelectedBicyclesCount();
-    return this.transportOrderService.calculateEstimatedCost(selectedCount);
+    
+    // Logika obliczania kosztu transportu - taka sama jak w serwisie
+    const baseCost = 50; // Koszt bazowy za transport
+    const perBikeCost = 20; // Koszt za każdy dodatkowy rower
+    
+    if (selectedCount === 0) return 0;
+    return baseCost + (selectedCount - 1) * perBikeCost;
   }
 }

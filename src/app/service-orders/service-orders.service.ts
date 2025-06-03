@@ -11,7 +11,7 @@ import { environment } from '../core/api-config';
   providedIn: 'root'
 })
 export class ServiceOrderService {
-  private apiUrl = `${environment.apiUrl}/service-orders`;
+  private apiUrl = `${environment.apiUrl}/orders/service`;
   private http = inject(HttpClient);
   
   constructor() {}

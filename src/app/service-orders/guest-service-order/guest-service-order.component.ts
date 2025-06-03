@@ -15,8 +15,8 @@ import { BikeFormService, BikeFormData } from '../../home/bike-form.service';
 import { ServicePackage } from '../../service-package/service-package.model';
 import { ServicePackageService } from '../../service-package/service-package.service';
 import { EnumerationService } from '../../core/enumeration.service';
+import { CreateGuestServiceOrderRequest } from '../service-order.model';
 import { Observable, of, catchError, map } from 'rxjs';
-
 
 // Angular Material imports 
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -27,7 +27,6 @@ import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-pick
 import { CustomDateAdapter } from '../custom-date-adapter';
 import { environment } from '../../core/api-config';
 import { ServiceSlotAvailability } from '../../service-slots/service-slot.service';
-
 
 @Component({
   selector: 'app-guest-service-order',
@@ -107,12 +106,13 @@ export class GuestServiceOrderComponent implements OnInit {
     maxDate.setDate(maxDate.getDate() + 30);
     this.maxDate = maxDate;
     
-    // Inicjalizacja formularza
+    // Inicjalizacja formularza z nowymi polami adresowymi
     this.contactForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
-      address: ['', Validators.required],
-      city: ['', Validators.required],
+      pickupStreet: ['', Validators.required],
+      pickupBuildingNumber: ['', Validators.required],
+      pickupCity: ['', Validators.required],
       notes: ['']
     });
   }
@@ -141,7 +141,7 @@ export class GuestServiceOrderComponent implements OnInit {
     this.bikesData = this.bikeFormService.getBikesDataValue();
     console.log("Bikes data from service:", this.bikesData);
     
-    // Jeżeli nie ma danych o rowerach, przekieruj na stronę główną, ale dodaj więcej informacji o tym co się dzieje
+    // Jeżeli nie ma danych o rowerach, przekieruj na stronę główną
     if (!this.bikesData || this.bikesData.length === 0) {
       console.log("No bikes data found in service!");
       this.notificationService.warning('Nie wprowadzono danych o rowerach.');
@@ -177,14 +177,14 @@ export class GuestServiceOrderComponent implements OnInit {
     this.servicePackageService.getActivePackages().subscribe({
       next: (packages: ServicePackage[]) => {
         console.log("Received service packages:", packages);
-        this.availablePackages = packages || []; // Upewnij się, że zawsze masz tablicę
+        this.availablePackages = packages || [];
         this.loadingPackages = false;
       },
       error: (error) => {
         console.error('Failed to load service packages:', error);
         this.notificationService.error('Nie udało się załadować pakietów serwisowych.');
         this.loadingPackages = false;
-        this.availablePackages = []; // Ustaw pustą tablicę, aby uniknąć problemów z renderowaniem
+        this.availablePackages = [];
       }
     });
   }
@@ -217,8 +217,6 @@ export class GuestServiceOrderComponent implements OnInit {
         console.error('Failed to load cities:', error);
         this.notificationService.error('Nie udało się załadować listy miast');
         this.loadingCities = false;
-        
-        // Fallback to empty array
         this.cities = [];
       }
     });
@@ -259,6 +257,11 @@ export class GuestServiceOrderComponent implements OnInit {
     return field ? (field.invalid && (field.dirty || field.touched)) : false;
   }
   
+  // Sprawdza czy formularz kontaktowy i data są poprawne
+  isContactFormValid(): boolean {
+    return this.contactForm.valid && this.pickupDateControl.valid;
+  }
+  
   // Wysłanie formularza zamówienia
   submitOrder(): void {
     if (this.contactForm.invalid || !this.termsAccepted.value || !this.selectedPackageId || this.pickupDateControl.invalid) {
@@ -276,16 +279,38 @@ export class GuestServiceOrderComponent implements OnInit {
     
     this.isSubmitting = true;
     
-    // Przygotuj dane do wysłania
-    const orderData = {
+    // Przygotuj dane do wysłania z nowymi polami adresowymi
+    const pickupDate = this.pickupDateControl.value;
+    if (!pickupDate) {
+      this.notificationService.error('Wybierz datę odbioru');
+      this.isSubmitting = false;
+      return;
+    }
+    
+    // Format date properly - ensure we have a Date object
+    let formattedPickupDate: string;
+    if (pickupDate && typeof pickupDate === 'object' && 'getFullYear' in pickupDate) {
+      // It's a Date object
+      const dateObj = pickupDate as Date;
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      formattedPickupDate = `${year}-${month}-${day}T00:00:00.000Z`;
+    } else {
+      // If it's already a string, use it as is
+      formattedPickupDate = String(pickupDate);
+    }
+    
+    const orderData: CreateGuestServiceOrderRequest = {
       // Dane użytkownika
-      email: this.contactForm.get('email')?.value,
-      phone: this.contactForm.get('phone')?.value,
+      email: this.contactForm.get('email')?.value || '',
+      phone: this.contactForm.get('phone')?.value || '',
       
-      // Dane adresowe
-      address: this.contactForm.get('address')?.value,
-      city: this.contactForm.get('city')?.value,
-      notes: this.contactForm.get('notes')?.value || '',
+      // Nowe pola adresowe
+      pickupStreet: this.contactForm.get('pickupStreet')?.value || '',
+      pickupBuildingNumber: this.contactForm.get('pickupBuildingNumber')?.value || '',
+      pickupCity: this.contactForm.get('pickupCity')?.value || '',
+      transportNotes: this.contactForm.get('notes')?.value || '',
       
       // Dane rowerów
       bicycles: this.bikesData.map(bike => ({
@@ -295,14 +320,14 @@ export class GuestServiceOrderComponent implements OnInit {
       })),
       
       // Dane zamówienia
-      servicePackageId: this.selectedPackageId,
-      pickupDate: this.pickupDateControl.value
+      servicePackageId: this.selectedPackageId!,
+      pickupDate: formattedPickupDate
     };
     
-    console.log('Sending order data:', orderData);
+    console.log('Sending order data with new address format:', orderData);
     
     // Wyślij dane do API
-   this.http.post(`${environment.apiUrl}/guest-orders/service`, orderData)
+    this.http.post(`${environment.apiUrl}/guest-orders/service`, orderData)
       .subscribe({
         next: (response: any) => {
           console.log('Order submission successful:', response);

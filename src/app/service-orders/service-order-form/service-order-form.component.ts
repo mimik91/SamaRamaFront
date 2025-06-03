@@ -104,8 +104,9 @@ export class ServiceOrderFormComponent implements OnInit {
   ]);
   
   addressForm: FormGroup = this.fb.group({
-    street: ['', [Validators.required]],
-    city: ['', [Validators.required]],
+    pickupStreet: ['', [Validators.required]],
+    pickupBuildingNumber: ['', [Validators.required]],
+    pickupCity: ['', [Validators.required]],
     additionalNotes: ['']
   });
   
@@ -504,16 +505,21 @@ export class ServiceOrderFormComponent implements OnInit {
           const day = String(pickupDate.getDate()).padStart(2, '0');
           const formattedDate = `${year}-${month}-${day}T00:00:00.000Z`;
           
-          // Utwórz obiekt zamówienia z listą ID rowerów
+          // Utwórz obiekt zamówienia z nowymi polami adresowymi
           const serviceOrder: CreateServiceOrderRequest = {
-            bicycleIds: bicycleIds,  // Lista ID zamiast pojedynczego ID
+            bicycleIds: bicycleIds,
             servicePackageId: this.selectedPackageId === null ? undefined : this.selectedPackageId,
-            pickupDate: formattedDate, // Use the properly formatted date string
-            pickupAddress: `${this.addressForm.get('street')?.value}, ${this.addressForm.get('city')?.value}`,
+            pickupDate: formattedDate,
+            
+            // Nowe pola adresowe zamiast pickupAddress
+            pickupStreet: this.addressForm.get('pickupStreet')?.value,
+            pickupBuildingNumber: this.addressForm.get('pickupBuildingNumber')?.value,
+            pickupCity: this.addressForm.get('pickupCity')?.value,
+            
             additionalNotes: this.addressForm.get('additionalNotes')?.value || undefined
           };
           
-          console.log('Sending service order with bicycle IDs and adjusted date:', serviceOrder);
+          console.log('Sending service order with new address format:', serviceOrder);
           
           // Return the observable from service
           return this.serviceOrderService.createServiceOrder(serviceOrder);

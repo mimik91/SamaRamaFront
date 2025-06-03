@@ -42,10 +42,39 @@ export interface CreateServiceOrderRequest {
   servicePackageCode?: string;
   
   pickupDate: string;
-  pickupAddress: string;
+  
+  // Nowe pola adresowe - zastępują pickupAddress
+  pickupStreet: string;
+  pickupBuildingNumber: string;
+  pickupCity: string;
+  
   pickupLatitude?: number;
   pickupLongitude?: number;
   additionalNotes?: string;
+}
+
+// Interface dla guest orders (może mieć nieco inną strukturę)
+export interface CreateGuestServiceOrderRequest {
+  // Dane użytkownika
+  email: string;
+  phone: string;
+  
+  // Nowe pola adresowe
+  pickupStreet: string;
+  pickupBuildingNumber: string;
+  pickupCity: string;
+  transportNotes?: string;
+  
+  // Dane rowerów
+  bicycles: {
+    brand: string;
+    model?: string;
+    additionalInfo?: string;
+  }[];
+  
+  // Dane zamówienia
+  servicePackageId: number;
+  pickupDate: string;
 }
 
 // Informacja o pakiecie serwisowym - można usunąć jeśli stosujemy już ServicePackage

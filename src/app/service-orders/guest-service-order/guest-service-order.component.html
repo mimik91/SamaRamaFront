@@ -122,32 +122,48 @@
         
         <div class="form-row">
             <div class="form-group">
-            <label for="address">Adres odbioru *</label>
+            <label for="pickupStreet">Ulica *</label>
             <input 
                 type="text" 
-                id="address" 
-                formControlName="address" 
-                [class.is-invalid]="isFieldInvalid('address')" 
-                placeholder="ul. Przykładowa 123/45"
+                id="pickupStreet" 
+                formControlName="pickupStreet" 
+                [class.is-invalid]="isFieldInvalid('pickupStreet')" 
+                placeholder="np. Długa"
             >
-            <div *ngIf="isFieldInvalid('address')" class="error-message">
-                Adres jest wymagany
+            <div *ngIf="isFieldInvalid('pickupStreet')" class="error-message">
+                Podaj nazwę ulicy
             </div>
             </div>
             
             <div class="form-group">
-            <label for="city">Miasto *</label>
+            <label for="pickupBuildingNumber">Numer budynku *</label>
+            <input 
+                type="text" 
+                id="pickupBuildingNumber" 
+                formControlName="pickupBuildingNumber" 
+                [class.is-invalid]="isFieldInvalid('pickupBuildingNumber')" 
+                placeholder="np. 10/5"
+            >
+            <div *ngIf="isFieldInvalid('pickupBuildingNumber')" class="error-message">
+                Podaj numer budynku
+            </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+            <label for="pickupCity">Miasto *</label>
             <select 
-                id="city" 
-                formControlName="city" 
-                [class.is-invalid]="isFieldInvalid('city')"
+                id="pickupCity" 
+                formControlName="pickupCity" 
+                [class.is-invalid]="isFieldInvalid('pickupCity')"
                 [attr.disabled]="loadingCities ? '' : null"
             >
                 <option value="" disabled>-- Wybierz miasto --</option>
                 <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
                 <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
             </select>
-            <div *ngIf="isFieldInvalid('city')" class="error-message">
+            <div *ngIf="isFieldInvalid('pickupCity')" class="error-message">
                 Wybierz miasto z listy
             </div>
             </div>
@@ -203,7 +219,7 @@
         <button 
             type="button" 
             class="next-btn" 
-            [disabled]="contactForm.invalid || pickupDateControl.invalid" 
+            [disabled]="!isContactFormValid()" 
             (click)="nextStep()"
         >
             Dalej
@@ -251,7 +267,10 @@
             </div>
             <div class="contact-row">
               <span class="contact-label">Adres odbioru:</span>
-              <span class="contact-value">{{ contactForm.get('address')?.value }}, {{ contactForm.get('city')?.value }}</span>
+              <span class="contact-value">
+                ul. {{ contactForm.get('pickupStreet')?.value }} {{ contactForm.get('pickupBuildingNumber')?.value }}, 
+                {{ contactForm.get('pickupCity')?.value }}
+              </span>
             </div>
             <div class="contact-row">
               <span class="contact-label">Data odbioru:</span>

@@ -165,7 +165,7 @@ export class ServiceOrderDetailsComponent implements OnInit {
 
   goBack(): void {
     if (this.isAdminView) {
-      this.router.navigate(['/service-orders']);
+      this.router.navigate(['/orders/service']);
     } else {
       this.router.navigate(['/service-appointments']);
     }

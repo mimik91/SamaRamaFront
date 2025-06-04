@@ -44,7 +44,7 @@
         <ng-container *ngIf="!isOrderCancelled(order.status)">
           <div class="order-header">
             <div class="order-info">
-              <div class="order-id">Zamówienie #{{ order.id }}</div>
+              <div class="order-id">{{ getOrderTypeDisplayName(order.orderType || 'SERVICE') }}</div>
               <div class="order-date">Zamówiono: {{ formatDateTime(order.orderDate) }}</div>
             </div>
             <div class="order-status" [ngClass]="getStatusClass(order.status)">
@@ -62,6 +62,16 @@
               </div>
 
               <div class="detail-row">
+                <div class="detail-label">Adres odbioru:</div>
+                <div class="detail-value">{{ order.pickupAddress }}</div>
+              </div>
+
+              <div class="detail-row">
+                <div class="detail-label">Serwis:</div>
+                <div class="detail-value">{{ order.targetServiceName || 'Nie określono' }}</div>
+              </div>
+
+              <div class="detail-row">
                 <div class="detail-label">Pakiet:</div>
                 <div class="detail-value">
                   {{ getServicePackageDisplayName(order) }}
@@ -72,9 +82,10 @@
                 <div class="detail-label">Data odbioru:</div>
                 <div class="detail-value">{{ formatDate(order.pickupDate) }}</div>
               </div>
+              
               <div class="detail-row">
                 <div class="detail-label">Cena:</div>
-                <div class="detail-value price">{{ formatPrice(order.price) }}</div>
+                <div class="detail-value price">{{ formatPrice(getTotalPrice(order)) }}</div>
               </div>
             </div>
           </div>
@@ -95,7 +106,7 @@
         <ng-container *ngIf="isOrderCancelled(order.status)">
           <div class="cancelled-header" (click)="viewOrderDetails(order.id); $event.stopPropagation()">
             <div class="cancelled-main-info">
-              <span class="cancelled-order-id">Zamówienie #{{ order.id }}</span>
+              <span class="cancelled-order-id">{{ getOrderTypeDisplayName(order.orderType || 'SERVICE') }}</span>
               <span class="cancelled-status">{{ getStatusLabel(order.status) }}</span>
             </div>
             <div class="cancelled-details">

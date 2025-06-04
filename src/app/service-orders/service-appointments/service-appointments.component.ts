@@ -65,6 +65,18 @@ export class ServiceAppointmentsComponent implements OnInit {
     });
   }
 
+  // Nowa metoda do wyświetlania typu zamówienia
+  getOrderTypeDisplayName(orderType: string | undefined): string {
+    switch (orderType) {
+      case 'SERVICE': return 'Zamówienie serwisowe';
+      case 'TRANSPORT': return 'Zamówienie transportowe';
+      case undefined:
+      case null:
+        return 'Zamówienie serwisowe'; // Domyślnie serwisowe dla kompatybilności
+      default: return `Zamówienie #${orderType}`;
+    }
+  }
+
   // Helper methods for displaying status
   getStatusLabel(status: string): string {
     switch (status) {
@@ -97,15 +109,21 @@ export class ServiceAppointmentsComponent implements OnInit {
     return status === 'CANCELLED';
   }
 
-  // Get bicycle display name from the actual API response structure
+  // Zaktualizowana metoda - używa bicycleDescription z backendu
   getBicycleDisplayName(order: any): string {
+    // Najpierw sprawdź czy mamy bicycleDescription z backendu
+    if (order.bicycleDescription) {
+      return order.bicycleDescription;
+    }
+
+    // Fallback do starych pól
     if (order.bicycleBrand || order.bicycleModel) {
       const brand = order.bicycleBrand || '';
       const model = order.bicycleModel || '';
       return brand + (model ? ' ' + model : '');
     }
     
-    // Fallback to bicycle object if it exists (unlikely based on the API response)
+    // Fallback do bicycle object if it exists
     if (order.bicycle && (order.bicycle.brand || order.bicycle.model)) {
       const brand = order.bicycle.brand || '';
       const model = order.bicycle.model || '';
@@ -125,12 +143,27 @@ export class ServiceAppointmentsComponent implements OnInit {
       return order.servicePackageCode;
     }
     
-    // Fallback to servicePackage object if it exists (unlikely based on the API response)
+    // Fallback to servicePackage object if it exists
     if (order.servicePackage && order.servicePackage.name) {
       return order.servicePackage.name;
     }
     
     return 'Nie określono';
+  }
+
+  // Nowa metoda do pobierania totalPrice
+  getTotalPrice(order: any): number {
+    // Preferuj totalPrice z backendu
+    if (order.totalPrice !== undefined && order.totalPrice !== null) {
+      return order.totalPrice;
+    }
+    
+    // Fallback do starego pola price
+    if (order.price !== undefined && order.price !== null) {
+      return order.price;
+    }
+    
+    return 0;
   }
 
   viewOrderDetails(orderId: number): void {

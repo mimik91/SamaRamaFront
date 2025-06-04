@@ -1,3 +1,121 @@
+/* Dodatkowe style dla kosztu transportu */
+.transport-cost {
+  font-size: 0.85rem;
+  color: #28a745;
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+.transport-cost-value {
+  font-weight: 600;
+  color: #28a745;
+  font-size: 1.1rem;
+}
+
+/* Usunięte niepotrzebne style dla statusów weryfikacji i aktywności */
+.service-item {
+  padding: 15px;
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.service-item:hover {
+  border-color: #ccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.service-item.active {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.service-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.service-name {
+  font-weight: 600;
+  color: #343a40;
+  line-height: 1.2;
+}
+
+.service-city {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+
+.service-email {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+
+/* Usunięte style dla przycisków aktywacji/deaktywacji */
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn, .delete-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.edit-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #0069d9;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+/* Usunięte filtry dla statusów weryfikacji/aktywności */
+.filters-section {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Pozostałe style bez zmian... */
 .bike-services-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -99,11 +217,6 @@
   color: #333;
 }
 
-.header-actions {
-  display: flex;
-  gap: 8px;
-}
-
 .import-btn, .add-service-btn {
   display: flex;
   align-items: center;
@@ -134,29 +247,6 @@
   background-color: #218838;
 }
 
-/* Filtry */
-.filters-section {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.search-input, .status-select {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-.search-input:focus, .status-select:focus {
-  outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-/* Lista serwisów */
 .services-list {
   display: flex;
   flex-direction: column;
@@ -173,85 +263,6 @@
   background-color: #f1f1f1;
   border-radius: 4px;
   font-style: italic;
-}
-
-.service-item {
-  padding: 15px;
-  background-color: white;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.service-item:hover {
-  border-color: #ccc;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.service-item.active {
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.service-item.inactive {
-  opacity: 0.7;
-}
-
-.service-item.unverified {
-  border-left: 4px solid #ffc107;
-}
-
-.service-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-.service-name {
-  font-weight: 600;
-  color: #343a40;
-  line-height: 1.2;
-}
-
-.service-badges {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.badge {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-weight: 500;
-}
-
-.badge.verified {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.badge.active {
-  background-color: #d1ecf1;
-  color: #0c5460;
-}
-
-.badge.inactive {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.service-city {
-  font-size: 0.85rem;
-  color: #6c757d;
-  margin-bottom: 4px;
-}
-
-.service-email {
-  font-size: 0.8rem;
-  color: #6c757d;
 }
 
 .services-count {
@@ -281,92 +292,6 @@
 .details-header h2 {
   margin: 0;
   color: #333;
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.edit-btn, .toggle-btn, .delete-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.edit-btn {
-  background-color: #007bff;
-  color: white;
-}
-
-.edit-btn:hover {
-  background-color: #0069d9;
-}
-
-.activate-btn {
-  background-color: #28a745;
-  color: white;
-}
-
-.activate-btn:hover {
-  background-color: #218838;
-}
-
-.deactivate-btn {
-  background-color: #6c757d;
-  color: white;
-}
-
-.deactivate-btn:hover {
-  background-color: #5a6268;
-}
-
-.delete-btn {
-  background-color: #dc3545;
-  color: white;
-}
-
-.delete-btn:hover {
-  background-color: #c82333;
-}
-
-.status-badges {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.status-badge {
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.status-badge.verified {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status-badge.unverified {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.status-badge.active {
-  background-color: #d1ecf1;
-  color: #0c5460;
-}
-
-.status-badge.inactive {
-  background-color: #f8d7da;
-  color: #721c24;
 }
 
 .details-section {
@@ -474,23 +399,6 @@
   color: #dc3545;
   font-size: 0.875rem;
   margin-top: 5px;
-}
-
-.checkbox-group {
-  display: flex;
-  align-items: center;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.checkbox-label input {
-  width: auto;
-  margin: 0;
 }
 
 .form-actions {

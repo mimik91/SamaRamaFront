@@ -17,10 +17,11 @@ export interface BikeService {
   latitude?: number;
   longitude?: number;
   description?: string;
-  verified: boolean;
-  active: boolean;
+  transportCost: number;
   createdAt: string;
-  lastModifiedAt?: string;
+  updatedAt?: string;
+  fullAddress?: string;
+  formattedTransportCost?: string;
 }
 
 export interface BikeServiceCreateDto {
@@ -36,8 +37,7 @@ export interface BikeServiceCreateDto {
   latitude?: number;
   longitude?: number;
   description?: string;
-  verified?: boolean;
-  active?: boolean;
+  transportCost: number;
 }
 
 export interface ImportResponse {
@@ -137,30 +137,6 @@ export class BikeServiceService {
     return this.http.get(`${this.apiUrl}/statistics`).pipe(
       catchError(error => {
         console.error('Error fetching bike service statistics:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
-   * Przełącza status aktywności serwisu
-   */
-  toggleServiceActive(id: number, active: boolean): Observable<BikeService> {
-    return this.http.patch<BikeService>(`${this.apiUrl}/${id}`, { active }).pipe(
-      catchError(error => {
-        console.error(`Error toggling service ${id} active state:`, error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
-   * Przełącza status weryfikacji serwisu
-   */
-  toggleServiceVerified(id: number, verified: boolean): Observable<BikeService> {
-    return this.http.patch<BikeService>(`${this.apiUrl}/${id}`, { verified }).pipe(
-      catchError(error => {
-        console.error(`Error toggling service ${id} verified state:`, error);
         return throwError(() => error);
       })
     );

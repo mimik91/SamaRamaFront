@@ -311,82 +311,102 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private showDetailedPopup(serviceDetails: any, marker: any): void {
-    const addressParts = [];
-    if (serviceDetails.street) addressParts.push(serviceDetails.street);
-    if (serviceDetails.building) addressParts.push(serviceDetails.building);
-    if (serviceDetails.flat) addressParts.push(`m. ${serviceDetails.flat}`);
-    const fullAddress = addressParts.join(' ');
-    
-    let popupContent = `
-      <div style="font-family: Arial, sans-serif; min-width: 250px;">
-        <h4 style="margin: 0 0 15px 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px;">${serviceDetails.name}</h4>
-    `;
-    
-    if (fullAddress) {
-      popupContent += `<p style="margin: 8px 0;"><strong>📍 Adres:</strong> ${fullAddress}</p>`;
-    }
-    
-    if (serviceDetails.city) {
-      popupContent += `<p style="margin: 8px 0;"><strong>🏙️ Miasto:</strong> ${serviceDetails.city}</p>`;
-    }
-    
-    if (serviceDetails.postalCode) {
-      popupContent += `<p style="margin: 8px 0;"><strong>📮 Kod:</strong> ${serviceDetails.postalCode}</p>`;
-    }
-    
-    if (serviceDetails.phoneNumber) {
-      popupContent += `<p style="margin: 8px 0;"><strong>📞 Telefon:</strong> <a href="tel:${serviceDetails.phoneNumber}" style="color: #27ae60; text-decoration: none;">${serviceDetails.phoneNumber}</a></p>`;
-    }
-    
-    if (serviceDetails.businessPhone) {
-      popupContent += `<p style="margin: 8px 0;"><strong>📱 Tel. służbowy:</strong> <a href="tel:${serviceDetails.businessPhone}" style="color: #27ae60; text-decoration: none;">${serviceDetails.businessPhone}</a></p>`;
-    }
-    
-    if (serviceDetails.email) {
-      popupContent += `<p style="margin: 8px 0;"><strong>✉️ Email:</strong> <a href="mailto:${serviceDetails.email}" style="color: #e67e22; text-decoration: none;">${serviceDetails.email}</a></p>`;
-    }
-    
-    if (serviceDetails.description && serviceDetails.description.trim()) {
-      popupContent += `<div style="margin: 15px 0 0 0; padding: 10px; background-color: #f8f9fa; border-radius: 4px; border-left: 3px solid #007bff;">
-        <p style="margin: 0; color: #666; font-size: 0.9em; line-height: 1.4;">${serviceDetails.description}</p>
-      </div>`;
-    }
-    
-    if (serviceDetails.verified) {
-      popupContent += `<p style="color: #28a745; margin: 12px 0 0 0; font-weight: 500;"><strong>✅ Zweryfikowany serwis</strong></p>`;
-    }
+  const addressParts = [];
+  if (serviceDetails.street) addressParts.push(serviceDetails.street);
+  if (serviceDetails.building) addressParts.push(serviceDetails.building);
+  if (serviceDetails.flat) addressParts.push(`m. ${serviceDetails.flat}`);
+  const fullAddress = addressParts.join(' ');
+  
+  let popupContent = `
+    <div style="font-family: Arial, sans-serif; min-width: 250px;">
+      <h4 style="margin: 0 0 15px 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px;">${serviceDetails.name}</h4>
+  `;
+  
+  if (fullAddress) {
+    popupContent += `<p style="margin: 8px 0;"><strong>📍 Adres:</strong> ${fullAddress}</p>`;
+  }
+  
+  if (serviceDetails.city) {
+    popupContent += `<p style="margin: 8px 0;"><strong>🏙️ Miasto:</strong> ${serviceDetails.city}</p>`;
+  }
+  
+  if (serviceDetails.postalCode) {
+    popupContent += `<p style="margin: 8px 0;"><strong>📮 Kod:</strong> ${serviceDetails.postalCode}</p>`;
+  }
+  
+  if (serviceDetails.phoneNumber) {
+    popupContent += `<p style="margin: 8px 0;"><strong>📞 Telefon:</strong> <a href="tel:${serviceDetails.phoneNumber}" style="color: #27ae60; text-decoration: none;">${serviceDetails.phoneNumber}</a></p>`;
+  }
+  
+  if (serviceDetails.businessPhone) {
+    popupContent += `<p style="margin: 8px 0;"><strong>📱 Tel. służbowy:</strong> <a href="tel:${serviceDetails.businessPhone}" style="color: #27ae60; text-decoration: none;">${serviceDetails.businessPhone}</a></p>`;
+  }
+  
+  if (serviceDetails.email) {
+    popupContent += `<p style="margin: 8px 0;"><strong>✉️ Email:</strong> <a href="mailto:${serviceDetails.email}" style="color: #e67e22; text-decoration: none;">${serviceDetails.email}</a></p>`;
+  }
 
-    // Dodaj przyciski akcji
+  // NOWE: Dodanie kosztu transportu
+  const transportCost = serviceDetails.transportCost;
+  if (transportCost !== null) {
     popupContent += `
-      <div style="margin: 20px 0 0 0; padding: 15px 0 0 0; border-top: 1px solid #eee; display: flex; gap: 8px; flex-wrap: wrap;">
-        <button 
-          id="order-transport-btn-${serviceDetails.id}" 
-          style="flex: 1; min-width: 120px; padding: 10px 16px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"
-          onmouseover="this.style.backgroundColor='#0056b3'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,123,255,0.3)'" 
-          onmouseout="this.style.backgroundColor='#007bff'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
-        >
-          🚚 Zamów transport
-        </button>
+      <div style="margin: 12px 0; padding: 10px; background-color: #e8f5e8; border-radius: 6px; border-left: 4px solid #28a745;">
+        <p style="margin: 0; color: #155724;"><strong>🚚 Koszt transportu:</strong> 
+          <span style="font-size: 1.1em; font-weight: bold; color: #28a745;">${transportCost} PLN</span>
+        </p>
+        <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #6c757d;">Transport w obie strony</p>
       </div>
     `;
-    
-    popupContent += `</div>`;
-
-    marker.bindPopup(popupContent, {
-      maxWidth: 350,
-      className: 'detailed-service-popup'
-    }).openPopup();
-
-    // Dodaj event listener dla przycisku transportu po otwarciu popup-a
-    setTimeout(() => {
-      const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
-      if (transportBtn) {
-        transportBtn.addEventListener('click', () => {
-          this.orderTransport(serviceDetails);
-        });
-      }
-    }, 100);
+  } else {
+    popupContent += `
+      <div style="margin: 12px 0; padding: 10px; background-color: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107;">
+        <p style="margin: 0; color: #856404;"><strong>🚚 Koszt transportu:</strong> Do ustalenia</p>
+        <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #6c757d;">Skontaktuj się z nami po szczegóły</p>
+      </div>
+    `;
   }
+  
+  if (serviceDetails.description && serviceDetails.description.trim()) {
+    popupContent += `<div style="margin: 15px 0 0 0; padding: 10px; background-color: #f8f9fa; border-radius: 4px; border-left: 3px solid #007bff;">
+      <p style="margin: 0; color: #666; font-size: 0.9em; line-height: 1.4;">${serviceDetails.description}</p>
+    </div>`;
+  }
+  
+  if (serviceDetails.verified) {
+    popupContent += `<p style="color: #28a745; margin: 12px 0 0 0; font-weight: 500;"><strong>✅ Zweryfikowany serwis</strong></p>`;
+  }
+
+  // Przyciski akcji
+  popupContent += `
+    <div style="margin: 20px 0 0 0; padding: 15px 0 0 0; border-top: 1px solid #eee; display: flex; gap: 8px; flex-wrap: wrap;">
+      <button 
+        id="order-transport-btn-${serviceDetails.id}" 
+        style="flex: 1; min-width: 120px; padding: 10px 16px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"
+        onmouseover="this.style.backgroundColor='#0056b3'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,123,255,0.3)'" 
+        onmouseout="this.style.backgroundColor='#007bff'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+      >
+        🚚 Zamów transport
+      </button>
+    </div>
+  `;
+  
+  popupContent += `</div>`;
+
+  marker.bindPopup(popupContent, {
+    maxWidth: 350,
+    className: 'detailed-service-popup'
+  }).openPopup();
+
+  // Dodaj event listener dla przycisku transportu po otwarciu popup-a
+  setTimeout(() => {
+    const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
+    if (transportBtn) {
+      transportBtn.addEventListener('click', () => {
+        this.orderTransport(serviceDetails);
+      });
+    }
+  }, 100);
+}
 
   private showErrorPopup(marker: any, errorMessage: string): void {
     const errorContent = `

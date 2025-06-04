@@ -19,10 +19,11 @@ export interface BikeService {
   latitude?: number;
   longitude?: number;
   description?: string;
-  verified: boolean;
-  active: boolean;
+  transportCost: number;
   createdAt: string;
-  lastModifiedAt?: string;
+  updatedAt?: string;
+  fullAddress?: string;
+  formattedTransportCost?: string;
 }
 
 @Component({
@@ -54,7 +55,6 @@ export class AdminBikeServicesComponent implements OnInit {
   // Forms
   serviceForm: FormGroup;
   searchTerm: string = '';
-  statusFilter: string = 'all';
   
   // File upload
   selectedFile: File | null = null;
@@ -70,12 +70,11 @@ export class AdminBikeServicesComponent implements OnInit {
       city: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
       businessPhone: ['', [Validators.pattern(/^\d{9}$/)]],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.email]], // Usunięto Validators.required
       latitude: ['', [Validators.min(-90), Validators.max(90)]],
       longitude: ['', [Validators.min(-180), Validators.max(180)]],
       description: ['', [Validators.maxLength(1000)]],
-      verified: [false],
-      active: [true]
+      transportCost: [0, [Validators.required, Validators.min(0)]]
     });
   }
   
@@ -111,22 +110,9 @@ export class AdminBikeServicesComponent implements OnInit {
       filtered = filtered.filter(service => 
         service.name.toLowerCase().includes(term) ||
         service.city.toLowerCase().includes(term) ||
-        service.email.toLowerCase().includes(term) ||
+        service.email?.toLowerCase().includes(term) ||
         service.street.toLowerCase().includes(term)
       );
-    }
-    
-    // Status filter
-    if (this.statusFilter !== 'all') {
-      if (this.statusFilter === 'active') {
-        filtered = filtered.filter(service => service.active);
-      } else if (this.statusFilter === 'inactive') {
-        filtered = filtered.filter(service => !service.active);
-      } else if (this.statusFilter === 'verified') {
-        filtered = filtered.filter(service => service.verified);
-      } else if (this.statusFilter === 'unverified') {
-        filtered = filtered.filter(service => !service.verified);
-      }
     }
     
     this.filteredServices = filtered;
@@ -135,12 +121,6 @@ export class AdminBikeServicesComponent implements OnInit {
   onSearch(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchTerm = target.value;
-    this.applyFilters();
-  }
-  
-  onStatusFilterChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.statusFilter = target.value;
     this.applyFilters();
   }
   
@@ -167,9 +147,11 @@ export class AdminBikeServicesComponent implements OnInit {
       latitude: this.selectedService.latitude || '',
       longitude: this.selectedService.longitude || '',
       description: this.selectedService.description || '',
-      verified: this.selectedService.verified,
-      active: this.selectedService.active
+      transportCost: this.selectedService.transportCost || 0
     });
+    
+    // Oznacz formularz jako czysty po załadowaniu danych
+    this.serviceForm.markAsPristine();
     
     this.isEditing = true;
     this.isAddingNew = false;
@@ -201,14 +183,12 @@ export class AdminBikeServicesComponent implements OnInit {
       latitude: '',
       longitude: '',
       description: '',
-      verified: false,
-      active: true
+      transportCost: 0
     });
   }
   
   saveService(): void {
     if (this.serviceForm.invalid) {
-      // Mark all fields as touched to trigger validation messages
       Object.keys(this.serviceForm.controls).forEach(key => {
         const control = this.serviceForm.get(key);
         control?.markAsTouched();
@@ -218,16 +198,22 @@ export class AdminBikeServicesComponent implements OnInit {
       return;
     }
     
+    // Sprawdź czy formularz został zmieniony podczas edycji
+    if (this.isEditing && !this.serviceForm.dirty) {
+      this.notificationService.info('Nie wprowadzono żadnych zmian.');
+      return;
+    }
+    
     this.saving = true;
     
     const serviceData = {
       ...this.serviceForm.value,
       latitude: this.serviceForm.value.latitude ? Number(this.serviceForm.value.latitude) : null,
-      longitude: this.serviceForm.value.longitude ? Number(this.serviceForm.value.longitude) : null
+      longitude: this.serviceForm.value.longitude ? Number(this.serviceForm.value.longitude) : null,
+      transportCost: Number(this.serviceForm.value.transportCost)
     };
     
     if (this.isAddingNew) {
-      // Create new service
       this.bikeServiceService.createBikeService(serviceData).subscribe({
         next: () => {
           this.notificationService.success('Serwis rowerowy został utworzony');
@@ -242,7 +228,6 @@ export class AdminBikeServicesComponent implements OnInit {
         }
       });
     } else if (this.isEditing && this.selectedService) {
-      // Update existing service
       this.bikeServiceService.updateBikeService(this.selectedService.id, serviceData).subscribe({
         next: () => {
           this.notificationService.success('Serwis rowerowy został zaktualizowany');
@@ -277,25 +262,6 @@ export class AdminBikeServicesComponent implements OnInit {
     }
   }
   
-  toggleServiceStatus(id: number, currentStatus: boolean): void {
-    const service = this.bikeServices.find(s => s.id === id);
-    if (!service) return;
-    
-    const updatedData = { ...service, active: !currentStatus };
-    
-    this.bikeServiceService.updateBikeService(id, updatedData).subscribe({
-      next: () => {
-        const status = !currentStatus ? 'aktywowany' : 'dezaktywowany';
-        this.notificationService.success(`Serwis został ${status}`);
-        this.loadBikeServices();
-      },
-      error: (err) => {
-        console.error('Error toggling service status:', err);
-        this.notificationService.error('Nie udało się zmienić statusu serwisu');
-      }
-    });
-  }
-  
   // CSV Import functionality
   openImportDialog(): void {
     this.showImportDialogFlag = true;
@@ -312,13 +278,11 @@ export class AdminBikeServicesComponent implements OnInit {
     if (target.files && target.files.length > 0) {
       const file = target.files[0];
       
-      // Validate file type
       if (!file.name.toLowerCase().endsWith('.csv')) {
         this.notificationService.error('Wybierz plik CSV');
         return;
       }
       
-      // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         this.notificationService.error('Plik jest za duży (maksymalnie 10MB)');
         return;
@@ -357,12 +321,28 @@ export class AdminBikeServicesComponent implements OnInit {
     return field ? (field.invalid && (field.dirty || field.touched)) : false;
   }
   
+  // Sprawdza czy można zapisać formularz (valid i dirty w przypadku edycji)
+  canSaveForm(): boolean {
+    if (this.isAddingNew) {
+      return this.serviceForm.valid;
+    } else if (this.isEditing) {
+      return this.serviceForm.valid && this.serviceForm.dirty;
+    }
+    return false;
+  }
+  
   getFullAddress(service: BikeService): string {
+    if (service.fullAddress) return service.fullAddress;
+    
     const parts = [service.street, service.building];
     if (service.flat) parts.push(`m. ${service.flat}`);
     if (service.postalCode) parts.push(service.postalCode);
     parts.push(service.city);
     return parts.join(', ');
+  }
+  
+  formatTransportCost(cost: number): string {
+    return cost ? cost.toFixed(2) + ' zł' : '0,00 zł';
   }
   
   formatDate(dateString: string): string {

@@ -112,7 +112,7 @@
   .orders-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
   }
   
   .order-card {
@@ -125,10 +125,92 @@
   }
   
   .order-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
   
+  /* Style dla anulowanych zamówień - wąska belka */
+  .order-card.cancelled-order {
+    padding: 0;
+    min-height: 60px;
+    max-height: 60px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #dc3545;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 0.2s, box-shadow 0.2s;
+  }
+  
+  .order-card.cancelled-order:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+    opacity: 0.9;
+  }
+  
+  .cancelled-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    box-sizing: border-box;
+  }
+  
+  .cancelled-main-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .cancelled-order-id {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+  }
+  
+  .cancelled-status {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  .cancelled-details {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 13px;
+    color: #6c757d;
+  }
+  
+  .cancelled-bike {
+    font-weight: 500;
+    color: #495057;
+  }
+  
+  .cancelled-date {
+    font-style: italic;
+  }
+  
+  .cancelled-view-btn {
+    padding: 4px 8px;
+    background-color: #e9ecef;
+    color: #495057;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .cancelled-view-btn:hover {
+    background-color: #dee2e6;
+  }
+  
+  /* Style dla normalnych zamówień */
   .order-header {
     display: flex;
     justify-content: space-between;
@@ -295,5 +377,32 @@
   
     .view-btn, .cancel-btn {
       width: 100%;
+    }
+    
+    /* Responsive dla anulowanych zamówień */
+    .cancelled-header {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      height: auto;
+      min-height: 60px;
+      padding: 12px 15px;
+    }
+    
+    .cancelled-main-info {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .cancelled-details {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .cancelled-view-btn {
+      white-space: nowrap;
     }
   }

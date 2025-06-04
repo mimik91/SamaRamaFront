@@ -34,56 +34,79 @@
     </div>
 
     <div *ngIf="serviceOrders.length > 0" class="orders-list">
-      <div class="order-card" *ngFor="let order of serviceOrders" (click)="viewOrderDetails(order.id)">
-        <div class="order-header">
-          <div class="order-info">
-            <div class="order-id">Zamówienie #{{ order.id }}</div>
-            <div class="order-date">Zamówiono: {{ formatDateTime(order.orderDate) }}</div>
+      <div 
+        *ngFor="let order of serviceOrders" 
+        class="order-card" 
+        [ngClass]="{'cancelled-order': isOrderCancelled(order.status)}"
+        (click)="!isOrderCancelled(order.status) && viewOrderDetails(order.id)"
+      >
+        <!-- Normalny widok dla aktywnych zamówień -->
+        <ng-container *ngIf="!isOrderCancelled(order.status)">
+          <div class="order-header">
+            <div class="order-info">
+              <div class="order-id">Zamówienie #{{ order.id }}</div>
+              <div class="order-date">Zamówiono: {{ formatDateTime(order.orderDate) }}</div>
+            </div>
+            <div class="order-status" [ngClass]="getStatusClass(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </div>
           </div>
-          <div class="order-status" [ngClass]="getStatusClass(order.status)">
-            {{ getStatusLabel(order.status) }}
-          </div>
-        </div>
 
-        <div class="order-content">
-          <div class="order-details">
-            <!-- Poprawione wyświetlanie informacji o rowerze -->
-            <div class="detail-row">
-              <div class="detail-label">Rower:</div>
-              <div class="detail-value">
-                {{ getBicycleDisplayName(order) }}
+          <div class="order-content">
+            <div class="order-details">
+              <div class="detail-row">
+                <div class="detail-label">Rower:</div>
+                <div class="detail-value">
+                  {{ getBicycleDisplayName(order) }}
+                </div>
+              </div>
+
+              <div class="detail-row">
+                <div class="detail-label">Pakiet:</div>
+                <div class="detail-value">
+                  {{ getServicePackageDisplayName(order) }}
+                </div>
+              </div>
+              
+              <div class="detail-row">
+                <div class="detail-label">Data odbioru:</div>
+                <div class="detail-value">{{ formatDate(order.pickupDate) }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Cena:</div>
+                <div class="detail-value price">{{ formatPrice(order.price) }}</div>
               </div>
             </div>
+          </div>
 
-            <!-- Poprawione wyświetlanie informacji o pakiecie serwisowym -->
-            <div class="detail-row">
-              <div class="detail-label">Pakiet:</div>
-              <div class="detail-value">
-                {{ getServicePackageDisplayName(order) }}
-              </div>
+          <div class="order-footer">
+            <button class="view-btn">Zobacz szczegóły</button>
+            <button 
+              *ngIf="isOrderCancellable(order.status)" 
+              class="cancel-btn" 
+              (click)="cancelOrder(order.id, $event)"
+            >
+              Anuluj zamówienie
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- Kompaktowy widok dla anulowanych zamówień -->
+        <ng-container *ngIf="isOrderCancelled(order.status)">
+          <div class="cancelled-header" (click)="viewOrderDetails(order.id); $event.stopPropagation()">
+            <div class="cancelled-main-info">
+              <span class="cancelled-order-id">Zamówienie #{{ order.id }}</span>
+              <span class="cancelled-status">{{ getStatusLabel(order.status) }}</span>
             </div>
-            
-            <div class="detail-row">
-              <div class="detail-label">Data odbioru:</div>
-              <div class="detail-value">{{ formatDate(order.pickupDate) }}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Cena:</div>
-              <div class="detail-value price">{{ formatPrice(order.price) }}</div>
+            <div class="cancelled-details">
+              <span class="cancelled-bike">{{ getBicycleDisplayName(order) }}</span>
+              <span class="cancelled-date">{{ formatDate(order.orderDate) }}</span>
+              <button class="cancelled-view-btn" (click)="viewOrderDetails(order.id); $event.stopPropagation()">
+                Zobacz szczegóły
+              </button>
             </div>
           </div>
-        </div>
-
-        <div class="order-footer">
-          <button class="view-btn">Zobacz szczegóły</button>
-          <button 
-            *ngIf="isOrderCancellable(order.status)" 
-            class="cancel-btn" 
-            (click)="cancelOrder(order.id, $event)"
-          >
-            Anuluj zamówienie
-          </button>
-        </div>
+        </ng-container>
       </div>
     </div>
   </ng-container>

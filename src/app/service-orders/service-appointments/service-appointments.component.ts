@@ -34,7 +34,8 @@ export class ServiceAppointmentsComponent implements OnInit {
     
     this.serviceOrderService.getUserServiceOrders().subscribe({
       next: (orders) => {
-        this.serviceOrders = orders;
+        // Sortuj zamówienia - anulowane na końcu, reszta chronologicznie
+        this.serviceOrders = this.sortOrders(orders);
         this.loading = false;
       },
       error: (err) => {
@@ -43,6 +44,24 @@ export class ServiceAppointmentsComponent implements OnInit {
         this.loading = false;
         this.notificationService.error(this.error);
       }
+    });
+  }
+
+  // Nowa metoda sortowania zamówień
+  private sortOrders(orders: ServiceOrder[]): ServiceOrder[] {
+    return orders.sort((a, b) => {
+      // Najpierw sprawdź status - anulowane idą na koniec
+      const aIsCancelled = a.status === 'CANCELLED';
+      const bIsCancelled = b.status === 'CANCELLED';
+      
+      if (aIsCancelled && !bIsCancelled) return 1;  // a (anulowane) idzie po b
+      if (!aIsCancelled && bIsCancelled) return -1; // b (anulowane) idzie po a
+      
+      // Jeśli oba mają ten sam typ statusu (oba anulowane lub oba aktywne),
+      // sortuj chronologicznie (najnowsze najpierw)
+      const dateA = new Date(a.orderDate).getTime();
+      const dateB = new Date(b.orderDate).getTime();
+      return dateB - dateA;
     });
   }
 
@@ -60,7 +79,6 @@ export class ServiceAppointmentsComponent implements OnInit {
     }
   }
 
-  // DODANA METODA - ta była brakująca
   getStatusClass(status: string): string {
     switch (status) {
       case 'PENDING': return 'status-pending';
@@ -72,6 +90,11 @@ export class ServiceAppointmentsComponent implements OnInit {
       case 'CANCELLED': return 'status-cancelled';
       default: return '';
     }
+  }
+
+  // Sprawdź czy zamówienie jest anulowane (do stylowania)
+  isOrderCancelled(status: string): boolean {
+    return status === 'CANCELLED';
   }
 
   // Get bicycle display name from the actual API response structure

@@ -24,6 +24,7 @@ import { ServicePackage } from '../../service-package/service-package.model';
 import { BicycleSelectionService } from '../../bicycles/bicycle-selection.service';
 import { EnumerationService } from '../../core/enumeration.service';
 import { ServiceSlotService, ServiceSlotAvailability, SlotAvailabilityCheck } from '../../service-slots/service-slot.service';
+import { AuthService } from '../../auth/auth.service';
 
 // Import our custom date filter, formats and adapter
 import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
@@ -78,6 +79,7 @@ export class ServiceOrderFormComponent implements OnInit {
   private bicycleSelectionService = inject(BicycleSelectionService);
   private enumerationService = inject(EnumerationService);
   private serviceSlotService = inject(ServiceSlotService);
+  private authService = inject(AuthService);
   
   // Bicycle data
   selectedBicycles: Bicycle[] = [];
@@ -212,6 +214,13 @@ export class ServiceOrderFormComponent implements OnInit {
   }
   
   ngOnInit(): void {
+    // Check if user is logged in
+    if (!this.authService.isLoggedIn()) {
+      this.notificationService.error('Musisz być zalogowany, aby zamówić serwis.');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     // Get selected bicycles from the service
     this.selectedBicycles = this.bicycleSelectionService.getSelectedBicycles();
     
@@ -461,6 +470,14 @@ export class ServiceOrderFormComponent implements OnInit {
   }
   
   submitOrder(): void {
+    // Check authentication first
+    if (!this.authService.isLoggedIn()) {
+      this.notificationService.error('Sesja wygasła. Zaloguj się ponownie.');
+      this.authService.logout();
+      this.router.navigate(['/login']);
+      return;
+    }
+
     if (!this.bicycle || !this.selectedPackageId || !this.pickupDateControl.valid || !this.addressForm.valid || !this.termsAcceptedControl.value) {
       this.notificationService.error('Proszę wypełnić wszystkie wymagane pola');
       return;
@@ -543,7 +560,23 @@ export class ServiceOrderFormComponent implements OnInit {
         error: (error: any) => {
           this.isSubmitting = false;
           console.error('Error creating service order:', error);
-          this.notificationService.error('Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie.');
+          
+          // Detailed error handling
+          if (error.status === 401) {
+            this.notificationService.error('Sesja wygasła. Proszę zalogować się ponownie.');
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          } else if (error.status === 403) {
+            this.notificationService.error('Brak uprawnień do wykonania tej operacji.');
+          } else if (error.status === 400) {
+            const errorMessage = error.error?.message || 'Nieprawidłowe dane zamówienia.';
+            this.notificationService.error(errorMessage);
+          } else if (error.status === 0) {
+            this.notificationService.error('Brak połączenia z serwerem. Sprawdź połączenie internetowe.');
+          } else {
+            const errorMessage = error.error?.message || 'Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie.';
+            this.notificationService.error(errorMessage);
+          }
         }
       });
   }

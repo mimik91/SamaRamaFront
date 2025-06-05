@@ -14,48 +14,54 @@
   </div>
 
   <!-- Steps Progress -->
-  <div class="steps-container">
-    <div class="step completed">
-      <div class="step-number">1</div>
-      <div class="step-label">Dane rowerów</div>
+  <div class="steps-container" *ngIf="!loading && !error">
+    <div 
+      *ngFor="let step of [1, 2, 3]; let i = index" 
+      class="step"
+      [class.active]="isStepActive(step)"
+      [class.completed]="isStepCompleted(step)"
+      [class.accessible]="isStepAccessible(step)"
+      (click)="isStepAccessible(step) ? goToStep(step) : null"
+    >
+      <div class="step-number">
+        <span *ngIf="!isStepCompleted(step)">{{ step }}</span>
+        <svg *ngIf="isStepCompleted(step)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="step-label">{{ getStepTitle(step) }}</div>
     </div>
-    <div class="step-connector"></div>
-    <div class="step active">
-      <div class="step-number">2</div>
-      <div class="step-label">Dane kontaktowe</div>
-    </div>
-    <div class="step-connector"></div>
-    <div class="step active">
-      <div class="step-number">3</div>
-      <div class="step-label">Szczegóły transportu</div>
-    </div>
-    <div class="step-connector"></div>
-    <div class="step active">
-      <div class="step-number">4</div>
-      <div class="step-label">Podsumowanie</div>
+    
+    <!-- Step connectors -->
+    <div class="step-connectors">
+      <div 
+        *ngFor="let connector of [1, 2]; let i = index" 
+        class="step-connector"
+        [class.completed]="isStepCompleted(connector + 1)"
+      ></div>
     </div>
   </div>
 
-  <!-- Main Form -->
-  <div *ngIf="!loading && !error" class="step-content">
-    <!-- Service Info Card -->
-    <div class="service-info-card" *ngIf="selectedServiceInfo.name">
-      <h3>Serwis docelowy</h3>
-      <div class="service-details">
-        <div class="service-name">{{ selectedServiceInfo.name }}</div>
-        <div class="service-address">📍 {{ selectedServiceInfo.address }}</div>
-      </div>
+  <!-- Service Info Card -->
+  <div class="service-info-card" *ngIf="selectedServiceInfo.name && !loading && !error">
+    <h3>Serwis docelowy</h3>
+    <div class="service-details">
+      <div class="service-name">{{ selectedServiceInfo.name }}</div>
+      <div class="service-address">📍 {{ selectedServiceInfo.address }}</div>
     </div>
+  </div>
 
-    <form [formGroup]="transportForm" (ngSubmit)="onSubmit()">
-      
-      <!-- SEKCJA 1: Bicycle Information -->
-      <div class="form-section">
-        <h2>Dane rowerów do transportu</h2>
-        <p class="section-description">
-          Dodaj informacje o rowerach, które mają zostać przewiezione do serwisu.
-        </p>
+  <!-- Main Form Content -->
+  <div *ngIf="!loading && !error" class="step-content">
+    
+    <!-- KROK 1: Dane rowerów -->
+    <div *ngIf="currentStep === 1" class="form-section">
+      <div class="step-header">
+        <h2>{{ getStepTitle(1) }}</h2>
+        <p class="step-description">{{ getStepDescription(1) }}</p>
+      </div>
 
+      <form [formGroup]="bicyclesForm">
         <div formArrayName="bicycles">
           <div 
             *ngFor="let bicycleControl of bicyclesArray.controls; let i = index" 
@@ -81,45 +87,48 @@
             <div class="form-row">
               <div class="form-group">
                 <label [for]="'brand-' + i">Marka roweru *</label>
-                <input 
-                  type="text" 
+                <select 
                   [id]="'brand-' + i"
                   formControlName="brand"
-                  [class.is-invalid]="bicycleControl.get('brand')?.invalid && bicycleControl.get('brand')?.touched"
-                  placeholder="np. Giant, Trek, Specialized"
+                  [class.is-invalid]="isBicycleFieldInvalid(i, 'brand')"
+                  [attr.disabled]="loadingBrands ? '' : null"
                 >
-                <div *ngIf="bicycleControl.get('brand')?.invalid && bicycleControl.get('brand')?.touched" class="error-message">
-                  Marka roweru jest wymagana (min. 2 znaki)
+                  <option value="" disabled>-- Wybierz markę --</option>
+                  <option *ngIf="loadingBrands" value="" disabled>Ładowanie...</option>
+                  <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
+                </select>
+                <div *ngIf="isBicycleFieldInvalid(i, 'brand')" class="error-message">
+                  Marka roweru jest wymagana
                 </div>
               </div>
 
               <div class="form-group">
-                <label [for]="'model-' + i">Model roweru *</label>
+                <label [for]="'model-' + i">Model roweru</label>
                 <input 
                   type="text" 
                   [id]="'model-' + i"
                   formControlName="model"
-                  [class.is-invalid]="bicycleControl.get('model')?.invalid && bicycleControl.get('model')?.touched"
+                  [class.is-invalid]="isBicycleFieldInvalid(i, 'model')"
                   placeholder="np. Talon, Marlin, Rockhopper"
                 >
-                <div *ngIf="bicycleControl.get('model')?.invalid && bicycleControl.get('model')?.touched" class="error-message">
-                  Model roweru jest wymagany (min. 2 znaki)
+                <div *ngIf="isBicycleFieldInvalid(i, 'model')" class="error-message">
+                  Model roweru musi mieć co najmniej 2 znaki
                 </div>
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label [for]="'type-' + i">Typ roweru *</label>
+                <label [for]="'type-' + i">Typ roweru</label>
                 <select 
                   [id]="'type-' + i"
                   formControlName="type"
-                  [class.is-invalid]="bicycleControl.get('type')?.invalid && bicycleControl.get('type')?.touched"
+                  [class.is-invalid]="isBicycleFieldInvalid(i, 'type')"
                 >
                   <option value="">-- Wybierz typ --</option>
                   <option *ngFor="let type of getBicycleTypes()" [value]="type">{{ type }}</option>
                 </select>
-                <div *ngIf="bicycleControl.get('type')?.invalid && bicycleControl.get('type')?.touched" class="error-message">
+                <div *ngIf="isBicycleFieldInvalid(i, 'type')" class="error-message">
                   Typ roweru jest wymagany
                 </div>
               </div>
@@ -163,210 +172,246 @@
             Liczba rowerów: <strong>{{ getSelectedBicyclesCount() }}</strong>
           </div>
           <div class="summary-item">
-            Szacowany koszt transportu: <strong>{{ getEstimatedTransportCost() }} zł</strong>
+            <span *ngIf="actualTransportCost !== null">
+              Koszt transportu: <strong>{{ actualTransportCost }} zł</strong>
+            </span>
+            <span *ngIf="actualTransportCost === null">
+              Koszt transportu: <strong>Do ustalenia</strong>
+            </span>
+          </div>
+          <div class="summary-item" *ngIf="actualTransportCost === null">
+            <small style="color: #6c757d; font-style: italic;">
+              Skontaktujemy się z Tobą w sprawie kosztu transportu
+            </small>
           </div>
         </div>
+      </form>
+    </div>
+
+    <!-- KROK 2: Kontakt i transport -->
+    <div *ngIf="currentStep === 2" class="form-section">
+      <div class="step-header">
+        <h2>{{ getStepTitle(2) }}</h2>
+        <p class="step-description">{{ getStepDescription(2) }}</p>
       </div>
 
-      <!-- SEKCJA 2: Client Information -->
-      <div class="form-section">
-        <h2>Dane kontaktowe</h2>
-        <p class="section-description">
-          Podaj swoje dane kontaktowe potrzebne do realizacji transportu.
-        </p>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="clientEmail">Adres email *</label>
-            <input 
-              type="email" 
-              id="clientEmail" 
-              formControlName="clientEmail"
-              [class.is-invalid]="isFieldInvalid('clientEmail')"
-              placeholder="jan.kowalski@example.com"
-            >
-            <div *ngIf="isFieldInvalid('clientEmail')" class="error-message">
-              Wprowadź poprawny adres email
+      <form [formGroup]="contactAndTransportForm">
+        <!-- Sekcja danych kontaktowych -->
+        <div class="contact-section">
+          <h3>Dane kontaktowe</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="clientEmail">Adres email *</label>
+              <input 
+                type="email" 
+                id="clientEmail" 
+                formControlName="clientEmail"
+                [class.is-invalid]="isFieldInvalid('clientEmail')"
+                placeholder="jan.kowalski@example.com"
+              >
+              <div *ngIf="isFieldInvalid('clientEmail')" class="error-message">
+                Wprowadź poprawny adres email
+              </div>
             </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="clientPhone">Numer telefonu *</label>
-            <input 
-              type="tel" 
-              id="clientPhone" 
-              formControlName="clientPhone"
-              [class.is-invalid]="isFieldInvalid('clientPhone')"
-              placeholder="123456789"
-              maxlength="9"
-            >
-            <div *ngIf="isFieldInvalid('clientPhone')" class="error-message">
-              Wprowadź poprawny numer telefonu (9 cyfr)
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="clientName">Imię i nazwisko *</label>
-          <input 
-            type="text" 
-            id="clientName" 
-            formControlName="clientName"
-            [class.is-invalid]="isFieldInvalid('clientName')"
-            placeholder="Jan Kowalski"
-          >
-          <div *ngIf="isFieldInvalid('clientName')" class="error-message">
-            Imię i nazwisko jest wymagane (min. 2 znaki)
-          </div>
-        </div>
-      </div>
-
-      <!-- SEKCJA 3: Pickup Details -->
-      <div class="form-section">
-        <h2>Szczegóły odbioru</h2>
-        <p class="section-description">
-          Określ kiedy i skąd mamy odebrać Twoje rowery.
-        </p>
-
-        <div class="form-group">
-          <label for="pickupDate">Data odbioru *</label>
-          <div class="date-info">
-            Odbiór roweru dostępny od niedzieli do czwartku w godzinach 18:00-22:00.
-          </div>
-          <input 
-            type="date" 
-            id="pickupDate" 
-            formControlName="pickupDate"
-            [class.is-invalid]="isFieldInvalid('pickupDate')"
-            [min]="minDate"
-            [max]="maxDate"
-          >
-          <div *ngIf="isFieldInvalid('pickupDate')" class="error-message">
-            <span *ngIf="transportForm.get('pickupDate')?.hasError('required')">Wybierz datę odbioru</span>
-            <span *ngIf="transportForm.get('pickupDate')?.hasError('invalidDay')">Odbiór możliwy tylko od niedzieli do czwartku</span>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="pickupAddress">Adres odbioru *</label>
-          <input 
-            type="text" 
-            id="pickupAddress" 
-            formControlName="pickupAddress"
-            [class.is-invalid]="isFieldInvalid('pickupAddress')"
-            placeholder="ul. Przykładowa 123/45, 31-000 Kraków"
-          >
-          <div *ngIf="isFieldInvalid('pickupAddress')" class="error-message">
-            Adres jest wymagany (min. 5 znaków)
-          </div>
-          <div class="help-text">
-            Podaj pełny adres z numerem mieszkania (jeśli dotyczy)
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="additionalNotes">Dodatkowe informacje</label>
-          <textarea 
-            id="additionalNotes" 
-            formControlName="additionalNotes"
-            rows="4"
-            placeholder="Informacje o preferowanych godzinach odbioru, dodatkowe wskazówki dla kuriera, kod do bramy, piętro, itp."
-          ></textarea>
-          <div class="help-text">
-            Opcjonalne: Podaj wszelkie informacje, które ułatwią kuriemu odbiór rowerów
-          </div>
-        </div>
-      </div>
-
-      <!-- SEKCJA 4: Order Summary -->
-      <div class="order-summary" *ngIf="getSelectedBicyclesCount() > 0">
-        <h3>Podsumowanie zamówienia transportu</h3>
-        
-        <div class="summary-details">
-          <!-- Rowery -->
-          <div class="summary-row">
-            <span>Liczba rowerów:</span>
-            <span><strong>{{ getSelectedBicyclesCount() }}</strong></span>
-          </div>
-          
-          <!-- Lista rowerów -->
-          <div class="summary-section" *ngIf="getBicyclesData().length > 0">
-            <h4>Lista rowerów:</h4>
-            <div class="summary-bikes">
-              <div *ngFor="let bicycleData of getBicyclesData(); let i = index" class="summary-bike">
-                <span class="bike-index">{{ i + 1 }}.</span>
-                <span class="bike-name">{{ bicycleData.brand }} {{ bicycleData.model || '' }} ({{ bicycleData.type }})</span>
+            
+            <div class="form-group">
+              <label for="clientPhone">Numer telefonu *</label>
+              <input 
+                type="tel" 
+                id="clientPhone" 
+                formControlName="clientPhone"
+                [class.is-invalid]="isFieldInvalid('clientPhone')"
+                placeholder="123456789"
+                maxlength="9"
+              >
+              <div *ngIf="isFieldInvalid('clientPhone')" class="error-message">
+                Wprowadź poprawny numer telefonu (9 cyfr)
               </div>
             </div>
           </div>
-          
-          <!-- Kontakt -->
-          <div class="summary-row" *ngIf="transportForm.get('clientName')?.value">
-            <span>Kontakt:</span>
-            <span>{{ transportForm.get('clientName')?.value }}</span>
+        </div>
+
+        <!-- Sekcja szczegółów transportu -->
+        <div class="transport-section">
+          <h3>Szczegóły transportu</h3>
+          <div class="form-group">
+            <label for="pickupDate">Data odbioru *</label>
+            <div class="date-info">
+              Odbiór roweru dostępny od niedzieli do czwartku w godzinach 18:00-22:00.
+            </div>
+            <input 
+              type="date" 
+              id="pickupDate" 
+              formControlName="pickupDate"
+              [class.is-invalid]="isFieldInvalid('pickupDate')"
+              [min]="minDate"
+              [max]="maxDate"
+            >
+            <div *ngIf="isFieldInvalid('pickupDate')" class="error-message">
+              <span *ngIf="contactAndTransportForm.get('pickupDate')?.hasError('required')">Wybierz datę odbioru</span>
+              <span *ngIf="contactAndTransportForm.get('pickupDate')?.hasError('invalidDay')">Odbiór możliwy tylko od niedzieli do czwartku</span>
+            </div>
           </div>
           
-          <div class="summary-row" *ngIf="transportForm.get('clientEmail')?.value">
-            <span>Email:</span>
-            <span>{{ transportForm.get('clientEmail')?.value }}</span>
+          <div class="form-group">
+            <label for="pickupAddress">Adres odbioru *</label>
+            <input 
+              type="text" 
+              id="pickupAddress" 
+              formControlName="pickupAddress"
+              [class.is-invalid]="isFieldInvalid('pickupAddress')"
+              placeholder="ul. Przykładowa 123/45, 31-000 Kraków"
+            >
+            <div *ngIf="isFieldInvalid('pickupAddress')" class="error-message">
+              Adres jest wymagany (min. 5 znaków)
+            </div>
+            <div class="help-text">
+              Podaj pełny adres z numerem mieszkania (jeśli dotyczy)
+            </div>
           </div>
           
-          <div class="summary-row" *ngIf="transportForm.get('clientPhone')?.value">
-            <span>Telefon:</span>
-            <span>{{ transportForm.get('clientPhone')?.value }}</span>
+          <div class="form-group">
+            <label for="additionalNotes">Dodatkowe informacje</label>
+            <textarea 
+              id="additionalNotes" 
+              formControlName="additionalNotes"
+              rows="4"
+              placeholder="Informacje o preferowanych godzinach odbioru, dodatkowe wskazówki dla kuriera, kod do bramy, piętro, itp."
+            ></textarea>
+            <div class="help-text">
+              Opcjonalne: Podaj wszelkie informacje, które ułatwią kuriemu odbiór rowerów
+            </div>
           </div>
-          
-          <!-- Transport -->
-          <div class="summary-row" *ngIf="transportForm.get('pickupDate')?.value">
-            <span>Data odbioru:</span>
-            <span>{{ transportForm.get('pickupDate')?.value | date:'dd.MM.yyyy' }}</span>
+        </div>
+      </form>
+    </div>
+
+    <!-- KROK 3: Podsumowanie -->
+    <div *ngIf="currentStep === 3" class="form-section">
+      <div class="step-header">
+        <h2>{{ getStepTitle(3) }}</h2>
+        <p class="step-description">{{ getStepDescription(3) }}</p>
+      </div>
+
+      <div class="order-summary">
+        <h3>Podsumowanie zamówienia transportu</h3>
+        
+        <!-- Lista rowerów -->
+        <div class="summary-section" *ngIf="getBicyclesData().length > 0">
+          <h4>Lista rowerów ({{ getSelectedBicyclesCount() }}):</h4>
+          <div class="summary-bikes">
+            <div *ngFor="let bicycleData of getBicyclesData(); let i = index" class="summary-bike">
+              <span class="bike-index">{{ i + 1 }}.</span>
+              <span class="bike-name">
+                {{ bicycleData.brand }}
+                <span *ngIf="bicycleData.model"> {{ bicycleData.model }}</span>
+                <span *ngIf="bicycleData.type"> ({{ bicycleData.type }})</span>
+              </span>
+              <div *ngIf="bicycleData.frameMaterial" class="bike-detail">Rama: {{ bicycleData.frameMaterial }}</div>
+              <div *ngIf="bicycleData.description" class="bike-description">{{ bicycleData.description }}</div>
+            </div>
           </div>
-          
-          <div class="summary-row" *ngIf="transportForm.get('pickupAddress')?.value">
-            <span>Adres odbioru:</span>
-            <span>{{ transportForm.get('pickupAddress')?.value }}</span>
+        </div>
+        
+        <!-- Dane kontaktowe -->
+        <div class="summary-section">
+          <h4>Dane kontaktowe:</h4>
+          <div class="summary-details">
+            <div class="summary-row">
+              <span class="label">Email:</span>
+              <span class="value">{{ contactAndTransportForm.get('clientEmail')?.value }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Telefon:</span>
+              <span class="value">{{ contactAndTransportForm.get('clientPhone')?.value }}</span>
+            </div>
           </div>
-          
-          <div class="summary-row" *ngIf="selectedServiceInfo.name">
-            <span>Serwis docelowy:</span>
-            <span>{{ selectedServiceInfo.name }}</span>
+        </div>
+        
+        <!-- Szczegóły transportu -->
+        <div class="summary-section">
+          <h4>Szczegóły transportu:</h4>
+          <div class="summary-details">
+            <div class="summary-row">
+              <span class="label">Data odbioru:</span>
+              <span class="value">{{ contactAndTransportForm.get('pickupDate')?.value | date:'dd.MM.yyyy' }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Adres odbioru:</span>
+              <span class="value">{{ contactAndTransportForm.get('pickupAddress')?.value }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Serwis docelowy:</span>
+              <span class="value">{{ selectedServiceInfo.name }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Adres serwisu:</span>
+              <span class="value">{{ selectedServiceInfo.address }}</span>
+            </div>
+            <div class="summary-row" *ngIf="contactAndTransportForm.get('additionalNotes')?.value">
+              <span class="label">Dodatkowe informacje:</span>
+              <span class="value">{{ contactAndTransportForm.get('additionalNotes')?.value }}</span>
+            </div>
           </div>
-          
-          <div class="summary-row" *ngIf="selectedServiceInfo.address">
-            <span>Adres serwisu:</span>
-            <span>{{ selectedServiceInfo.address }}</span>
+        </div>
+        
+        <!-- Koszt -->
+        <div class="summary-total">
+          <div class="total-row">
+            <span class="total-label">Koszt transportu:</span>
+            <span class="total-price" *ngIf="actualTransportCost !== null">{{ actualTransportCost }} zł</span>
+            <span class="total-price" *ngIf="actualTransportCost === null" style="color: #6c757d;">Do ustalenia</span>
           </div>
-          
-          <!-- Koszt -->
-          <div class="summary-row total">
-            <span>Całkowity koszt transportu:</span>
-            <span class="price">{{ getEstimatedTransportCost() }} zł</span>
+          <div class="total-details">
+            <span *ngIf="actualTransportCost !== null">Transport w obie strony</span>
+            <span *ngIf="actualTransportCost === null">Skontaktujemy się w sprawie szczegółów</span>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Form Actions -->
-      <div class="form-actions">
-        <button type="button" class="cancel-btn" (click)="goBack()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m15 18-6-6 6-6"/>
-          </svg>
-          Wróć
-        </button>
-        
-        <button 
-          type="submit" 
-          class="submit-btn" 
-          [disabled]="transportForm.invalid || submitting || getSelectedBicyclesCount() === 0"
-        >
-          <svg *ngIf="!submitting" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14"/>
-            <path d="m12 5 7 7-7 7"/>
-          </svg>
-          <span *ngIf="submitting" class="loading-spinner"></span>
-          {{ submitting ? 'Przetwarzanie...' : 'Zamów transport' }}
-        </button>
-      </div>
-    </form>
+    <!-- Step Navigation -->
+    <div class="step-actions">
+      <!-- Back button -->
+      <button 
+        type="button" 
+        class="back-btn" 
+        (click)="currentStep === 1 ? goBack() : prevStep()"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        {{ currentStep === 1 ? 'Wróć do mapy' : 'Poprzedni krok' }}
+      </button>
+      
+      <!-- Next/Submit button -->
+      <button 
+        type="button" 
+        class="next-btn" 
+        *ngIf="currentStep < totalSteps"
+        (click)="nextStep()"
+        [disabled]="!isCurrentStepValid()"
+      >
+        Następny krok
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </button>
+      
+      <button 
+        type="button" 
+        class="submit-btn" 
+        *ngIf="currentStep === totalSteps"
+        (click)="onSubmit()"
+        [disabled]="submitting || !isStepValid(1) || !isStepValid(2)"
+      >
+        <svg *ngIf="!submitting" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/>
+          <path d="m12 5 7 7-7 7"/>
+        </svg>
+        <span *ngIf="submitting" class="loading-spinner"></span>
+        {{ submitting ? 'Przetwarzanie...' : 'Zamów transport' }}
+      </button>
+    </div>
   </div>
 </div>

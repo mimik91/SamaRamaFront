@@ -32,6 +32,7 @@ export interface ServiceDetails {
   active: boolean;
   createdAt: string;
   lastModifiedAt?: string;
+  transportCost?: number; // DODANE - koszt transportu
 }
 
 @Injectable({
@@ -93,7 +94,8 @@ export class MapService {
           description: 'To jest testowy serwis rowerowy.',
           verified: true,
           active: true,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          transportCost: 70 // DODANE - przykładowy koszt transportu
         };
         
         console.log('MapService: Using test service data:', testService);

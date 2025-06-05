@@ -79,7 +79,7 @@ export interface BikeService {
 })
 export class TransportOrderService {
   // URL zaktualizowany do ClientOrderController
-  private apiUrl = `${environment.apiUrl}/orders/transport`;
+  private apiUrl = `${environment.apiUrl}/guest-orders/transport`;
   private http = inject(HttpClient);
 
   constructor() { }

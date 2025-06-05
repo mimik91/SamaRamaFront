@@ -1,22 +1,4 @@
-/* Form sections within step */
-.contact-section,
-.transport-section {
-  margin-bottom: 40px;
-  padding: 25px;
-  background-color: #f8f9fa;
-  border-radius: 12px;
-  border-left: 4px solid #007bff;
-}
-
-.contact-section h3,
-.transport-section h3 {
-  margin: 0 0 20px 0;
-  color: #2d3748;
-  font-size: 1.2rem;
-  font-weight: 600;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e2e8f0;
-}/* Transport Order Form Styles - Wieloetapowy formularz */
+/* Transport Order Form Styles - Wieloetapowy formularz */
 
 .transport-order-container {
   max-width: 1000px;
@@ -39,7 +21,7 @@ h1 {
   margin-bottom: 30px;
 }
 
-/* Steps navigation - Nowy design */
+/* Steps navigation - Poprawiony design */
 .steps-container {
   position: relative;
   display: flex;
@@ -47,6 +29,9 @@ h1 {
   justify-content: center;
   margin-bottom: 40px;
   padding: 20px 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .step {
@@ -58,6 +43,7 @@ h1 {
   transition: all 0.3s ease;
   z-index: 2;
   position: relative;
+  flex: 1;
 }
 
 .step.accessible:hover {
@@ -80,11 +66,12 @@ h1 {
   justify-content: center;
   font-weight: bold;
   margin-bottom: 12px;
-  border: 3px solid transparent;
+  border: 3px solid #e9ecef;
   transition: all 0.3s ease;
   font-size: 1.1rem;
 }
 
+/* Aktywny krok - niebieski */
 .step.active .step-number {
   background-color: #007bff;
   color: white;
@@ -92,10 +79,18 @@ h1 {
   box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2);
 }
 
+/* Ukończony krok - zielony */
 .step.completed .step-number {
   background-color: #28a745;
   color: white;
   border-color: #1e7e34;
+}
+
+/* Niedostępny krok - szary */
+.step:not(.accessible) .step-number {
+  background-color: #f8f9fa;
+  color: #adb5bd;
+  border-color: #dee2e6;
 }
 
 .step-label {
@@ -104,6 +99,8 @@ h1 {
   text-align: center;
   font-weight: 500;
   transition: color 0.3s ease;
+  max-width: 100px;
+  line-height: 1.2;
 }
 
 .step.active .step-label {
@@ -116,7 +113,11 @@ h1 {
   font-weight: 600;
 }
 
-/* Step connectors */
+.step:not(.accessible) .step-label {
+  color: #adb5bd;
+}
+
+/* Step connectors - linie między krokami */
 .step-connectors {
   position: absolute;
   top: 50%;
@@ -124,19 +125,19 @@ h1 {
   right: 0;
   height: 3px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 120px;
   z-index: 1;
   transform: translateY(-25px);
+  padding: 0 25px;
 }
 
 .step-connector {
   flex: 1;
-  max-width: 100px;
   height: 3px;
   background-color: #e9ecef;
   transition: background-color 0.3s ease;
+  margin: 0 35px;
 }
 
 .step-connector.completed {
@@ -409,6 +410,42 @@ input:focus, textarea:focus, select:focus {
   border-radius: 6px;
 }
 
+/* Form sections within step */
+.contact-section,
+.transport-section {
+  margin-bottom: 40px;
+  padding: 25px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #007bff;
+}
+
+.contact-section h3,
+.transport-section h3 {
+  margin: 0 0 20px 0;
+  color: #2d3748;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Address section */
+.address-section {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.address-section h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 /* Selection Summary */
 .selection-summary {
   background: linear-gradient(135deg, #f8f9ff 0%, #e2e8f0 100%);
@@ -658,10 +695,12 @@ input:focus, textarea:focus, select:focus {
     padding: 20px 10px;
     justify-content: flex-start;
     gap: 0;
+    max-width: 100%;
   }
   
   .step {
     min-width: 100px;
+    flex: none;
     margin: 0 10px;
   }
 
@@ -673,10 +712,11 @@ input:focus, textarea:focus, select:focus {
 
   .step-label {
     font-size: 12px;
+    max-width: 80px;
   }
 
   .step-connectors {
-    display: none;
+    display: none; /* Ukryj łączniki na mobile */
   }
 
   .form-row {
@@ -717,6 +757,11 @@ input:focus, textarea:focus, select:focus {
     flex-direction: column;
     gap: 10px;
     text-align: center;
+  }
+
+  .contact-section,
+  .transport-section {
+    padding: 20px 15px;
   }
 }
 

@@ -99,14 +99,16 @@ export class TransportOrderService {
   /**
    * Tworzy zamówienie transportowe dla gości (niezalogowani użytkownicy)
    */
-  createGuestTransportOrder(orderData: TransportOrderRequest): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/guest`, orderData).pipe(
-      catchError(error => {
+    createGuestTransportOrder(orderData: any): Observable<any> {
+    console.log('Creating guest transport order with data:', orderData);
+    
+    return this.http.post<any>(this.apiUrl, orderData).pipe(
+        catchError(error => {
         console.error('Error creating guest transport order:', error);
         return throwError(() => error);
-      })
+        })
     );
-  }
+    }
 
   /**
    * Pobiera wszystkie zamówienia transportowe użytkownika
@@ -218,4 +220,18 @@ export class TransportOrderService {
       })
     );
   }
+
+  calculateTransportCostForBikes(bikesCount: number, serviceId?: number): Observable<any> {
+  const request = {
+    bicycleCount: bikesCount,
+    targetServiceId: serviceId
+  };
+  
+  return this.http.post<any>(`${environment.apiUrl}/guest-orders/calculate-transport-cost`, request).pipe(
+    catchError(error => {
+      console.error('Error calculating transport cost:', error);
+      return throwError(() => error);
+    })
+  );
+}
 }

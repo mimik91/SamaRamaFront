@@ -83,9 +83,17 @@ export class TransportOrderFormComponent implements OnInit {
       // Dane kontaktowe - bez imienia i nazwiska
       clientEmail: ['', [Validators.required, Validators.email]],
       clientPhone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
+      
       // Szczegóły transportu
       pickupDate: ['', [Validators.required, this.dateValidator.bind(this)]],
-      pickupAddress: ['', [Validators.required, Validators.minLength(5)]],
+      
+      // ROZBITY ADRES - osobne pola
+      pickupStreet: ['', [Validators.required, Validators.minLength(2)]],
+      pickupBuildingNumber: ['', [Validators.required]],
+      pickupApartmentNumber: [''], // opcjonalne
+      pickupCity: ['', [Validators.required]],
+      pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]],
+      
       additionalNotes: ['']
     });
   }
@@ -291,9 +299,10 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   getEstimatedTransportCost(): number {
-    // Jeśli mamy rzeczywisty koszt z API, użyj go
+    // Jeśli mamy rzeczywisty koszt z API, użyj go i pomnóż przez liczbę rowerów
     if (this.actualTransportCost !== null) {
-      return this.actualTransportCost;
+      const bicycleCount = this.getSelectedBicyclesCount();
+      return this.actualTransportCost * bicycleCount;
     }
     
     // Fallback - oblicz lokalnie jeśli API nie jest dostępne
@@ -303,6 +312,49 @@ export class TransportOrderFormComponent implements OnInit {
     
     if (selectedCount === 0) return 0;
     return baseCost + (selectedCount - 1) * perBikeCost;
+  }
+
+  // Nowa metoda - zwraca cenę jednostkową dla backendu
+  getUnitTransportCost(): number {
+    // Jeśli mamy rzeczywisty koszt z API, użyj go (to już jest cena jednostkowa)
+    if (this.actualTransportCost !== null) {
+      return this.actualTransportCost;
+    }
+    
+    // Fallback - oblicz cenę jednostkową lokalnie
+    const baseCost = 50;
+    const perBikeCost = 20;
+    
+    // Dla fallback zakładamy stałą cenę jednostkową
+    return baseCost;
+  }
+
+  // Metoda do tworzenia pełnego adresu (dla wyświetlania)
+  getFullPickupAddress(): string {
+    const form = this.contactAndTransportForm.value;
+    let address = '';
+    
+    if (form.pickupStreet) {
+      address += form.pickupStreet;
+    }
+    
+    if (form.pickupBuildingNumber) {
+      address += ' ' + form.pickupBuildingNumber;
+    }
+    
+    if (form.pickupApartmentNumber) {
+      address += '/' + form.pickupApartmentNumber;
+    }
+    
+    if (form.pickupCity) {
+      address += ', ' + form.pickupCity;
+    }
+    
+    if (form.pickupPostalCode) {
+      address += ' ' + form.pickupPostalCode;
+    }
+    
+    return address;
   }
 
   isFieldInvalid(fieldName: string, formGroup?: FormGroup): boolean {
@@ -327,7 +379,8 @@ export class TransportOrderFormComponent implements OnInit {
 
   // Step completion status
   isStepCompleted(step: number): boolean {
-    return this.isStepValid(step);
+    // Krok jest ukończony tylko jeśli przeszliśmy już dalej
+    return this.currentStep > step && this.isStepValid(step);
   }
 
   isStepActive(step: number): boolean {
@@ -355,40 +408,52 @@ export class TransportOrderFormComponent implements OnInit {
 
     this.submitting = true;
 
-    // Combine all form data
     const bicyclesData = this.bicyclesForm.value.bicycles as BicycleFormData[];
     const contactAndTransportData = this.contactAndTransportForm.value;
     
-    const transportOrder: TransportOrderRequest = {
-      bicycleIds: bicyclesData.map((_, index) => -(index + 1)), // Tymczasowe ID
-      pickupDate: contactAndTransportData.pickupDate,
-      pickupAddress: contactAndTransportData.pickupAddress,
-      deliveryAddress: this.selectedServiceInfo.address,
-      additionalNotes: contactAndTransportData.additionalNotes || undefined,
-      targetServiceId: this.selectedServiceInfo.id,
-      transportPrice: this.actualTransportCost || undefined, // Użyj rzeczywistego kosztu lub undefined
-      clientEmail: contactAndTransportData.clientEmail,
-      clientPhone: contactAndTransportData.clientPhone,
-      // Nie wysyłamy clientName - nie zbieramy tego pola
-      bicyclesData: bicyclesData.map((bike, index) => ({
-        id: -(index + 1),
+    const transportOrder = {
+      // === ROWERY ===
+      bicycles: bicyclesData.map(bike => ({
         brand: bike.brand,
-        model: bike.model,
-        type: bike.type,
-        frameMaterial: bike.frameMaterial,
-        description: bike.description
-      }))
-    } as any;
+        model: bike.model || '',
+        additionalInfo: bike.description || ''
+      })),
+      
+      // === DANE GOŚCIA ===
+      email: contactAndTransportData.clientEmail,
+      phone: contactAndTransportData.clientPhone,
+      
+      // === ADRES ODBIORU - bezpośrednio z formularza ===
+      pickupStreet: contactAndTransportData.pickupStreet,
+      pickupBuildingNumber: contactAndTransportData.pickupBuildingNumber,
+      pickupApartmentNumber: contactAndTransportData.pickupApartmentNumber,
+      pickupCity: contactAndTransportData.pickupCity,
+      pickupPostalCode: contactAndTransportData.pickupPostalCode,
+      
+      // === TRANSPORT ===
+      pickupDate: contactAndTransportData.pickupDate,
+      targetServiceId: this.selectedServiceInfo.id,
+      transportPrice: this.getUnitTransportCost(), // Wysyłamy cenę jednostkową!
+      transportNotes: contactAndTransportData.additionalNotes,
+      additionalNotes: contactAndTransportData.additionalNotes,
+      
+      servicePackageId: null // czyste zamówienie transportowe
+    };
 
-    this.transportOrderService.createTransportOrder(transportOrder).subscribe({
+    console.log('Sending transport order:', transportOrder);
+    console.log('Unit price for backend:', this.getUnitTransportCost());
+    console.log('Total price for customer:', this.getEstimatedTransportCost());
+    console.log('Number of bicycles:', this.getSelectedBicyclesCount());
+
+    this.transportOrderService.createGuestTransportOrder(transportOrder).subscribe({
       next: (response) => {
-        this.notificationService.success(`Zamówienie transportu #${response.id} zostało złożone pomyślnie!`);
+        this.notificationService.success(`Zamówienie transportu zostało złożone pomyślnie!`);
         this.submitting = false;
         
         this.router.navigate(['/'], {
           queryParams: { 
             success: 'transport-order',
-            orderId: response.id 
+            orderId: response.id || response.orderIds?.[0]
           }
         });
       },

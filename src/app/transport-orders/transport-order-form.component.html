@@ -35,9 +35,12 @@
     <!-- Step connectors -->
     <div class="step-connectors">
       <div 
-        *ngFor="let connector of [1, 2]; let i = index" 
         class="step-connector"
-        [class.completed]="isStepCompleted(connector + 1)"
+        [class.completed]="isStepCompleted(2)"
+      ></div>
+      <div 
+        class="step-connector"
+        [class.completed]="isStepCompleted(3)"
       ></div>
     </div>
   </div>
@@ -172,16 +175,21 @@
             Liczba rowerów: <strong>{{ getSelectedBicyclesCount() }}</strong>
           </div>
           <div class="summary-item">
-            <span *ngIf="actualTransportCost !== null">
-              Koszt transportu: <strong>{{ actualTransportCost }} zł</strong>
+            <span *ngIf="getEstimatedTransportCost() > 0">
+              Koszt transportu: <strong>{{ getEstimatedTransportCost() }} zł</strong>
             </span>
-            <span *ngIf="actualTransportCost === null">
+            <span *ngIf="getEstimatedTransportCost() === 0">
               Koszt transportu: <strong>Do ustalenia</strong>
             </span>
           </div>
-          <div class="summary-item" *ngIf="actualTransportCost === null">
+          <div class="summary-item" *ngIf="getEstimatedTransportCost() === 0">
             <small style="color: #6c757d; font-style: italic;">
               Skontaktujemy się z Tobą w sprawie kosztu transportu
+            </small>
+          </div>
+          <div class="summary-item" *ngIf="getSelectedBicyclesCount() > 1">
+            <small style="color: #28a745; font-style: italic;">
+              Koszt za {{ getSelectedBicyclesCount() }} rower{{ getSelectedBicyclesCount() > 1 ? 'ów' : 'a' }}
             </small>
           </div>
         </div>
@@ -253,20 +261,79 @@
             </div>
           </div>
           
-          <div class="form-group">
-            <label for="pickupAddress">Adres odbioru *</label>
-            <input 
-              type="text" 
-              id="pickupAddress" 
-              formControlName="pickupAddress"
-              [class.is-invalid]="isFieldInvalid('pickupAddress')"
-              placeholder="ul. Przykładowa 123/45, 31-000 Kraków"
-            >
-            <div *ngIf="isFieldInvalid('pickupAddress')" class="error-message">
-              Adres jest wymagany (min. 5 znaków)
+          <!-- ROZBITY ADRES -->
+          <div class="address-section">
+            <h4>Adres odbioru *</h4>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="pickupStreet">Ulica *</label>
+                <input 
+                  type="text" 
+                  id="pickupStreet" 
+                  formControlName="pickupStreet"
+                  [class.is-invalid]="isFieldInvalid('pickupStreet')"
+                  placeholder="np. Floriańska"
+                >
+                <div *ngIf="isFieldInvalid('pickupStreet')" class="error-message">
+                  Ulica jest wymagana
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="pickupBuildingNumber">Numer budynku *</label>
+                <input 
+                  type="text" 
+                  id="pickupBuildingNumber" 
+                  formControlName="pickupBuildingNumber"
+                  [class.is-invalid]="isFieldInvalid('pickupBuildingNumber')"
+                  placeholder="np. 15A"
+                >
+                <div *ngIf="isFieldInvalid('pickupBuildingNumber')" class="error-message">
+                  Numer budynku jest wymagany
+                </div>
+              </div>
             </div>
-            <div class="help-text">
-              Podaj pełny adres z numerem mieszkania (jeśli dotyczy)
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="pickupApartmentNumber">Numer mieszkania</label>
+                <input 
+                  type="text" 
+                  id="pickupApartmentNumber" 
+                  formControlName="pickupApartmentNumber"
+                  placeholder="np. 23 (opcjonalne)"
+                >
+              </div>
+              
+              <div class="form-group">
+                <label for="pickupCity">Miasto *</label>
+                <input 
+                  type="text" 
+                  id="pickupCity" 
+                  formControlName="pickupCity"
+                  [class.is-invalid]="isFieldInvalid('pickupCity')"
+                  placeholder="np. Kraków"
+                >
+                <div *ngIf="isFieldInvalid('pickupCity')" class="error-message">
+                  Miasto jest wymagane
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="pickupPostalCode">Kod pocztowy</label>
+              <input 
+                type="text" 
+                id="pickupPostalCode" 
+                formControlName="pickupPostalCode"
+                [class.is-invalid]="isFieldInvalid('pickupPostalCode')"
+                placeholder="np. 31-000 (opcjonalne)"
+                pattern="\d{2}-\d{3}"
+              >
+              <div *ngIf="isFieldInvalid('pickupPostalCode')" class="error-message">
+                Kod pocztowy musi być w formacie XX-XXX
+              </div>
             </div>
           </div>
           
@@ -338,7 +405,7 @@
             </div>
             <div class="summary-row">
               <span class="label">Adres odbioru:</span>
-              <span class="value">{{ contactAndTransportForm.get('pickupAddress')?.value }}</span>
+              <span class="value">{{ getFullPickupAddress() }}</span>
             </div>
             <div class="summary-row">
               <span class="label">Serwis docelowy:</span>
@@ -359,12 +426,12 @@
         <div class="summary-total">
           <div class="total-row">
             <span class="total-label">Koszt transportu:</span>
-            <span class="total-price" *ngIf="actualTransportCost !== null">{{ actualTransportCost }} zł</span>
-            <span class="total-price" *ngIf="actualTransportCost === null" style="color: #6c757d;">Do ustalenia</span>
+            <span class="total-price" *ngIf="getEstimatedTransportCost() > 0">{{ getEstimatedTransportCost() }} zł</span>
+            <span class="total-price" *ngIf="getEstimatedTransportCost() === 0" style="color: #6c757d;">Do ustalenia</span>
           </div>
           <div class="total-details">
-            <span *ngIf="actualTransportCost !== null">Transport w obie strony</span>
-            <span *ngIf="actualTransportCost === null">Skontaktujemy się w sprawie szczegółów</span>
+            <span *ngIf="getEstimatedTransportCost() > 0">Transport w obie strony dla {{ getSelectedBicyclesCount() }} rower{{ getSelectedBicyclesCount() > 1 ? 'ów' : 'a' }}</span>
+            <span *ngIf="getEstimatedTransportCost() === 0">Skontaktujemy się w sprawie szczegółów</span>
           </div>
         </div>
       </div>

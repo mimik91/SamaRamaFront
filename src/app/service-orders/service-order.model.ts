@@ -7,21 +7,22 @@ export type OrderStatus = string;
 
 export interface ServiceOrder {
   id: number;
-  orderType?: string; // "SERVICE" lub "TRANSPORT" - opcjonalne dla kompatybilności
+  orderType?: string; // "SERVICE" lub "TRANSPORT"
   
   // Standard bicycle object - may not be present in API response
   bicycle?: Bicycle | null;
   bicycleId?: number;
   bicycleBrand?: string;
   bicycleModel?: string;
-  bicycleDescription?: string; // Nowe pole z backendu
+  bicycleDescription?: string; // Nowe pole z backendu - opis roweru
   
   client?: User;
   
   servicePackage?: ServicePackage;
-  servicePackageId?: number;  // Add this property
+  servicePackageId?: number;
   servicePackageName?: string;
   servicePackageCode?: string;
+  servicePackageDescription?: string; // Nowe pole - opis pakietu/usługi
   
   pickupDate: string;
   pickupAddress: string;
@@ -29,21 +30,23 @@ export interface ServiceOrder {
   pickupLongitude?: number;
   
   // Target service info
-  targetServiceName?: string; // Nowe pole z backendu
+  targetServiceName?: string; // Nazwa serwisu docelowego
+  deliveryAddress?: string; // Adres dostawy
   
   price: number; // Zachowujemy dla kompatybilności
-  totalPrice?: number; // Nowe pole z backendu
+  totalPrice?: number; // Cena całkowita z backendu
   
   orderDate: string;
-  additionalNotes?: string;
+  additionalNotes?: string; // Dodatkowe uwagi
+  transportNotes?: string; // Uwagi transportowe
+  serviceNotes?: string; // Uwagi serwisowe
+  
   status: OrderStatus;
-  statusDisplayName?: string; // Nowe pole z backendu
-  serviceNotes?: string;
+  statusDisplayName?: string; // Czytelna nazwa statusu z backendu
 
   lastModifiedBy?: string;
   lastModifiedDate?: string;
 }
-
 
 export interface CreateServiceOrderRequest {
   bicycleIds: number[];

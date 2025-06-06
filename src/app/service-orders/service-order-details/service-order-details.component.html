@@ -18,9 +18,9 @@
     <div *ngIf="!loading && !error && serviceOrder" class="order-content">
       <div class="order-header">
         <div class="order-title">
-          <h2>Zamówienie #{{ serviceOrder.id }}</h2>
+          <h2>{{ getOrderTypeDisplayName(serviceOrder.orderType) }} #{{ serviceOrder.id }}</h2>
           <span class="order-status" [ngClass]="getStatusClass(serviceOrder.status)">
-            {{ getStatusLabel(serviceOrder.status) }}
+            {{ serviceOrder.statusDisplayName || getStatusLabel(serviceOrder.status) }}
           </span>
         </div>
         <div class="order-date">
@@ -31,8 +31,8 @@
       <div class="details-card">
         <h3>Informacje o rowerze</h3>
         <div class="details-row">
-          <span class="details-label">Marka:</span>
-          <span class="details-value">{{ getBicycleBrand() }}</span>
+          <span class="details-label">Rower:</span>
+          <span class="details-value">{{ serviceOrder.bicycleDescription || getBicycleBrand() || 'Nie określono' }}</span>
         </div>
         <div class="details-row" *ngIf="getBicycleModel()">
           <span class="details-label">Model:</span>
@@ -52,20 +52,25 @@
         </div>
       </div>
       
+      <!-- Pakiet serwisowy / Transport -->
       <div class="details-card">
-        <h3>Pakiet serwisowy</h3>
+        <h3>{{ serviceOrder.orderType === 'TRANSPORT' ? 'Usługa transportowa' : 'Pakiet serwisowy' }}</h3>
         <div class="details-row">
-          <span class="details-label">Pakiet:</span>
-          <span class="details-value">{{ getServicePackageName() }}</span>
+          <span class="details-label">{{ serviceOrder.orderType === 'TRANSPORT' ? 'Usługa:' : 'Pakiet:' }}</span>
+          <span class="details-value">{{ serviceOrder.servicePackageName || getServicePackageName() || 'Nie określono' }}</span>
+        </div>
+        <div class="details-row" *ngIf="serviceOrder.servicePackageDescription">
+          <span class="details-label">Opis:</span>
+          <span class="details-value">{{ serviceOrder.servicePackageDescription }}</span>
         </div>
         <div class="details-row">
           <span class="details-label">Cena:</span>
-          
+          <span class="details-value price">{{ formatPrice(serviceOrder.totalPrice) }}</span>
         </div>
       </div>
       
       <div class="details-card">
-        <h3>Szczegóły odbioru</h3>
+        <h3>Szczegóły transportu</h3>
         <div class="details-row">
           <span class="details-label">Data odbioru:</span>
           <span class="details-value">{{ formatDate(serviceOrder.pickupDate) }}</span>
@@ -74,22 +79,43 @@
           <span class="details-label">Adres odbioru:</span>
           <span class="details-value">{{ serviceOrder.pickupAddress }}</span>
         </div>
+        <div class="details-row" *ngIf="serviceOrder.targetServiceName">
+          <span class="details-label">{{ serviceOrder.orderType === 'TRANSPORT' ? 'Serwis docelowy:' : 'Serwis:' }}</span>
+          <span class="details-value">{{ serviceOrder.targetServiceName }}</span>
+        </div>
+        <div class="details-row" *ngIf="serviceOrder.deliveryAddress">
+          <span class="details-label">Adres dostawy:</span>
+          <span class="details-value">{{ serviceOrder.deliveryAddress }}</span>
+        </div>
         <div class="details-row" *ngIf="serviceOrder.pickupLatitude && serviceOrder.pickupLongitude">
-          <span class="details-label">Lokalizacja:</span>
+          <span class="details-label">Lokalizacja odbioru:</span>
           <span class="details-value">
             {{ serviceOrder.pickupLatitude.toFixed(6) }}, {{ serviceOrder.pickupLongitude.toFixed(6) }}
           </span>
         </div>
-        <div class="details-row" *ngIf="serviceOrder.additionalNotes">
-          <span class="details-label">Dodatkowe informacje:</span>
-          <span class="details-value">{{ serviceOrder.additionalNotes }}</span>
+      </div>
+      
+      <!-- Notatki transportowe -->
+      <div class="details-card" *ngIf="serviceOrder.transportNotes && serviceOrder.transportNotes.trim()">
+        <h3>Uwagi transportowe</h3>
+        <div class="service-notes">
+          {{ serviceOrder.transportNotes }}
         </div>
       </div>
       
-      <div class="details-card" *ngIf="serviceOrder.serviceNotes">
+      <!-- Notatki serwisowe - tylko dla zamówień serwisowych -->
+      <div class="details-card" *ngIf="serviceOrder.serviceNotes && serviceOrder.serviceNotes.trim()">
         <h3>Uwagi serwisowe</h3>
         <div class="service-notes">
           {{ serviceOrder.serviceNotes }}
+        </div>
+      </div>
+      
+      <!-- Dodatkowe informacje -->
+      <div class="details-card" *ngIf="serviceOrder.additionalNotes && serviceOrder.additionalNotes.trim()">
+        <h3>Dodatkowe informacje</h3>
+        <div class="service-notes">
+          {{ serviceOrder.additionalNotes }}
         </div>
       </div>
       

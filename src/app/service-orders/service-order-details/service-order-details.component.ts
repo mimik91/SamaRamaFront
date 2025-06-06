@@ -82,10 +82,27 @@ export class ServiceOrderDetailsComponent implements OnInit {
       default: return '';
     }
   }
+
+  // Nowa metoda do wyświetlania typu zamówienia
+  getOrderTypeDisplayName(orderType: string | undefined): string {
+    switch (orderType) {
+      case 'SERVICE': return 'Zamówienie serwisowe';
+      case 'TRANSPORT': return 'Zamówienie transportowe';
+      case undefined:
+      case null:
+        return 'Zamówienie serwisowe'; // Domyślnie serwisowe dla kompatybilności
+      default: return `Zamówienie`;
+    }
+  }
   
   // Safe accessor for bicycle properties
   getBicycleBrand(): string {
     if (!this.serviceOrder) return 'Nie określono';
+    
+    // Najpierw sprawdź bicycleDescription z API
+    if (this.serviceOrder.bicycleDescription) {
+      return this.serviceOrder.bicycleDescription;
+    }
     
     if (this.serviceOrder.bicycleBrand) {
       return this.serviceOrder.bicycleBrand;
@@ -131,6 +148,7 @@ export class ServiceOrderDetailsComponent implements OnInit {
   getServicePackageName(): string {
     if (!this.serviceOrder) return 'Nie określono';
     
+    // Najpierw sprawdź servicePackageName z API
     if (this.serviceOrder.servicePackageName) {
       return this.serviceOrder.servicePackageName;
     }
@@ -159,7 +177,8 @@ export class ServiceOrderDetailsComponent implements OnInit {
            ' ' + date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
   }
 
-  formatPrice(price: number): string {
+  formatPrice(price: number | undefined | null): string {
+    if (price === undefined || price === null) return '0.00 zł';
     return price.toFixed(2) + ' zł';
   }
 

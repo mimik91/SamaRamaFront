@@ -411,6 +411,18 @@ export class TransportOrderFormComponent implements OnInit {
     const bicyclesData = this.bicyclesForm.value.bicycles as BicycleFormData[];
     const contactAndTransportData = this.contactAndTransportForm.value;
     
+    // Przygotuj dodatkowe informacje o rowerach
+    const bicycleInfo = bicyclesData
+      .map((bike, index) => {
+        let info = `Rower ${index + 1}: ${bike.brand}`;
+        if (bike.model) info += ` ${bike.model}`;
+        if (bike.type) info += ` (${bike.type})`;
+        if (bike.frameMaterial) info += `, rama: ${bike.frameMaterial}`;
+        if (bike.description) info += ` - ${bike.description}`;
+        return info;
+      })
+      .join('\n');
+
     const transportOrder = {
       // === ROWERY ===
       bicycles: bicyclesData.map(bike => ({
@@ -434,8 +446,8 @@ export class TransportOrderFormComponent implements OnInit {
       pickupDate: contactAndTransportData.pickupDate,
       targetServiceId: this.selectedServiceInfo.id,
       transportPrice: this.getUnitTransportCost(), // Wysyłamy cenę jednostkową!
-      transportNotes: contactAndTransportData.additionalNotes,
-      additionalNotes: contactAndTransportData.additionalNotes,
+      transportNotes: contactAndTransportData.additionalNotes || '', // Notatki z formularza
+      additionalNotes: bicycleInfo, // Informacje o rowerach jako dodatkowe notatki
       
       servicePackageId: null // czyste zamówienie transportowe
     };

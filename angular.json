@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "your-project-name": {
+    "SamaRama": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/your-project-name",
+            "outputPath": "dist/sama-rama",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -31,14 +31,7 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": [],
-            "server": "src/main.server.ts",
-            "prerender": {
-              "routesFile": "routes.txt"
-            },
-            "ssr": {
-              "entry": "server.ts"
-            }
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -54,16 +47,12 @@
                   "maximumError": "4kb"
                 }
               ],
-              "outputHashing": "all",
-              "prerender": {
-                "routesFile": "routes.txt"
-              }
+              "outputHashing": "all"
             },
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true,
-              "prerender": false
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
@@ -72,10 +61,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "your-project-name:build:production"
+              "buildTarget": "SamaRama:build:production"
             },
             "development": {
-              "buildTarget": "your-project-name:build:development"
+              "buildTarget": "SamaRama:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -83,7 +72,7 @@
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n",
           "options": {
-            "buildTarget": "your-project-name:build"
+            "buildTarget": "SamaRama:build"
           }
         },
         "test": {

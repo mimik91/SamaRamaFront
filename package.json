@@ -7,14 +7,14 @@
   },
   "scripts": {
     "ng": "ng",
-    "start": "node dist/sama-rama/server/server.mjs",
+    "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:SamaRama": "node dist/sama-rama/server/server.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,css}\"",
-    "heroku-postbuild": "ng build --configuration production --no-prerender"
+    "heroku-postbuild": "ng build --configuration production"
   },
   "private": true,
   "dependencies": {

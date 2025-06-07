@@ -67,7 +67,7 @@ export const routes: Routes = [
     
     // Admin Orders Routes
     { path: 'admin-orders', component: AdminOrdersComponent, canActivate: [adminGuard] },
-    //{ path: 'admin-orders/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard] },
+    { path: 'admin-orders/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard] },
 
     // Pozostałe admin routes
     { path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard] },

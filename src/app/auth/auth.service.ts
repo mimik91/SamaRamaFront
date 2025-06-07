@@ -1,3 +1,4 @@
+// auth.service.ts - POPRAWIONA WERSJA
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, catchError, throwError, of } from 'rxjs';
@@ -14,22 +15,6 @@ export interface UserRegistrationData {
   firstName: string;
   lastName: string;
   phoneNumber: string;
-}
-
-export interface ServiceRegistrationData {
-  email: string;
-  password: string;
-  name: string;
-  street: string;
-  building: string;
-  flat?: string;
-  postalCode?: string;
-  city: string;
-  phoneNumber: string;
-  businessPhone?: string;
-  latitude?: number;
-  longitude?: number;
-  description?: string;
 }
 
 export interface AuthResponse {
@@ -66,28 +51,48 @@ export class AuthService {
   // Token expiration time in milliseconds (24 hours)
   private tokenExpirationTime = 24 * 60 * 60 * 1000;
   
+  // WAŻNE: Flagi żeby zapobiec wielokrotnemu ładowaniu
+  private isSessionLoaded = false;
+  private isLoadingSession = false;
+  
   constructor() {
-    // Load session from storage on service initialization
-    this.loadSession();
+    // Load session from storage on service initialization - TYLKO RAZ
+    this.initializeSession();
+  }
+  
+  private initializeSession(): void {
+    if (this.isSessionLoaded || this.isLoadingSession) {
+      return; // Zapobiega wielokrotnemu ładowaniu
+    }
+    
+    this.isLoadingSession = true;
+    
+    try {
+      this.loadSession();
+      this.isSessionLoaded = true;
+    } finally {
+      this.isLoadingSession = false;
+    }
   }
   
   private loadSession(): void {
     if (typeof localStorage === 'undefined') {
       console.log('localStorage not available (SSR context)');
+      this.currentUserSubject.next(null);
       return;
     }
     
     const sessionData = localStorage.getItem('auth_session');
-    console.log('Loading session from localStorage:', sessionData ? 'session exists' : 'no session');
     
+    // USUNIĘTO zbędne logi - tylko ważne informacje
     if (sessionData) {
       try {
         const session = JSON.parse(sessionData) as UserSession;
         
         // Check if token is expired
-        if (session.expiresAt > Date.now()) {
+        if (session.expiresAt > Date.now() && !this.isTokenExpired(session.token)) {
           this.currentUserSubject.next(session);
-          console.log('Valid session loaded:', session.email);
+          console.log('Valid session loaded for:', session.email);
         } else {
           // Clear expired session
           console.log('Session expired, clearing');
@@ -98,7 +103,11 @@ export class AuthService {
         this.clearSession();
       }
     } else {
-      console.log('No session found in localStorage');
+      // Tylko raz zaloguj brak sesji
+      if (!this.isSessionLoaded) {
+        console.log('No session found in localStorage');
+      }
+      this.currentUserSubject.next(null);
     }
   }
   
@@ -108,15 +117,14 @@ export class AuthService {
       .pipe(
         tap(response => {
           console.log('Login response:', response);
-          // Determine the redirect URL based on role
-          let redirectUrl = '/bicycles'; // Changed from '/welcome' to '/bicycles'
           
-          // Check if response contains admin or moderator role indicators
+          // Determine the redirect URL based on role - BEZPIECZNE TRASY
+          let redirectUrl = '/client-dashboard'; // Zmieniono z /bicycles
+          
           if (response.role === 'ADMIN' || response.role === 'MODERATOR') {
             redirectUrl = '/admin-dashboard';
           }
           
-          // Upewnij się, że response.role jest ustawione na 'CLIENT' (or admin/moderator)
           const authResponse = {
             ...response,
             role: response.role || 'CLIENT' as const,
@@ -129,7 +137,7 @@ export class AuthService {
           return throwError(() => error);
         })
       );
-    }
+  }
 
   registerClient(userData: UserRegistrationData): Observable<any> {
     console.log('Registering client:', userData.email);
@@ -142,10 +150,9 @@ export class AuthService {
       );
   }
 
-  
   private handleAuthResponse(response: AuthResponse): void {
     if (response && response.token) {
-      console.log('Saving auth token:', response.token);
+      console.log('Saving auth token for:', response.email);
       
       const session: UserSession = {
         token: response.token,
@@ -166,33 +173,37 @@ export class AuthService {
   }
 
   private isTokenExpired(token: string): boolean {
-  try {
-    // Extract the expiration time from JWT
-    const expiry = JSON.parse(atob(token.split('.')[1])).exp;
-    return (Math.floor((new Date).getTime() / 1000)) >= expiry;
-  } catch (e) {
-    return true; // If we can't decode the token, consider it expired
+    try {
+      // Extract the expiration time from JWT
+      const expiry = JSON.parse(atob(token.split('.')[1])).exp;
+      return (Math.floor((new Date).getTime() / 1000)) >= expiry;
+    } catch (e) {
+      return true; // If we can't decode the token, consider it expired
+    }
   }
-}
 
+  // POPRAWIONA metoda getToken - nie wywołuje loadSession za każdym razem!
   getToken(): string | null {
-  const currentUser = this.currentUserSubject.value;
-  
-  if (!currentUser) {
-    this.loadSession();
+    // Używaj danych z BehaviorSubject zamiast ciągłego sprawdzania localStorage
+    const currentUser = this.currentUserSubject.value;
+    
+    if (!currentUser) {
+      // Załaduj sesję tylko jeśli nie została jeszcze załadowana
+      if (!this.isSessionLoaded && !this.isLoadingSession) {
+        this.initializeSession();
+      }
+      return null;
+    }
+    
+    // Sprawdź czy token nie wygasł
+    if (currentUser.expiresAt < Date.now() || this.isTokenExpired(currentUser.token)) {
+      console.log('Token expired, clearing session');
+      this.clearSession();
+      return null;
+    }
+    
+    return currentUser.token;
   }
-  
-  const user = this.currentUserSubject.value;
-  if (!user) return null;
-  
-  if (user.expiresAt < Date.now() || this.isTokenExpired(user.token)) {
-    console.log('Token expired, clearing session');
-    this.clearSession();
-    return null;
-  }
-  
-  return user.token;
-}
   
   getUserRole(): string | null {
     const currentUser = this.currentUserSubject.value;
@@ -205,6 +216,7 @@ export class AuthService {
   }
 
   logout(): void {
+    console.log('Logging out user');
     this.clearSession();
   }
   
@@ -213,18 +225,34 @@ export class AuthService {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('auth_session');
     }
+    // Reset flag żeby umożliwić ponowne załadowanie w przyszłości
+    this.isSessionLoaded = false;
   }
 
+  // POPRAWIONA metoda isLoggedIn - korzysta z BehaviorSubject
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const currentUser = this.currentUserSubject.value;
+    
+    if (!currentUser) {
+      // Nie wywołuj loadSession tutaj! To powodowało pętlę
+      return false;
+    }
+    
+    // Sprawdź czy token nie wygasł
+    if (currentUser.expiresAt < Date.now() || this.isTokenExpired(currentUser.token)) {
+      this.clearSession();
+      return false;
+    }
+    
+    return true;
   }
   
   isClient(): boolean {
+    if (this.hasAdminPrivileges()) {
+      return true;
+    }
     const currentUser = this.currentUserSubject.value;
-  if (this.hasAdminPrivileges()) {
-    return true;
-  }
-  return currentUser?.role === 'CLIENT';
+    return currentUser?.role === 'CLIENT';
   }
 
   isAdmin(): boolean {

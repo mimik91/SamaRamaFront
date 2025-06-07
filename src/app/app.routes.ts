@@ -1,5 +1,3 @@
-// Updated app.routes.ts z nową trasą dla zamówienia transportu
-
 import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { RegistrationComponent } from './auth/registration/registration.component';
@@ -29,41 +27,66 @@ import { PasswordResetComponent } from './auth/password-reset/password-reset.com
 import { AboutUsComponent } from './about-us/about-us.component';
 
 export const routes: Routes = [
-    // Home route
+    // === PUBLICZNE TRASY (BEZ GUARD) ===
+    
+    // Home route - MUSI być bez guard żeby uniknąć pętli!
     { path: '', component: HomeComponent },
     
     // Guest order route - dostępna dla niezalogowanych
     { path: 'guest-order', component: GuestServiceOrderComponent },
     
-    // Auth routes
+    // Transport order - dostępna dla wszystkich (bez guarda)
+    { path: 'order-transport', component: TransportOrderFormComponent },
+    
+    // Auth routes - NIGDY nie dodawaj guard do tras logowania!
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegistrationComponent, data: { userType: 'client' } },
     { path: 'verify-account', component: VerificationComponent },
     { path: 'password-reset-request', component: PasswordResetRequestComponent },
     { path: 'password-reset', component: PasswordResetComponent },
     
-    // Nowa trasa dla rejestracji serwisu
+    // Service registration
     { path: 'register-service', component: ServiceRegistrationComponent },
     
-    // Client routes
+    // About page
+    { path: 'about', component: AboutUsComponent },
+    
+    // === DASHBOARD ROUTES (dla przekierowań po logowaniu) ===
+    
+    // NOWA TRASA: Dashboard dla klientów - bez bezpośredniego dostępu do guard-sensitive data
+    { 
+      path: 'client-dashboard', 
+      component: BicyclesListComponent, // lub stwórz DashboardComponent
+      canActivate: [clientGuard],
+      data: { roles: ['CLIENT'] }
+    },
+    
+    // NOWA TRASA: Dashboard dla adminów
+    { 
+      path: 'admin-dashboard', 
+      component: AdminDashboardComponent, 
+      canActivate: [adminGuard],
+      data: { roles: ['ADMIN', 'MODERATOR'] }
+    },
+    
+    // === CHRONIONE TRASY KLIENTÓW ===
+    
     { path: 'bicycles', component: BicyclesListComponent, canActivate: [clientGuard] },
     { path: 'bicycles/add', component: BicycleFormComponent, canActivate: [clientGuard] },
     { path: 'bicycles/:id', component: BicycleDetailsComponent, canActivate: [clientGuard], data: { RenderMode: 'client' } },
     
     // Service order routes for clients
     { path: 'order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard] },
-    
-    // 🆕 TRASA DLA ZAMÓWIENIA TRANSPORTU - DOSTĘPNA DLA WSZYSTKICH (BEZ GUARDA)
-    { path: 'order-transport', component: TransportOrderFormComponent },
-    
-    { path: 'service-appointments/:id', component: ServiceOrderDetailsComponent, canActivate: [clientGuard], data: { RenderMode: 'client' } },
-    // Keep the old route for backward compatibility
-    { path: 'bicycles/:id/order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard] },
+    { path: 'bicycles/:id/order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard] }, // backward compatibility
     { path: 'service-appointments', component: ServiceAppointmentsComponent, canActivate: [clientGuard] },
+    { path: 'service-appointments/:id', component: ServiceOrderDetailsComponent, canActivate: [clientGuard], data: { RenderMode: 'client' } },
     
-    // Admin routes
+    // Account route - dostępna dla zalogowanych użytkowników
+    { path: 'account', component: AccountComponent, canActivate: [authGuard] },
+    
+    // === CHRONIONE TRASY ADMINÓW ===
+    
     { path: 'admin', component: AdminPanelComponent, canActivate: [adminGuard] },
-    { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
     
     // Admin Orders Routes
     { path: 'admin-orders', component: AdminOrdersComponent, canActivate: [adminGuard] },
@@ -75,10 +98,8 @@ export const routes: Routes = [
     { path: 'admin-service-slots', component: AdminServiceSlotsComponent, canActivate: [adminGuard] },
     { path: 'admin-bike-services', component: AdminBikeServicesComponent, canActivate: [adminGuard] },
     
-    // Account route - dostępna dla zalogowanych użytkowników
-    { path: 'account', component: AccountComponent, canActivate: [authGuard] },
-    { path: 'about', component: AboutUsComponent },
+    // === FALLBACK ===
     
-    // Wildcard route - musi być na końcu
+    // Wildcard route - ZAWSZE na końcu, przekieruj na HOME (nie na chronioną trasę!)
     { path: '**', redirectTo: '' }
 ];

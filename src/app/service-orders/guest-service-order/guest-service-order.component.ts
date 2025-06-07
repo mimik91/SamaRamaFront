@@ -137,6 +137,11 @@ export class GuestServiceOrderComponent implements OnInit {
   ngOnInit(): void {
     console.log("GuestServiceOrderComponent initialized");
     
+    // Skip initialization on server
+    if (!this.isBrowser) {
+      return;
+    }
+    
     // Pobierz dane rowerów z serwisu
     this.bikesData = this.bikeFormService.getBikesDataValue();
     console.log("Bikes data from service:", this.bikesData);
@@ -171,6 +176,8 @@ export class GuestServiceOrderComponent implements OnInit {
   }
   
   private loadServicePackages(): void {
+    if (!this.isBrowser) return;
+    
     this.loadingPackages = true;
     console.log("Starting to load service packages...");
     
@@ -191,6 +198,10 @@ export class GuestServiceOrderComponent implements OnInit {
   
   // Metoda do pobierania maksymalnej liczby rowerów na zamówienie
   getMaxBikesPerOrder(): Observable<number> {
+    if (!this.isBrowser) {
+      return of(5); // Default value for server
+    }
+    
     // Get current date
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0];
@@ -206,6 +217,8 @@ export class GuestServiceOrderComponent implements OnInit {
   }
   
   private loadCities(): void {
+    if (!this.isBrowser) return;
+    
     this.loadingCities = true;
     
     this.enumerationService.getCities().subscribe({
@@ -264,6 +277,8 @@ export class GuestServiceOrderComponent implements OnInit {
   
   // Wysłanie formularza zamówienia
   submitOrder(): void {
+    if (!this.isBrowser) return;
+    
     if (this.contactForm.invalid || !this.termsAccepted.value || !this.selectedPackageId || this.pickupDateControl.invalid) {
       // Oznacz wszystkie pola jako dotknięte, żeby pokazać walidację
       Object.keys(this.contactForm.controls).forEach(key => {

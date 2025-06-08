@@ -12,7 +12,6 @@ import { PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 
-
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -115,7 +114,6 @@ export class HomeComponent implements OnInit {
     return this.activeHowItWorksView === 'transport' ? this.transportSteps : this.serviceSteps;
   }
   
-
   bikeForm: FormGroup;
   brands: string[] = [];
   loadingBrands = true;
@@ -135,36 +133,36 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-  this.loadBrands();
-  this.loadMaxBikesConfiguration();
-  
-  // Sprawdzamy, czy mamy zapisane dane formularza w serwisie
-  const savedBikesData = this.bikeFormService.getBikesDataValue();
-  if (savedBikesData.length > 0) {
-    // Jeśli mamy dane, usuwamy domyślny, pusty formularz
-    while (this.bikesArray.length !== 0) {
-      this.bikesArray.removeAt(0);
-    }
+    this.loadBrands();
+    this.loadMaxBikesConfiguration();
     
-    // Dodajemy formularze bazując na zapisanych danych
-    savedBikesData.forEach(bikeData => {
-      const bikeGroup = this.createBikeFormGroup();
-      bikeGroup.patchValue(bikeData);
-      this.bikesArray.push(bikeGroup);
-    });
-  }
-
-  // Sprawdź, czy mamy parametr 'section' w URL i przewiń do odpowiedniej sekcji
-  if (this.isBrowser) {
-    this.route.queryParams.subscribe(params => {
-      if (params['section']) {
-        setTimeout(() => {
-          this.scrollToSection(params['section']);
-        }, 500); // Małe opóźnienie, aby strona zdążyła się załadować
+    // Sprawdzamy, czy mamy zapisane dane formularza w serwisie
+    const savedBikesData = this.bikeFormService.getBikesDataValue();
+    if (savedBikesData.length > 0) {
+      // Jeśli mamy dane, usuwamy domyślny, pusty formularz
+      while (this.bikesArray.length !== 0) {
+        this.bikesArray.removeAt(0);
       }
-    });
+      
+      // Dodajemy formularze bazując na zapisanych danych
+      savedBikesData.forEach(bikeData => {
+        const bikeGroup = this.createBikeFormGroup();
+        bikeGroup.patchValue(bikeData);
+        this.bikesArray.push(bikeGroup);
+      });
+    }
+
+    // Sprawdź, czy mamy parametr 'section' w URL i przewiń do odpowiedniej sekcji
+    if (this.isBrowser) {
+      this.route.queryParams.subscribe(params => {
+        if (params['section']) {
+          setTimeout(() => {
+            this.scrollToSection(params['section']);
+          }, 500); // Małe opóźnienie, aby strona zdążyła się załadować
+        }
+      });
+    }
   }
-}
 
   private loadBrands(): void {
     this.loadingBrands = true;
@@ -345,5 +343,6 @@ export class HomeComponent implements OnInit {
   // Metoda do przełączania widoku sekcji "Jak działamy"
   switchHowItWorksView(view: 'transport' | 'service'): void {
     this.activeHowItWorksView = view;
+    console.log('Switched to view:', view, 'Steps count:', this.currentSteps.length);
   }
 }

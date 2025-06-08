@@ -221,6 +221,84 @@
   text-align: center;
 }
 
+/* View switcher buttons */
+.view-switcher {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.view-btn {
+  padding: 10px 20px;
+  border: 2px solid #3498db;
+  background-color: white;
+  color: #3498db;
+  border-radius: 25px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.view-btn:hover {
+  background-color: #f0f9ff;
+  transform: translateY(-2px);
+}
+
+.view-btn.active {
+  background-color: #3498db;
+  color: white;
+}
+
+/* How it works actions */
+.how-it-works-actions {
+  margin: 30px 0;
+  text-align: center;
+}
+
+.hero-btn {
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border-radius: 30px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.order-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+.order-btn:hover {
+  background-color: #2980b9;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.learn-more-btn {
+  background-color: transparent;
+  color: #3498db;
+  border: 2px solid #3498db;
+}
+
+.learn-more-btn:hover {
+  background-color: #f0f9ff;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 8px rgba(52, 152, 219, 0.2);
+}
+
+.process-summary {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 20px;
+  color: #2B82AD;
+}
+
 /* Sekcja kontaktowa */
 .contact-info-container {
   display: flex;
@@ -603,14 +681,6 @@
   text-align: center;
 }
 
-.process-summary {
-  text-align: center;
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-top: 20px;
-  color: #2B82AD;
-}
-
 /* Sekcja z mapą */
 .map-section {
   padding: 60px 20px;
@@ -697,6 +767,16 @@
   .success-icon {
     margin-right: 0;
     margin-bottom: 15px;
+  }
+
+  .view-switcher {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .view-btn {
+    width: 200px;
   }
   
   /* SEKCJA KONTAKTOWA - STYLE MOBILNE */

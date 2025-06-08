@@ -22,8 +22,40 @@
     <div *ngIf="currentStep === 1" class="step-content">
       <h2>Wybierz pakiet serwisowy</h2>
       
+      <!-- Enhanced bikes summary with CycloPick logo -->
       <div class="bikes-summary">
-        <h3>Twoje rowery ({{ bikesData.length }})</h3>
+        <div class="summary-header">
+          <div class="summary-logo">
+            <!-- CycloPick Logo -->
+            <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="45" fill="#007bff" stroke="#0056b3" stroke-width="2"/>
+              <path d="M30 50 Q50 20 70 50 Q50 80 30 50" fill="white" opacity="0.9"/>
+              <circle cx="35" cy="55" r="12" fill="none" stroke="white" stroke-width="3"/>
+              <circle cx="65" cy="55" r="12" fill="none" stroke="white" stroke-width="3"/>
+              <path d="M35 43 L50 35 L65 43" stroke="white" stroke-width="2" fill="none"/>
+            </svg>
+          </div>
+          <h3>Twoje rowery ({{ bikesData.length }})</h3>
+        </div>
+        
+        <!-- Carbon bike warning - zawsze wyświetlane -->
+        <div class="carbon-bike-warning">
+          <div class="warning-content">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-text">
+              <h4>Ważna informacja</h4>
+              <p>
+                Obsługa rowerów z ramą karbonową zostanie w pełni wprowadzona w 2026r. 
+                Aktualnie zamawiając serwis dla roweru karbonowego, odpowiedzialność za 
+                potencjalne uszkodzenia w trakcie transportu pozostaje po stronie klienta. 
+                Dokładamy wszelkich starań, aby zapewnić najwyższą jakość usług, jednak 
+                obecnie nie jesteśmy w stanie zagwarantować specjalistycznych warunków 
+                transportu dla ram karbonowych i innych specjalnych rowerów.
+              </p>
+            </div>
+          </div>
+        </div>
+        
         <div class="bikes-list">
           <div *ngFor="let bike of bikesData; let i = index" class="bike-item">
             <div class="bike-number">{{ i + 1 }}</div>

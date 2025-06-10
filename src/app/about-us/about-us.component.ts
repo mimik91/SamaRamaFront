@@ -114,7 +114,7 @@ export class AboutUsComponent implements OnInit {
     },
     {
       title: 'Wygoda',
-      description: 'Intuicyjna aplikacja, dzięki której masz pełną kontrolę nad serwisowaniem roweru 24/7.',
+      description: 'Intuicyjna strona, dzięki której masz pełną kontrolę nad serwisowaniem roweru 24/7 i nie musisz instalować kolejnej aplikacji na telefonie',
       icon: 'smartphone'
     },
     {

@@ -1,11 +1,13 @@
+// src/app/admin/service-slots/admin-service-slots.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NotificationService } from '../../core/notification.service';
 import { environment } from '../../core/api-config';
 import { ServiceSlotService } from '../../service-slots/service-slot.service';
+import { AuthService } from '../../auth/auth.service'; // DODANO
 
 export interface ServiceSlotConfig {
   id?: number;
@@ -13,7 +15,7 @@ export interface ServiceSlotConfig {
   endDate?: string | null;
   maxBikesPerDay: number;
   maxBikesPerOrder: number;
-  active?: boolean; // This might be handled separately in your backend
+  active?: boolean;
 }
 
 @Component({
@@ -29,6 +31,7 @@ export class AdminServiceSlotsComponent implements OnInit {
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
   private serviceSlotService = inject(ServiceSlotService);
+  private authService = inject(AuthService); // DODANO
 
   // UI states
   loading = true;
@@ -45,38 +48,71 @@ export class AdminServiceSlotsComponent implements OnInit {
   // Form
   slotConfigForm: FormGroup;
   
-  // Days mapping for better readability
-  dayNames = [
-    'Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'
-  ];
-  
   constructor() {
     this.slotConfigForm = this.fb.group({
       startDate: ['', Validators.required],
       endDate: [''],
       maxBikesPerDay: [10, [Validators.required, Validators.min(1)]],
       maxBikesPerOrder: [5, [Validators.required, Validators.min(1)]],
-      // Remove availableDays array
       active: [true]
     });
   }
   
   ngOnInit(): void {
+    console.log('AdminServiceSlotsComponent initialized');
+    console.log('User logged in:', this.authService.isLoggedIn());
+    console.log('User role:', this.authService.getUserRole());
+    console.log('Has admin privileges:', this.authService.hasAdminPrivileges());
+    console.log('Auth token exists:', !!this.authService.getToken());
+    
     this.loadServiceSlotConfigs();
   }
   
   private loadServiceSlotConfigs(): void {
     this.loading = true;
+    this.error = null;
+    
+    // DODAJ DEBUGOWANIE TOKENU
+    const token = this.authService.getToken();
+    console.log('Loading service slot configs...');
+    console.log('Token:', token ? 'Present' : 'Missing');
+    
+    if (!token) {
+      console.error('No authentication token available');
+      this.error = 'Brak tokenu uwierzytelniającego';
+      this.loading = false;
+      return;
+    }
+    
+    // DODAJ RĘCZNE NAGŁÓWKI JEŚLI POTRZEBA
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    
+    console.log('Making request to:', `${environment.apiUrl}/service-slots/config/active`);
     
     // Get active configurations
-    this.http.get<ServiceSlotConfig[]>(`${environment.apiUrl}/service-slots/config/active`).subscribe({
+    this.http.get<ServiceSlotConfig[]>(`${environment.apiUrl}/service-slots/config/active`, { headers }).subscribe({
       next: (configs) => {
+        console.log('Active configs loaded:', configs);
         this.activeConfigs = configs;
         this.loadFutureConfigs();
       },
       error: (err) => {
         console.error('Error loading active slot configs:', err);
-        this.error = 'Nie udało się załadować aktywnych konfiguracji slotów';
+        console.error('Error status:', err.status);
+        console.error('Error message:', err.message);
+        console.error('Error body:', err.error);
+        
+        if (err.status === 401) {
+          this.error = 'Brak uprawnień do dostępu. Sprawdź czy jesteś zalogowany jako administrator.';
+          // Opcjonalnie przekieruj do logowania
+          // this.authService.logout();
+          // this.router.navigate(['/login']);
+        } else {
+          this.error = 'Nie udało się załadować aktywnych konfiguracji slotów';
+        }
         this.loading = false;
         this.notificationService.error(this.error);
       }
@@ -84,8 +120,15 @@ export class AdminServiceSlotsComponent implements OnInit {
   }
   
   private loadFutureConfigs(): void {
-    this.http.get<ServiceSlotConfig[]>(`${environment.apiUrl}/service-slots/config/future`).subscribe({
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    
+    this.http.get<ServiceSlotConfig[]>(`${environment.apiUrl}/service-slots/config/future`, { headers }).subscribe({
       next: (configs) => {
+        console.log('Future configs loaded:', configs);
         this.futureConfigs = configs;
         this.loading = false;
       },
@@ -97,6 +140,8 @@ export class AdminServiceSlotsComponent implements OnInit {
       }
     });
   }
+  
+  // ... reszta metod pozostaje bez zmian
   
   selectConfig(config: ServiceSlotConfig): void {
     this.selectedConfig = config;
@@ -114,7 +159,6 @@ export class AdminServiceSlotsComponent implements OnInit {
       endDate: this.selectedConfig.endDate ? this.formatDateForInput(this.selectedConfig.endDate) : '',
       maxBikesPerDay: this.selectedConfig.maxBikesPerDay,
       maxBikesPerOrder: this.selectedConfig.maxBikesPerOrder,
-      // No more availableDays
       active: this.selectedConfig.active
     });
     
@@ -139,7 +183,6 @@ export class AdminServiceSlotsComponent implements OnInit {
       endDate: '',
       maxBikesPerDay: 10,
       maxBikesPerOrder: 5,
-      // Remove availableDays
       active: true
     });
   }
@@ -151,7 +194,6 @@ export class AdminServiceSlotsComponent implements OnInit {
   
   saveConfig(): void {
     if (this.slotConfigForm.invalid) {
-      // Mark all fields as touched to trigger validation messages
       Object.keys(this.slotConfigForm.controls).forEach(key => {
         const control = this.slotConfigForm.get(key);
         control?.markAsTouched();
@@ -163,27 +205,28 @@ export class AdminServiceSlotsComponent implements OnInit {
     
     this.saving = true;
     
-    // Create the data object that exactly matches the backend DTO structure
     const configData: any = {
       startDate: this.formatDateForApi(this.slotConfigForm.value.startDate),
       endDate: this.slotConfigForm.value.endDate ? this.formatDateForApi(this.slotConfigForm.value.endDate) : null,
       maxBikesPerDay: Number(this.slotConfigForm.value.maxBikesPerDay),
       maxBikesPerOrder: Number(this.slotConfigForm.value.maxBikesPerOrder),
-      // No availableDays field as it's not in the DTO
     };
     
     console.log('Sending config data:', configData);
     
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    
     if (this.isAddingNew) {
-      // Create new config
-      this.http.post(`${environment.apiUrl}/service-slots/config`, configData).subscribe({
+      this.http.post(`${environment.apiUrl}/service-slots/config`, configData, { headers }).subscribe({
         next: () => {
           this.notificationService.success('Konfiguracja slotów została utworzona');
           this.saving = false;
           this.isAddingNew = false;
           this.loadServiceSlotConfigs();
-          
-          // Clear the service slot cache
           this.serviceSlotService.clearCache();
         },
         error: (err) => {
@@ -193,17 +236,14 @@ export class AdminServiceSlotsComponent implements OnInit {
         }
       });
     } else if (this.isEditing && this.selectedConfig) {
-      // Update existing config
       configData['id'] = this.selectedConfig.id;
       
-      this.http.put(`${environment.apiUrl}/service-slots/config/${this.selectedConfig.id}`, configData).subscribe({
+      this.http.put(`${environment.apiUrl}/service-slots/config/${this.selectedConfig.id}`, configData, { headers }).subscribe({
         next: () => {
           this.notificationService.success('Konfiguracja slotów została zaktualizowana');
           this.saving = false;
           this.isEditing = false;
           this.loadServiceSlotConfigs();
-          
-          // Clear the service slot cache
           this.serviceSlotService.clearCache();
         },
         error: (err) => {
@@ -219,15 +259,19 @@ export class AdminServiceSlotsComponent implements OnInit {
     if (!id) return;
     
     if (confirm('Czy na pewno chcesz usunąć tę konfigurację slotów? Ta operacja jest nieodwracalna.')) {
-      this.http.delete(`${environment.apiUrl}/service-slots/config/${id}`).subscribe({
+      const token = this.authService.getToken();
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      });
+      
+      this.http.delete(`${environment.apiUrl}/service-slots/config/${id}`, { headers }).subscribe({
         next: () => {
           this.notificationService.success('Konfiguracja slotów została usunięta');
           if (this.selectedConfig && this.selectedConfig.id === id) {
             this.selectedConfig = null;
           }
           this.loadServiceSlotConfigs();
-          
-          // Clear the service slot cache
           this.serviceSlotService.clearCache();
         },
         error: (err) => {
@@ -242,7 +286,6 @@ export class AdminServiceSlotsComponent implements OnInit {
     this.router.navigate(['/admin-dashboard']);
   }
   
-  // Helper methods for date formatting
   private formatDateForInput(dateString: string): string {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0];

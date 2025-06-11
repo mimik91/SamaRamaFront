@@ -1,0 +1,182 @@
+<div class="pricing-container">
+  <!-- Header Section -->
+  <div class="pricing-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <app-cyclopick-logo [height]="'80px'" [textSize]="'2rem'"></app-cyclopick-logo>
+      </div>
+      <div class="header-text">
+        <h1>Cennik usług serwisowych</h1>
+        <p class="header-subtitle">Profesjonalny serwis rowerowy w konkurencyjnych cenach</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="pricing-main">
+    <!-- Categories Sidebar -->
+    <div class="categories-sidebar">
+      <div class="categories-header">
+        <h2>Kategorie usług</h2>
+      </div>
+      
+      <div class="categories-list">
+        <button 
+          *ngFor="let category of pricingCategories"
+          class="category-button"
+          [class.active]="selectedCategory === category.id"
+          (click)="selectCategory(category.id)"
+        >
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <ng-container [ngSwitch]="category.icon">
+                <ng-container *ngSwitchCase="'settings'">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </ng-container>
+                <ng-container *ngSwitchCase="'disc'">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <circle cx="12" cy="12" r="4"></circle>
+                </ng-container>
+                <ng-container *ngSwitchCase="'circle'">
+                  <circle cx="12" cy="12" r="10"></circle>
+                </ng-container>
+                <ng-container *ngSwitchCase="'rotate-cw'">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </ng-container>
+                <ng-container *ngSwitchCase="'navigation'">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                </ng-container>
+                <ng-container *ngSwitchCase="'triangle'">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                </ng-container>
+                <ng-container *ngSwitchCase="'minimize-2'">
+                  <polyline points="4 14 10 14 10 20"></polyline>
+                  <polyline points="20 10 14 10 14 4"></polyline>
+                  <line x1="14" y1="10" x2="21" y2="3"></line>
+                  <line x1="3" y1="21" x2="10" y2="14"></line>
+                </ng-container>
+                <ng-container *ngSwitchCase="'zap'">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </ng-container>
+                <ng-container *ngSwitchCase="'plus-circle'">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="16"></line>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                </ng-container>
+              </ng-container>
+            </svg>
+          </div>
+          <span class="category-title">{{ category.title }}</span>
+          <div class="category-count">({{ category.services.length }})</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Pricing Content -->
+    <div class="pricing-content" id="pricing-content">
+      <div *ngIf="getSelectedCategory() as selectedCat" class="category-details">
+        <div class="category-details-header">
+          <div class="category-title-section">
+            <div class="category-icon-large">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ng-container [ngSwitch]="selectedCat.icon">
+                  <ng-container *ngSwitchCase="'settings'">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'disc'">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="4"></circle>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'circle'">
+                    <circle cx="12" cy="12" r="10"></circle>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'rotate-cw'">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'navigation'">
+                    <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'triangle'">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'minimize-2'">
+                    <polyline points="4 14 10 14 10 20"></polyline>
+                    <polyline points="20 10 14 10 14 4"></polyline>
+                    <line x1="14" y1="10" x2="21" y2="3"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'zap'">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'plus-circle'">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                  </ng-container>
+                </ng-container>
+              </svg>
+            </div>
+            <h2>{{ selectedCat.title }}</h2>
+          </div>
+          <div class="services-count">{{ selectedCat.services.length }} {{ selectedCat.services.length === 1 ? 'usługa' : selectedCat.services.length < 5 ? 'usługi' : 'usług' }}</div>
+        </div>
+
+        <div class="services-grid">
+          <div *ngFor="let service of selectedCat.services; let i = index" class="service-item" [style.animation-delay]="(i * 100) + 'ms'">
+            <div class="service-content">
+              <div class="service-name">{{ service.name }}</div>
+              <div class="service-price">{{ service.price }}</div>
+            </div>
+            <div class="service-number">{{ i + 1 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Info -->
+  <div class="pricing-footer">
+    <div class="footer-content">
+      <div class="info-section">
+        <h3>Informacje dodatkowe</h3>
+        <ul>
+          <li><strong>Ceny obejmują robociznę</strong> - do uzgodnienia części i akcesoria </li>
+          <li><strong>Koszt transportu roweru:</strong> 30 zł w Krakowie</li>
+          <li><strong>Czas realizacji:</strong> 2-5 dni roboczych</li>
+          <li><strong>Gwarancja:</strong> 30 dni na wykonane usługi</li>
+        </ul>
+      </div>
+      
+      <div class="contact-section">
+        <h3>Kontakt</h3>
+        <div class="contact-info">
+          <div class="contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            <span>+48 723 452 587</span>
+          </div>
+          <div class="contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>cyclopick{{'@'}}gmail.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll to Top Button -->
+  <button class="scroll-to-top" (click)="scrollToTop()" title="Wróć na górę">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5"></line>
+      <polyline points="5 12 12 5 19 12"></polyline>
+    </svg>
+  </button>
+</div>

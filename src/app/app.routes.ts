@@ -25,12 +25,16 @@ import { ServiceRegistrationComponent } from './service-registration/service-reg
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { AboutUsComponent } from './about-us/about-us.component';
+import { PricingComponent } from './pricing/pricing.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
     
     // Home route - MUSI być bez guard żeby uniknąć pętli!
     { path: '', component: HomeComponent },
+    
+    // Pricing route - dostępna dla wszystkich
+    { path: 'cennik', component: PricingComponent },
     
     // Guest order route - dostępna dla niezalogowanych
     { path: 'guest-order', component: GuestServiceOrderComponent },

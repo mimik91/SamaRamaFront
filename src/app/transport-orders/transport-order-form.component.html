@@ -64,6 +64,24 @@
         <p class="step-description">{{ getStepDescription(1) }}</p>
       </div>
 
+      <!-- Ostrzeżenie o rowerach karbonowych -->
+      <div class="carbon-bike-warning">
+        <div class="warning-content">
+          <div class="warning-icon">⚠️</div>
+          <div class="warning-text">
+            <h4>Ważna informacja o transporcie</h4>
+            <p>
+              Obsługa rowerów z ramą karbonową zostanie w pełni wprowadzona w 2026r. 
+              Aktualnie zamawiając transport dla roweru karbonowego, odpowiedzialność za 
+              potencjalne uszkodzenia w trakcie transportu pozostaje po stronie klienta. 
+              Dokładamy wszelkich starań, aby zapewnić najwyższą jakość usług, jednak 
+              obecnie nie jesteśmy w stanie zagwarantować specjalistycznych warunków 
+              transportu dla ram karbonowych i innych specjalnych rowerów.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <form [formGroup]="bicyclesForm">
         <div formArrayName="bicycles">
           <div 
@@ -297,42 +315,35 @@
             
             <div class="form-row">
               <div class="form-group">
-                <label for="pickupApartmentNumber">Numer mieszkania</label>
-                <input 
-                  type="text" 
-                  id="pickupApartmentNumber" 
-                  formControlName="pickupApartmentNumber"
-                  placeholder="np. 23 (opcjonalne)"
-                >
-              </div>
-              
-              <div class="form-group">
                 <label for="pickupCity">Miasto *</label>
-                <input 
-                  type="text" 
+                <select 
                   id="pickupCity" 
                   formControlName="pickupCity"
                   [class.is-invalid]="isFieldInvalid('pickupCity')"
-                  placeholder="np. Kraków"
+                  [attr.disabled]="loadingCities ? '' : null"
                 >
+                  <option value="" disabled>-- Wybierz miasto --</option>
+                  <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
+                  <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                </select>
                 <div *ngIf="isFieldInvalid('pickupCity')" class="error-message">
                   Miasto jest wymagane
                 </div>
               </div>
-            </div>
-            
-            <div class="form-group">
-              <label for="pickupPostalCode">Kod pocztowy</label>
-              <input 
-                type="text" 
-                id="pickupPostalCode" 
-                formControlName="pickupPostalCode"
-                [class.is-invalid]="isFieldInvalid('pickupPostalCode')"
-                placeholder="np. 31-000 (opcjonalne)"
-                pattern="\d{2}-\d{3}"
-              >
-              <div *ngIf="isFieldInvalid('pickupPostalCode')" class="error-message">
-                Kod pocztowy musi być w formacie XX-XXX
+              
+              <div class="form-group">
+                <label for="pickupPostalCode">Kod pocztowy</label>
+                <input 
+                  type="text" 
+                  id="pickupPostalCode" 
+                  formControlName="pickupPostalCode"
+                  [class.is-invalid]="isFieldInvalid('pickupPostalCode')"
+                  placeholder="np. 31-000 (opcjonalne)"
+                  pattern="\d{2}-\d{3}"
+                >
+                <div *ngIf="isFieldInvalid('pickupPostalCode')" class="error-message">
+                  Kod pocztowy musi być w formacie XX-XXX
+                </div>
               </div>
             </div>
           </div>

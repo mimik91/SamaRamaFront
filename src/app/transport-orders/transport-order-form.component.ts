@@ -42,7 +42,7 @@ export class TransportOrderFormComponent implements OnInit {
 
   // Multi-step form management
   currentStep = 1;
-  totalSteps = 3; // Zmieniono z 4 na 3 kroki
+  totalSteps = 3;
   
   // Data
   selectedServiceInfo: any = {};
@@ -50,6 +50,8 @@ export class TransportOrderFormComponent implements OnInit {
   actualTransportCost: number | null = null;
   brands: string[] = [];
   loadingBrands = true;
+  cities: string[] = [];
+  loadingCities = true;
   
   // Date constraints
   minDate: string;
@@ -57,7 +59,7 @@ export class TransportOrderFormComponent implements OnInit {
   
   // Forms for each step
   bicyclesForm: FormGroup;
-  contactAndTransportForm: FormGroup; // Połączone dane kontaktowe i transport
+  contactAndTransportForm: FormGroup;
   
   // State
   loading = false;
@@ -80,17 +82,16 @@ export class TransportOrderFormComponent implements OnInit {
     });
 
     this.contactAndTransportForm = this.fb.group({
-      // Dane kontaktowe - bez imienia i nazwiska
+      // Dane kontaktowe
       clientEmail: ['', [Validators.required, Validators.email]],
       clientPhone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
       
       // Szczegóły transportu
       pickupDate: ['', [Validators.required, this.dateValidator.bind(this)]],
       
-      // ROZBITY ADRES - osobne pola
+      // ROZBITY ADRES - bez pickupApartmentNumber
       pickupStreet: ['', [Validators.required, Validators.minLength(2)]],
       pickupBuildingNumber: ['', [Validators.required]],
-      pickupApartmentNumber: [''], // opcjonalne
       pickupCity: ['', [Validators.required]],
       pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]],
       
@@ -117,6 +118,7 @@ export class TransportOrderFormComponent implements OnInit {
   ngOnInit(): void {
     this.loadServiceInfo();
     this.loadBrands();
+    this.loadCities();
     this.addBicycleToForm(); // Dodaj pierwszy rower
   }
 
@@ -145,6 +147,20 @@ export class TransportOrderFormComponent implements OnInit {
       error: () => {
         this.loadingBrands = false;
         this.brands = ['Trek', 'Specialized', 'Giant', 'Cannondale', 'Scott', 'Merida', 'Kona', 'Cube', 'Inna']; // Fallback brands
+      }
+    });
+  }
+
+  private loadCities(): void {
+    this.loadingCities = true;
+    this.enumerationService.getCities().subscribe({
+      next: (cities) => {
+        this.cities = cities;
+        this.loadingCities = false;
+      },
+      error: () => {
+        this.loadingCities = false;
+        this.cities = ['Kraków', 'Warszawa', 'Gdańsk', 'Poznań', 'Wrocław', 'Łódź']; // Fallback cities
       }
     });
   }
@@ -247,9 +263,9 @@ export class TransportOrderFormComponent implements OnInit {
 
   addBicycleToForm(): void {
     const bicycleGroup = this.fb.group({
-      brand: ['', [Validators.required]], // Usunięto minLength bo to select
-      model: [''], // Opcjonalny
-      type: [''], // Opcjonalny
+      brand: ['', [Validators.required]],
+      model: [''],
+      type: [''],
       frameMaterial: [''],
       description: ['']
     });
@@ -323,7 +339,6 @@ export class TransportOrderFormComponent implements OnInit {
     
     // Fallback - oblicz cenę jednostkową lokalnie
     const baseCost = 50;
-    const perBikeCost = 20;
     
     // Dla fallback zakładamy stałą cenę jednostkową
     return baseCost;
@@ -340,10 +355,6 @@ export class TransportOrderFormComponent implements OnInit {
     
     if (form.pickupBuildingNumber) {
       address += ' ' + form.pickupBuildingNumber;
-    }
-    
-    if (form.pickupApartmentNumber) {
-      address += '/' + form.pickupApartmentNumber;
     }
     
     if (form.pickupCity) {
@@ -379,7 +390,6 @@ export class TransportOrderFormComponent implements OnInit {
 
   // Step completion status
   isStepCompleted(step: number): boolean {
-    // Krok jest ukończony tylko jeśli przeszliśmy już dalej
     return this.currentStep > step && this.isStepValid(step);
   }
 
@@ -393,7 +403,6 @@ export class TransportOrderFormComponent implements OnInit {
 
   // Form submission
   onSubmit(): void {
-    // Sprawdź wszystkie kroki
     const allFormsValid = this.isStepValid(1) && this.isStepValid(2);
     
     if (!allFormsValid) {
@@ -411,7 +420,6 @@ export class TransportOrderFormComponent implements OnInit {
     const bicyclesData = this.bicyclesForm.value.bicycles as BicycleFormData[];
     const contactAndTransportData = this.contactAndTransportForm.value;
     
-    // Przygotuj dodatkowe informacje o rowerach
     const bicycleInfo = bicyclesData
       .map((bike, index) => {
         let info = `Rower ${index + 1}: ${bike.brand}`;
@@ -424,38 +432,30 @@ export class TransportOrderFormComponent implements OnInit {
       .join('\n');
 
     const transportOrder = {
-      // === ROWERY ===
       bicycles: bicyclesData.map(bike => ({
         brand: bike.brand,
         model: bike.model || '',
         additionalInfo: bike.description || ''
       })),
       
-      // === DANE GOŚCIA ===
       email: contactAndTransportData.clientEmail,
       phone: contactAndTransportData.clientPhone,
       
-      // === ADRES ODBIORU - bezpośrednio z formularza ===
       pickupStreet: contactAndTransportData.pickupStreet,
       pickupBuildingNumber: contactAndTransportData.pickupBuildingNumber,
-      pickupApartmentNumber: contactAndTransportData.pickupApartmentNumber,
       pickupCity: contactAndTransportData.pickupCity,
       pickupPostalCode: contactAndTransportData.pickupPostalCode,
       
-      // === TRANSPORT ===
       pickupDate: contactAndTransportData.pickupDate,
       targetServiceId: this.selectedServiceInfo.id,
-      transportPrice: this.getUnitTransportCost(), // Wysyłamy cenę jednostkową!
-      transportNotes: contactAndTransportData.additionalNotes || '', // Notatki z formularza
-      additionalNotes: bicycleInfo, // Informacje o rowerach jako dodatkowe notatki
+      transportPrice: this.getUnitTransportCost(),
+      transportNotes: contactAndTransportData.additionalNotes || '',
+      additionalNotes: bicycleInfo,
       
-      servicePackageId: null // czyste zamówienie transportowe
+      servicePackageId: null
     };
 
     console.log('Sending transport order:', transportOrder);
-    console.log('Unit price for backend:', this.getUnitTransportCost());
-    console.log('Total price for customer:', this.getEstimatedTransportCost());
-    console.log('Number of bicycles:', this.getSelectedBicyclesCount());
 
     this.transportOrderService.createGuestTransportOrder(transportOrder).subscribe({
       next: (response) => {

@@ -106,7 +106,13 @@ export class HomeComponent implements OnInit {
       title: 'Po zakończeniu serwisu odbierzemy i dostarczymy rower z powrotem',
       description: 'Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy.',
       icon: 'tool'
-    }
+    },
+    {
+    number: 6,
+    title: 'Płatność przy odbiorze',
+    description: 'Płacisz za serwis przy odbiorze roweru za pomocą gotówki lub aplikacji BLIK.',
+    icon: 'credit-card'
+  }
   ];
 
   // Getter dla aktualnych kroków

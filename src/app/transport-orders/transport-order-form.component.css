@@ -228,6 +228,53 @@ h1 {
   font-size: 0.9rem;
 }
 
+/* Carbon bike warning */
+.carbon-bike-warning {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 1px solid #ffc107;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.carbon-bike-warning::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.warning-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.warning-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning-text h4 {
+  margin: 0 0 10px 0;
+  color: #856404;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.warning-text p {
+  margin: 0;
+  color: #856404;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
 /* Step content */
 .step-content {
   background-color: #fff;
@@ -762,6 +809,12 @@ input:focus, textarea:focus, select:focus {
   .contact-section,
   .transport-section {
     padding: 20px 15px;
+  }
+
+  .warning-content {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
   }
 }
 

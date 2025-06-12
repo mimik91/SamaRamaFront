@@ -27,6 +27,7 @@ import { PasswordResetRequestComponent } from './auth/password-reset-request/pas
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { AboutUsComponent } from './about-us/about-us.component';
 import { PricingComponent } from './pricing/pricing.component';
+import { CourierPanelComponent } from './courier-panel/courier-panel.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
@@ -104,6 +105,13 @@ export const routes: Routes = [
     { path: 'admin-service-packages', component: AdminServicePackagesComponent, canActivate: [adminGuard] },
     { path: 'admin-service-slots', component: AdminServiceSlotsComponent, canActivate: [adminGuard] },
     { path: 'admin-bike-services', component: AdminBikeServicesComponent, canActivate: [adminGuard] },
+
+    { 
+  path: 'mistrzauta', 
+  component: CourierPanelComponent, 
+  canActivate: [adminGuard],
+  data: { roles: ['ADMIN', 'MODERATOR'] }
+},
     
     // === FALLBACK ===
     

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, catchError, throwError } from 'rxjs';
+import { Observable, of, catchError, throwError, map } from 'rxjs';
 import { ServiceOrder } from '../service-orders/service-order.model';
 import { environment } from '../core/api-config';
 
@@ -22,6 +22,14 @@ export interface AdminUser {
   roles: string[];
   verified: boolean;
   createdAt: string;
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
 }
 
 @Injectable({
@@ -50,7 +58,12 @@ export class AdminService {
   }
 
   getAllUsers(): Observable<AdminUser[]> {
-    return this.http.get<AdminUser[]>(`${this.apiUrl}/users`).pipe(
+    return this.http.get<PaginatedResponse<AdminUser>>(`${this.apiUrl}/users`).pipe(
+      map(response => {
+        console.log('Backend response:', response);
+        // Extract the content array from paginated response
+        return response.content || [];
+      }),
       catchError(error => {
         console.error('Error fetching users:', error);
         return of([]);
@@ -59,17 +72,17 @@ export class AdminService {
   }
 
   getAllServiceOrders(): Observable<ServiceOrder[]> {
-  return this.http.get<ServiceOrder[]>(`${this.serviceOrdersUrl}/admin/all`).pipe(
-    catchError(error => {
-      console.error('Error fetching service orders:', error);
-      if (error.status === 401) {
-        // Handle unauthorized specifically
+    return this.http.get<ServiceOrder[]>(`${this.serviceOrdersUrl}/admin/all`).pipe(
+      catchError(error => {
+        console.error('Error fetching service orders:', error);
+        if (error.status === 401) {
+          // Handle unauthorized specifically
+          return of([]);
+        }
         return of([]);
-      }
-      return of([]);
-    })
-  );
-}
+      })
+    );
+  }
 
   // This method may need updating depending on how the backend handles status filtering
   getAllServicesByStatus(status: string): Observable<ServiceOrder[]> {
@@ -109,7 +122,8 @@ export class AdminService {
     );
   }
 
-    updateUserRoles(userId: number, roles: Set<string>): Observable<any> {
+  // Metody zarządzania użytkownikami
+  updateUserRoles(userId: number, roles: Set<string>): Observable<any> {
     return this.http.patch(`${this.apiUrl}/users/${userId}/roles`, { roles: Array.from(roles) }).pipe(
       catchError(error => {
         console.error(`Error updating user ${userId} roles:`, error);
@@ -117,7 +131,6 @@ export class AdminService {
       })
     );
   }
-
 
   // This is now using the service-orders controller with the admin authorization
   updateServiceOrderStatus(orderId: number, status: string): Observable<any> {
@@ -129,4 +142,3 @@ export class AdminService {
     );
   }
 }
-

@@ -48,11 +48,6 @@ export class AdminUsersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
-    
-    // Watch search form changes
-    this.searchForm.valueChanges.subscribe(() => {
-      this.applyFilters();
-    });
   }
   
   loadUsers(): void {
@@ -61,36 +56,62 @@ export class AdminUsersComponent implements OnInit {
     
     this.adminService.getAllUsers().subscribe({
       next: (users) => {
-        this.users = users;
+        console.log('Raw users data:', users);
+        this.users = Array.isArray(users) ? users : [];
         this.applyFilters();
         this.loading = false;
+        console.log('Users loaded:', this.users);
+        
+        // Setup form changes listener AFTER data is loaded
+        this.searchForm.valueChanges.subscribe(() => {
+          this.applyFilters();
+        });
       },
       error: (err) => {
         console.error('Error loading users:', err);
         this.error = 'Nie udało się załadować użytkowników';
         this.loading = false;
+        this.users = [];
+        this.filteredUsers = [];
         this.notificationService.error(this.error);
       }
     });
   }
   
   applyFilters(): void {
+    // Safety check - ensure users is an array
+    if (!Array.isArray(this.users)) {
+      console.warn('Users is not an array, initializing as empty array');
+      this.users = [];
+    }
+    
     const searchTerm = this.searchForm.get('searchTerm')?.value?.toLowerCase() || '';
     const role = this.searchForm.get('role')?.value || '';
     const verified = this.searchForm.get('verified')?.value;
     
+    console.log('Applying filters:', { searchTerm, role, verified });
+    console.log('Users to filter:', this.users);
+    
     this.filteredUsers = this.users.filter(user => {
+      // Safety check for user object
+      if (!user || typeof user !== 'object') {
+        console.warn('Invalid user object:', user);
+        return false;
+      }
+      
       const matchesSearch = !searchTerm || 
-        user.email.toLowerCase().includes(searchTerm) ||
+        (user.email && user.email.toLowerCase().includes(searchTerm)) ||
         (user.firstName && user.firstName.toLowerCase().includes(searchTerm)) ||
         (user.lastName && user.lastName.toLowerCase().includes(searchTerm));
       
-      const matchesRole = !role || user.roles.includes(role);
+      const matchesRole = !role || (Array.isArray(user.roles) && user.roles.includes(role));
       
       const matchesVerified = verified === '' || user.verified === (verified === 'true');
       
       return matchesSearch && matchesRole && matchesVerified;
     });
+    
+    console.log('Filtered users:', this.filteredUsers);
     
     this.totalElements = this.filteredUsers.length;
     this.totalPages = Math.ceil(this.totalElements / this.pageSize);
@@ -106,6 +127,7 @@ export class AdminUsersComponent implements OnInit {
   selectUser(user: AdminUser): void {
     this.selectedUser = user;
     this.isEditingRoles = false;
+    console.log('Selected user:', user);
   }
   
   startEditingRoles(): void {
@@ -118,9 +140,11 @@ export class AdminUsersComponent implements OnInit {
   
   updateUserRoles(userId: number, newRoles: string[]): void {
     this.saving = true;
+    console.log('Updating user roles:', { userId, newRoles });
     
     this.adminService.updateUserRoles(userId, new Set(newRoles)).subscribe({
       next: (response) => {
+        console.log('Roles updated successfully:', response);
         this.notificationService.success('Role użytkownika zostały zaktualizowane');
         this.isEditingRoles = false;
         this.saving = false;
@@ -147,27 +171,40 @@ export class AdminUsersComponent implements OnInit {
   }
   
   toggleRole(role: string): void {
-    if (!this.selectedUser) return;
+    if (!this.selectedUser) {
+      console.warn('No user selected');
+      return;
+    }
     
-    const currentRoles = [...this.selectedUser.roles];
+    const currentRoles = Array.isArray(this.selectedUser.roles) ? [...this.selectedUser.roles] : [];
     const hasRole = currentRoles.includes(role);
     
+    console.log('Toggling role:', { role, hasRole, currentRoles });
+    
+    let newRoles: string[];
     if (hasRole) {
       // Remove role
-      const newRoles = currentRoles.filter(r => r !== role);
-      this.updateUserRoles(this.selectedUser.id, newRoles);
+      newRoles = currentRoles.filter(r => r !== role);
     } else {
       // Add role
-      const newRoles = [...currentRoles, role];
-      this.updateUserRoles(this.selectedUser.id, newRoles);
+      newRoles = [...currentRoles, role];
     }
+    
+    this.updateUserRoles(this.selectedUser.id, newRoles);
   }
   
   hasRole(role: string): boolean {
-    return this.selectedUser?.roles.includes(role) || false;
+    if (!this.selectedUser || !Array.isArray(this.selectedUser.roles)) {
+      return false;
+    }
+    return this.selectedUser.roles.includes(role);
   }
   
   getUserRoleDisplay(roles: string[]): string {
+    if (!Array.isArray(roles)) {
+      return 'Brak ról';
+    }
+    
     const roleMap: Record<string, string> = {
       'ROLE_ADMIN': 'Administrator',
       'ROLE_MODERATOR': 'Moderator',

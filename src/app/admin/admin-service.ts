@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, catchError } from 'rxjs';
+import { Observable, of, catchError, throwError } from 'rxjs';
 import { ServiceOrder } from '../service-orders/service-order.model';
 import { environment } from '../core/api-config';
 
@@ -109,6 +109,16 @@ export class AdminService {
     );
   }
 
+    updateUserRoles(userId: number, roles: Set<string>): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/users/${userId}/roles`, { roles: Array.from(roles) }).pipe(
+      catchError(error => {
+        console.error(`Error updating user ${userId} roles:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+
   // This is now using the service-orders controller with the admin authorization
   updateServiceOrderStatus(orderId: number, status: string): Observable<any> {
     return this.http.patch(`${this.serviceOrdersUrl}/${orderId}/status`, { status }).pipe(
@@ -119,3 +129,4 @@ export class AdminService {
     );
   }
 }
+

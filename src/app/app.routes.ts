@@ -17,6 +17,7 @@ import { AdminBikeServicesComponent } from './admin/admin-bike-services/admin-bi
 import { AdminServiceSlotsComponent } from './admin/service-slots/admin-service-slots.component';
 import { AdminOrdersComponent } from './admin/admin-orders/admin-orders.component';
 import { AdminOrderDetailsComponent } from './admin/admin-orders/admin-order-details/admin-order-details.component';
+import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
 import { ServiceOrderDetailsComponent } from './service-orders/service-order-details/service-order-details.component';
@@ -95,6 +96,8 @@ export const routes: Routes = [
     // Admin Orders Routes
     { path: 'admin-orders', component: AdminOrdersComponent, canActivate: [adminGuard] },
     { path: 'admin-orders/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard] },
+    { path: 'admin-users', component: AdminUsersComponent, canActivate: [adminGuard] },
+
 
     // Pozostałe admin routes
     { path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard] },

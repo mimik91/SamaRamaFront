@@ -1,4 +1,3 @@
-// auth.service.ts - POPRAWIONA WERSJA
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, catchError, throwError, of } from 'rxjs';

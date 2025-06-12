@@ -92,11 +92,13 @@ export class AdminDashboardComponent implements OnInit {
   
 navigateToModule(module: string): void {
   if (module === 'orders') {
-    this.router.navigate(['/admin-orders']); // ✅ POPRAWNA ŚCIEŻKA
+    this.router.navigate(['/admin-orders']);
   } else if (module === 'packages') {
     this.router.navigate(['/admin-service-packages']);
   } else if (module === 'services') {
     this.router.navigate(['/admin-bike-services']);
+  } else if (module === 'users') {
+    this.router.navigate(['/admin-users']);
   } else {
     this.notificationService.info(`Moduł ${module} jest w przygotowaniu`);
   }

@@ -365,8 +365,8 @@ export class AdminOrdersService {
       { value: 'CONFIRMED', label: 'Potwierdzone' },
       { value: 'PICKED_UP', label: 'Odebrane' },
       { value: 'IN_SERVICE', label: 'W serwisie' },
-      { value: 'COMPLETED', label: 'Zakończone' },
-      { value: 'DELIVERED', label: 'Dostarczone' },
+      { value: 'ON_THE_WAY_BACK', label: 'W drodze z porotem do klienta' },
+      { value: 'FINISHED', label: 'Zakończone' },
       { value: 'CANCELLED', label: 'Anulowane' }
     ];
   }
@@ -378,10 +378,10 @@ export class AdminOrdersService {
     return [
       { value: 'PENDING', label: 'Oczekujące' },
       { value: 'CONFIRMED', label: 'Potwierdzone' },
-      { value: 'PICKED_UP', label: 'Odebrane' },
-      { value: 'IN_TRANSPORT', label: 'W transporcie' },
-      { value: 'DELIVERED_TO_SERVICE', label: 'Dostarczone do serwisu' },
-      { value: 'COMPLETED', label: 'Zakończone' },
+      { value: 'PICKED_UP', label: 'W transporcie do serwisu' },
+      { value: 'IN_SERVICE', label: 'W trakcie serwisu' },
+      { value: 'ON_THE_WAY_BACK', label: 'W drodze z porotem do klienta' },
+      { value: 'FINISHED', label: 'Zakończone' },
       { value: 'CANCELLED', label: 'Anulowane' }
     ];
   }

@@ -235,10 +235,8 @@ export class AdminOrdersComponent implements OnInit {
       'CONFIRMED': 'status-confirmed',
       'PICKED_UP': 'status-picked-up',
       'IN_SERVICE': 'status-in-service',
-      'IN_TRANSPORT': 'status-in-transport',
-      'COMPLETED': 'status-completed',
-      'DELIVERED': 'status-delivered',
-      'DELIVERED_TO_SERVICE': 'status-delivered',
+      'ON_THE_WAY_BACK': 'status-in-transport-back',
+      'FINISHED': 'status-delivered',
       'CANCELLED': 'status-cancelled'
     };
 

@@ -198,12 +198,96 @@ h1 {
 }
 
 /* Service Info Card */
-.service-info-card {
+.service-info-card-enhanced {
   margin-bottom: 30px;
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
+  padding: 25px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.service-info-card-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  pointer-events: none;
+}
+
+.service-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.service-icon {
+  font-size: 2.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.service-main-info {
+  flex: 1;
+}
+
+.service-title {
+  margin: 0 0 8px 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.service-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.service-details-enhanced {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.service-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.detail-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.detail-text {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  font-size: 0.95rem;
 }
 
 .service-info-card h3 {
@@ -226,6 +310,23 @@ h1 {
 .service-address {
   color: #6c757d;
   font-size: 0.9rem;
+}
+
+.service-reminder {
+  margin-top: 15px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-radius: 25px;
+  color: #1565c0;
+  text-align: center;
+  font-size: 1rem;
+  border: 2px solid #90caf9;
+  box-shadow: 0 2px 8px rgba(21, 101, 192, 0.15);
+}
+
+.service-reminder strong {
+  color: #0d47a1;
+  font-weight: 700;
 }
 
 /* Carbon bike warning */
@@ -516,6 +617,31 @@ input:focus, textarea:focus, select:focus {
 
 .summary-item:last-child {
   margin-bottom: 0;
+}
+
+.summary-item.service-destination {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  border: 2px solid #ba68c8;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: #4a148c;
+}
+
+.service-icon-small {
+  font-size: 1.2rem;
+  background: rgba(74, 20, 140, 0.1);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 /* Order Summary */

@@ -46,13 +46,15 @@
   </div>
 
   <!-- Service Info Card -->
-  <div class="service-info-card" *ngIf="selectedServiceInfo.name && !loading && !error">
-    <h3>Serwis docelowy</h3>
-    <div class="service-details">
-      <div class="service-name">{{ selectedServiceInfo.name }}</div>
-      <div class="service-address">📍 {{ selectedServiceInfo.address }}</div>
+  <div class="service-info-card-enhanced" *ngIf="selectedServiceInfo.name && !loading && !error">
+  <div class="service-header">
+    <div class="service-icon">🏪</div>
+    <div class="service-main-info">
+      <h2 class="service-title">{{ selectedServiceInfo.name }}</h2>
+      <p class="service-subtitle">Serwis docelowy dla Twojego transportu</p>
     </div>
   </div>
+</div>
 
   <!-- Main Form Content -->
   <div *ngIf="!loading && !error" class="step-content">
@@ -62,6 +64,9 @@
       <div class="step-header">
         <h2>{{ getStepTitle(1) }}</h2>
         <p class="step-description">{{ getStepDescription(1) }}</p>
+        <div class="service-reminder" *ngIf="selectedServiceInfo.name">
+      <strong>Transport do:</strong> {{ selectedServiceInfo.name }}
+    </div>
       </div>
 
       <!-- Ostrzeżenie o rowerach karbonowych -->
@@ -189,6 +194,10 @@
         <!-- Selection Summary -->
         <div class="selection-summary" *ngIf="getSelectedBicyclesCount() > 0">
           <h4>Podsumowanie wyboru:</h4>
+          <div class="summary-item service-destination">
+            <span class="service-icon-small">🏪</span>
+            Serwis docelowy: <strong>{{ selectedServiceInfo.name }}</strong>
+          </div>
           <div class="summary-item">
             Liczba rowerów: <strong>{{ getSelectedBicyclesCount() }}</strong>
           </div>
@@ -219,6 +228,9 @@
       <div class="step-header">
         <h2>{{ getStepTitle(2) }}</h2>
         <p class="step-description">{{ getStepDescription(2) }}</p>
+        <div class="service-reminder" *ngIf="selectedServiceInfo.name">
+      <strong>Transport do:</strong> {{ selectedServiceInfo.name }}
+    </div>
       </div>
 
       <form [formGroup]="contactAndTransportForm">

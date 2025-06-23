@@ -1,4 +1,3 @@
-// src/app/courier/courier-panel.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CourierService, CourierOrder } from './courier-service';

@@ -123,18 +123,107 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   private loadServiceInfo(): void {
-    this.route.queryParams.subscribe(params => {
+  this.route.queryParams.subscribe(params => {
+    const serviceId = params['serviceId'];
+    const serviceName = params['serviceName'];
+    const serviceAddress = params['serviceAddress'];
+    
+    if (serviceId && serviceName && serviceAddress) {
+      // Stary sposób - mamy wszystkie dane w URL
       this.selectedServiceInfo = {
-        id: params['serviceId'] ? +params['serviceId'] : null,
-        name: params['serviceName'] || '',
-        address: params['serviceAddress'] || ''
+        id: +serviceId,
+        name: serviceName,
+        address: serviceAddress
       };
       
-      // Pobierz szczegóły serwisu z API, aby uzyskać dokładny koszt transportu
-      if (this.selectedServiceInfo.id) {
-        this.loadServiceTransportCost();
+      // Pobierz koszt transportu z API
+      this.mapService.getServiceDetails(+serviceId).subscribe({
+        next: (serviceDetails) => {
+          if (serviceDetails && typeof serviceDetails.transportCost === 'number') {
+            this.actualTransportCost = serviceDetails.transportCost;
+            console.log('Transport cost loaded from API:', this.actualTransportCost);
+          } else {
+            this.actualTransportCost = null;
+            console.log('No transport cost available for this service');
+          }
+        },
+        error: (error) => {
+          console.error('Error loading service transport cost:', error);
+          this.actualTransportCost = null;
+        }
+      });
+      
+    } else if (serviceId) {
+      // Nowy sposób - mamy tylko serviceId, pobierz dane z API
+      this.loadServiceDetails(serviceId);
+      
+    } else {
+      // Brak wymaganych parametrów
+      this.selectedServiceInfo = {
+        id: null,
+        name: '',
+        address: ''
+      };
+      this.notificationService.error('Brak informacji o serwisie. Sprawdź link.');
+    }
+  });
+}
+
+  private loadServiceDetails(serviceId: string): void {
+    this.loading = true;
+    
+    this.mapService.getServiceDetails(+serviceId).subscribe({
+      next: (serviceDetails) => {
+        if (serviceDetails) {
+          this.selectedServiceInfo = {
+            id: serviceDetails.id,
+            name: serviceDetails.name,
+            address: this.formatServiceAddress(serviceDetails)
+          };
+          
+          // Ustaw koszt transportu
+          this.actualTransportCost = serviceDetails.transportCost || null;
+          console.log('Service details loaded:', this.selectedServiceInfo);
+          console.log('Transport cost:', this.actualTransportCost);
+        } else {
+          this.notificationService.error('Nie znaleziono serwisu o podanym ID');
+          this.router.navigate(['/']);
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading service details:', error);
+        this.notificationService.error('Błąd podczas ładowania danych serwisu');
+        this.router.navigate(['/']);
+        this.loading = false;
       }
     });
+  }
+
+  private formatServiceAddress(serviceDetails: any): string {
+    let address = '';
+    
+    if (serviceDetails.street) {
+      address += serviceDetails.street;
+    }
+    
+    if (serviceDetails.building) {
+      address += ' ' + serviceDetails.building;
+    }
+    
+    if (serviceDetails.flat) {
+      address += '/' + serviceDetails.flat;
+    }
+    
+    if (serviceDetails.city) {
+      address += ', ' + serviceDetails.city;
+    }
+    
+    if (serviceDetails.postalCode) {
+      address += ' ' + serviceDetails.postalCode;
+    }
+    
+    return address.trim();
   }
 
   private loadBrands(): void {
@@ -165,24 +254,7 @@ export class TransportOrderFormComponent implements OnInit {
     });
   }
 
-  private loadServiceTransportCost(): void {
-    this.mapService.getServiceDetails(this.selectedServiceInfo.id).subscribe({
-      next: (serviceDetails) => {
-        if (serviceDetails && typeof serviceDetails.transportCost === 'number') {
-          this.actualTransportCost = serviceDetails.transportCost;
-          console.log('Transport cost loaded from API:', this.actualTransportCost);
-        } else {
-          // Jeśli serwis nie ma ustawionego kosztu transportu
-          this.actualTransportCost = null;
-          console.log('No transport cost available for this service');
-        }
-      },
-      error: (error) => {
-        console.error('Error loading service transport cost:', error);
-        this.actualTransportCost = null;
-      }
-    });
-  }
+  
 
   // Step navigation
   nextStep(): void {

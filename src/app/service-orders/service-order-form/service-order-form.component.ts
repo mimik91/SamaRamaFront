@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 // Angular Material imports
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
@@ -37,6 +38,7 @@ import { map, of, switchMap } from 'rxjs';
   imports: [
     CommonModule, 
     ReactiveFormsModule,
+    RouterModule,
     MatDatepickerModule,
     MatInputModule,
     MatFormFieldModule,
@@ -149,6 +151,13 @@ export class ServiceOrderFormComponent implements OnInit {
       return true;
     };
   }
+  openTermsOfService() {
+  this.router.navigate(['/terms-of-service']);
+}
+
+openPrivacyPolicy() {
+  this.router.navigate(['/privacy-policy']);
+}
   
   // Helper function to convert Date to ISO string (YYYY-MM-DD)
   private formatDateToISOString(date: Date): string {

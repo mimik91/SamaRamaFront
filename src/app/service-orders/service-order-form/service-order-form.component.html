@@ -285,7 +285,10 @@
               [class.is-invalid]="termsAcceptedControl.invalid && termsAcceptedControl.touched"
             >
             <label for="termsAccepted" class="form-check-label">
-              Akceptuję regulamin serwisu oraz politykę prywatności
+              Akceptuję 
+              <a href="/terms-of-service" target="_blank" class="terms-link">regulamin serwisu</a> 
+              oraz 
+              <a href="/privacy-policy" target="_blank" class="terms-link">politykę prywatności</a>
             </label>
           </div>
           <div *ngIf="termsAcceptedControl.invalid && termsAcceptedControl.touched" class="error-message">

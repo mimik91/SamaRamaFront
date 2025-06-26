@@ -475,6 +475,50 @@ h1 {
   box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
 }
 
+/* Terms and Conditions Container */
+.terms-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #e3e6f0;
+  border-radius: 8px;
+  background-color: #f8f9fc;
+}
+
+.form-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.form-check-input {
+  margin-top: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+}
+
+.form-check-input.is-invalid {
+  border-color: #dc3545;
+}
+
+.form-check-label {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #495057;
+  cursor: pointer;
+}
+
+.terms-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.terms-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
 /* Form styles */
 .form-row {
   display: flex;
@@ -845,9 +889,10 @@ input:focus, textarea:focus, select:focus {
 }
 
 .submit-btn:disabled {
-  background-color: #a0aec0;
-  border-color: #a0aec0;
+  background-color: #6c757d;
+  border-color: #6c757d;
   cursor: not-allowed;
+  opacity: 0.65;
   transform: none;
   box-shadow: none;
 }
@@ -942,6 +987,14 @@ input:focus, textarea:focus, select:focus {
     gap: 10px;
     text-align: center;
   }
+
+  .terms-container {
+    padding: 1rem;
+  }
+
+  .form-check {
+    gap: 0.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -971,5 +1024,14 @@ input:focus, textarea:focus, select:focus {
 
   input, textarea, select {
     font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .terms-container {
+    margin-top: 1.5rem;
+    padding: 1rem;
+  }
+
+  .form-check-label {
+    font-size: 0.9rem;
   }
 }

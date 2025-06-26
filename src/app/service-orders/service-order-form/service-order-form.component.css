@@ -752,5 +752,26 @@ h1 {
   margin: 0;
 }
 
+.form-check-label {
+    font-size: 14px;
+    color: #495057;
+  }
+
+  .terms-link {
+    color: #007bff;
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .terms-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+
+  .terms-link:visited {
+    color: #6f42c1;
+  }
+
     
   }

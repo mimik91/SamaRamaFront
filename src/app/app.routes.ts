@@ -28,12 +28,16 @@ import { PasswordResetComponent } from './auth/password-reset/password-reset.com
 import { AboutUsComponent } from './about-us/about-us.component';
 import { PricingComponent } from './pricing/pricing.component';
 import { CourierPanelComponent } from './courier-panel/courier-panel.component';
+import { TermsOfServiceComponent } from './core/terms-of-service.component'
+import { PrivacyPolicyComponent } from './core/privacy-policy.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
     
     // Home route - MUSI być bez guard żeby uniknąć pętli!
     { path: '', component: HomeComponent },
+    { path: 'terms-of-service', component: TermsOfServiceComponent, title: 'Regulamin Serwisu'},
+    { path: 'privacy-policy', component: PrivacyPolicyComponent, title: 'Polityka Prywatności' },
     
     // Pricing route - dostępna dla wszystkich
     { path: 'cennik', component: PricingComponent },
@@ -105,6 +109,7 @@ export const routes: Routes = [
     { path: 'admin-service-packages', component: AdminServicePackagesComponent, canActivate: [adminGuard] },
     { path: 'admin-service-slots', component: AdminServiceSlotsComponent, canActivate: [adminGuard] },
     { path: 'admin-bike-services', component: AdminBikeServicesComponent, canActivate: [adminGuard] },
+    
 
     { 
   path: 'mistrzauta', 

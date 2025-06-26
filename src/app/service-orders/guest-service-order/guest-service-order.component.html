@@ -331,8 +331,11 @@
               [formControl]="termsAccepted"
               [class.is-invalid]="termsAccepted.invalid && termsAccepted.touched"
             >
-            <label for="termsAccepted" class="terms-label">
-              Akceptuję <a href="#" (click)="$event.preventDefault()">regulamin serwisu</a> oraz <a href="#" (click)="$event.preventDefault()">politykę prywatności</a>
+            <label for="termsAccepted" class="form-check-label">
+              Akceptuję 
+              <a href="/terms-of-service" target="_blank" class="terms-link">regulamin serwisu</a> 
+              oraz 
+              <a href="/privacy-policy" target="_blank" class="terms-link">politykę prywatności</a>
             </label>
           </div>
           <div *ngIf="termsAccepted.invalid && termsAccepted.touched" class="error-message">

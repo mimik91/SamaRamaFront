@@ -1,7 +1,7 @@
 // src/app/transport-orders/transport-order-form.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../core/notification.service';
 import { TransportOrderService, TransportOrderRequest } from './transport-order.service';
@@ -60,6 +60,9 @@ export class TransportOrderFormComponent implements OnInit {
   // Forms for each step
   bicyclesForm: FormGroup;
   contactAndTransportForm: FormGroup;
+  
+  // Terms acceptance control
+  termsAcceptedControl = new FormControl(false, [Validators.requiredTrue]);
   
   // State
   loading = false;
@@ -168,6 +171,7 @@ export class TransportOrderFormComponent implements OnInit {
     }
   });
 }
+
 
   private loadServiceDetails(serviceId: string): void {
     this.loading = true;
@@ -289,7 +293,16 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   isCurrentStepValid(): boolean {
-    return this.isStepValid(this.currentStep);
+    switch (this.currentStep) {
+      case 1:
+        return this.isStepValid(1);
+      case 2:
+        return this.isStepValid(2);
+      case 3:
+        return this.isStepValid(1) && this.isStepValid(2) && this.termsAcceptedControl.valid;
+      default:
+        return false;
+    }
   }
 
   isStepValid(step: number): boolean {
@@ -312,6 +325,9 @@ export class TransportOrderFormComponent implements OnInit {
         break;
       case 2:
         this.markFormGroupTouched(this.contactAndTransportForm);
+        break;
+      case 3:
+        this.termsAcceptedControl.markAsTouched();
         break;
     }
   }
@@ -473,12 +489,21 @@ export class TransportOrderFormComponent implements OnInit {
     return step <= this.getMaxAccessibleStep();
   }
 
+  // Opcjonalnie: dodaj metodę sprawdzającą czy można przejść do kolejnego kroku
+  canProceedToNextStep(): boolean {
+    if (this.currentStep === 3) {
+      return this.termsAcceptedControl.valid;
+    }
+    return this.isCurrentStepValid();
+  }
+
   // Form submission
   onSubmit(): void {
-    const allFormsValid = this.isStepValid(1) && this.isStepValid(2);
-    
-    if (!allFormsValid) {
-      this.notificationService.warning('Wypełnij poprawnie wszystkie wymagane pola we wszystkich krokach');
+    // Sprawdź czy wszystkie kroki są prawidłowe
+    if (!this.isStepValid(1) || !this.isStepValid(2) || !this.termsAcceptedControl.valid) {
+      // Oznacz regulamin jako dotknięty, aby pokazać błąd jeśli nie jest zaznaczony
+      this.termsAcceptedControl.markAsTouched();
+      this.notificationService.warning('Wypełnij poprawnie wszystkie wymagane pola we wszystkich krokach i zaakceptuj regulamin');
       return;
     }
 

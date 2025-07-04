@@ -4,6 +4,8 @@ import { filter } from 'rxjs/operators';
 import { NotificationsComponent } from './core/notifications.component';
 import { NavigationComponent } from './core/navigation/navigation.component';
 
+// 🔹 Dodajemy deklarację funkcji gtag
+declare let gtag: Function;
 
 @Component({
   selector: 'app-root',
@@ -29,13 +31,18 @@ export class AppComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit() {
-    // Zamykaj menu mobilne po każdej nawigacji
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
+    ).subscribe((event: NavigationEnd) => {
+      // 🔹 Zamykamy menu mobilne po każdej nawigacji
       if (this.navigationComponent) {
         this.navigationComponent.closeMobileMenu();
       }
+
+      // 🔹 Wysyłamy informację do Google Analytics o zmianie trasy
+      gtag('config', 'G-9ZYH1T3NCJ', {
+        page_path: event.urlAfterRedirects
+      });
     });
   }
 }

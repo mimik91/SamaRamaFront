@@ -12,97 +12,95 @@ import { Router } from '@angular/router';
         <h1>Regulamin Serwisu</h1>
         <button class="back-btn" (click)="goBack()">← Powrót</button>
       </div>
-
       <div class="terms-content">
         <div class="terms-text">
-          <h2>1. Informacje ogólne</h2>
-          <p>Niniejszy regulamin określa zasady korzystania z usług świadczonych przez osobę fizyczną wykonującą zlecenia pod nazwą Cyclopick.pl, z siedzibą w Krakowie, zwaną dalej „Usługodawcą”.</p>
-          <p>Kontakt z Usługodawcą możliwy jest:</p>
+          <h2>1. Postanowienia ogólne</h2>
+          <p>1.1. Niniejszy regulamin („Regulamin”) określa zasady i warunki świadczenia usług transportu i serwisu rowerowego przez Cyclopick.pl, prowadzony przez osobę fizyczną z siedzibą w Krakowie („Usługodawca”).</p>
+          <p>1.2. Kontakt z Usługodawcą:</p>
           <ul>
-            <li>📧 e-mail: <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a></li>
-            <li>📞 telefon: 723 45 25 87</li>
+            <li>e-mail: <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a></li>
+            <li>tel.: 723 45 25 87</li>
           </ul>
-          <p>Regulamin dostępny jest nieodpłatnie na stronie internetowej https://cyclopick.pl i może być pobrany, zapisany oraz wydrukowany przez każdego użytkownika.</p>
-          <p>Regulamin obowiązuje od dnia 7 lipca 2025 roku.</p>
+          <p>1.3. Regulamin obowiązuje od 7 lipca 2025 r. i jest dostępny nieodpłatnie na stronie <a href="https://cyclopick.pl">cyclopick.pl</a>.</p>
 
           <h2>2. Definicje</h2>
           <ul>
-            <li><strong>Usługodawca</strong> – osoba fizyczna wykonująca zlecenia pod nazwą Cyclopick.pl.</li>
-            <li><strong>Klient</strong> – każda osoba fizyczna lub prawna korzystająca z usług Usługodawcy.</li>
-            <li><strong>Serwis</strong> – strona internetowa dostępna pod adresem https://cyclopick.pl.</li>
-            <li><strong>Usługa transportowa</strong> – przewóz roweru do i z wybranego przez klienta serwisu rowerowego.</li>
-            <li><strong>Usługa serwisowa</strong> – naprawa roweru wraz z jego odbiorem i dowozem spod wskazanego adresu.</li>
-            <li><strong>Magazynowanie</strong> – przechowywanie roweru w przypadku braku możliwości jego doręczenia klientowi.</li>
+            <li><strong>Zlecenie</strong> – umowa na świadczenie usługi transportowej lub serwisowej między Klientem a Usługodawcą.</li>
+            <li><strong>Klient</strong> – osoba fizyczna, prawna lub jednostka organizacyjna korzystająca z usług.</li>
+            <li><strong>Usługa transportowa</strong> – przewóz roweru do wskazanego serwisu i z powrotem.</li>
+            <li><strong>Usługa serwisowa</strong> – naprawa roweru w autoryzowanym serwisie ze zorganizowanym transportem (odbiór, naprawa, dostawa).</li>
+            <li><strong>Magazynowanie</strong> – przechowywanie roweru w magazynie Usługodawcy w razie nieodebrania go przez Klienta.</li>
+            <li><strong>Dzień roboczy</strong> – dzień od poniedziałku do piątku z wyłączeniem dni ustawowo wolnych od pracy.</li>
           </ul>
 
-          <h2>3. Warunki techniczne korzystania z serwisu</h2>
-          <p>Aby skorzystać z usług Cyclopick.pl, klient powinien posiadać:</p>
+          <h2>3. Zakładanie i realizacja Zleceń</h2>
+          <p>3.1. Zlecenia przyjmowane są przez formularz na stronie, e-mail lub telefon.</p>
+          <p>3.2. Każde Zlecenie powinno zawierać:</p>
           <ul>
-            <li>urządzenie z dostępem do Internetu,</li>
-            <li>aktualną przeglądarkę internetową,</li>
-            <li>aktywne konto e-mail.</li>
+            <li>dane Klienta (imię, nazwisko, adres, telefon, e-mail),</li>
+            <li>adres odbioru i dostawy roweru,</li>
+            <li>datę i godzinę odbioru (dzień roboczy, 18:00–22:00),</li>
+            <li>informacje o rowerze (marka, model, wartość, rodzaj ramy i obręczy).</li>
           </ul>
+          <p>3.3. Potwierdzenie przyjęcia Zlecenia następuje mailowo lub telefonicznie w ciągu 24 h roboczych od zgłoszenia.</p>
 
-          <h2>4. Zakres i warunki świadczenia usług</h2>
-          <h3>🚚 Transport roweru do wybranego serwisu</h3>
+          <h2>4. Terminy i przebieg usługi</h2>
+          <h3>4.1. Usługa transportowa</h3>
           <ul>
-            <li>Klient samodzielnie umawia termin wizyty w wybranym serwisie rowerowym.</li>
-            <li>Następnie zamawia transport roweru przez Cyclopick.pl, wskazując datę odbioru – dzień przed umówionym terminem serwisu.</li>
-            <li>Odbiór roweru odbywa się w godzinach 18:00–22:00.</li>
-            <li>Rower zostaje dostarczony do serwisu tak, aby był dostępny na umówiony dzień.</li>
-            <li>Po zakończeniu serwisu i otrzymaniu informacji o gotowości roweru, Cyclopick.pl odbiera rower i dostarcza go z powrotem do klienta w godzinach 18:00–22:00.</li>
-            <li>W przypadku nieobecności klienta podczas dostawy, rower zostaje przewieziony do magazynu. Podejmowane są próby kontaktu z klientem w celu ustalenia nowego terminu odbioru.</li>
-            <li>Za każdy dzień magazynowania naliczana jest opłata w wysokości 10 zł.</li>
+            <li>Odbiór roweru: dzień roboczy, 18:00–22:00 pod wskazanym adresem.</li>
+            <li>Dostawa do serwisu: tak, aby rower był gotowy następnego dnia roboczego.</li>
+            <li>Odbiór z serwisu po potwierdzeniu gotowości i dostarczenie do Klienta w oknie 18:00–22:00.</li>
           </ul>
-
-          <h3>🔧 Usługa serwisowa z transportem</h3>
+          <h3>4.2. Usługa serwisowa z transportem</h3>
           <ul>
-            <li>Rower odbierany jest w godzinach 18:00–22:00, naprawiany, a następnie odwożony do klienta w tych samych godzinach.</li>
-            <li>Czas realizacji naprawy wynosi standardowo do 24 godzin. W przypadku wydłużenia naprawy powyżej 48 godzin, klient zostaje poinformowany o przyczynie opóźnienia.</li>
+            <li>Odbiór i dostawa w oknie 18:00–22:00.</li>
+            <li>Standardowy termin naprawy: do 24 h roboczych.</li>
+            <li>Jeśli naprawa nie zakończy się w 48 h roboczych, Klient otrzymuje informację o przyczynie opóźnienia i nowym terminie.</li>
           </ul>
 
-          <h2>5. Odpowiedzialność i ograniczenia</h2>
+          <h2>5. Obowiązki i odpowiedzialność Klienta</h2>
           <ul>
-            <li>Usługodawca ponosi odpowiedzialność za rowery o wartości do 6000 zł.</li>
-            <li>Rowery o wartości powyżej 6000 zł są przewożone wyłącznie na odpowiedzialność klienta.</li>
-            <li>Rowery z ramą lub obręczami karbonowymi są przewożone wyłącznie na odpowiedzialność klienta.</li>
-            <li>Usługodawca nie ponosi odpowiedzialności za uszkodzenia wynikające z ukrytych wad roweru lub niewłaściwego przygotowania roweru do transportu.</li>
+            <li>Zapewnienie dostępu do roweru w ustalonym terminie i oknie czasowym.</li>
+            <li>Przygotowanie roweru do transportu (zabezpieczenie luzem elementów).</li>
+            <li>Przekazanie prawdziwych informacji o rodzaju i wartości roweru.</li>
           </ul>
+          <p>Usługodawca odpowiada do wysokości 6000 zł. Rowery o wyższej wartości i z karbonową ramą/obręczami przewożone są na ryzyko Klienta. Usługodawca nie odpowiada za ukryte wady roweru ani opóźnienia z winy serwisu.</p>
 
-          <h2>6. Ceny i płatności</h2>
+          <h2>6. Cennik i warunki płatności</h2>
           <ul>
-            <li>Ceny usług są podawane w trakcie składania zamówienia i zawierają podatek VAT (jeśli dotyczy).</li>
-            <li>Dostępne metody płatności:
-              <ul>
-                <li>💳 BLIK</li>
-                <li>💵 Gotówka przy odbiorze</li>
-              </ul>
-            </li>
-            <li>Opłata za magazynowanie roweru wynosi 10 zł za każdy rozpoczęty dzień.</li>
+            <li>Transport do serwisu: wg wyceny przy składaniu Zlecenia.</li>
+            <li>Magazynowanie: 10 zł za każdy rozpoczęty dzień (od kolejnego dnia po pierwszej próbie dostawy).</li>
           </ul>
+          <p>Płatności: BLIK lub gotówka przy odbiorze. Faktury/paragony wystawiane na żądanie.</p>
 
-          <h2>7. Odstąpienie od umowy</h2>
+          <h2>7. Zmiana i odstąpienie od Zlecenia</h2>
           <ul>
-            <li>Klient będący konsumentem ma prawo odstąpić od umowy zawartej na odległość w terminie 14 dni bez podania przyczyny, o ile usługa nie została jeszcze wykonana.</li>
-            <li>W celu odstąpienia od umowy należy przesłać oświadczenie na adres e-mail: <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a>.</li>
-            <li>W przypadku rozpoczęcia świadczenia usługi przed upływem terminu do odstąpienia, klient traci prawo do odstąpienia od umowy.</li>
+            <li>Zmiana lub anulowanie Zlecenia bez opłat możliwe do momentu pierwszego odbioru roweru.</li>
+            <li>Konsument może odstąpić w ciągu 14 dni od zawarcia umowy, jeżeli usługa nie została rozpoczęta (mail: <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a>).</li>
+            <li>Jeśli usługa już się rozpoczęła, Klient ponosi koszty dojazdu zgodnie z cennikiem.</li>
           </ul>
 
-          <h2>8. Reklamacje</h2>
+          <h2>8. Reklamacje i procedura rozpatrywania</h2>
           <ul>
-            <li>Reklamacje dotyczące wykonanych usług można zgłaszać w terminie do 14 dni od ich wykonania.</li>
-            <li>Reklamacje należy przesłać na adres e-mail: <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a>.</li>
-            <li>Reklamacja powinna zawierać: imię i nazwisko klienta, numer zamówienia, opis problemu oraz ewentualne zdjęcia dokumentujące stan roweru.</li>
-            <li>Usługodawca rozpatrzy reklamację w terminie 14 dni od jej otrzymania.</li>
+            <li>Reklamacje do 14 dni od wykonania usługi na <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a>.</li>
+            <li>Powinny zawierać dane Klienta, numer Zlecenia, opis niezgodności i zdjęcia.</li>
           </ul>
+          <p>Potwierdzenie przyjęcia w 3 dni robocze, rozpatrzenie w 14 dni roboczych.</p>
 
-          <h2>9. Dane osobowe i polityka prywatności</h2>
-          <p>Administratorem danych osobowych klientów jest Usługodawca. Dane osobowe przetwarzane są wyłącznie w celu realizacji usług oraz kontaktu z klientem. Klient ma prawo dostępu do swoich danych, ich poprawiania oraz żądania ich usunięcia. Szczegółowe informacje znajdują się w Polityce Prywatności dostępnej na stronie internetowej.</p>
+          <h2>9. Siła wyższa</h2>
+          <p>Strony nie odpowiadają za niewykonanie lub opóźnienie z przyczyn niezależnych (klęski żywiołowe, pandemie, strajki, awarie dróg). Terminy wydłużają się o czas trwania przyczyny.</p>
 
-          <h2>10. Postanowienia końcowe</h2>
-          <p>Usługodawca zastrzega sobie prawo do zmiany niniejszego regulaminu. Zmiany wchodzą w życie z dniem ich publikacji na stronie internetowej.</p>
-          <p>W sprawach nieuregulowanych niniejszym regulaminem zastosowanie mają przepisy Kodeksu cywilnego oraz ustawy o prawach konsumenta.</p>
-          <p>Regulamin obowiązuje od dnia 7 lipca 2025 roku.</p>
+          <h2>10. Rozstrzyganie sporów</h2>
+          <p>Spory polubownie, a gdy to niemożliwe – przez sąd właściwy dla siedziby Usługodawcy. Konsumenci mogą skorzystać z mediacji lub platformy ODR Komisji Europejskiej.</p>
+
+          <h2>11. Ochrona danych osobowych</h2>
+          <p>Administratorem danych jest Usługodawca. Dane przetwarzane są wyłącznie w celu realizacji Zlecenia, obsługi płatności i kontaktu. Klient ma prawo dostępu, poprawiania i usunięcia danych. Szczegóły w Polityce Prywatności.</p>
+
+          <h2>12. Postanowienia końcowe</h2>
+          <ul>
+            <li>Usługodawca zastrzega sobie prawo do zmiany Regulaminu; zmiany wchodzą w życie po publikacji na stronie.</li>
+            <li>W sprawach nieuregulowanych stosuje się przepisy Kodeksu cywilnego oraz ustawy o prawach konsumenta.</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -115,7 +113,6 @@ import { Router } from '@angular/router';
       min-height: 100vh;
       background-color: #f8f9fa;
     }
-
     .terms-header {
       display: flex;
       justify-content: space-between;
@@ -124,13 +121,11 @@ import { Router } from '@angular/router';
       padding-bottom: 20px;
       border-bottom: 2px solid #007bff;
     }
-
     h1 {
       color: #333;
       margin: 0;
       font-size: 2rem;
     }
-
     .back-btn {
       padding: 10px 20px;
       background-color: #6c757d;
@@ -141,65 +136,53 @@ import { Router } from '@angular/router';
       font-weight: 500;
       transition: background-color 0.2s;
     }
-
     .back-btn:hover {
       background-color: #5a6268;
     }
-
     .terms-content {
       background-color: white;
       padding: 40px;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
     .terms-text {
       font-size: 1rem;
       color: #333;
       line-height: 1.6;
     }
-
     .terms-text h2 {
       margin-top: 30px;
       font-size: 1.4rem;
       color: #007bff;
     }
-
     .terms-text h3 {
       margin-top: 20px;
       font-size: 1.2rem;
       color: #0056b3;
     }
-
     .terms-text ul {
       padding-left: 20px;
       margin-top: 10px;
     }
-
     .terms-text li {
       margin-bottom: 8px;
     }
-
     .terms-text a {
       color: #007bff;
       text-decoration: none;
     }
-
     .terms-text a:hover {
       text-decoration: underline;
     }
-
     @media (max-width: 768px) {
       .terms-header {
         flex-direction: column;
         gap: 15px;
         text-align: center;
       }
-
       h1 {
         font-size: 1.5rem;
       }
-
       .terms-content {
         padding: 20px;
       }

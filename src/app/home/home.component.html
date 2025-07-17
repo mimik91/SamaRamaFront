@@ -28,18 +28,18 @@
       <button 
         type="button" 
         class="view-btn hero-btn" 
-        [class.active]="activeHowItWorksView === 'service'"
-        (click)="switchHowItWorksView('service')"
-      >
-        Serwis
-      </button>
-      <button 
-        type="button" 
-        class="view-btn hero-btn" 
         [class.active]="activeHowItWorksView === 'transport'"
         (click)="switchHowItWorksView('transport')"
       >
         Transport Rowerów
+      </button>
+      <button 
+        type="button" 
+        class="view-btn hero-btn" 
+        [class.active]="activeHowItWorksView === 'service'"
+        (click)="switchHowItWorksView('service')"
+      >
+        Serwis
       </button>
     </div>
     

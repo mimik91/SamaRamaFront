@@ -35,7 +35,7 @@ export class HomeComponent implements OnInit {
   private isBrowser: boolean;
 
   // Aktywny widok sekcji "Jak działamy"
-  activeHowItWorksView: 'transport' | 'service' = 'service';
+  activeHowItWorksView: 'transport' | 'service' = 'transport';
 
   transportSteps = [
     {

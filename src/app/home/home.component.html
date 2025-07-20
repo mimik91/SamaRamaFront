@@ -33,14 +33,14 @@
       >
         Transport Rowerów
       </button>
-      <button 
+      <!-- <button 
         type="button" 
         class="view-btn hero-btn" 
         [class.active]="activeHowItWorksView === 'service'"
         (click)="switchHowItWorksView('service')"
       >
         Serwis
-      </button>
+      </button> -->
     </div>
     
     <h1>Wieczorem odbieramy Twój rower i zawozimy do serwisu, w dniu zakończenia serwisu odbieramy rower od serwisu i wieczorem odstawiamy go z powrotem pod Twój dom.</h1>
@@ -177,10 +177,11 @@
         <div class="contact-text">Facebook</div>
       </div>
     </div>
-    
+    <!--
     <p class="section-subtitle">Wypełnij formularz poniżej, aby zamówić odbiór i serwis Twojego roweru</p>
-    
-    <!-- Formularz zamówienia -->
+  -->
+    <!--
+     Formularz zamówienia
     <div class="form-container" *ngIf="!formSubmitted">
       <form [formGroup]="bikeForm" (ngSubmit)="onSubmit()">
         <div formArrayName="bikes">
@@ -275,7 +276,7 @@
           </div>
         </div>
       </form>
-    </div>
+    </div> -->
   </section>
   
   <!-- Panel serwisowy -->

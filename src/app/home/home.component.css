@@ -625,9 +625,26 @@
 
 .steps-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  /* Na dużych ekranach (desktop) - zawsze 4 kolumny */
+  grid-template-columns: repeat(4, 1fr);
   gap: 25px;
   margin-bottom: 30px;
+}
+
+/* Dostosowanie dla mniejszych ekranów (tabletów) */
+@media screen and (max-width: 992px) {
+  .steps-container {
+    /* Na tabletach wyświetlamy po 2 kafelki w rzędzie */
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Dostosowanie dla telefonów komórkowych */
+@media screen and (max-width: 767px) {
+  .steps-container {
+    /* Na urządzeniach mobilnych wyświetlamy jeden kafelek pod drugim */
+    grid-template-columns: 1fr;
+  }
 }
 
 .step-card {

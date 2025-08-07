@@ -46,31 +46,19 @@ export class HomeComponent implements OnInit {
     },
     {
       number: 2,
-      title: 'Zarejestruj rower w systemie',
-      description: 'Dodaj jednoślad do systemu, podając podstawowe informacje.',
+      title: 'Wypełnij formularz na naszej stronie',
+      description: 'Dodaj rower do systemu, podaj wymagane dane i wybierz dzień odbioru (dzień przed serwisem). Odbierzemy go spod wskazanego adresu w godzinach 18:00–22:00.',
       icon: 'file-text'
     },
     {
-      number: 3,
-      title: 'Wybierz termin odbioru',
-      description: 'Wskaż dogodny dzień odbioru (dzień przed umówionym serwisem), a my odbierzemy Twój rower spod wskazanego adresu w godzinach 18:00 - 22:00.',
-      icon: 'clock'
-    },
-    {
       number: 4,
-      title: 'Odbierzemy od Ciebie rower',
+      title: 'Odbierzemy rower i zawieziemy do serwisu',
       description: 'Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia.',
-      icon: 'package'
-    },
-    {
-      number: 5,
-      title: 'Dostarczymy rower do wybranego serwisu',
-      description: 'Bezpiecznie przewieziemy Twój rower do umówionego serwisu na wyznaczony termin.',
       icon: 'truck'
     },
     {
       number: 6,
-      title: 'Po zakończeniu serwisu odbierzemy i dostarczymy rower z powrotem',
+      title: 'Po zakończonym serwisie dostarczymy Ci rower z powrotem',
       description: 'Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy.',
       icon: 'tool'
     }

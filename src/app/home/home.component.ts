@@ -51,13 +51,13 @@ export class HomeComponent implements OnInit {
       icon: 'file-text'
     },
     {
-      number: 4,
+      number: 3,
       title: 'Odbierzemy rower i zawieziemy do serwisu',
       description: 'Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia.',
       icon: 'truck'
     },
     {
-      number: 6,
+      number: 4,
       title: 'Po zakończonym serwisie dostarczymy Ci rower z powrotem',
       description: 'Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy.',
       icon: 'tool'

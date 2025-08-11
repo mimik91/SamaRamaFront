@@ -372,6 +372,8 @@ export class TransportOrderFormComponent implements OnInit {
         `Rower ${index + 1}: ${bike.brand} ${bike.model || ''} (${bike.type || 'brak typu'})`
     ).join('\n');
 
+    const finalPrice = this.getFinalPriceToSend();
+
     const transportOrder = {
       bicycles: bicyclesData.map(bike => ({
         brand: bike.brand,
@@ -388,7 +390,7 @@ export class TransportOrderFormComponent implements OnInit {
       
       pickupDate: contactAndTransportData.pickupDate,
       targetServiceId: this.selectedServiceInfo.id,
-      transportPrice: this.finalTransportPrice,
+      transportPrice: finalPrice,
       transportNotes: contactAndTransportData.additionalNotes || '',
       additionalNotes: bicycleInfo,
       discountCoupon: this.finalTransportPrice !== null ? this.discountCouponControl.value : null

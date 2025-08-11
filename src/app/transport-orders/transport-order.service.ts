@@ -78,37 +78,22 @@ export interface BikeService {
   providedIn: 'root'
 })
 export class TransportOrderService {
-  // URL zaktualizowany do ClientOrderController
   private apiUrl = `${environment.apiUrl}/guest-orders/transport`;
+  // DODANY NOWY ADRES URL DLA RABATÓW
+  private discountApiUrl = `${environment.apiUrl}/guest-orders/discounts`; 
   private http = inject(HttpClient);
 
   constructor() { }
 
-  /**
-   * Tworzy nowe zamówienie transportowe (dla zalogowanych użytkowników)
-   */
-  createTransportOrder(orderData: TransportOrderRequest): Observable<any> {
-    return this.http.post<any>(this.apiUrl, orderData).pipe(
-      catchError(error => {
-        console.error('Error creating transport order:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
-   * Tworzy zamówienie transportowe dla gości (niezalogowani użytkownicy)
-   */
-    createGuestTransportOrder(orderData: any): Observable<any> {
+  createGuestTransportOrder(orderData: any): Observable<any> {
     console.log('Creating guest transport order with data:', orderData);
-    
     return this.http.post<any>(this.apiUrl, orderData).pipe(
         catchError(error => {
-        console.error('Error creating guest transport order:', error);
-        return throwError(() => error);
+          console.error('Error creating guest transport order:', error);
+          return throwError(() => error);
         })
     );
-    }
+  }
 
   /**
    * Pobiera wszystkie zamówienia transportowe użytkownika
@@ -234,4 +219,14 @@ export class TransportOrderService {
     })
   );
 }
+
+checkDiscount(data: { coupon: string; currentTransportPrice: number; orderDate: string; }): Observable<{ newPrice: number }> {
+    return this.http.post<{ newPrice: number }>(this.discountApiUrl, data).pipe(
+      catchError(error => {
+        console.error('Error checking discount coupon:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
 }

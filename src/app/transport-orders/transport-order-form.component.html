@@ -449,12 +449,52 @@
         <div class="summary-total">
           <div class="total-row">
             <span class="total-label">Koszt transportu:</span>
-            <span class="total-price" *ngIf="getEstimatedTransportCost() > 0">{{ getEstimatedTransportCost() }} zł</span>
-            <span class="total-price" *ngIf="getEstimatedTransportCost() === 0" style="color: #6c757d;">Do ustalenia</span>
+            <div>
+              <span class="total-price" [class.original-price]="finalTransportPrice !== null">
+                {{ getEstimatedTransportCost() }} zł
+              </span>
+              <span *ngIf="finalTransportPrice !== null" class="total-price discounted-price">
+                → {{ finalTransportPrice }} zł
+              </span>
+            </div>
           </div>
           <div class="total-details">
             <span *ngIf="getEstimatedTransportCost() > 0">Transport w obie strony dla {{ getSelectedBicyclesCount() }} rower{{ getSelectedBicyclesCount() > 1 ? 'ów' : 'a' }}</span>
             <span *ngIf="getEstimatedTransportCost() === 0">Skontaktujemy się w sprawie szczegółów</span>
+          </div>
+        </div>
+
+        <div class="discount-section">
+          <h4>Masz kupon rabatowy?</h4>
+          <div class="discount-form">
+            <div class="form-group">
+              <input 
+                type="text" 
+                [formControl]="discountCouponControl"
+                placeholder="Wpisz kod kuponu"
+                [attr.aria-invalid]="isCouponInvalid"
+              >
+            </div>
+            <button 
+              type="button" 
+              class="apply-coupon-btn" 
+              (click)="applyDiscountCoupon()"
+              [disabled]="isApplyingCoupon || !discountCouponControl.value"
+            >
+              <span *ngIf="!isApplyingCoupon">Zastosuj</span>
+              <span *ngIf="isApplyingCoupon" class="loading-spinner-small"></span>
+            </button>
+          </div>
+          <div *ngIf="couponMessage" class="coupon-message" [ngClass]="{'error': isCouponInvalid, 'success': !isCouponInvalid}">
+            {{ couponMessage }}
+          </div>
+        </div>
+
+        <div class="payment-info">
+          <div class="payment-icon">💳</div>
+          <div class="payment-text">
+            <h4>Metody płatności</h4>
+            <p>Płatność za transport jest możliwa <strong>gotówką lub BLIKIEM</strong> przy odbiorze rowerów przez kuriera.</p>
           </div>
         </div>
       </div>

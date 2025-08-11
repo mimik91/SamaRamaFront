@@ -86,23 +86,8 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <label>Data odbioru od:</label>
-          <input 
-            type="date" 
-            [(ngModel)]="pickupDateFrom" 
-            (change)="onDateFilterChange()"
-          >
-        </div>
-
-        <div class="filter-group">
-          <label>Data odbioru do:</label>
-          <input 
-            type="date" 
-            [(ngModel)]="pickupDateTo" 
-            (change)="onDateFilterChange()"
-          >
-        </div>
+        
+      
 
         <button class="clear-filters-btn" (click)="clearFilters(); loadOrders()">
           Wyczyść filtry
@@ -207,7 +192,7 @@
                 </span>
               </td>
               
-              <td class="price-cell">{{ formatPrice(order.price) }}</td>
+              <td class="price-cell">{{ formatPrice(order.totalPrice) }}</td>
               
               <td>
                 <span class="status-badge" [ngClass]="getStatusClass(order.status)">

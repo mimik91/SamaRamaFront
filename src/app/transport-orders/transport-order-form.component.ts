@@ -63,6 +63,13 @@ export class TransportOrderFormComponent implements OnInit {
   
   // Terms acceptance control
   termsAcceptedControl = new FormControl(false, [Validators.requiredTrue]);
+
+  // Discount Coupon Properties
+  discountCouponControl = new FormControl('');
+  isApplyingCoupon = false;
+  couponMessage: string | null = null;
+  isCouponInvalid = false;
+  finalTransportPrice: number | null = null;
   
   // State
   loading = false;
@@ -126,56 +133,19 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   private loadServiceInfo(): void {
-  this.route.queryParams.subscribe(params => {
-    const serviceId = params['serviceId'];
-    const serviceName = params['serviceName'];
-    const serviceAddress = params['serviceAddress'];
-    
-    if (serviceId && serviceName && serviceAddress) {
-      // Stary sposób - mamy wszystkie dane w URL
-      this.selectedServiceInfo = {
-        id: +serviceId,
-        name: serviceName,
-        address: serviceAddress
-      };
-      
-      // Pobierz koszt transportu z API
-      this.mapService.getServiceDetails(+serviceId).subscribe({
-        next: (serviceDetails) => {
-          if (serviceDetails && typeof serviceDetails.transportCost === 'number') {
-            this.actualTransportCost = serviceDetails.transportCost;
-            console.log('Transport cost loaded from API:', this.actualTransportCost);
-          } else {
-            this.actualTransportCost = null;
-            console.log('No transport cost available for this service');
-          }
-        },
-        error: (error) => {
-          console.error('Error loading service transport cost:', error);
-          this.actualTransportCost = null;
-        }
-      });
-      
-    } else if (serviceId) {
-      // Nowy sposób - mamy tylko serviceId, pobierz dane z API
-      this.loadServiceDetails(serviceId);
-      
-    } else {
-      // Brak wymaganych parametrów
-      this.selectedServiceInfo = {
-        id: null,
-        name: '',
-        address: ''
-      };
-      this.notificationService.error('Brak informacji o serwisie. Sprawdź link.');
-    }
-  });
-}
-
+    this.route.queryParams.subscribe(params => {
+      const serviceId = params['serviceId'];
+      if (serviceId) {
+        this.loadServiceDetails(serviceId);
+      } else {
+        this.selectedServiceInfo = { id: null, name: '', address: '' };
+        this.notificationService.error('Brak informacji o serwisie. Sprawdź link.');
+      }
+    });
+  }
 
   private loadServiceDetails(serviceId: string): void {
     this.loading = true;
-    
     this.mapService.getServiceDetails(+serviceId).subscribe({
       next: (serviceDetails) => {
         if (serviceDetails) {
@@ -184,8 +154,6 @@ export class TransportOrderFormComponent implements OnInit {
             name: serviceDetails.name,
             address: this.formatServiceAddress(serviceDetails)
           };
-          
-          // Ustaw koszt transportu
           this.actualTransportCost = serviceDetails.transportCost || null;
           console.log('Service details loaded:', this.selectedServiceInfo);
           console.log('Transport cost:', this.actualTransportCost);
@@ -205,28 +173,11 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   private formatServiceAddress(serviceDetails: any): string {
-    let address = '';
-    
-    if (serviceDetails.street) {
-      address += serviceDetails.street;
-    }
-    
-    if (serviceDetails.building) {
-      address += ' ' + serviceDetails.building;
-    }
-    
-    if (serviceDetails.flat) {
-      address += '/' + serviceDetails.flat;
-    }
-    
-    if (serviceDetails.city) {
-      address += ', ' + serviceDetails.city;
-    }
-    
-    if (serviceDetails.postalCode) {
-      address += ' ' + serviceDetails.postalCode;
-    }
-    
+    let address = serviceDetails.street || '';
+    if (serviceDetails.building) address += ' ' + serviceDetails.building;
+    if (serviceDetails.flat) address += '/' + serviceDetails.flat;
+    if (serviceDetails.city) address += ', ' + serviceDetails.city;
+    if (serviceDetails.postalCode) address += ' ' + serviceDetails.postalCode;
     return address.trim();
   }
 
@@ -258,14 +209,10 @@ export class TransportOrderFormComponent implements OnInit {
     });
   }
 
-  
-
   // Step navigation
   nextStep(): void {
     if (this.isCurrentStepValid()) {
-      if (this.currentStep < this.totalSteps) {
-        this.currentStep++;
-      }
+      if (this.currentStep < this.totalSteps) this.currentStep++;
     } else {
       this.markCurrentFormTouched();
       this.notificationService.warning('Wypełnij poprawnie wszystkie wymagane pola w tym kroku');
@@ -273,20 +220,14 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   prevStep(): void {
-    if (this.currentStep > 1) {
-      this.currentStep--;
-    }
+    if (this.currentStep > 1) this.currentStep--;
   }
 
   goToStep(step: number): void {
-    // Sprawdź czy można przejść do danego kroku
-    if (step <= this.getMaxAccessibleStep()) {
-      this.currentStep = step;
-    }
+    if (step <= this.getMaxAccessibleStep()) this.currentStep = step;
   }
 
   getMaxAccessibleStep(): number {
-    // Sprawdź do którego kroku użytkownik może przejść
     if (!this.isStepValid(1)) return 1;
     if (!this.isStepValid(2)) return 2;
     return 3;
@@ -294,48 +235,32 @@ export class TransportOrderFormComponent implements OnInit {
 
   isCurrentStepValid(): boolean {
     switch (this.currentStep) {
-      case 1:
-        return this.isStepValid(1);
-      case 2:
-        return this.isStepValid(2);
-      case 3:
-        return this.isStepValid(1) && this.isStepValid(2) && this.termsAcceptedControl.valid;
-      default:
-        return false;
+      case 1: return this.isStepValid(1);
+      case 2: return this.isStepValid(2);
+      case 3: return this.isStepValid(1) && this.isStepValid(2) && this.termsAcceptedControl.valid;
+      default: return false;
     }
   }
 
   isStepValid(step: number): boolean {
     switch (step) {
-      case 1:
-        return this.bicyclesForm.valid && this.bicyclesArray.length > 0;
-      case 2:
-        return this.contactAndTransportForm.valid;
-      case 3:
-        return true; // Summary step
-      default:
-        return false;
+      case 1: return this.bicyclesForm.valid && this.bicyclesArray.length > 0;
+      case 2: return this.contactAndTransportForm.valid;
+      case 3: return true; // Summary step
+      default: return false;
     }
   }
 
   markCurrentFormTouched(): void {
     switch (this.currentStep) {
-      case 1:
-        this.markFormGroupTouched(this.bicyclesForm);
-        break;
-      case 2:
-        this.markFormGroupTouched(this.contactAndTransportForm);
-        break;
-      case 3:
-        this.termsAcceptedControl.markAsTouched();
-        break;
+      case 1: this.markFormGroupTouched(this.bicyclesForm); break;
+      case 2: this.markFormGroupTouched(this.contactAndTransportForm); break;
+      case 3: this.termsAcceptedControl.markAsTouched(); break;
     }
   }
 
   private markFormGroupTouched(formGroup: FormGroup | FormArray): void {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      
+    Object.values(formGroup.controls).forEach(control => {
       if (control instanceof FormGroup || control instanceof FormArray) {
         this.markFormGroupTouched(control);
       } else {
@@ -350,15 +275,13 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   addBicycleToForm(): void {
-    const bicycleGroup = this.fb.group({
+    this.bicyclesArray.push(this.fb.group({
       brand: ['', [Validators.required]],
       model: [''],
       type: [''],
       frameMaterial: [''],
       description: ['']
-    });
-
-    this.bicyclesArray.push(bicycleGroup);
+    }));
   }
 
   removeBicycleFromForm(index: number): void {
@@ -366,144 +289,72 @@ export class TransportOrderFormComponent implements OnInit {
       this.bicyclesArray.removeAt(index);
     }
   }
-
-  getBicycleTypes(): string[] {
-    return [
-      'Górski',
-      'Szosowy',
-      'Miejski',
-      'Trekkingowy',
-      'BMX',
-      'Elektryczny',
-      'Składany',
-      'Gravel',
-      'Cruiser',
-      'Inny'
-    ];
-  }
-
-  getFrameMaterials(): string[] {
-    return [
-      'Aluminium',
-      'Stal',
-      'Carbon',
-      'Tytan',
-      'Stal chromowo-molibdenowa',
-      'Inny'
-    ];
-  }
-
-  // Helper methods
-  getBicyclesData(): any[] {
-    return this.bicyclesArray.value || [];
-  }
-
-  getSelectedBicyclesCount(): number {
-    return this.getBicyclesData().length;
-  }
-
+  
+  // Cost and price methods
   getEstimatedTransportCost(): number {
-    // Jeśli mamy rzeczywisty koszt z API, użyj go i pomnóż przez liczbę rowerów
     if (this.actualTransportCost !== null) {
-      const bicycleCount = this.getSelectedBicyclesCount();
-      return this.actualTransportCost * bicycleCount;
+      return this.actualTransportCost * this.getSelectedBicyclesCount();
     }
-    
-    // Fallback - oblicz lokalnie jeśli API nie jest dostępne
     const selectedCount = this.getSelectedBicyclesCount();
+    if (selectedCount === 0) return 0;
     const baseCost = 50;
     const perBikeCost = 20;
-    
-    if (selectedCount === 0) return 0;
     return baseCost + (selectedCount - 1) * perBikeCost;
   }
 
-  // Nowa metoda - zwraca cenę jednostkową dla backendu
-  getUnitTransportCost(): number {
-    // Jeśli mamy rzeczywisty koszt z API, użyj go (to już jest cena jednostkowa)
-    if (this.actualTransportCost !== null) {
-      return this.actualTransportCost;
+  getFinalPriceToSend(): number {
+    return this.finalTransportPrice !== null ? this.finalTransportPrice : this.getEstimatedTransportCost();
+  }
+
+  applyDiscountCoupon(): void {
+    const couponCode = this.discountCouponControl.value?.trim();
+    if (!couponCode || this.isApplyingCoupon) return;
+
+    this.isApplyingCoupon = true;
+    this.couponMessage = null;
+    this.isCouponInvalid = false;
+
+    const orderDate = this.contactAndTransportForm.get('pickupDate')?.value;
+    if (!orderDate) {
+      this.notificationService.warning('Proszę najpierw wybrać datę odbioru w kroku 2.');
+      this.isApplyingCoupon = false;
+      return;
     }
-    
-    // Fallback - oblicz cenę jednostkową lokalnie
-    const baseCost = 50;
-    
-    // Dla fallback zakładamy stałą cenę jednostkową
-    return baseCost;
-  }
 
-  // Metoda do tworzenia pełnego adresu (dla wyświetlania)
-  getFullPickupAddress(): string {
-    const form = this.contactAndTransportForm.value;
-    let address = '';
-    
-    if (form.pickupStreet) {
-      address += form.pickupStreet;
-    }
-    
-    if (form.pickupBuildingNumber) {
-      address += ' ' + form.pickupBuildingNumber;
-    }
-    
-    if (form.pickupCity) {
-      address += ', ' + form.pickupCity;
-    }
-    
-    if (form.pickupPostalCode) {
-      address += ' ' + form.pickupPostalCode;
-    }
-    
-    return address;
-  }
+    const discountRequest = {
+      coupon: couponCode,
+      currentTransportPrice: this.getEstimatedTransportCost(),
+      orderDate: orderDate
+    };
 
-  isFieldInvalid(fieldName: string, formGroup?: FormGroup): boolean {
-    const form = formGroup || this.getCurrentForm();
-    const field = form.get(fieldName);
-    return field ? (field.invalid && (field.dirty || field.touched)) : false;
-  }
-
-  isBicycleFieldInvalid(bicycleIndex: number, fieldName: string): boolean {
-    const bicycleControl = this.bicyclesArray.at(bicycleIndex);
-    const field = bicycleControl.get(fieldName);
-    return field ? (field.invalid && (field.dirty || field.touched)) : false;
-  }
-
-  getCurrentForm(): FormGroup {
-    switch (this.currentStep) {
-      case 1: return this.bicyclesForm;
-      case 2: return this.contactAndTransportForm;
-      default: return this.contactAndTransportForm;
-    }
-  }
-
-  // Step completion status
-  isStepCompleted(step: number): boolean {
-    return this.currentStep > step && this.isStepValid(step);
-  }
-
-  isStepActive(step: number): boolean {
-    return this.currentStep === step;
-  }
-
-  isStepAccessible(step: number): boolean {
-    return step <= this.getMaxAccessibleStep();
-  }
-
-  // Opcjonalnie: dodaj metodę sprawdzającą czy można przejść do kolejnego kroku
-  canProceedToNextStep(): boolean {
-    if (this.currentStep === 3) {
-      return this.termsAcceptedControl.valid;
-    }
-    return this.isCurrentStepValid();
+    this.transportOrderService.checkDiscount(discountRequest).subscribe({
+      next: (response) => {
+        const newPrice = response.newPrice;
+        if (newPrice < this.getEstimatedTransportCost()) {
+          this.finalTransportPrice = newPrice;
+          this.couponMessage = `Kupon "${couponCode}" został zastosowany!`;
+          this.isCouponInvalid = false;
+        } else {
+          this.finalTransportPrice = null;
+          this.couponMessage = 'Kupon jest niepoprawny lub stracił ważność.';
+          this.isCouponInvalid = true;
+        }
+        this.isApplyingCoupon = false;
+      },
+      error: () => {
+        this.finalTransportPrice = null;
+        this.couponMessage = 'Wystąpił błąd podczas sprawdzania kuponu. Spróbuj ponownie.';
+        this.isCouponInvalid = true;
+        this.isApplyingCoupon = false;
+      }
+    });
   }
 
   // Form submission
   onSubmit(): void {
-    // Sprawdź czy wszystkie kroki są prawidłowe
     if (!this.isStepValid(1) || !this.isStepValid(2) || !this.termsAcceptedControl.valid) {
-      // Oznacz regulamin jako dotknięty, aby pokazać błąd jeśli nie jest zaznaczony
       this.termsAcceptedControl.markAsTouched();
-      this.notificationService.warning('Wypełnij poprawnie wszystkie wymagane pola we wszystkich krokach i zaakceptuj regulamin');
+      this.notificationService.warning('Wypełnij poprawnie wszystkie wymagane pola i zaakceptuj regulamin');
       return;
     }
 
@@ -517,16 +368,9 @@ export class TransportOrderFormComponent implements OnInit {
     const bicyclesData = this.bicyclesForm.value.bicycles as BicycleFormData[];
     const contactAndTransportData = this.contactAndTransportForm.value;
     
-    const bicycleInfo = bicyclesData
-      .map((bike, index) => {
-        let info = `Rower ${index + 1}: ${bike.brand}`;
-        if (bike.model) info += ` ${bike.model}`;
-        if (bike.type) info += ` (${bike.type})`;
-        if (bike.frameMaterial) info += `, rama: ${bike.frameMaterial}`;
-        if (bike.description) info += ` - ${bike.description}`;
-        return info;
-      })
-      .join('\n');
+    const bicycleInfo = bicyclesData.map((bike, index) => 
+        `Rower ${index + 1}: ${bike.brand} ${bike.model || ''} (${bike.type || 'brak typu'})`
+    ).join('\n');
 
     const transportOrder = {
       bicycles: bicyclesData.map(bike => ({
@@ -534,7 +378,6 @@ export class TransportOrderFormComponent implements OnInit {
         model: bike.model || '',
         additionalInfo: bike.description || ''
       })),
-      
       email: contactAndTransportData.clientEmail,
       phone: contactAndTransportData.clientPhone,
       
@@ -545,63 +388,43 @@ export class TransportOrderFormComponent implements OnInit {
       
       pickupDate: contactAndTransportData.pickupDate,
       targetServiceId: this.selectedServiceInfo.id,
-      transportPrice: this.getUnitTransportCost(),
+      transportPrice: this.finalTransportPrice,
       transportNotes: contactAndTransportData.additionalNotes || '',
       additionalNotes: bicycleInfo,
-      
-      servicePackageId: null
+      discountCoupon: this.finalTransportPrice !== null ? this.discountCouponControl.value : null
     };
-
-    console.log('Sending transport order:', transportOrder);
 
     this.transportOrderService.createGuestTransportOrder(transportOrder).subscribe({
       next: (response) => {
         this.notificationService.success(`Zamówienie transportu zostało złożone pomyślnie!`);
         this.submitting = false;
-        
-        this.router.navigate(['/'], {
-          queryParams: { 
-            success: 'transport-order',
-            orderId: response.id || response.orderIds?.[0]
-          }
-        });
+        this.router.navigate(['/'], { queryParams: { success: 'transport-order', orderId: response.id || response.orderIds?.[0] } });
       },
       error: (err) => {
-        console.error('Error creating transport order:', err);
         this.submitting = false;
-        
-        let errorMessage = 'Wystąpił błąd podczas składania zamówienia';
-        if (err.error?.message) {
-          errorMessage = err.error.message;
-        } else if (err.error?.errors) {
-          errorMessage = err.error.errors.join(', ');
-        }
-        
+        const errorMessage = err.error?.message || 'Wystąpił błąd podczas składania zamówienia';
         this.notificationService.error(errorMessage);
       }
     });
   }
-
-  goBack(): void {
-    this.router.navigate(['/']);
+  
+  // Helper and display methods
+  getFullPickupAddress(): string {
+    const form = this.contactAndTransportForm.value;
+    return `${form.pickupStreet} ${form.pickupBuildingNumber}, ${form.pickupCity} ${form.pickupPostalCode || ''}`.trim();
   }
 
-  // Step titles for display
-  getStepTitle(step: number): string {
-    const titles = {
-      1: 'Dane rowerów',
-      2: 'Kontakt i transport', 
-      3: 'Podsumowanie'
-    };
-    return titles[step as keyof typeof titles] || '';
-  }
-
-  getStepDescription(step: number): string {
-    const descriptions = {
-      1: 'Dodaj informacje o rowerach, które mają zostać przewiezione do serwisu.',
-      2: 'Podaj dane kontaktowe i szczegóły transportu.',
-      3: 'Sprawdź wszystkie dane przed wysłaniem zamówienia.'
-    };
-    return descriptions[step as keyof typeof descriptions] || '';
-  }
+  getBicyclesData(): any[] { return this.bicyclesArray.value || []; }
+  getSelectedBicyclesCount(): number { return this.getBicyclesData().length; }
+  goBack(): void { this.router.navigate(['/']); }
+  getBicycleTypes(): string[] { return ['Górski', 'Szosowy', 'Miejski', 'Trekkingowy', 'BMX', 'Elektryczny', 'Składany', 'Gravel', 'Cruiser', 'Inny']; }
+  getFrameMaterials(): string[] { return ['Aluminium', 'Stal', 'Carbon', 'Tytan', 'Stal chromowo-molibdenowa', 'Inny']; }
+  isFieldInvalid(fieldName: string, formGroup?: FormGroup): boolean { const form = formGroup || this.getCurrentForm(); const field = form.get(fieldName); return !!(field?.invalid && (field.dirty || field.touched)); }
+  isBicycleFieldInvalid(i: number, fieldName: string): boolean { const field = this.bicyclesArray.at(i)?.get(fieldName); return !!(field?.invalid && (field.dirty || field.touched)); }
+  getCurrentForm(): FormGroup { return this.currentStep === 1 ? this.bicyclesForm : this.contactAndTransportForm; }
+  isStepCompleted(step: number): boolean { return this.currentStep > step && this.isStepValid(step); }
+  isStepActive(step: number): boolean { return this.currentStep === step; }
+  isStepAccessible(step: number): boolean { return step <= this.getMaxAccessibleStep(); }
+  getStepTitle(step: number): string { return { 1: 'Dane rowerów', 2: 'Kontakt i transport', 3: 'Podsumowanie' }[step] || ''; }
+  getStepDescription(step: number): string { return { 1: 'Dodaj informacje o rowerach do transportu.', 2: 'Podaj dane kontaktowe i szczegóły odbioru.', 3: 'Sprawdź wszystkie dane przed wysłaniem.' }[step] || ''; }
 }

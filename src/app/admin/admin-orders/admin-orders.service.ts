@@ -29,7 +29,7 @@ export interface ServiceAndTransportOrder {
   pickupDate: string;
   pickupAddress: string;
   deliveryAddress: string; // "SERWIS" dla service orders, rzeczywisty adres dla transport
-  price: number;
+  totalPrice: number;
   orderDate: string;
   additionalNotes?: string;
   status: string;
@@ -105,7 +105,7 @@ export class AdminOrdersService {
    * Usuwa zamówienie serwisowe
    */
   deleteServiceOrder(orderId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/service/${orderId}`).pipe(
+    return this.http.delete(`${this.apiUrl}/${orderId}`).pipe(
       catchError(error => {
         console.error(`Error deleting service order ${orderId}:`, error);
         return throwError(() => error);
@@ -171,7 +171,7 @@ export class AdminOrdersService {
    * Usuwa zamówienie transportowe
    */
   deleteTransportOrder(orderId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/transport/${orderId}`).pipe(
+    return this.http.delete(`${this.apiUrl}/${orderId}`).pipe(
       catchError(error => {
         console.error(`Error deleting transport order ${orderId}:`, error);
         return throwError(() => error);

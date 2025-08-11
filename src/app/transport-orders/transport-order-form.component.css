@@ -1034,4 +1034,105 @@ input:focus, textarea:focus, select:focus {
   .form-check-label {
     font-size: 0.9rem;
   }
+
+  .discount-section {
+    margin-top: 25px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+  }
+  .discount-section h4 {
+    margin: 0 0 15px 0;
+    text-align: center;
+    color: #333;
+  }
+  .discount-form {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .discount-form .form-group {
+    flex-grow: 1;
+    margin-bottom: 0;
+  }
+  .apply-coupon-btn {
+    padding: 12px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    height: 53px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .apply-coupon-btn:hover:not(:disabled) { background-color: #0056b3; }
+  .apply-coupon-btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
+
+  .loading-spinner-small {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid #fff;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  .coupon-message {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 500;
+  }
+  .coupon-message.error { background-color: #f8d7da; color: #721c24; }
+  .coupon-message.success { background-color: #d4edda; color: #155724; }
+
+  /* Payment Information */
+  .payment-info {
+    margin-top: 25px;
+    padding: 20px;
+    background: #e9ecef;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: #495057;
+  }
+  .payment-icon { font-size: 2rem; }
+  .payment-text h4 { margin: 0 0 5px 0; color: #2c3e50; font-size: 1.1rem; }
+  .payment-text p { margin: 0; line-height: 1.5; }
+
+  /* Price styling for discount */
+  .total-price.original-price {
+    text-decoration: line-through;
+    color: #6c757d;
+    font-size: 1.2rem;
+    margin-right: 8px;
+  }
+  .total-price.discounted-price {
+    font-weight: bold;
+    color: #28a745;
+  }
+  .summary-total .total-row > div {
+    display: flex;
+    align-items: baseline;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 480px) {
+    .discount-form {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .apply-coupon-btn {
+      width: 100%;
+    }
+  }
+  
 }

@@ -18,9 +18,9 @@
     <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
       <!-- Menu dla zalogowanych klientów (bez przywilejów administratora) -->
       <ng-container *ngIf="authService.isLoggedIn() && authService.isClient() && !authService.hasAdminPrivileges()">
-        <a routerLink="/bicycles" routerLinkActive="active" (click)="closeMobileMenu()">Moje rowery</a>
+        <!-- <a routerLink="/bicycles" routerLinkActive="active" (click)="closeMobileMenu()">Moje rowery</a>
         <a routerLink="/service-appointments" routerLinkActive="active" (click)="closeMobileMenu()">Moje zamówienia</a>
-        <!-- <a routerLink="/cennik" routerLinkActive="active" (click)="closeMobileMenu()">Cennik</a> -->
+        <a routerLink="/cennik" routerLinkActive="active" (click)="closeMobileMenu()">Cennik</a> -->
         <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">O nas</a>
       </ng-container>
     
@@ -35,10 +35,11 @@
       
       <!-- Menu dla niezalogowanych -->
       <ng-container *ngIf="!authService.isLoggedIn()">
-        <!-- <a routerLink="/cennik" routerLinkActive="active" (click)="closeMobileMenu()">Cennik</a> -->
-        <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">O nas</a>
+        <!-- <a routerLink="/cennik" routerLinkActive="active" (click)="closeMobileMenu()">Cennik</a> 
         <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Logowanie klienta</a>
         <a routerLink="/register" routerLinkActive="active" (click)="closeMobileMenu()">Rejestracja</a>
+        -->
+        <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">O nas</a>
       </ng-container>
     </div>
     

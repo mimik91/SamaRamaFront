@@ -13,7 +13,7 @@
         </p>
       </div>
       <div class="hero-image-container">
-        <img [src]="heroImage.src" [alt]="heroImage.alt" class="hero-image">
+        <img src="\assets\images\logo-kolor.svg" alt="Opis zdjęcia" class="hero-image">
       </div>
     </div>
   </section>
@@ -32,66 +32,6 @@
         Rower to coś więcej niż środek transportu – to pasja, styl życia i ekologiczny wybór. 
         Naszym celem jest zapewnienie, by każdy rower był w idealnym stanie, gotowy na kolejne przygody.
       </p>
-    </div>
-  </section>
-
-  <!-- How It Works Section -->
-  <section class="how-it-works-section">
-    <h2>Jak działa CycloPick</h2>
-    <p class="section-intro">
-      Proces serwisowania jest szybki i wygodny – oto jak to działa:
-    </p>
-    
-    <div class="steps-container">
-      <div *ngFor="let step of steps" class="step-card">
-        <div class="step-number">{{ step.number }}</div>
-        <div class="step-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.class]="'feather feather-' + step.icon">
-            <ng-container [ngSwitch]="step.icon">
-              <ng-container *ngSwitchCase="'file-text'">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </ng-container>
-              <ng-container *ngSwitchCase="'package'">
-                <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-              </ng-container>
-              <ng-container *ngSwitchCase="'calendar'">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </ng-container>
-              <ng-container *ngSwitchCase="'lock'">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </ng-container>
-              <ng-container *ngSwitchCase="'tool'">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-              </ng-container>
-              <ng-container *ngSwitchCase="'truck'">
-                <rect x="1" y="3" width="15" height="13"></rect>
-                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                <circle cx="18.5" cy="18.5" r="2.5"></circle>
-              </ng-container>
-            </ng-container>
-          </svg>
-        </div>
-        <div class="step-content">
-          <h3>{{ step.title }}</h3>
-          <p>{{ step.description }}</p>
-        </div>
-      </div>
-    </div>
-    
-    <div class="process-summary">
-      <p>Proste, wygodne i bezproblemowe!</p>
     </div>
   </section>
 
@@ -143,10 +83,11 @@
   <section class="team-section">
     <h2>Nasz zespół</h2>
     <p>
-      CycloPick tworzą pasjonaci kolarstwa i technologii. Łączymy wieloletnie doświadczenie 
-      w mechanice rowerowej z nowoczesnym podejściem do obsługi klienta. Nasi serwisanci 
-      nieustannie podnoszą swoje kwalifikacje, aby sprostać wymaganiom coraz bardziej 
-      zaawansowanych konstrukcji rowerowych.
+      CycloPick – jesteśmy pasjonatami kolarstwa i technologii, którzy doskonale rozumieją, że Twój czas jest cenny. 
+      Zamiast martwić się o transport roweru do serwisu, pozwól, że my się tym zajmiemy. Naszą misją jest zapewnienie 
+      Ci maksymalnej wygody, łącząc pasję do rowerów z nowoczesnym, bezstresowym podejściem do logistyki. 
+      Dzięki nam, Twój rower dotrze do serwisu bezpiecznie i na czas, 
+      a Ty możesz skupić się na tym, co najważniejsze – na kolejnej jeździe.
     </p>
   </section>
 
@@ -219,11 +160,11 @@
       <h2>Dołącz do społeczności CycloPick!</h2>
       <p>
         Nie pozwól, by drobne usterki odbierały Ci radość z jazdy – my zajmiemy się wszystkim.
-        Zarejestruj się już dziś i przekonaj się, jak wygodne może być dbanie o Twój rower! 🚴‍♂️
+        Zamów już dziś i przekonaj się, jak wygodne może być dbanie o Twój rower! 🚴‍♂️
       </p>
       <div class="cta-buttons">
-        <button class="primary-btn" routerLink="/register">Zarejestruj się</button>
-        <button class="secondary-btn" routerLink="/" [queryParams]="{section: 'order-form'}">Zamów serwis</button>
+        <!-- <button class="primary-btn" routerLink="/register">Zarejestruj się</button> -->
+        <button class="secondary-btn" routerLink="/" [queryParams]="{section: 'order-form'}">Zamów transport</button>
       </div>
     </div>
   </section>

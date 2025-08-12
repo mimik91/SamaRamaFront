@@ -60,39 +60,27 @@ export class AboutUsComponent implements OnInit {
   steps = [
     {
       number: 1,
-      title: 'Zarejestruj rower',
-      description: 'Dodaj jednoślad do systemu, podając podstawowe informacje.',
-      icon: 'file-text'
-    },
-    {
-      number: 2,
-      title: 'Wybierz pakiet serwisowy',
-      description: 'Od podstawowego przeglądu po kompleksową obsługę.',
-      icon: 'package'
-    },
-    {
-      number: 3,
-      title: 'Ustal termin odbioru',
-      description: 'Wskaż dogodny dzień, a my odbierzemy Twój rower spod wskazanego adresu w godzinach 18:00 - 22:00.',
+      title: 'Umów się na serwis w swoim serwisie rowerowym',
+      description: 'Skontaktuj się z wybranym serwisem i umów termin na serwis Twojego roweru.',
       icon: 'calendar'
     },
     {
-      number: 4,
-      title: 'Bezpieczne przekazanie',
+      number: 2,
+      title: 'Wypełnij formularz na naszej stronie',
+      description: 'Dodaj rower do systemu, podaj wymagane dane i wybierz dzień odbioru (dzień przed serwisem). Odbierzemy go spod wskazanego adresu w godzinach 18:00–22:00.',
+      icon: 'file-text'
+    },
+    {
+      number: 3,
+      title: 'Odbierzemy rower i zawieziemy do serwisu',
       description: 'Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia.',
-      icon: 'lock'
-    },
-    {
-      number: 5,
-      title: 'Serwisowanie',
-      description: 'Dostarczymy rower do certyfikowanego serwisu, który oceni jego stan i skontaktuje się z Tobą w przypadku dodatkowych napraw.',
-      icon: 'tool'
-    },
-    {
-      number: 6,
-      title: 'Zwrot roweru',
-      description: 'Po zakończeniu serwisowania dostarczymy go z powrotem pod wskazany adres, gotowego do jazdy.',
       icon: 'truck'
+    },
+    {
+      number: 4,
+      title: 'Po zakończonym serwisie dostarczymy Ci rower z powrotem',
+      description: 'Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy.',
+      icon: 'tool'
     }
   ];
 
@@ -103,13 +91,8 @@ export class AboutUsComponent implements OnInit {
       icon: 'clock'
     },
     {
-      title: 'Profesjonalizm',
-      description: 'Współpracujemy wyłącznie z certyfikowanymi serwisantami z wieloletnim doświadczeniem.',
-      icon: 'award'
-    },
-    {
       title: 'Przejrzystość',
-      description: 'Jasno określone pakiety usług z ustalonymi cenami, bez ukrytych kosztów.',
+      description: 'Jasno określona usługa z ustaloną ceną, bez ukrytych kosztów.',
       icon: 'dollar-sign'
     },
     {
@@ -117,11 +100,11 @@ export class AboutUsComponent implements OnInit {
       description: 'Intuicyjna strona, dzięki której masz pełną kontrolę nad serwisowaniem roweru 24/7 i nie musisz instalować kolejnej aplikacji na telefonie',
       icon: 'smartphone'
     },
-    {
-      title: 'Historia serwisowa',
-      description: 'Wszystkie przeglądy i naprawy Twojego roweru w jednym miejscu.',
-      icon: 'list'
-    }
+    //{
+      //title: 'Historia serwisowa',
+      //description: 'Wszystkie przeglądy i naprawy Twojego roweru w jednym miejscu.',
+      //icon: 'list'
+    //}
   ];
 
   constructor() { }

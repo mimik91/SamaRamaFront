@@ -74,6 +74,18 @@ export interface BikeService {
   email?: string;
 }
 
+export interface TransportOrderSummaryDto {
+  bicycleIds?: number[];
+  bicycles?: Array<{
+    brand: string;
+    model: string;
+  }>;
+  pickupDate: string;
+  pickupAddress: string;
+  deliveryAddress?: string;
+  transportPrice: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -224,6 +236,16 @@ checkDiscount(data: { coupon: string; currentTransportPrice: number; orderDate: 
     return this.http.post<{ newPrice: number }>(this.discountApiUrl, data).pipe(
       catchError(error => {
         console.error('Error checking discount coupon:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getOrdersSummary(orderIds: number[]): Observable<TransportOrderSummaryDto[]> {
+    const requestBody = { orderIds };
+    return this.http.post<TransportOrderSummaryDto[]>(`${this.apiUrl}/summary`, requestBody).pipe(
+      catchError(error => {
+        console.error('Error fetching order summary:', error);
         return throwError(() => error);
       })
     );

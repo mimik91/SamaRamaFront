@@ -43,7 +43,7 @@ export class TransportOrderFormComponent implements OnInit {
   // Multi-step form management
   currentStep = 1;
   totalSteps = 3;
-  
+
   // Data
   selectedServiceInfo: any = {};
   bicyclesList: BicycleData[] = [];
@@ -52,15 +52,15 @@ export class TransportOrderFormComponent implements OnInit {
   loadingBrands = true;
   cities: string[] = [];
   loadingCities = true;
-  
+
   // Date constraints
   minDate: string;
   maxDate: string;
-  
+
   // Forms for each step
   bicyclesForm: FormGroup;
   contactAndTransportForm: FormGroup;
-  
+
   // Terms acceptance control
   termsAcceptedControl = new FormControl(false, [Validators.requiredTrue]);
 
@@ -70,7 +70,7 @@ export class TransportOrderFormComponent implements OnInit {
   couponMessage: string | null = null;
   isCouponInvalid = false;
   finalTransportPrice: number | null = null;
-  
+
   // State
   loading = false;
   submitting = false;
@@ -81,7 +81,7 @@ export class TransportOrderFormComponent implements OnInit {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     this.minDate = tomorrow.toISOString().split('T')[0];
-    
+
     const maxDate = new Date();
     maxDate.setDate(maxDate.getDate() + 30);
     this.maxDate = maxDate.toISOString().split('T')[0];
@@ -95,16 +95,16 @@ export class TransportOrderFormComponent implements OnInit {
       // Dane kontaktowe
       clientEmail: ['', [Validators.required, Validators.email]],
       clientPhone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-      
+
       // Szczegóły transportu
       pickupDate: ['', [Validators.required, this.dateValidator.bind(this)]],
-      
+
       // ROZBITY ADRES - bez pickupApartmentNumber
       pickupStreet: ['', [Validators.required, Validators.minLength(2)]],
       pickupBuildingNumber: ['', [Validators.required]],
       pickupCity: ['', [Validators.required]],
       pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]],
-      
+
       additionalNotes: ['']
     });
   }
@@ -114,14 +114,14 @@ export class TransportOrderFormComponent implements OnInit {
     if (!control.value) {
       return null;
     }
-    
+
     const selectedDate = new Date(control.value);
     const dayOfWeek = selectedDate.getDay();
-    
+
     if (dayOfWeek > 4) { // Piątek i sobota nie są dozwolone
       return { invalidDay: true };
     }
-    
+
     return null;
   }
 
@@ -289,7 +289,7 @@ export class TransportOrderFormComponent implements OnInit {
       this.bicyclesArray.removeAt(index);
     }
   }
-  
+
   // Cost and price methods
   getEstimatedTransportCost(): number {
     if (this.actualTransportCost !== null) {
@@ -367,8 +367,8 @@ export class TransportOrderFormComponent implements OnInit {
 
     const bicyclesData = this.bicyclesForm.value.bicycles as BicycleFormData[];
     const contactAndTransportData = this.contactAndTransportForm.value;
-    
-    const bicycleInfo = bicyclesData.map((bike, index) => 
+
+    const bicycleInfo = bicyclesData.map((bike, index) =>
         `Rower ${index + 1}: ${bike.brand} ${bike.model || ''} (${bike.type || 'brak typu'})`
     ).join('\n');
 
@@ -382,12 +382,12 @@ export class TransportOrderFormComponent implements OnInit {
       })),
       email: contactAndTransportData.clientEmail,
       phone: contactAndTransportData.clientPhone,
-      
+
       pickupStreet: contactAndTransportData.pickupStreet,
       pickupBuildingNumber: contactAndTransportData.pickupBuildingNumber,
       pickupCity: contactAndTransportData.pickupCity,
       pickupPostalCode: contactAndTransportData.pickupPostalCode,
-      
+
       pickupDate: contactAndTransportData.pickupDate,
       targetServiceId: this.selectedServiceInfo.id,
       transportPrice: finalPrice,
@@ -400,7 +400,9 @@ export class TransportOrderFormComponent implements OnInit {
       next: (response) => {
         this.notificationService.success(`Zamówienie transportu zostało złożone pomyślnie!`);
         this.submitting = false;
-        this.router.navigate(['/'], { queryParams: { success: 'transport-order', orderId: response.id || response.orderIds?.[0] } });
+        // Zmiana: przekierowanie do nowego komponentu podsumowania
+        const orderIds = response.orderIds || [response.id];
+        this.router.navigate(['/ordersummary'], { queryParams: { orderIds: orderIds.join(',') } });
       },
       error: (err) => {
         this.submitting = false;
@@ -409,7 +411,7 @@ export class TransportOrderFormComponent implements OnInit {
       }
     });
   }
-  
+
   // Helper and display methods
   getFullPickupAddress(): string {
     const form = this.contactAndTransportForm.value;

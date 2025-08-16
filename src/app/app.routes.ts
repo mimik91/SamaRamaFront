@@ -9,6 +9,7 @@ import { BicycleDetailsComponent } from './bicycles/bicycle-details/bicycle-deta
 import { ServiceOrderFormComponent } from './service-orders/service-order-form/service-order-form.component';
 import { GuestServiceOrderComponent } from './service-orders/guest-service-order/guest-service-order.component';
 import { TransportOrderFormComponent } from './transport-orders/transport-order-form.component';
+import { OrderSummaryComponent } from './transport-orders/order-summary/order-summary.component';
 import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/admin-enumerations-manager.component';
@@ -47,6 +48,8 @@ export const routes: Routes = [
     
     // Transport order - dostępna dla wszystkich (bez guarda)
     { path: 'order-transport', component: TransportOrderFormComponent },
+    { path: 'ordersummary', component: OrderSummaryComponent }, // Dodaj nową ścieżkę
+
     
     // Auth routes - NIGDY nie dodawaj guard do tras logowania!
     { path: 'login', component: LoginComponent },

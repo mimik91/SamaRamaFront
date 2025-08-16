@@ -1,0 +1,38 @@
+<div class="summary-container">
+  <div *ngIf="loading" class="loading-message">
+    <div class="loading-spinner"></div>
+    <p>Przygotowywanie podsumowania...</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-message">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error">
+    <h2>Zamówienie złożone pomyślnie! 🎉</h2>
+    <p>Twoje zamówienie zostało przyjęte. Poniżej znajdziesz jego podsumowanie.</p>
+    <p class="countdown-text">Zostaniesz automatycznie przekierowany na stronę główną za <b>{{ countdown }}</b> sekund.</p>
+
+    <div *ngIf="orderSummary && orderSummary.length > 0; else noSummary">
+      <h3>Podsumowanie zamówienia</h3>
+      <div *ngFor="let order of orderSummary" class="order-card">
+        <p><strong>Liczba rowerów:</strong> {{ order.bicycles?.length || order.bicycleIds?.length }}</p>
+        <p><strong>Adres odbioru:</strong> {{ order.pickupAddress }}</p>
+        <p *ngIf="order.deliveryAddress"><strong>Adres dostawy:</strong> {{ order.deliveryAddress }}</p>
+        <p><strong>Data odbioru:</strong> {{ order.pickupDate }}</p>
+        <p><strong>Szacowana cena:</strong> {{ order.transportPrice | currency:'PLN' }}</p>
+      </div>
+    </div>
+    <ng-template #noSummary>
+      <div class="error-message">Nie udało się wyświetlić podsumowania zamówienia.</div>
+    </ng-template>
+
+    <button class="home-btn" (click)="goToHomepage()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      Wróć na stronę główną
+    </button>
+  </div>
+</div>

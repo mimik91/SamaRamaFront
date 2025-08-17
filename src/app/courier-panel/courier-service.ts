@@ -22,14 +22,14 @@ export interface CourierOrder {
   providedIn: 'root'
 })
 export class CourierService {
-  private apiUrl = `${environment.apiUrl}/orders`;
+  private apiUrl = `${environment.apiUrl}`;
   private http = inject(HttpClient);
 
   /**
    * Pobiera zamówienia dla kuriera (status CONFIRMED z dzisiejszą datą odbioru + ON_THE_WAY_BACK)
    */
   getCourierOrders(): Observable<CourierOrder[]> {
-    return this.http.get<CourierOrder[]>(`${this.apiUrl}/courier/orders`).pipe(
+    return this.http.get<CourierOrder[]>(`${this.apiUrl}/orders/courier/orders`).pipe(
       catchError(error => {
         console.error('Error fetching courier orders:', error);
         return throwError(() => error);
@@ -41,7 +41,7 @@ export class CourierService {
    * Oznacza zamówienie jako odebrane (zmienia status z CONFIRMED na PICKED_UP)
    */
   markOrderAsPickedUp(orderId: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/orders/${orderId}/status`, {
+    return this.http.patch(`${this.apiUrl}/admin/orders/${orderId}`, {
       status: 'PICKED_UP'
     }).pipe(
       catchError(error => {

@@ -222,7 +222,7 @@ export class TransportOrderFormComponent implements OnInit {
               next: (response) => {
                   // Handle the response from the backend
                   if (!response.available) {
-                      this.notificationService.warning(`Brak wystarczającej liczby slotów na wybraną datę. Dostępnych rowerów: ${response.availableBikes - response.bikesCount}.`);
+                      this.notificationService.warning(`Brak wystarczającej liczby slotów na wybraną datę. Dostępnych rowerów: ${response.availableBikes}.`);
                       // Optionally, set a custom form control error to prevent submission
                       this.contactAndTransportForm.get('pickupDate')?.setErrors({ notEnoughSlots: true });
                   } else {

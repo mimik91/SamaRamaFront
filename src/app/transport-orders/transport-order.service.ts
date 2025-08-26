@@ -1,6 +1,6 @@
 // src/app/transport-orders/transport-order.service.ts
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../core/api-config';
 
@@ -118,6 +118,18 @@ export class TransportOrderService {
       })
     );
   }
+
+  checkSlotAvailability(date: string, bikesCount: number): Observable<any> {
+    const params = new HttpParams()
+        .set('date', date)
+        .set('bikesCount', bikesCount.toString());
+    return this.http.get(`${environment.apiUrl}/service-slots/check-availability`, { params }).pipe(
+        catchError(error => {
+            console.error('Error checking slot availability:', error);
+            return throwError(() => error);
+        })
+    );
+}
 
   /**
    * Pobiera szczegóły konkretnego zamówienia transportowego
@@ -250,5 +262,7 @@ checkDiscount(data: { coupon: string; currentTransportPrice: number; orderDate: 
       })
     );
   }
+
+  
 
 }

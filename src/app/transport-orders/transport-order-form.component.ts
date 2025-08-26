@@ -129,7 +129,13 @@ export class TransportOrderFormComponent implements OnInit {
     this.loadServiceInfo();
     this.loadBrands();
     this.loadCities();
-    this.addBicycleToForm(); // Dodaj pierwszy rower
+    this.addBicycleToForm();
+
+    this.contactAndTransportForm.get('pickupDate')?.valueChanges.subscribe(date => {
+        if (date) {
+            this.checkSlotAvailabilityForDate(date);
+        }
+    });
   }
 
   private loadServiceInfo(): void {
@@ -207,6 +213,29 @@ export class TransportOrderFormComponent implements OnInit {
         this.cities = ['Kraków', 'Warszawa', 'Gdańsk', 'Poznań', 'Wrocław', 'Łódź']; // Fallback cities
       }
     });
+  }
+
+    checkSlotAvailabilityForDate(date: string): void {
+      const bikesCount = this.getSelectedBicyclesCount();
+      if (bikesCount > 0) {
+          this.transportOrderService.checkSlotAvailability(date, bikesCount).subscribe({
+              next: (response) => {
+                  // Handle the response from the backend
+                  if (!response.available) {
+                      this.notificationService.warning(`Brak wystarczającej liczby slotów na wybraną datę. Dostępnych rowerów: ${response.availableBikes - response.bikesCount}.`);
+                      // Optionally, set a custom form control error to prevent submission
+                      this.contactAndTransportForm.get('pickupDate')?.setErrors({ notEnoughSlots: true });
+                  } else {
+                      this.notificationService.success('Sloty dostępne!');
+                      this.contactAndTransportForm.get('pickupDate')?.setErrors(null);
+                  }
+              },
+              error: (err) => {
+                  this.notificationService.error('Nie można sprawdzić dostępności slotów. Spróbuj ponownie.');
+                  this.contactAndTransportForm.get('pickupDate')?.setErrors({ availabilityCheckFailed: true });
+              }
+          });
+      }
   }
 
   // Step navigation

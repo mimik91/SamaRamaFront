@@ -24,6 +24,7 @@ export interface BikeService {
   updatedAt?: string;
   fullAddress?: string;
   formattedTransportCost?: string;
+  transportAvailable: boolean;
 }
 
 @Component({
@@ -74,7 +75,8 @@ export class AdminBikeServicesComponent implements OnInit {
       latitude: ['', [Validators.min(-90), Validators.max(90)]],
       longitude: ['', [Validators.min(-180), Validators.max(180)]],
       description: ['', [Validators.maxLength(1000)]],
-      transportCost: [0, [Validators.required, Validators.min(0)]]
+      transportCost: [0, [Validators.required, Validators.min(0)]],
+      transportAvailable: [false]
     });
   }
   
@@ -147,7 +149,8 @@ export class AdminBikeServicesComponent implements OnInit {
       latitude: this.selectedService.latitude || '',
       longitude: this.selectedService.longitude || '',
       description: this.selectedService.description || '',
-      transportCost: this.selectedService.transportCost || 0
+      transportCost: this.selectedService.transportCost || 0,
+      transportAvailable: this.selectedService.transportAvailable || false
     });
     
     // Oznacz formularz jako czysty po załadowaniu danych

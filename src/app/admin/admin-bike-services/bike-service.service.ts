@@ -22,6 +22,7 @@ export interface BikeService {
   updatedAt?: string;
   fullAddress?: string;
   formattedTransportCost?: string;
+  transportAvailable: boolean;
 }
 
 export interface BikeServiceCreateDto {
@@ -38,6 +39,7 @@ export interface BikeServiceCreateDto {
   longitude?: number;
   description?: string;
   transportCost: number;
+  transportAvailable: boolean;
 }
 
 export interface ImportResponse {

@@ -332,7 +332,9 @@
                     Podaj poprawną długość geograficzną (-180 do 180)
                   </div>
                 </div>
-                
+              </div>
+              
+              <div class="form-row">
                 <div class="form-group">
                   <label for="transportCost">Koszt transportu (zł)*</label>
                   <input 
@@ -346,6 +348,23 @@
                   >
                   <div *ngIf="isFieldInvalid('transportCost')" class="error-message">
                     Koszt transportu jest wymagany i nie może być ujemny
+                  </div>
+                </div>
+                
+                 <div class="form-group transport-available-group">
+                  <label class="transport-available-label" for="transportAvailable">
+                    Dostępność transportu
+                  </label>
+                  <div class="checkbox-wrapper">
+                    <input 
+                      type="checkbox" 
+                      id="transportAvailable" 
+                      formControlName="transportAvailable" 
+                      class="transport-checkbox"
+                    >
+                    <label class="transport-checkbox-label" for="transportAvailable">
+                      Transport dostępny
+                    </label>
                   </div>
                 </div>
               </div>

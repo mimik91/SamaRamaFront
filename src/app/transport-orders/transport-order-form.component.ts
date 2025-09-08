@@ -307,8 +307,6 @@ export class TransportOrderFormComponent implements OnInit {
     this.bicyclesArray.push(this.fb.group({
       brand: ['', [Validators.required]],
       model: [''],
-      type: [''],
-      frameMaterial: [''],
       description: ['']
     }));
   }

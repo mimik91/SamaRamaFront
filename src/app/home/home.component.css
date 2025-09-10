@@ -896,4 +896,80 @@
     width: 20px;
     height: 20px;
   }
+
+  /* Service Area Information Styles */
+  .service-area-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 25px auto 35px;
+  padding: 15px 25px;
+  background-color: #f8fafc;
+  border-left: 4px solid #3498db;
+  border-radius: 8px;
+  max-width: 800px;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+}
+
+.service-area-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: #3498db;
+  border-radius: 50%;
+  color: white;
+  flex-shrink: 0;
+}
+
+.service-area-text {
+  color: #2c3e50;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.service-area-text strong {
+  color: #3498db;
+  font-weight: 600;
+}
+
+/* Responsive adjustments for service area */
+@media screen and (max-width: 768px) {
+  .service-area-info {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px 15px;
+    margin: 20px 15px 30px;
+  }
+  
+  .service-area-icon {
+    margin-bottom: 10px;
+    width: 35px;
+    height: 35px;
+  }
+  
+  .service-area-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .service-area-text {
+    font-size: 0.9rem;
+    text-align: center;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .service-area-info {
+    padding: 15px 10px;
+    margin: 15px 10px 25px;
+  }
+  
+  .service-area-text {
+    font-size: 0.85rem;
+  }
+}
 }

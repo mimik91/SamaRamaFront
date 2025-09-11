@@ -12,11 +12,9 @@ export interface BikeService {
   postalCode?: string;
   city: string;
   phoneNumber: string;
-  businessPhone?: string;
   email: string;
   latitude?: number;
   longitude?: number;
-  description?: string;
   transportCost: number;
   createdAt: string;
   updatedAt?: string;
@@ -33,11 +31,9 @@ export interface BikeServiceCreateDto {
   postalCode?: string;
   city: string;
   phoneNumber: string;
-  businessPhone?: string;
   email: string;
   latitude?: number;
   longitude?: number;
-  description?: string;
   transportCost: number;
   transportAvailable: boolean;
 }

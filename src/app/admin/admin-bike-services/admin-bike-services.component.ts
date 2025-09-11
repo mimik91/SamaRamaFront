@@ -14,11 +14,9 @@ export interface BikeService {
   postalCode?: string;
   city: string;
   phoneNumber: string;
-  businessPhone?: string;
   email: string;
   latitude?: number;
   longitude?: number;
-  description?: string;
   transportCost: number;
   createdAt: string;
   updatedAt?: string;
@@ -70,11 +68,9 @@ export class AdminBikeServicesComponent implements OnInit {
       postalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]],
       city: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-      businessPhone: ['', [Validators.pattern(/^\d{9}$/)]],
       email: ['', [Validators.email]], // Usunięto Validators.required
       latitude: ['', [Validators.min(-90), Validators.max(90)]],
       longitude: ['', [Validators.min(-180), Validators.max(180)]],
-      description: ['', [Validators.maxLength(1000)]],
       transportCost: [0, [Validators.required, Validators.min(0)]],
       transportAvailable: [false]
     });
@@ -144,11 +140,9 @@ export class AdminBikeServicesComponent implements OnInit {
       postalCode: this.selectedService.postalCode || '',
       city: this.selectedService.city,
       phoneNumber: this.selectedService.phoneNumber,
-      businessPhone: this.selectedService.businessPhone || '',
       email: this.selectedService.email,
       latitude: this.selectedService.latitude || '',
       longitude: this.selectedService.longitude || '',
-      description: this.selectedService.description || '',
       transportCost: this.selectedService.transportCost || 0,
       transportAvailable: this.selectedService.transportAvailable || false
     });
@@ -181,11 +175,9 @@ export class AdminBikeServicesComponent implements OnInit {
       postalCode: '',
       city: '',
       phoneNumber: '',
-      businessPhone: '',
       email: '',
       latitude: '',
       longitude: '',
-      description: '',
       transportCost: 0
     });
   }

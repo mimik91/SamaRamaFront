@@ -4,8 +4,6 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminOrdersService, ServiceAndTransportOrder } from '../admin-orders.service';
 import { NotificationService } from '../../../core/notification.service';
-import { ServicePackageService } from '../../../service-package/service-package.service';
-import { ServicePackage } from '../../../service-package/service-package.model';
 
 @Component({
   selector: 'app-admin-order-details',
@@ -19,12 +17,10 @@ export class AdminOrderDetailsComponent implements OnInit {
   private router = inject(Router);
   private adminOrdersService = inject(AdminOrdersService);
   private notificationService = inject(NotificationService);
-  private servicePackageService = inject(ServicePackageService);
   private fb = inject(FormBuilder);
 
   // Data
   order: ServiceAndTransportOrder | null = null;
-  availablePackages: ServicePackage[] = [];
   
   // State
   loading = true;
@@ -38,10 +34,28 @@ export class AdminOrderDetailsComponent implements OnInit {
 
   constructor() {
     this.orderForm = this.fb.group({
+      // Client data (required but not modified much)
+      email: ['', [Validators.required, Validators.email]],
+      phone: [''],
+      
+      // Modifiable fields
       pickupDate: ['', Validators.required],
-      pickupAddress: ['', Validators.required],
-      deliveryAddress: [''],
-      servicePackageId: [null],
+      pickupStreet: ['', Validators.required],
+      pickupBuildingNumber: ['', Validators.required],
+      pickupApartmentNumber: [''],
+      pickupCity: ['', Validators.required],
+      pickupPostalCode: [''],
+      
+      // Bicycle data (modifiable)
+      bicycleBrand: [''],
+      bicycleModel: [''],
+      
+      // Transport data
+      transportPrice: [0, [Validators.required, Validators.min(0)]],
+      transportNotes: [''],
+      targetServiceId: [null],
+      
+      // Additional notes
       additionalNotes: [''],
       serviceNotes: ['']
     });
@@ -59,8 +73,6 @@ export class AdminOrderDetailsComponent implements OnInit {
       this.error = 'Brak ID zamówienia';
       this.loading = false;
     }
-    
-    this.loadServicePackages();
   }
 
   private loadOrderDetails(orderId: number): void {
@@ -82,25 +94,35 @@ export class AdminOrderDetailsComponent implements OnInit {
     });
   }
 
-  private loadServicePackages(): void {
-    this.servicePackageService.getAllPackages().subscribe({
-      next: (packages) => {
-        this.availablePackages = packages;
-      },
-      error: (err) => {
-        console.error('Error loading service packages:', err);
-      }
-    });
-  }
-
   private populateForm(): void {
     if (!this.order) return;
 
+    // Parse pickup address
+    const pickupAddressParts = this.parseAddress(this.order.pickupAddress);
+
     this.orderForm.patchValue({
+      // Client data
+      email: this.order.clientEmail || '',
+      phone: this.order.clientPhone || '',
+      
+      // Pickup address
       pickupDate: this.formatDateForInput(this.order.pickupDate),
-      pickupAddress: this.order.pickupAddress,
-      deliveryAddress: this.order.deliveryAddress !== 'SERWIS' ? this.order.deliveryAddress : '',
-      servicePackageId: this.getServicePackageId(),
+      pickupStreet: pickupAddressParts.street || '',
+      pickupBuildingNumber: pickupAddressParts.buildingNumber || '',
+      pickupApartmentNumber: pickupAddressParts.apartmentNumber || '',
+      pickupCity: pickupAddressParts.city || '',
+      pickupPostalCode: pickupAddressParts.postalCode || '',
+      
+      // Bicycle data
+      bicycleBrand: this.order.bicycleBrand || '',
+      bicycleModel: this.order.bicycleModel || '',
+      
+      // Transport data
+      transportPrice: this.order.totalPrice || 0,
+      transportNotes: '', // This field might not exist in current order
+      targetServiceId: this.getTargetServiceIdFromDeliveryAddress(this.order.deliveryAddress),
+      
+      // Notes
       additionalNotes: this.order.additionalNotes || '',
       serviceNotes: this.order.serviceNotes || ''
     });
@@ -110,16 +132,50 @@ export class AdminOrderDetailsComponent implements OnInit {
     });
   }
 
-  private getServicePackageId(): number | null {
-    if (!this.order || this.order.orderType !== 'SERVICE') return null;
-    
-    // Try to find package by code
-    if (this.order.servicePackageCode) {
-      const pkg = this.availablePackages.find(p => p.code === this.order!.servicePackageCode);
-      if (pkg) return pkg.id;
+  private getTargetServiceIdFromDeliveryAddress(deliveryAddress: string): number | null {
+    // If delivery address is "SERWIS", it means target service ID is 1 (own service)
+    // Otherwise, we need to determine the target service ID based on the address
+    // For now, return null for external services, 1 for own service
+    return deliveryAddress === 'SERWIS' ? 1 : null;
+  }
+
+  private parseAddress(address: string): any {
+    if (!address || address === 'SERWIS') {
+      return {};
     }
-    
-    return null;
+
+    // Simple address parsing - adjust regex based on your address format
+    const parts = address.split(', ');
+    const result: any = {};
+
+    if (parts.length >= 1) {
+      // First part: street and building number
+      const streetPart = parts[0];
+      const streetMatch = streetPart.match(/^(.+?)\s+(\d+[a-zA-Z]?)(?:\/(\d+[a-zA-Z]?))?$/);
+      
+      if (streetMatch) {
+        result.street = streetMatch[1];
+        result.buildingNumber = streetMatch[2];
+        result.apartmentNumber = streetMatch[3] || '';
+      } else {
+        result.street = streetPart;
+      }
+    }
+
+    if (parts.length >= 2) {
+      // Second part: city and postal code
+      const cityPart = parts[1];
+      const cityMatch = cityPart.match(/^(.+?)\s+(\d{2}-\d{3})$/);
+      
+      if (cityMatch) {
+        result.city = cityMatch[1];
+        result.postalCode = cityMatch[2];
+      } else {
+        result.city = cityPart;
+      }
+    }
+
+    return result;
   }
 
   // === EDITING ===
@@ -143,14 +199,46 @@ export class AdminOrderDetailsComponent implements OnInit {
 
     this.saving = true;
 
+    const formValues = this.orderForm.value;
+    
+    // Create the DTO according to ServiceOrTransportOrderDto structure
     const orderData = {
-      pickupDate: this.orderForm.value.pickupDate,
-      pickupAddress: this.orderForm.value.pickupAddress,
-      deliveryAddress: this.orderForm.value.deliveryAddress || undefined,
-      servicePackageId: this.orderForm.value.servicePackageId || undefined,
-      additionalNotes: this.orderForm.value.additionalNotes || '',
-      serviceNotes: this.orderForm.value.serviceNotes || '',
-      bicycleIds: this.order.bicycleId ? [this.order.bicycleId] : []
+      // Bicycle data - we'll send the existing bicycle ID and update its brand/model separately if needed
+      bicycleIds: this.order.bicycleId ? [this.order.bicycleId] : [],
+      
+      // If this is a guest order, we need to include bicycle data for update
+      bicycles: this.order.clientEmail ? [{
+        brand: formValues.bicycleBrand,
+        model: formValues.bicycleModel,
+        // Add other bicycle fields if needed
+      }] : null,
+      
+      // User/Guest data
+      userId: this.order.clientEmail ? null : 1, // Determine based on order type
+      email: formValues.email,
+      phone: formValues.phone,
+      
+      // Pickup address data
+      pickupAddressId: null, // We're using new address data
+      pickupStreet: formValues.pickupStreet,
+      pickupBuildingNumber: formValues.pickupBuildingNumber,
+      pickupApartmentNumber: formValues.pickupApartmentNumber || null,
+      pickupCity: formValues.pickupCity,
+      pickupPostalCode: formValues.pickupPostalCode || null,
+      pickupLatitude: null,
+      pickupLongitude: null,
+      
+      // Transport data
+      pickupDate: formValues.pickupDate,
+      transportPrice: formValues.transportPrice,
+      transportNotes: formValues.transportNotes || null,
+      targetServiceId: formValues.targetServiceId,
+      
+      // Service data (for service orders)
+      serviceNotes: formValues.serviceNotes || null,
+      
+      // Additional data
+      additionalNotes: formValues.additionalNotes || null
     };
 
     const updateMethod = this.order.orderType === 'SERVICE'
@@ -305,13 +393,6 @@ export class AdminOrderDetailsComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/admin-orders']);
-  }
-
-  getPackageName(packageId: number | null): string {
-    if (!packageId) return 'Nie określono';
-    
-    const foundPackage = this.availablePackages.find(p => p.id === packageId);
-    return foundPackage ? foundPackage.name : 'Pakiet #' + packageId;
   }
 
   canEdit(): boolean {

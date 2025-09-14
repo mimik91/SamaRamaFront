@@ -118,10 +118,6 @@
               <div class="detail-label">Telefon:</div>
               <div class="detail-value">{{ selectedService.phoneNumber }}</div>
             </div>
-            <div class="detail-row" *ngIf="selectedService.businessPhone">
-              <div class="detail-label">Telefon służbowy:</div>
-              <div class="detail-value">{{ selectedService.businessPhone }}</div>
-            </div>
           </div>
           
           <div class="details-section">
@@ -143,11 +139,7 @@
               <div class="detail-value transport-cost-value">{{ selectedService.formattedTransportCost || formatTransportCost(selectedService.transportCost) }}</div>
             </div>
           </div>
-          
-          <div class="details-section" *ngIf="selectedService.description">
-            <h3>Opis</h3>
-            <div class="description">{{ selectedService.description }}</div>
-          </div>
+      
           
           <div class="details-section">
             <h3>Informacje systemowe</h3>

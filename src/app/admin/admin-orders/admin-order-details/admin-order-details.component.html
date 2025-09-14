@@ -186,8 +186,38 @@
         <h2>Edycja zamówienia #{{ order.id }}</h2>
 
         <form [formGroup]="orderForm" (ngSubmit)="saveOrder()" class="order-edit-form">
+          <!-- Client Data Section -->
           <div class="form-section">
-            <h3>Dane zamówienia</h3>
+            <h3>Dane klienta</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="email">Email*</label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  formControlName="email"
+                  [class.is-invalid]="isFieldInvalid(orderForm, 'email')"
+                >
+                <div *ngIf="isFieldInvalid(orderForm, 'email')" class="error-message">
+                  Poprawny email jest wymagany
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="phone">Telefon</label>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  formControlName="phone"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Pickup Address Section -->
+          <div class="form-section">
+            <h3>Adres odbioru</h3>
 
             <div class="form-row">
               <div class="form-group">
@@ -202,46 +232,144 @@
                   Data odbioru jest wymagana
                 </div>
               </div>
+            </div>
 
+            <div class="form-row">
               <div class="form-group">
-                <label for="pickupAddress">Adres odbioru*</label>
+                <label for="pickupStreet">Ulica*</label>
                 <input 
                   type="text" 
-                  id="pickupAddress" 
-                  formControlName="pickupAddress"
-                  [class.is-invalid]="isFieldInvalid(orderForm, 'pickupAddress')"
+                  id="pickupStreet" 
+                  formControlName="pickupStreet"
+                  [class.is-invalid]="isFieldInvalid(orderForm, 'pickupStreet')"
                 >
-                <div *ngIf="isFieldInvalid(orderForm, 'pickupAddress')" class="error-message">
-                  Adres odbioru jest wymagany
+                <div *ngIf="isFieldInvalid(orderForm, 'pickupStreet')" class="error-message">
+                  Ulica jest wymagana
                 </div>
               </div>
-            </div>
 
-            <div class="form-row" *ngIf="order.orderType === 'TRANSPORT'">
               <div class="form-group">
-                <label for="deliveryAddress">Adres dostarczenia</label>
+                <label for="pickupBuildingNumber">Numer budynku*</label>
                 <input 
                   type="text" 
-                  id="deliveryAddress" 
-                  formControlName="deliveryAddress"
+                  id="pickupBuildingNumber" 
+                  formControlName="pickupBuildingNumber"
+                  [class.is-invalid]="isFieldInvalid(orderForm, 'pickupBuildingNumber')"
+                >
+                <div *ngIf="isFieldInvalid(orderForm, 'pickupBuildingNumber')" class="error-message">
+                  Numer budynku jest wymagany
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="pickupApartmentNumber">Numer mieszkania</label>
+                <input 
+                  type="text" 
+                  id="pickupApartmentNumber" 
+                  formControlName="pickupApartmentNumber"
                 >
               </div>
             </div>
 
-            <div class="form-row" *ngIf="order.orderType === 'SERVICE'">
+            <div class="form-row">
               <div class="form-group">
-                <label for="servicePackageId">Pakiet serwisowy</label>
-                <select 
-                  id="servicePackageId" 
-                  formControlName="servicePackageId"
+                <label for="pickupCity">Miasto*</label>
+                <input 
+                  type="text" 
+                  id="pickupCity" 
+                  formControlName="pickupCity"
+                  [class.is-invalid]="isFieldInvalid(orderForm, 'pickupCity')"
                 >
-                  <option [ngValue]="null">-- Wybierz pakiet --</option>
-                  <option *ngFor="let package of availablePackages" [ngValue]="package.id">
-                    {{ package.name }} - {{ formatPrice(package.price) }}
-                  </option>
+                <div *ngIf="isFieldInvalid(orderForm, 'pickupCity')" class="error-message">
+                  Miasto jest wymagane
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="pickupPostalCode">Kod pocztowy</label>
+                <input 
+                  type="text" 
+                  id="pickupPostalCode" 
+                  formControlName="pickupPostalCode"
+                  placeholder="np. 30-704"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Bicycle Data Section -->
+          <div class="form-section">
+            <h3>Dane roweru</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bicycleBrand">Marka</label>
+                <input 
+                  type="text" 
+                  id="bicycleBrand" 
+                  formControlName="bicycleBrand"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="bicycleModel">Model</label>
+                <input 
+                  type="text" 
+                  id="bicycleModel" 
+                  formControlName="bicycleModel"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Transport Data Section -->
+          <div class="form-section">
+            <h3>Dane transportu</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="transportPrice">Cena transportu*</label>
+                <input 
+                  type="number" 
+                  id="transportPrice" 
+                  formControlName="transportPrice"
+                  min="0" 
+                  step="0.01"
+                  [class.is-invalid]="isFieldInvalid(orderForm, 'transportPrice')"
+                >
+                <div *ngIf="isFieldInvalid(orderForm, 'transportPrice')" class="error-message">
+                  Cena transportu jest wymagana
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="targetServiceId">Serwis docelowy</label>
+                <select 
+                  id="targetServiceId" 
+                  formControlName="targetServiceId"
+                >
+                  <option [ngValue]="null">-- Wybierz serwis --</option>
+                  <option [ngValue]="1">Serwis własny</option>
+                  <!-- Add other services as needed -->
                 </select>
               </div>
             </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="transportNotes">Notatki transportowe</label>
+                <textarea 
+                  id="transportNotes" 
+                  formControlName="transportNotes"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes Section -->
+          <div class="form-section">
+            <h3>Notatki</h3>
 
             <div class="form-row">
               <div class="form-group">

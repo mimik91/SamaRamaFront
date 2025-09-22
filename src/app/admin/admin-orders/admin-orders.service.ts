@@ -11,8 +11,6 @@ export interface OrderFilter {
   searchTerm?: string;
   transportStatus?: string;
   transportType?: string;
-  servicePackageCode?: string;
-  servicePackageId?: number;
   sortBy?: string;
   sortOrder?: string;
 }
@@ -34,8 +32,6 @@ export interface ServiceAndTransportOrder {
   additionalNotes?: string;
   status: string;
   serviceNotes?: string;
-  servicePackageCode?: string;
-  servicePackageName?: string;
   lastModifiedBy?: string;
   lastModifiedDate?: string;
 }
@@ -288,14 +284,6 @@ export class AdminOrdersService {
     // Search term
     if (filter.searchTerm) {
       params = params.set('searchTerm', filter.searchTerm);
-    }
-
-    // Filtry serwisu
-    if (filter.servicePackageCode) {
-      params = params.set('servicePackageCode', filter.servicePackageCode);
-    }
-    if (filter.servicePackageId) {
-      params = params.set('servicePackageId', filter.servicePackageId.toString());
     }
 
     // Sortowanie

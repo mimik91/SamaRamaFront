@@ -100,14 +100,9 @@
           <h3>Pakiet serwisowy</h3>
           <div class="detail-row">
             <div class="detail-label">Nazwa pakietu:</div>
-            <div class="detail-value">
-              {{ order.servicePackageName || order.servicePackageCode || 'Nie określono' }}
-            </div>
+        
           </div>
-          <div class="detail-row" *ngIf="order.servicePackageCode">
-            <div class="detail-label">Kod pakietu:</div>
-            <div class="detail-value">{{ order.servicePackageCode }}</div>
-          </div>
+        
         </div>
 
         <!-- Order Details -->

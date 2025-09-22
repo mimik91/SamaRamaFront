@@ -310,68 +310,95 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-private showDetailedPopup(serviceDetails: any, marker: any): void {
-  const addressParts = [];
-  if (serviceDetails.street) addressParts.push(serviceDetails.street);
-  if (serviceDetails.building) addressParts.push(serviceDetails.building);
-  if (serviceDetails.flat) addressParts.push(`m. ${serviceDetails.flat}`);
-  
-  // Połączenie adresu z miastem
-  let fullAddress = addressParts.join(' ');
-  if (serviceDetails.city) {
-    fullAddress += fullAddress ? `, ${serviceDetails.city}` : serviceDetails.city;
-  }
-  
-  let popupContent = `
-    <div style="font-family: Arial, sans-serif; min-width: 250px;">
-      <h4 style="margin: 0 0 15px 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px;">${serviceDetails.name}</h4>
-  `;
-  
-  // Wyświetlenie pełnego adresu z miastem w jednej linii
-  if (fullAddress) {
-    popupContent += `<p style="margin: 8px 0;"><strong>📍 Adres:</strong> ${fullAddress}</p>`;
-  }
-  
-  if (serviceDetails.phoneNumber) {
-    popupContent += `<p style="margin: 8px 0;"><strong>📞 Telefon:</strong> <a href="tel:${serviceDetails.phoneNumber}" style="color: #27ae60; text-decoration: none;">${serviceDetails.phoneNumber}</a></p>`;
-  }
+  private showDetailedPopup(serviceDetails: any, marker: any): void {
+    const addressParts = [];
+    if (serviceDetails.street) addressParts.push(serviceDetails.street);
+    if (serviceDetails.building) addressParts.push(serviceDetails.building);
+    if (serviceDetails.flat) addressParts.push(`m. ${serviceDetails.flat}`);
+    
+    // Połączenie adresu z miastem
+    let fullAddress = addressParts.join(' ');
+    if (serviceDetails.city) {
+      fullAddress += fullAddress ? `, ${serviceDetails.city}` : serviceDetails.city;
+    }
+    
+    let popupContent = `
+      <div style="font-family: Arial, sans-serif; min-width: 250px;">
+        <h4 style="margin: 0 0 15px 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px;">${serviceDetails.name}</h4>
+    `;
+    
+    // Wyświetlenie pełnego adresu z miastem w jednej linii
+    if (fullAddress) {
+      popupContent += `<p style="margin: 8px 0;"><strong>📍 Adres:</strong> ${fullAddress}</p>`;
+    }
+    
+    if (serviceDetails.phoneNumber) {
+      popupContent += `<p style="margin: 8px 0;"><strong>📞 Telefon:</strong> <a href="tel:${serviceDetails.phoneNumber}" style="color: #27ae60; text-decoration: none;">${serviceDetails.phoneNumber}</a></p>`;
+    }
 
-  // Transport - tylko gdy transportAvailable jest true
-  if (serviceDetails.transportAvailable) {
-    const transportCost = serviceDetails.transportCost;
-    if (transportCost !== null) {
+    // Transport - tylko gdy transportAvailable jest true
+    if (serviceDetails.transportAvailable) {
+      const transportCost = serviceDetails.transportCost;
+      if (transportCost !== null) {
+        popupContent += `
+          <div style="margin: 12px 0; padding: 10px; background-color: #e8f5e8; border-radius: 6px; border-left: 4px solid #28a745;">
+            <p style="margin: 0; color: #155724;"><strong>🚚 Koszt transportu:</strong> 
+              <span style="font-size: 1.1em; font-weight: bold; color: #28a745;">${transportCost} PLN</span>
+            </p>
+            <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #6c757d;">Transport w obie strony</p>
+          </div>
+        `;
+      } else {
+        popupContent += `
+          <div style="margin: 12px 0; padding: 10px; background-color: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107;">
+            <p style="margin: 0; color: #856404;"><strong>🚚 Koszt transportu:</strong> Do ustalenia</p>
+            <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #6c757d;">Skontaktuj się z nami po szczegóły</p>
+          </div>
+        `;
+      }
+    }
+    
+    if (serviceDetails.description && serviceDetails.description.trim()) {
+      popupContent += `<div style="margin: 15px 0 0 0; padding: 10px; background-color: #f8f9fa; border-radius: 4px; border-left: 3px solid #007bff;">
+        <p style="margin: 0; color: #666; font-size: 0.9em; line-height: 1.4;">${serviceDetails.description}</p>
+      </div>`;
+    }
+    
+    if (serviceDetails.verified) {
+      popupContent += `<p style="color: #28a745; margin: 12px 0 0 0; font-weight: 500;"><strong>✅ Zweryfikowany serwis</strong></p>`;
+    }
+
+    // Przyciski - zawsze pokazujemy przynajmniej jeden
+    popupContent += `<div style="margin: 20px 0 0 0; padding: 15px 0 0 0; border-top: 1px solid #eee; display: flex; gap: 8px; flex-wrap: wrap;">`;
+
+     // Przycisk zależny od statusu rejestracji
+    if (serviceDetails.registered) {
       popupContent += `
-        <div style="margin: 12px 0; padding: 10px; background-color: #e8f5e8; border-radius: 6px; border-left: 4px solid #28a745;">
-          <p style="margin: 0; color: #155724;"><strong>🚚 Koszt transportu:</strong> 
-            <span style="font-size: 1.1em; font-weight: bold; color: #28a745;">${transportCost} PLN</span>
-          </p>
-          <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #6c757d;">Transport w obie strony</p>
-        </div>
+        <button 
+          id="service-page-btn-${serviceDetails.id}" 
+          style="flex: 1; min-width: 120px; padding: 10px 16px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"
+          onmouseover="this.style.backgroundColor='#218838'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(40,167,69,0.3)'" 
+          onmouseout="this.style.backgroundColor='#28a745'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+        >
+          🏪 Strona serwisu
+        </button>
       `;
     } else {
       popupContent += `
-        <div style="margin: 12px 0; padding: 10px; background-color: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107;">
-          <p style="margin: 0; color: #856404;"><strong>🚚 Koszt transportu:</strong> Do ustalenia</p>
-          <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #6c757d;">Skontaktuj się z nami po szczegóły</p>
-        </div>
+        <button 
+          id="register-service-btn-${serviceDetails.id}" 
+          style="flex: 1; min-width: 120px; padding: 10px 16px; background-color: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"
+          onmouseover="this.style.backgroundColor='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(108,117,125,0.3)'" 
+          onmouseout="this.style.backgroundColor='#6c757d'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+        >
+          📝 Zarejestruj ten serwis
+        </button>
       `;
     }
-  }
-  
-  if (serviceDetails.description && serviceDetails.description.trim()) {
-    popupContent += `<div style="margin: 15px 0 0 0; padding: 10px; background-color: #f8f9fa; border-radius: 4px; border-left: 3px solid #007bff;">
-      <p style="margin: 0; color: #666; font-size: 0.9em; line-height: 1.4;">${serviceDetails.description}</p>
-    </div>`;
-  }
-  
-  if (serviceDetails.verified) {
-    popupContent += `<p style="color: #28a745; margin: 12px 0 0 0; font-weight: 500;"><strong>✅ Zweryfikowany serwis</strong></p>`;
-  }
 
-  // Przycisk transportu - tylko gdy transportAvailable jest true
-  if (serviceDetails.transportAvailable) {
-    popupContent += `
-      <div style="margin: 20px 0 0 0; padding: 15px 0 0 0; border-top: 1px solid #eee; display: flex; gap: 8px; flex-wrap: wrap;">
+    // Przycisk transportu - tylko gdy transportAvailable jest true
+    if (serviceDetails.transportAvailable) {
+      popupContent += `
         <button 
           id="order-transport-btn-${serviceDetails.id}" 
           style="flex: 1; min-width: 120px; padding: 10px 16px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"
@@ -380,30 +407,46 @@ private showDetailedPopup(serviceDetails: any, marker: any): void {
         >
           🚚 Zamów transport
         </button>
-      </div>
-    `;
-  }
-  
-  popupContent += `</div>`;
+      `;
+    }
 
-  marker.bindPopup(popupContent, {
-    maxWidth: 350,
-    className: 'detailed-service-popup'
-  }).openPopup();
+    popupContent += `</div></div>`;
 
-  // Dodaj event listener dla przycisku transportu tylko gdy transport jest dostępny
-  if (serviceDetails.transportAvailable) {
+    marker.bindPopup(popupContent, {
+      maxWidth: 350,
+      className: 'detailed-service-popup'
+    }).openPopup();
+
+    // Dodaj event listenery dla przycisków
     setTimeout(() => {
-      const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
-      if (transportBtn) {
-        transportBtn.addEventListener('click', () => {
-          this.orderTransport(serviceDetails);
-        });
+      // Event listener dla przycisku transportu
+      if (serviceDetails.transportAvailable) {
+        const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
+        if (transportBtn) {
+          transportBtn.addEventListener('click', () => {
+            this.orderTransport(serviceDetails);
+          });
+        }
+      }
+
+      // Event listener dla przycisku rejestracji/strony serwisu
+      if (serviceDetails.registered) {
+        const servicePageBtn = document.getElementById(`service-page-btn-${serviceDetails.id}`);
+        if (servicePageBtn) {
+          servicePageBtn.addEventListener('click', () => {
+            this.goToServicePage(serviceDetails);
+          });
+        }
+      } else {
+        const registerBtn = document.getElementById(`register-service-btn-${serviceDetails.id}`);
+        if (registerBtn) {
+          registerBtn.addEventListener('click', () => {
+            this.registerService(serviceDetails);
+          });
+        }
       }
     }, 100);
   }
-}
-
 
   private showErrorPopup(marker: any, errorMessage: string): void {
     const errorContent = `
@@ -422,7 +465,6 @@ private showDetailedPopup(serviceDetails: any, marker: any): void {
   private orderTransport(serviceDetails: any): void {
     console.log('🚚 Order transport clicked for service:', serviceDetails);
     
-    // Transport jest dostępny dla wszystkich - nie sprawdzamy logowania
     // Przejdź do formularza zamówienia transportu z parametrami serwisu
     this.router.navigate(['/order-transport'], {
       queryParams: {
@@ -431,6 +473,31 @@ private showDetailedPopup(serviceDetails: any, marker: any): void {
         serviceAddress: `${serviceDetails.street} ${serviceDetails.building}${serviceDetails.flat ? '/' + serviceDetails.flat : ''}, ${serviceDetails.city}`
       }
     });
+  }
+
+  private registerService(serviceDetails: any): void {
+    console.log('📝 Register service clicked for service:', serviceDetails);
+    
+    // Przejdź do formularza rejestracji serwisu z wypełnionymi danymi
+    this.router.navigate(['/register-service'], {
+      queryParams: {
+        serviceId: serviceDetails.id,
+        serviceName: serviceDetails.name,
+        phoneNumber: serviceDetails.phoneNumber || '',
+        street: serviceDetails.street || '',
+        building: serviceDetails.building || '',
+        flat: serviceDetails.flat || '',
+        city: serviceDetails.city || '',
+        description: serviceDetails.description || ''
+      }
+    });
+  }
+
+  private goToServicePage(serviceDetails: any): void {
+    console.log('🏪 Service page clicked for service:', serviceDetails);
+    
+    // Przejdź do strony serwisu (zakładam że będzie route /service/:id)
+    this.router.navigate(['/service', serviceDetails.id]);
   }
 
   retryMapLoad(): void {

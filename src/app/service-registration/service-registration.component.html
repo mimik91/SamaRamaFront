@@ -1,26 +1,37 @@
 <div class="service-registration-container">
-    <div class="header">
-      <h1>Rejestracja serwisu rowerowego</h1>
-      <p class="subtitle">Dołącz do naszej sieci profesjonalnych serwisów rowerowych</p>
-    </div>
-  
-    <div *ngIf="!isSuccess" class="form-container">
-      <div class="info-box">
-        <div class="info-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-        </div>
-        <div class="info-content">
-          <h3>Jak dołączyć do sieci SamaRama?</h3>
-          <p>Wypełnij poniższy formularz z podstawowymi danymi kontaktowymi Twojego serwisu rowerowego. Proszę podawać zwięzłe informacje. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.</p>
-          <p>Jako partner SamaRama zyskasz dostęp do szerokiej bazy klientów oraz zaawansowanego systemu zarządzania serwisem rowerowym.</p>
-        </div>
+  <div class="header">
+    <h1>{{ isExistingService ? 'Aktualizacja informacji o serwisie' : 'Rejestracja serwisu rowerowego' }}</h1>
+    <p class="subtitle">
+      {{ isExistingService ? 'Zaktualizuj dane swojego serwisu i dołącz do sieci SamaRama' : 'Dołącz do naszej sieci profesjonalnych serwisów rowerowych' }}
+    </p>
+  </div>
+
+  <div *ngIf="!isSuccess" class="form-container">
+    <div class="info-box">
+      <div class="info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
       </div>
-  
-      <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+      <div class="info-content">
+        <h3>{{ isExistingService ? 'Zaktualizuj swój serwis' : 'Jak dołączyć do sieci SamaRama?' }}</h3>
+        <p *ngIf="!isExistingService">
+          Wypełnij poniższy formularz z podstawowymi danymi kontaktowymi Twojego serwisu rowerowego. Proszę podawać zwięzłe informacje. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.
+        </p>
+        <p *ngIf="isExistingService">
+          Uzupełnij i zaktualizuj informacje o swoim serwisie. Dane podstawowe zostały już wypełnione na podstawie informacji z mapy. Możesz je edytować i dodać dodatkowe informacje jak stronę internetową i opis.
+        </p>
+        <p>Jako partner SamaRama zyskasz dostęp do szerokiej bazy klientów oraz zaawansowanego systemu zarządzania serwisem rowerowym.</p>
+      </div>
+    </div>
+
+    <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+      <!-- Dane kontaktowe -->
+      <div class="form-section">
+        <h3>Dane kontaktowe</h3>
+        
         <div class="form-group">
           <label for="contactPerson">Osoba do kontaktu * <span class="char-limit">(max 50 znaków)</span></label>
           <input 
@@ -31,6 +42,7 @@
             placeholder="Imię i nazwisko osoby do kontaktu"
             maxlength="50"
           >
+          <div class="char-counter">{{ getCharacterCount('contactPerson') }}/50</div>
           <div *ngIf="isFieldInvalid('contactPerson')" class="error-message">
             Pole wymagane
           </div>
@@ -60,10 +72,16 @@
             placeholder="kontakt@twojserwis.pl"
             maxlength="50"
           >
+          <div class="char-counter">{{ getCharacterCount('email') }}/50</div>
           <div *ngIf="isFieldInvalid('email')" class="error-message">
             Wprowadź poprawny adres email
           </div>
         </div>
+      </div>
+
+      <!-- Informacje o serwisie -->
+      <div class="form-section">
+        <h3>Informacje o serwisie</h3>
         
         <div class="form-group">
           <label for="serviceName">Nazwa serwisu * <span class="char-limit">(max 50 znaków)</span></label>
@@ -75,58 +93,153 @@
             placeholder="Nazwa Twojego serwisu rowerowego"
             maxlength="50"
           >
+          <div class="char-counter">{{ getCharacterCount('serviceName') }}/50</div>
           <div *ngIf="isFieldInvalid('serviceName')" class="error-message">
             Pole wymagane
           </div>
         </div>
-        
-        <!-- Usunięto pole "Dodatkowe informacje" -->
-        <div *ngIf="dataLengthExceeded" class="error-message data-length-warning">
-          Wprowadzone dane przekraczają dozwolony limit znaków. Proszę skrócić wprowadzone informacje.
-        </div>
-        
-        <div class="benefits-box">
-          <h3>Korzyści współpracy z SamaRama</h3>
-          <ul>
-            <li>Dostęp do bazy klientów poszukujących profesjonalnego serwisu rowerowego</li>
-            <li>Zaawansowany system zarządzania serwisem i zamówieniami</li>
-            <li>Promocja Twojego serwisu na naszej platformie</li>
-            <li>Wsparcie techniczne i marketingowe</li>
-            <li>Elastyczne warunki współpracy</li>
-          </ul>
-        </div>
-        
-        <div class="form-actions">
-          <button type="button" class="secondary-btn" (click)="goToHome()">Wróć do strony głównej</button>
-          <button 
-            type="submit" 
-            class="primary-btn"
-            [disabled]="registrationForm.invalid || isSubmitting"
+
+        <div class="form-group">
+          <label for="website">Strona internetowa <span class="char-limit">(max 100 znaków)</span></label>
+          <input 
+            type="url" 
+            id="website" 
+            formControlName="website"
+            [class.is-invalid]="isFieldInvalid('website')"
+            placeholder="https://www.twojserwis.pl"
+            maxlength="100"
           >
-            {{ isSubmitting ? 'Wysyłanie...' : 'Wyślij zgłoszenie' }}
-          </button>
+          <div class="char-counter">{{ getCharacterCount('website') }}/100</div>
+          <div *ngIf="isFieldInvalid('website')" class="error-message">
+            Wprowadź poprawny adres URL
+          </div>
         </div>
-      </form>
+
+        <div class="form-group">
+          <label for="description">Opis serwisu <span class="char-limit">(max 1500 znaków)</span></label>
+          <textarea 
+            id="description" 
+            formControlName="description"
+            [class.is-invalid]="isFieldInvalid('description')"
+            placeholder="Opisz swój serwis, specjalizacje, godziny pracy, dodatkowe usługi..."
+            maxlength="1500"
+            rows="6"
+          ></textarea>
+          <div class="char-counter">{{ getCharacterCount('description') }}/1500</div>
+          <div *ngIf="isFieldInvalid('description')" class="error-message">
+            Opis jest za długi
+          </div>
+        </div>
+      </div>
+
+      <!-- Adres serwisu -->
+      <div class="form-section">
+        <h3>Lokalizacja serwisu</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="street">Ulica <span class="char-limit">(max 50 znaków)</span></label>
+            <input 
+              type="text" 
+              id="street" 
+              formControlName="street"
+              [class.is-invalid]="isFieldInvalid('street')"
+              placeholder="Nazwa ulicy"
+              maxlength="50"
+            >
+            <div class="char-counter">{{ getCharacterCount('street') }}/50</div>
+          </div>
+          
+          <div class="form-group form-group-small">
+            <label for="building">Nr budynku <span class="char-limit">(max 10)</span></label>
+            <input 
+              type="text" 
+              id="building" 
+              formControlName="building"
+              [class.is-invalid]="isFieldInvalid('building')"
+              placeholder="123A"
+              maxlength="10"
+            >
+          </div>
+          
+          <div class="form-group form-group-small">
+            <label for="flat">Nr lokalu <span class="char-limit">(max 10)</span></label>
+            <input 
+              type="text" 
+              id="flat" 
+              formControlName="flat"
+              [class.is-invalid]="isFieldInvalid('flat')"
+              placeholder="5"
+              maxlength="10"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="city">Miasto <span class="char-limit">(max 30 znaków)</span></label>
+          <input 
+            type="text" 
+            id="city" 
+            formControlName="city"
+            [class.is-invalid]="isFieldInvalid('city')"
+            placeholder="Kraków"
+            maxlength="30"
+          >
+          <div class="char-counter">{{ getCharacterCount('city') }}/30</div>
+        </div>
+      </div>
+      
+      <div *ngIf="dataLengthExceeded" class="error-message data-length-warning">
+        Wprowadzone dane przekraczają dozwolony limit znaków. Proszę skrócić wprowadzone informacje.
+      </div>
+      
+      <div class="benefits-box">
+        <h3>Korzyści współpracy z SamaRama</h3>
+        <ul>
+          <li>Dostęp do bazy klientów poszukujących profesjonalnego serwisu rowerowego</li>
+          <li>Zaawansowany system zarządzania serwisem i zamówieniami</li>
+          <li>Promocja Twojego serwisu na naszej platformie</li>
+          <li>Wsparcie techniczne i marketingowe</li>
+          <li>Elastyczne warunki współpracy</li>
+        </ul>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="secondary-btn" (click)="goBack()">
+          {{ isExistingService ? 'Anuluj' : 'Wróć do strony głównej' }}
+        </button>
+        <button 
+          type="submit" 
+          class="primary-btn"
+          [disabled]="registrationForm.invalid || isSubmitting"
+        >
+          {{ isSubmitting ? 'Wysyłanie...' : (isExistingService ? 'Wyślij aktualizację' : 'Wyślij zgłoszenie') }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Ekran sukcesu po wysłaniu formularza -->
+  <div *ngIf="isSuccess" class="success-container">
+    <div class="success-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
     </div>
-  
-    <!-- Ekran sukcesu po wysłaniu formularza -->
-    <div *ngIf="isSuccess" class="success-container">
-      <div class="success-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-          <polyline points="22 4 12 14.01 9 11.01"></polyline>
-        </svg>
-      </div>
-      
-      <h2>Dziękujemy za zgłoszenie!</h2>
-      
-      <p class="success-message">
-        Twoje zgłoszenie zostało przyjęte. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.
-      </p>
-      
-      <div class="success-actions">
-        <button class="secondary-btn" (click)="goToHome()">Wróć do strony głównej</button>
-        <button class="primary-btn" (click)="goToLogin()">Przejdź do logowania</button>
-      </div>
+    
+    <h2>Dziękujemy za zgłoszenie!</h2>
+    
+    <p class="success-message">
+      {{ isExistingService 
+        ? 'Twoje zgłoszenie aktualizacji zostało przyjęte. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.'
+        : 'Twoje zgłoszenie zostało przyjęte. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.'
+      }}
+    </p>
+    
+    <div class="success-actions">
+      <button class="secondary-btn" (click)="goToHome()">Wróć do strony głównej</button>
+      <button class="primary-btn" (click)="goToLogin()">Przejdź do logowania</button>
     </div>
   </div>
+</div>

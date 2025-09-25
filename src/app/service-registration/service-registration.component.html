@@ -2,221 +2,513 @@
   <div class="header">
     <h1>{{ isExistingService ? 'Aktualizacja informacji o serwisie' : 'Rejestracja serwisu rowerowego' }}</h1>
     <p class="subtitle">
-      {{ isExistingService ? 'Zaktualizuj dane swojego serwisu i dołącz do sieci SamaRama' : 'Dołącz do naszej sieci profesjonalnych serwisów rowerowych' }}
+      {{ isExistingService ? 'Zaktualizuj dane swojego serwisu i dołącz do sieci CycloPick' : 'Dołącz do naszej sieci profesjonalnych serwisów rowerowych' }}
     </p>
   </div>
 
-  <div *ngIf="!isSuccess" class="form-container">
-    <div class="info-box">
-      <div class="info-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg>
+  <!-- Progress indicator -->
+  <div class="progress-container">
+    <div class="progress-bar">
+      <div class="progress-step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+        <span class="step-number">1</span>
+        <span class="step-label">Podstawowe informacje</span>
       </div>
-      <div class="info-content">
-        <h3>{{ isExistingService ? 'Zaktualizuj swój serwis' : 'Jak dołączyć do sieci SamaRama?' }}</h3>
-        <p *ngIf="!isExistingService">
-          Wypełnij poniższy formularz z podstawowymi danymi kontaktowymi Twojego serwisu rowerowego. Proszę podawać zwięzłe informacje. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.
-        </p>
-        <p *ngIf="isExistingService">
-          Uzupełnij i zaktualizuj informacje o swoim serwisie. Dane podstawowe zostały już wypełnione na podstawie informacji z mapy. Możesz je edytować i dodać dodatkowe informacje jak stronę internetową i opis.
-        </p>
-        <p>Jako partner SamaRama zyskasz dostęp do szerokiej bazy klientów oraz zaawansowanego systemu zarządzania serwisem rowerowym.</p>
+      <div class="progress-step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+        <span class="step-number">2</span>
+        <span class="step-label">Usługi serwisu</span>
+      </div>
+      <div class="progress-step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+        <span class="step-number">3</span>
+        <span class="step-label">Dane logowania</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isSuccess" class="form-container">
+    
+    <!-- KROK 1: Podstawowe informacje -->
+    <div *ngIf="currentStep === 1">
+      <div class="info-box">
+        <div class="info-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </div>
+        <div class="info-content">
+          <h3>{{ isExistingService ? 'Zaktualizuj swój serwis' : 'Jak dołączyć do sieci CycloPick?' }}</h3>
+          <p *ngIf="!isExistingService">
+            Wypełnij poniższy formularz z podstawowymi danymi kontaktowymi Twojego serwisu rowerowego. Proszę podawać zwięzłe informacje. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.
+          </p>
+          <p *ngIf="isExistingService">
+            Uzupełnij i zaktualizuj informacje o swoim serwisie. Dane podstawowe zostały już wypełnione na podstawie informacji z mapy. Możesz je edytować i dodać dodatkowe informacje jak stronę internetową i opis.
+          </p>
+          <p>Jako partner CycloPick zyskasz dostęp do szerokiej bazy klientów oraz zaawansowanego systemu zarządzania serwisem rowerowym.</p>
+        </div>
+      </div>
+
+      <form [formGroup]="basicInfoForm">
+        <!-- Dane kontaktowe -->
+        <div class="form-section">
+          <h3>Dane kontaktowe</h3>
+          
+          <div class="form-group">
+            <label for="contactPerson">Osoba do kontaktu * <span class="char-limit">(max 100 znaków)</span></label>
+            <input 
+              type="text" 
+              id="contactPerson" 
+              formControlName="contactPerson"
+              [class.is-invalid]="isFieldInvalid(basicInfoForm, 'contactPerson')"
+              placeholder="Imię i nazwisko osoby do kontaktu"
+              maxlength="100"
+            >
+            <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'contactPerson') }}/100</div>
+            <div *ngIf="isFieldInvalid(basicInfoForm, 'contactPerson')" class="error-message">
+              Pole wymagane
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="phoneNumber">Numer telefonu *</label>
+            <input 
+              type="tel" 
+              id="phoneNumber" 
+              formControlName="phoneNumber"
+              [class.is-invalid]="isFieldInvalid(basicInfoForm, 'phoneNumber')"
+              placeholder="123456789"
+            >
+            <div *ngIf="isFieldInvalid(basicInfoForm, 'phoneNumber')" class="error-message">
+              Wprowadź poprawny numer telefonu (9 cyfr)
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email * <span class="char-limit">(max 100 znaków)</span></label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email"
+              [class.is-invalid]="isFieldInvalid(basicInfoForm, 'email')"
+              placeholder="kontakt@twojserwis.pl"
+              maxlength="100"
+            >
+            <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'email') }}/100</div>
+            <div *ngIf="isFieldInvalid(basicInfoForm, 'email')" class="error-message">
+              Wprowadź poprawny adres email
+            </div>
+          </div>
+        </div>
+
+        <!-- Informacje o serwisie -->
+        <div class="form-section">
+          <h3>Informacje o serwisie</h3>
+          
+          <div class="form-group">
+            <label for="serviceName">Nazwa serwisu * <span class="char-limit">(max 50 znaków)</span></label>
+            <input 
+              type="text" 
+              id="serviceName" 
+              formControlName="serviceName"
+              [class.is-invalid]="isFieldInvalid(basicInfoForm, 'serviceName')"
+              placeholder="Nazwa Twojego serwisu rowerowego"
+              maxlength="50"
+            >
+            <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'serviceName') }}/50</div>
+            <div *ngIf="isFieldInvalid(basicInfoForm, 'serviceName')" class="error-message">
+              Pole wymagane
+            </div>
+          </div>
+
+         <div class="form-group">
+          <label for="suffix">Suffix <span class="char-limit">(max 100 znaków)</span></label>
+          <div class="input-with-status">
+            <input 
+              type="text" 
+              id="suffix" 
+              formControlName="suffix"
+              [class.is-invalid]="isFieldInvalid(basicInfoForm, 'suffix')"
+              [class.is-checking]="isCheckingSuffix"
+              [class.is-available]="suffixCheckResult === 'available'"
+              [class.is-taken]="suffixCheckResult === 'taken'"
+              placeholder="np. serwis-rowerowy-warszawa"
+              maxlength="100"
+            >
+            
+            <!-- Status indicator -->
+            <div class="suffix-status" *ngIf="basicInfoForm.get('suffix')?.value?.trim()">
+              <!-- Loading spinner -->
+              <div *ngIf="isCheckingSuffix" class="status-indicator checking">
+                <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                    <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+                    <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+                <span>Sprawdzanie...</span>
+              </div>
+              
+              <!-- Available -->
+              <div *ngIf="suffixCheckResult === 'available'" class="status-indicator available">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Dostępny</span>
+              </div>
+              
+              <!-- Taken -->
+              <div *ngIf="suffixCheckResult === 'taken'" class="status-indicator taken">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Zajęty</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'suffix') }}/100</div>
+          
+          <!-- Error messages -->
+          <div *ngIf="isFieldInvalid(basicInfoForm, 'suffix')" class="error-message">
+            <span *ngIf="basicInfoForm.get('suffix')?.hasError('maxlength')">Suffix jest za długi</span>
+            <span *ngIf="basicInfoForm.get('suffix')?.hasError('suffixTaken')">Ten suffix jest już zajęty. Wybierz inny.</span>
+          </div>
+          
+          <!-- Help text -->
+          <p class="form-help" *ngIf="!basicInfoForm.get('suffix')?.value">
+            Suffix to opcjonalna, unikalna nazwa identyfikująca Twój serwis w systemie (np. do tworzenia dedykowanych linków).
+          </p>
+        </div>
+
+          <div class="form-group">
+            <label for="website">Strona internetowa <span class="char-limit">(max 255 znaków)</span></label>
+            <input 
+              type="url" 
+              id="website" 
+              formControlName="website"
+              [class.is-invalid]="isFieldInvalid(basicInfoForm, 'website')"
+              placeholder="https://www.twojserwis.pl"
+              maxlength="255"
+            >
+            <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'website') }}/255</div>
+            <div *ngIf="isFieldInvalid(basicInfoForm, 'website')" class="error-message">
+              Wprowadź poprawny adres URL
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Opis serwisu <span class="char-limit">(max 1500 znaków)</span></label>
+            <textarea 
+              id="description" 
+              formControlName="description"
+              [class.is-invalid]="isFieldInvalid(basicInfoForm, 'description')"
+              placeholder="Opisz swój serwis, specjalizacje, godziny pracy, dodatkowe usługi..."
+              maxlength="1500"
+              rows="6"
+            ></textarea>
+            <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'description') }}/1500</div>
+            <div *ngIf="isFieldInvalid(basicInfoForm, 'description')" class="error-message">
+              Opis jest za długi
+            </div>
+          </div>
+        </div>
+
+        <!-- Adres serwisu -->
+        <div class="form-section">
+          <h3>Lokalizacja serwisu</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="street">Ulica <span class="char-limit">(max 255 znaków)</span></label>
+              <input 
+                type="text" 
+                id="street" 
+                formControlName="street"
+                [class.is-invalid]="isFieldInvalid(basicInfoForm, 'street')"
+                placeholder="Nazwa ulicy"
+                maxlength="255"
+              >
+              <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'street') }}/255</div>
+            </div>
+            
+            <div class="form-group form-group-small">
+              <label for="building">Nr budynku <span class="char-limit">(max 20)</span></label>
+              <input 
+                type="text" 
+                id="building" 
+                formControlName="building"
+                [class.is-invalid]="isFieldInvalid(basicInfoForm, 'building')"
+                placeholder="123A"
+                maxlength="20"
+              >
+            </div>
+            
+            <div class="form-group form-group-small">
+              <label for="flat">Nr lokalu <span class="char-limit">(max 20)</span></label>
+              <input 
+                type="text" 
+                id="flat" 
+                formControlName="flat"
+                [class.is-invalid]="isFieldInvalid(basicInfoForm, 'flat')"
+                placeholder="5"
+                maxlength="20"
+              >
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="postalCode">Kod pocztowy <span class="char-limit">(max 10 znaków)</span></label>
+              <input 
+                type="text" 
+                id="postalCode" 
+                formControlName="postalCode"
+                [class.is-invalid]="isFieldInvalid(basicInfoForm, 'postalCode')"
+                placeholder="00-000"
+                maxlength="10"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="city">Miasto <span class="char-limit">(max 100 znaków)</span></label>
+              <input 
+                type="text" 
+                id="city" 
+                formControlName="city"
+                [class.is-invalid]="isFieldInvalid(basicInfoForm, 'city')"
+                placeholder="Kraków"
+                maxlength="100"
+              >
+              <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'city') }}/100</div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- KROK 2: Wybór usług serwisu -->
+    <div *ngIf="currentStep === 2">
+      <div class="info-box">
+        <div class="info-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 12l2 2 4-4"></path>
+            <path d="M21 12c.552 0 1-.448 1-1V9c0-.552-.448-1-1-1H3c-.552 0-1 .448-1 1v2c0 .552.448 1 1 1"></path>
+            <path d="M21 6V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2"></path>
+          </svg>
+        </div>
+        <div class="info-content">
+          <h3>Wybierz na co klient może liczyć w Twoim serwisie</h3>
+          <p>
+            Zaznacz wszystkie usługi i specjalizacje, które oferuje Twój serwis. Pomoże to klientom znaleźć odpowiedni serwis dla swoich potrzeb.
+          </p>
+        </div>
+      </div>
+
+      <div class="coverage-section">
+        <h3>Usługi i specjalizacje serwisu</h3>
+
+        <!-- Loading state -->
+        <div *ngIf="isLoadingCoverages" class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Ładowanie dostępnych usług...</p>
+        </div>
+
+        <!-- Istniejące kategorie -->
+        <div *ngIf="!isLoadingCoverages && availableCoverages">
+          <div *ngFor="let category of categories" class="coverage-category">
+            <h4>{{ category.name }}</h4>
+            
+            <div class="coverage-items">
+              <div *ngFor="let coverage of getCoveragesForCategory(category.id)" class="coverage-item">
+                <label class="coverage-toggle">
+                  <input 
+                    type="checkbox"
+                    [checked]="isCoverageSelected(category.id, coverage.id)"
+                    (change)="toggleCoverage(category.id, coverage.id)"
+                  >
+                  <span class="coverage-slider"></span>
+                  <span class="coverage-name">{{ coverage.name }}</span>
+                </label>
+              </div>
+
+              <!-- Pola na dodatkowe coverage'y -->
+              <div *ngFor="let customCoverage of customCoverages[category.id]; let i = index" class="custom-coverage-item">
+                <input 
+                  type="text"
+                  [(ngModel)]="customCoverages[category.id][i]"
+                  (input)="updateCustomCoverage(category.id, i, $any($event.target).value)"
+                  placeholder="Dodaj własną usługę..."
+                  class="custom-coverage-input"
+                  maxlength="100"
+                >
+                <button 
+                  *ngIf="customCoverages[category.id].length > 1"
+                  type="button" 
+                  class="remove-btn"
+                  (click)="removeCustomCoverage(category.id, i)"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dodawanie nowych kategorii -->
+          <div class="custom-categories">
+            <div *ngFor="let customCategory of customCategories; let categoryIndex = index" class="custom-category">
+              <div class="custom-category-header">
+                <input 
+                  type="text"
+                  [value]="customCategory.name"
+                  (input)="updateCustomCategoryName(categoryIndex, $any($event.target).value)"
+                  placeholder="Nazwa nowej kategorii..."
+                  class="custom-category-name"
+                  maxlength="100"
+                >
+                <button 
+                  type="button" 
+                  class="remove-btn"
+                  (click)="removeCustomCategory(categoryIndex)"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div class="custom-category-items">
+                <div *ngFor="let item of customCategory.coverages; let itemIndex = index" class="custom-coverage-item">
+                  <input 
+                    type="text"
+                    [value]="item"
+                    (input)="updateCustomCategoryItem(categoryIndex, itemIndex, $any($event.target).value)"
+                    placeholder="Dodaj usługę do tej kategorii..."
+                    class="custom-coverage-input"
+                    maxlength="100"
+                  >
+                  <button 
+                    *ngIf="customCategory.coverages.length > 1"
+                    type="button" 
+                    class="remove-btn"
+                    (click)="removeCustomCategoryItem(categoryIndex, itemIndex)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="add-category-btn" (click)="addCustomCategory()">
+              + Nowa kategoria
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
-      <!-- Dane kontaktowe -->
-      <div class="form-section">
-        <h3>Dane kontaktowe</h3>
-        
-        <div class="form-group">
-          <label for="contactPerson">Osoba do kontaktu * <span class="char-limit">(max 50 znaków)</span></label>
-          <input 
-            type="text" 
-            id="contactPerson" 
-            formControlName="contactPerson"
-            [class.is-invalid]="isFieldInvalid('contactPerson')"
-            placeholder="Imię i nazwisko osoby do kontaktu"
-            maxlength="50"
-          >
-          <div class="char-counter">{{ getCharacterCount('contactPerson') }}/50</div>
-          <div *ngIf="isFieldInvalid('contactPerson')" class="error-message">
-            Pole wymagane
-          </div>
+    <!-- KROK 3: Dane logowania -->
+    <div *ngIf="currentStep === 3">
+      <div class="info-box">
+        <div class="info-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <circle cx="12" cy="16" r="1"></circle>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
         </div>
-        
-        <div class="form-group">
-          <label for="phoneNumber">Numer telefonu *</label>
-          <input 
-            type="tel" 
-            id="phoneNumber" 
-            formControlName="phoneNumber"
-            [class.is-invalid]="isFieldInvalid('phoneNumber')"
-            placeholder="123456789"
-          >
-          <div *ngIf="isFieldInvalid('phoneNumber')" class="error-message">
-            Wprowadź poprawny numer telefonu (9 cyfr)
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="email">Email * <span class="char-limit">(max 50 znaków)</span></label>
-          <input 
-            type="email" 
-            id="email" 
-            formControlName="email"
-            [class.is-invalid]="isFieldInvalid('email')"
-            placeholder="kontakt@twojserwis.pl"
-            maxlength="50"
-          >
-          <div class="char-counter">{{ getCharacterCount('email') }}/50</div>
-          <div *ngIf="isFieldInvalid('email')" class="error-message">
-            Wprowadź poprawny adres email
-          </div>
+        <div class="info-content">
+          <h3>Utwórz konto do zarządzania serwisem</h3>
+          <p>
+            Wprowadź hasło, które będzie służyć do logowania się do panelu zarządzania Twoim serwisem. 
+            Będziesz mógł zarządzać cenami, godzinami otwarcia i innymi danymi serwisu.
+          </p>
         </div>
       </div>
 
-      <!-- Informacje o serwisie -->
-      <div class="form-section">
-        <h3>Informacje o serwisie</h3>
-        
-        <div class="form-group">
-          <label for="serviceName">Nazwa serwisu * <span class="char-limit">(max 50 znaków)</span></label>
-          <input 
-            type="text" 
-            id="serviceName" 
-            formControlName="serviceName"
-            [class.is-invalid]="isFieldInvalid('serviceName')"
-            placeholder="Nazwa Twojego serwisu rowerowego"
-            maxlength="50"
-          >
-          <div class="char-counter">{{ getCharacterCount('serviceName') }}/50</div>
-          <div *ngIf="isFieldInvalid('serviceName')" class="error-message">
-            Pole wymagane
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="website">Strona internetowa <span class="char-limit">(max 100 znaków)</span></label>
-          <input 
-            type="url" 
-            id="website" 
-            formControlName="website"
-            [class.is-invalid]="isFieldInvalid('website')"
-            placeholder="https://www.twojserwis.pl"
-            maxlength="100"
-          >
-          <div class="char-counter">{{ getCharacterCount('website') }}/100</div>
-          <div *ngIf="isFieldInvalid('website')" class="error-message">
-            Wprowadź poprawny adres URL
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="description">Opis serwisu <span class="char-limit">(max 1500 znaków)</span></label>
-          <textarea 
-            id="description" 
-            formControlName="description"
-            [class.is-invalid]="isFieldInvalid('description')"
-            placeholder="Opisz swój serwis, specjalizacje, godziny pracy, dodatkowe usługi..."
-            maxlength="1500"
-            rows="6"
-          ></textarea>
-          <div class="char-counter">{{ getCharacterCount('description') }}/1500</div>
-          <div *ngIf="isFieldInvalid('description')" class="error-message">
-            Opis jest za długi
-          </div>
-        </div>
-      </div>
-
-      <!-- Adres serwisu -->
-      <div class="form-section">
-        <h3>Lokalizacja serwisu</h3>
-        
-        <div class="form-row">
+      <form [formGroup]="passwordForm">
+        <div class="form-section">
+          <h3>Dane logowania</h3>
+          
           <div class="form-group">
-            <label for="street">Ulica <span class="char-limit">(max 50 znaków)</span></label>
+            <label for="email-display">Email (login)</label>
             <input 
-              type="text" 
-              id="street" 
-              formControlName="street"
-              [class.is-invalid]="isFieldInvalid('street')"
-              placeholder="Nazwa ulicy"
-              maxlength="50"
+              type="email" 
+              id="email-display"
+              [value]="basicInfoForm.value.email"
+              readonly
+              class="readonly-input"
             >
-            <div class="char-counter">{{ getCharacterCount('street') }}/50</div>
+            <p class="form-help">Ten email będzie służył jako login do Twojego konta</p>
           </div>
-          
-          <div class="form-group form-group-small">
-            <label for="building">Nr budynku <span class="char-limit">(max 10)</span></label>
-            <input 
-              type="text" 
-              id="building" 
-              formControlName="building"
-              [class.is-invalid]="isFieldInvalid('building')"
-              placeholder="123A"
-              maxlength="10"
-            >
-          </div>
-          
-          <div class="form-group form-group-small">
-            <label for="flat">Nr lokalu <span class="char-limit">(max 10)</span></label>
-            <input 
-              type="text" 
-              id="flat" 
-              formControlName="flat"
-              [class.is-invalid]="isFieldInvalid('flat')"
-              placeholder="5"
-              maxlength="10"
-            >
-          </div>
-        </div>
 
-        <div class="form-group">
-          <label for="city">Miasto <span class="char-limit">(max 30 znaków)</span></label>
-          <input 
-            type="text" 
-            id="city" 
-            formControlName="city"
-            [class.is-invalid]="isFieldInvalid('city')"
-            placeholder="Kraków"
-            maxlength="30"
-          >
-          <div class="char-counter">{{ getCharacterCount('city') }}/30</div>
+          <div class="form-group">
+            <label for="password">Hasło * <span class="char-limit">(min. 6 znaków)</span></label>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password"
+              [class.is-invalid]="isFieldInvalid(passwordForm, 'password')"
+              placeholder="Wprowadź hasło"
+            >
+            <div *ngIf="isFieldInvalid(passwordForm, 'password')" class="error-message">
+              Hasło musi mieć co najmniej 6 znaków
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Powtórz hasło *</label>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              formControlName="confirmPassword"
+              [class.is-invalid]="isFieldInvalid(passwordForm, 'confirmPassword')"
+              placeholder="Powtórz hasło"
+            >
+            <div *ngIf="isFieldInvalid(passwordForm, 'confirmPassword')" class="error-message">
+              <span *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">Pole wymagane</span>
+              <span *ngIf="passwordForm.get('confirmPassword')?.hasError('mismatch')">Hasła nie są identyczne</span>
+            </div>
+          </div>
         </div>
-      </div>
-      
-      <div *ngIf="dataLengthExceeded" class="error-message data-length-warning">
-        Wprowadzone dane przekraczają dozwolony limit znaków. Proszę skrócić wprowadzone informacje.
-      </div>
-      
+      </form>
+
       <div class="benefits-box">
-        <h3>Korzyści współpracy z SamaRama</h3>
+        <h3>Co zyskasz po rejestracji?</h3>
         <ul>
-          <li>Dostęp do bazy klientów poszukujących profesjonalnego serwisu rowerowego</li>
-          <li>Zaawansowany system zarządzania serwisem i zamówieniami</li>
+          <li>Panel zarządzania serwisem z możliwością edycji danych</li>
+          <li>System zarządzania cennikiem i godzinami otwarcia</li>
+          <li>Dostęp do statystyk i analiz</li>
+          <li>Bezpośredni kontakt z klientami przez platformę</li>
           <li>Promocja Twojego serwisu na naszej platformie</li>
-          <li>Wsparcie techniczne i marketingowe</li>
-          <li>Elastyczne warunki współpracy</li>
         </ul>
       </div>
+    </div>
+    
+    <!-- Przyciski nawigacji -->
+    <div class="form-actions">
+      <button type="button" class="secondary-btn" (click)="goBack()">
+        {{ currentStep === 1 ? (isExistingService ? 'Anuluj' : 'Wróć do strony głównej') : 'Wstecz' }}
+      </button>
       
-      <div class="form-actions">
-        <button type="button" class="secondary-btn" (click)="goBack()">
-          {{ isExistingService ? 'Anuluj' : 'Wróć do strony głównej' }}
-        </button>
-        <button 
-          type="submit" 
-          class="primary-btn"
-          [disabled]="registrationForm.invalid || isSubmitting"
-        >
-          {{ isSubmitting ? 'Wysyłanie...' : (isExistingService ? 'Wyślij aktualizację' : 'Wyślij zgłoszenie') }}
-        </button>
-      </div>
-    </form>
+      <button 
+        *ngIf="currentStep < 3"
+        type="button" 
+        class="primary-btn"
+        (click)="nextStep()"
+        [disabled]="currentStep === 1 && basicInfoForm.invalid"
+      >
+        Dalej
+      </button>
+
+      <button 
+        *ngIf="currentStep === 3"
+        type="button" 
+        class="primary-btn"
+        (click)="finalizeRegistration()"
+        [disabled]="passwordForm.invalid || isSubmitting"
+      >
+        {{ isSubmitting ? 'Rejestrowanie...' : 'Zarejestruj serwis' }}
+      </button>
+    </div>
   </div>
 
   <!-- Ekran sukcesu po wysłaniu formularza -->
@@ -228,13 +520,14 @@
       </svg>
     </div>
     
-    <h2>Dziękujemy za zgłoszenie!</h2>
+    <h2>Rejestracja zakończona pomyślnie!</h2>
     
     <p class="success-message">
-      {{ isExistingService 
-        ? 'Twoje zgłoszenie aktualizacji zostało przyjęte. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.'
-        : 'Twoje zgłoszenie zostało przyjęte. Nasz zespół skontaktuje się z Tobą w ciągu 2 dni roboczych, aby omówić szczegóły współpracy.'
-      }}
+      Twój serwis został zarejestrowany w systemie CycloPick.
+      Na podany adres e-mail został wysłany link potwierdzający rejestrację.
+      Kliknij w ten link, aby aktywować konto i zalogować się do panelu zarządzania.
+      Dopiero wtedy będziesz mógł uzupełnić informacje, takie jak cennik czy godziny otwarcia.
+
     </p>
     
     <div class="success-actions">

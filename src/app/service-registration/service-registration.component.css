@@ -24,6 +24,88 @@
   margin: 0;
 }
 
+/* Progress indicator */
+.progress-container {
+  margin-bottom: 30px;
+}
+
+.progress-bar {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 0 20px;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  max-width: 200px;
+}
+
+.progress-step::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  right: 50%;
+  height: 2px;
+  width: 100%;
+  background: #e2e8f0;
+  z-index: -1;
+}
+
+.progress-step:last-child::before {
+  display: none;
+}
+
+.progress-step.active::before,
+.progress-step.completed::before {
+  background: #3498db;
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active .step-number {
+  background: #3498db;
+  color: white;
+}
+
+.progress-step.completed .step-number {
+  background: #28a745;
+  color: white;
+}
+
+.step-label {
+  font-size: 0.9rem;
+  color: #64748b;
+  text-align: center;
+  font-weight: 500;
+}
+
+.progress-step.active .step-label {
+  color: #3498db;
+  font-weight: 600;
+}
+
+.progress-step.completed .step-label {
+  color: #28a745;
+  font-weight: 600;
+}
+
 .form-container {
   background: white;
   border-radius: 12px;
@@ -151,6 +233,71 @@
   box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
 }
 
+.readonly-input {
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  cursor: not-allowed;
+}
+
+.form-help {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+}
+
+/* Suffix input styling */
+.suffix-input-container {
+  display: flex;
+  align-items: center;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.suffix-input-container:focus-within {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.suffix-prefix {
+  background: #f8f9fa;
+  color: #495057;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  border-right: 1px solid #dee2e6;
+}
+
+.suffix-input {
+  border: none !important;
+  box-shadow: none !important;
+  flex: 1;
+  margin: 0;
+}
+
+.suffix-info {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #495057;
+}
+
+.suffix-info p {
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+}
+
+.suffix-info p:last-child {
+  margin-bottom: 0;
+}
+
 .char-counter {
   text-align: right;
   font-size: 0.8rem;
@@ -166,13 +313,212 @@
   font-weight: 500;
 }
 
-.data-length-warning {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin: 20px 0;
+/* Coverage section styling */
+.coverage-section {
+  margin-bottom: 30px;
+}
+
+.coverage-section h3 {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 25px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3498db;
+  display: inline-block;
+}
+
+/* Loading state */
+.loading-container {
   text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.coverage-category {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.coverage-category h4 {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.coverage-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.coverage-item {
+  display: flex;
+  align-items: center;
+}
+
+.coverage-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.coverage-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.coverage-slider {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background: #ccc;
+  border-radius: 12px;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.coverage-slider::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.coverage-toggle input[type="checkbox"]:checked + .coverage-slider {
+  background: #3498db;
+}
+
+.coverage-toggle input[type="checkbox"]:checked + .coverage-slider::before {
+  transform: translateX(26px);
+}
+
+.coverage-name {
+  font-weight: 500;
+}
+
+.custom-coverage-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.custom-coverage-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.custom-coverage-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.custom-categories {
+  margin-top: 30px;
+}
+
+.custom-category {
+  background: #fff;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+}
+
+.custom-category-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.custom-category-name {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  background: white;
+}
+
+.custom-category-name:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.custom-category-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.remove-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+  background: #c0392b;
+}
+
+.add-category-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+}
+
+.add-category-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
 }
 
 .benefits-box {
@@ -311,6 +657,19 @@
     font-size: 1.8rem;
   }
   
+  .progress-bar {
+    gap: 20px;
+    padding: 0 10px;
+  }
+  
+  .progress-step {
+    max-width: 150px;
+  }
+  
+  .step-label {
+    font-size: 0.8rem;
+  }
+  
   .form-row {
     flex-direction: column;
   }
@@ -334,6 +693,16 @@
     flex-direction: column;
     gap: 10px;
   }
+
+  .suffix-input-container {
+    flex-direction: column;
+  }
+
+  .suffix-prefix {
+    border-right: none;
+    border-bottom: 1px solid #dee2e6;
+    text-align: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -348,4 +717,162 @@
   .form-section h3 {
     font-size: 1.2rem;
   }
+
+  .progress-bar {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .progress-step::before {
+    display: none;
+  }
+}
+
+.input-with-status {
+  position: relative;
+}
+
+/* Input states */
+.input-with-status input.is-checking {
+  border-color: #fbbf24; /* amber-400 */
+  box-shadow: 0 0 0 1px #fbbf24;
+}
+
+.input-with-status input.is-available {
+  border-color: #10b981; /* emerald-500 */
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.input-with-status input.is-taken {
+  border-color: #ef4444; /* red-500 */
+  box-shadow: 0 0 0 1px #ef4444;
+}
+
+/* Status indicator container */
+.suffix-status {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+/* Status indicator styles */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.status-indicator.checking {
+  color: #d97706; /* amber-600 */
+  background-color: #fef3c7; /* amber-100 */
+}
+
+.status-indicator.available {
+  color: #059669; /* emerald-600 */
+  background-color: #d1fae5; /* emerald-100 */
+}
+
+.status-indicator.taken {
+  color: #dc2626; /* red-600 */
+  background-color: #fee2e2; /* red-100 */
+}
+
+/* Spinner animation */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Adjust input padding when status is shown */
+.input-with-status input:not(:placeholder-shown) {
+  padding-right: 120px;
+}
+
+/* Form help text */
+.form-help {
+  font-size: 12px;
+  color: #6b7280; /* gray-500 */
+  margin-top: 4px;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .status-indicator.checking {
+    color: #f59e0b; /* amber-500 */
+    background-color: #451a03; /* amber-950 */
+  }
+
+  .status-indicator.available {
+    color: #10b981; /* emerald-500 */
+    background-color: #022c22; /* emerald-950 */
+  }
+
+  .status-indicator.taken {
+    color: #f87171; /* red-400 */
+    background-color: #450a0a; /* red-950 */
+  }
+
+  .form-help {
+    color: #9ca3af; /* gray-400 */
+  }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .input-with-status input:not(:placeholder-shown) {
+    padding-right: 100px;
+  }
+  
+  .status-indicator {
+    font-size: 11px;
+    padding: 1px 4px;
+  }
+  
+  .status-indicator span {
+    display: none;
+  }
+  
+  /* Show only icons on mobile */
+  .status-indicator svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Focus states */
+.input-with-status input:focus {
+  outline: none;
+  border-color: #3b82f6; /* blue-500 */
+  box-shadow: 0 0 0 2px #3b82f680; /* blue-500 with opacity */
+}
+
+.input-with-status input:focus.is-checking {
+  border-color: #fbbf24; /* amber-400 */
+  box-shadow: 0 0 0 2px #fbbf2480;
+}
+
+.input-with-status input:focus.is-available {
+  border-color: #10b981; /* emerald-500 */
+  box-shadow: 0 0 0 2px #10b98180;
+}
+
+.input-with-status input:focus.is-taken {
+  border-color: #ef4444; /* red-500 */
+  box-shadow: 0 0 0 2px #ef444480;
 }

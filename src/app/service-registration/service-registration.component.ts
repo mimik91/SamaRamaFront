@@ -317,11 +317,22 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   updateCustomCoverage(categoryId: number, index: number, value: string): void {
     if (this.customCoverages[categoryId]) {
       this.customCoverages[categoryId][index] = value;
-      
-      // Jeśli to ostatnie pole i nie jest puste, dodaj nowe
+    
+
+      // JeÅ›li to ostatnie pole i nie jest puste, dodaj nowe
       if (index === this.customCoverages[categoryId].length - 1 && value.trim()) {
         this.addCustomCoverage(categoryId);
       }
+    }
+  }
+
+  updateCustomCategoryItem(categoryIndex: number, itemIndex: number, value: string): void {
+    this.customCategories[categoryIndex].coverages[itemIndex] = value;
+    
+    // Jeśli to ostatnie pole i nie jest puste, dodaj nowe
+    const coverages = this.customCategories[categoryIndex].coverages;
+    if (itemIndex === coverages.length - 1 && value.trim()) {
+      this.addCustomCategoryItem(categoryIndex);
     }
   }
 
@@ -345,15 +356,11 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
     this.customCategories[categoryIndex].coverages.splice(itemIndex, 1);
   }
 
-  updateCustomCategoryItem(categoryIndex: number, itemIndex: number, value: string): void {
-    this.customCategories[categoryIndex].coverages[itemIndex] = value;
-    
-    // Jeśli to ostatnie pole i nie jest puste, dodaj nowe
-    const coverages = this.customCategories[categoryIndex].coverages;
-    if (itemIndex === coverages.length - 1 && value.trim()) {
-      this.addCustomCategoryItem(categoryIndex);
-    }
-  }
+  trackByFn(index: number, item: any): number {
+  return index; // Używamy indeksu, ponieważ elementy są stringami
+}
+
+  
 
   // Finalizacja rejestracji
   async finalizeRegistration(): Promise<void> {

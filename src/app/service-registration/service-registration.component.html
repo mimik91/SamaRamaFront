@@ -120,66 +120,29 @@
             </div>
           </div>
 
-         <div class="form-group">
-          <label for="suffix">Suffix <span class="char-limit">(max 100 znaków)</span></label>
-          <div class="input-with-status">
-            <input 
-              type="text" 
-              id="suffix" 
-              formControlName="suffix"
-              [class.is-invalid]="isFieldInvalid(basicInfoForm, 'suffix')"
-              [class.is-checking]="isCheckingSuffix"
-              [class.is-available]="suffixCheckResult === 'available'"
-              [class.is-taken]="suffixCheckResult === 'taken'"
-              placeholder="np. serwis-rowerowy-warszawa"
-              maxlength="100"
-            >
-            
-            <!-- Status indicator -->
-            <div class="suffix-status" *ngIf="basicInfoForm.get('suffix')?.value?.trim()">
-              <!-- Loading spinner -->
-              <div *ngIf="isCheckingSuffix" class="status-indicator checking">
-                <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
-                    <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
-                    <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
-                  </circle>
-                </svg>
-                <span>Sprawdzanie...</span>
-              </div>
-              
-              <!-- Available -->
-              <div *ngIf="suffixCheckResult === 'available'" class="status-indicator available">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>Dostępny</span>
-              </div>
-              
-              <!-- Taken -->
-              <div *ngIf="suffixCheckResult === 'taken'" class="status-indicator taken">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>Zajęty</span>
-              </div>
+          <div class="form-group">
+            <label for="suffix">Adres Twojej strony w CycloPick <span class="char-limit">(max 100 znaków)</span></label>
+            <div class="suffix-input-container">
+              <span class="suffix-prefix">www.cyclopick.pl/</span>
+              <input 
+                type="text" 
+                id="suffix" 
+                formControlName="suffix"
+                [class.is-invalid]="isFieldInvalid(basicInfoForm, 'suffix')"
+                placeholder="nazwa-twojego-serwisu"
+                maxlength="100"
+                class="suffix-input"
+              >
+            </div>
+            <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'suffix') }}/100</div>
+            <div class="suffix-info">
+              <p>Pod tym adresem klienci będą mogli bezpośrednio wchodzić na stronę Twojego serwisu w systemie CycloPick.</p>
+              <p>Przykład: <strong>www.cyclopick.pl/bike-service-warszawa</strong></p>
+            </div>
+            <div *ngIf="isFieldInvalid(basicInfoForm, 'suffix')" class="error-message">
+              Wprowadź poprawny sufiks (tylko litery, cyfry i myślniki)
             </div>
           </div>
-          
-          <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'suffix') }}/100</div>
-          
-          <!-- Error messages -->
-          <div *ngIf="isFieldInvalid(basicInfoForm, 'suffix')" class="error-message">
-            <span *ngIf="basicInfoForm.get('suffix')?.hasError('maxlength')">Suffix jest za długi</span>
-            <span *ngIf="basicInfoForm.get('suffix')?.hasError('suffixTaken')">Ten suffix jest już zajęty. Wybierz inny.</span>
-          </div>
-          
-          <!-- Help text -->
-          <p class="form-help" *ngIf="!basicInfoForm.get('suffix')?.value">
-            Suffix to opcjonalna, unikalna nazwa identyfikująca Twój serwis w systemie (np. do tworzenia dedykowanych linków).
-          </p>
-        </div>
 
           <div class="form-group">
             <label for="website">Strona internetowa <span class="char-limit">(max 255 znaków)</span></label>
@@ -331,13 +294,14 @@
                   <span class="coverage-name">{{ coverage.name }}</span>
                 </label>
               </div>
+              
 
               <!-- Pola na dodatkowe coverage'y -->
-              <div *ngFor="let customCoverage of customCoverages[category.id]; let i = index" class="custom-coverage-item">
+              <div *ngFor="let customCoverage of customCoverages[category.id]; let i = index; trackBy: trackByFn" class="custom-coverage-item">
                 <input 
                   type="text"
                   [(ngModel)]="customCoverages[category.id][i]"
-                  (input)="updateCustomCoverage(category.id, i, $any($event.target).value)"
+                  (input)="updateCustomCoverage(category.id, i, customCoverages[category.id][i])"
                   placeholder="Dodaj własną usługę..."
                   class="custom-coverage-input"
                   maxlength="100"
@@ -376,7 +340,7 @@
               </div>
 
               <div class="custom-category-items">
-                <div *ngFor="let item of customCategory.coverages; let itemIndex = index" class="custom-coverage-item">
+                <div *ngFor="let item of customCategory.coverages; let itemIndex = index; trackBy: trackByFn" class="custom-coverage-item">
                   <input 
                     type="text"
                     [value]="item"
@@ -523,11 +487,8 @@
     <h2>Rejestracja zakończona pomyślnie!</h2>
     
     <p class="success-message">
-      Twój serwis został zarejestrowany w systemie CycloPick.
-      Na podany adres e-mail został wysłany link potwierdzający rejestrację.
-      Kliknij w ten link, aby aktywować konto i zalogować się do panelu zarządzania.
-      Dopiero wtedy będziesz mógł uzupełnić informacje, takie jak cennik czy godziny otwarcia.
-
+      Twój serwis został zarejestrowany w systemie CycloPick. Możesz teraz zalogować się do panelu zarządzania 
+      i uzupełnić dodatkowe informacje jak cennik czy godziny otwarcia.
     </p>
     
     <div class="success-actions">

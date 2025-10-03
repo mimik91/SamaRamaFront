@@ -22,7 +22,6 @@ import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
 import { ServiceOrderDetailsComponent } from './service-orders/service-order-details/service-order-details.component';
-import { HomeComponent } from './home/home.component';
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
@@ -32,11 +31,17 @@ import { CourierPanelComponent } from './courier-panel/courier-panel.component';
 import { TermsOfServiceComponent } from './core/terms-of-service.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
 
+// NOWE KOMPONENTY
+import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
+import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-page.component';
+
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
     
-    // Home route - MUSI być bez guard żeby uniknąć pętli!
-    { path: '', component: HomeComponent },
+    // Home route - teraz tylko z mapą
+    { path: '', component: ServicesMapPageComponent },
+    { path: 'mapa', redirectTo: '', pathMatch: 'full' },
+    { path: 'jak-dzialamy', component: HowItWorksPageComponent },
     { path: 'terms-of-service', component: TermsOfServiceComponent, title: 'Regulamin Serwisu'},
     { path: 'privacy-policy', component: PrivacyPolicyComponent, title: 'Polityka Prywatności' },
     
@@ -48,8 +53,7 @@ export const routes: Routes = [
     
     // Transport order - dostępna dla wszystkich (bez guarda)
     { path: 'order-transport', component: TransportOrderFormComponent },
-    { path: 'ordersummary', component: OrderSummaryComponent }, // Dodaj nową ścieżkę
-
+    { path: 'ordersummary', component: OrderSummaryComponent },
     
     // Auth routes - NIGDY nie dodawaj guard do tras logowania!
     { path: 'login', component: LoginComponent },
@@ -58,7 +62,7 @@ export const routes: Routes = [
     { path: 'password-reset-request', component: PasswordResetRequestComponent },
     { path: 'password-reset', component: PasswordResetComponent },
     
-    // Service registration
+    // Service registration - teraz dostępna w menu
     { path: 'register-service', component: ServiceRegistrationComponent },
     
     // About page
@@ -106,20 +110,18 @@ export const routes: Routes = [
     { path: 'admin-orders/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard] },
     { path: 'admin-users', component: AdminUsersComponent, canActivate: [adminGuard] },
 
-
     // Pozostałe admin routes
     { path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard] },
     { path: 'admin-service-packages', component: AdminServicePackagesComponent, canActivate: [adminGuard] },
     { path: 'admin-service-slots', component: AdminServiceSlotsComponent, canActivate: [adminGuard] },
     { path: 'admin-bike-services', component: AdminBikeServicesComponent, canActivate: [adminGuard] },
     
-
     { 
-  path: 'mistrzauta', 
-  component: CourierPanelComponent, 
-  canActivate: [adminGuard],
-  data: { roles: ['ADMIN', 'MODERATOR'] }
-},
+      path: 'mistrzauta', 
+      component: CourierPanelComponent, 
+      canActivate: [adminGuard],
+      data: { roles: ['ADMIN', 'MODERATOR'] }
+    },
     
     // === FALLBACK ===
     

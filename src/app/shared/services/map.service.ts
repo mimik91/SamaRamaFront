@@ -12,6 +12,8 @@ export interface MapPin {
   description?: string;
   phoneNumber?: string;
   email?: string;
+  verified?: boolean;
+  category?: string;
 }
 
 export interface ServiceDetails {
@@ -23,16 +25,61 @@ export interface ServiceDetails {
   postalCode?: string;
   city: string;
   phoneNumber: string;
-  businessPhone?: string;
   email: string;
   latitude?: number;
   longitude?: number;
   description?: string;
   verified: boolean;
-  active: boolean;
+  transportCost?: number;
+  transportAvailable: boolean;
   createdAt: string;
-  lastModifiedAt?: string;
-  transportCost?: number; // DODANE - koszt transportu
+  updatedAt?: string;
+  registered: boolean;
+}
+
+export interface CitySuggestion {
+  name: string;
+  displayName: string;
+  latitude: number;
+  longitude: number;
+  type: string;
+}
+
+export interface CityBounds {
+  sw: { latitude: number; longitude: number };
+  ne: { latitude: number; longitude: number };
+  center: { latitude: number; longitude: number };
+  zoom: number;
+}
+
+export interface MapServicesRequestDto {
+  type?: string;
+  payload?: {
+    website?: string;
+    screen?: string;
+    hostname?: string;
+    language?: string;
+    referrer?: string;
+    title?: string;
+    url?: string;
+  };
+  bounds?: string;
+  page?: number;      // DODANE
+  perPage?: number;   // DODANE
+}
+
+export interface MapServicesResponseDto {
+  data: MapPin[];
+  total: number;
+  totalPages?: number;    // DODANE
+  sortColumn?: string;
+  sortDirection?: string;
+  page?: number;          // DODANE
+  previous?: number;
+  next?: number;          // DODANE
+  perPage?: number;
+  bounds?: any;
+  cache?: string;
 }
 
 @Injectable({
@@ -40,66 +87,172 @@ export interface ServiceDetails {
 })
 export class MapService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/bike-services`;
+  private apiUrl = `${environment.apiUrl}/map`;
 
   /**
-   * Pobiera piny serwisów z backendu
+   * Pobiera serwisy z nowego endpointu MapController (POST /api/map/services)
+   * Z paginacją dla sidebara
    */
-  getPins(): Observable<MapPin[]> {
-    console.log('MapService: Fetching pins from:', `${this.apiUrl}/pins`);
+  getServices(request: MapServicesRequestDto): Observable<MapServicesResponseDto> {
+    console.log('MapService: Fetching services from:', `${this.apiUrl}/services`);
     
-    return this.http.get<MapPin[]>(`${this.apiUrl}/pins`).pipe(
-      tap(pins => {
-        console.log('MapService: Received pins:', pins);
-        // Sprawdź jakość danych
-        const validPins = pins.filter(pin => 
+    const requestBody: MapServicesRequestDto = {
+      type: request.type || 'event',
+      payload: request.payload || {
+        website: window.location.hostname,
+        screen: `${window.screen.width}x${window.screen.height}`,
+        hostname: window.location.hostname,
+        language: navigator.language,
+        referrer: document.referrer,
+        title: document.title,
+        url: window.location.href
+      },
+      bounds: request.bounds,
+      page: request.page || 0,
+      perPage: request.perPage || 25
+    };
+    
+    return this.http.post<MapServicesResponseDto>(`${this.apiUrl}/services`, requestBody).pipe(
+      tap(response => {
+        console.log('MapService: Received services:', response);
+        const validPins = response.data.filter(pin => 
           pin.latitude && pin.longitude && 
           !isNaN(pin.latitude) && !isNaN(pin.longitude)
         );
-        console.log(`MapService: Valid pins: ${validPins.length}/${pins.length}`);
+        console.log(`MapService: Valid pins: ${validPins.length}/${response.data.length}`);
       }),
       catchError(error => {
-        console.error('MapService: Error fetching map pins:', error);
-        
-        // Zwróć pustą tablicę zamiast testowych danych, aby nie spowalniać strony
+        console.error('MapService: Error fetching map services:', error);
+        return of({ data: [], total: 0 });
+      })
+    );
+  }
+
+  /**
+   * Pobiera szczegóły serwisu po ID z MapController
+   */
+  getServiceDetails(id: number): Observable<ServiceDetails | null> {
+    console.log('MapService: Fetching service details for ID:', id);
+    
+    return this.http.get<ServiceDetails>(`${this.apiUrl}/service/${id}`).pipe(
+      tap(details => {
+        console.log('MapService: Received service details:', details);
+      }),
+      catchError(error => {
+        console.error('MapService: Error fetching service details:', error);
+        return of(null);
+      })
+    );
+  }
+
+  /**
+   * Wyszukuje serwisy po nazwie/mieście
+   */
+  searchServices(query: string, bounds?: string, verifiedOnly = false): Observable<MapServicesResponseDto> {
+    console.log('MapService: Searching services with query:', query);
+    
+    const params: any = {
+      query,
+      verifiedOnly: verifiedOnly.toString()
+    };
+    if (bounds) params.bounds = bounds;
+    
+    return this.http.get<MapServicesResponseDto>(`${this.apiUrl}/search`, { params }).pipe(
+      tap(response => {
+        console.log('MapService: Search results:', response);
+      }),
+      catchError(error => {
+        console.error('MapService: Error searching services:', error);
+        return of({ data: [], total: 0 });
+      })
+    );
+  }
+
+  /**
+   * Autocomplete dla serwisów (szybkie wyszukiwanie z limitem)
+   */
+  searchServicesAutocomplete(query: string, limit: number = 10, registeredFirst: boolean = true): Observable<MapServicesResponseDto> {
+    if (!query || query.trim().length < 3) {
+      return of({ data: [], total: 0 });
+    }
+
+    console.log('MapService: Autocomplete search for:', query);
+    
+    const params: any = {
+      q: query.trim(),
+      limit: limit.toString(),
+      registeredFirst: registeredFirst.toString()
+    };
+    
+    return this.http.get<MapServicesResponseDto>(`${this.apiUrl}/services/autocomplete`, { params }).pipe(
+      tap(response => {
+        console.log('MapService: Autocomplete results:', response);
+      }),
+      catchError(error => {
+        console.error('MapService: Error in autocomplete:', error);
+        return of({ data: [], total: 0 });
+      })
+    );
+  }
+
+  /**
+   * Wyszukiwanie miast (autocomplete)
+   */
+  searchCities(query: string): Observable<CitySuggestion[]> {
+    if (!query || query.trim().length < 3) {
+      return of([]);
+    }
+
+    console.log('MapService: Searching cities with query:', query);
+    
+    const params = { q: query.trim() };
+    
+    return this.http.get<CitySuggestion[]>(`${this.apiUrl}/cities/search`, { params }).pipe(
+      tap(cities => {
+        console.log('MapService: Found cities:', cities);
+      }),
+      catchError(error => {
+        console.error('MapService: Error searching cities:', error);
         return of([]);
       })
     );
   }
 
   /**
-   * Pobiera szczegóły serwisu po ID
+   * Pobiera granice miasta
    */
-  getServiceDetails(id: number): Observable<ServiceDetails | null> {
-    console.log('MapService: Fetching service details for ID:', id);
+  getCityBounds(cityName: string): Observable<CityBounds | null> {
+    console.log('MapService: Fetching bounds for city:', cityName);
     
-    return this.http.get<ServiceDetails>(`${this.apiUrl}/${id}`).pipe(
-      tap(details => {
-        console.log('MapService: Received service details:', details);
+    return this.http.get<CityBounds>(`${this.apiUrl}/cities/${encodeURIComponent(cityName)}/bounds`).pipe(
+      tap(bounds => {
+        console.log('MapService: City bounds:', bounds);
       }),
       catchError(error => {
-        console.error('MapService: Error fetching service details:', error);
-        
-        // W przypadku błędu, zwróć przykładowe dane testowe
-        const testService: ServiceDetails = {
-          id: id,
-          name: `Serwis Testowy ${id}`,
-          street: 'ul. Testowa',
-          building: '123',
-          city: 'Kraków',
-          phoneNumber: '123456789',
-          email: 'test@example.com',
-          latitude: 50.0647,
-          longitude: 19.9450,
-          description: 'To jest testowy serwis rowerowy.',
-          verified: true,
-          active: true,
-          createdAt: new Date().toISOString(),
-          transportCost: 70 // DODANE - przykładowy koszt transportu
-        };
-        
-        console.log('MapService: Using test service data:', testService);
-        return of(testService);
+        console.error('MapService: Error fetching city bounds:', error);
+        return of(null);
+      })
+    );
+  }
+
+  /**
+   * Pobiera klastrowane piny z backendu
+   * GET /api/map/pins/clustered?zoom=10&bounds=...
+   */
+  getClusteredPins(zoom: number, bounds?: string, city?: string): Observable<any> {
+    console.log('MapService: Fetching clustered pins with zoom:', zoom);
+    
+    const params: any = { zoom: zoom.toString() };
+    if (bounds) params.bounds = bounds;
+    if (city) params.city = city;
+    
+    return this.http.get<any>(`${this.apiUrl}/pins/clustered`, { params }).pipe(
+      tap(response => {
+        console.log('MapService: Received clustered pins:', response);
+      }),
+      catchError(error => {
+        console.error('MapService: Error fetching clustered pins:', error);
+        return of({ data: [], total: 0 });
       })
     );
   }

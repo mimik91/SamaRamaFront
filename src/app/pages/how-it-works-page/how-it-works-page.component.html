@@ -1,0 +1,174 @@
+<app-home-hero></app-home-hero>
+
+<div class="home-container full-width">
+  <!-- Komunikat o sukcesie po zapisaniu formularza -->
+  <div *ngIf="formSubmitted" class="success-message">
+    <div class="success-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    </div>
+    <div class="success-content">
+      <h3>Zamówienie wysłane pomyślnie!</h3>
+      <p>Twoje zamówienie zostało przyjęte. Wkrótce skontaktujemy się z Tobą w sprawie szczegółów.</p>
+      <div class="success-actions">
+        <button type="button" class="reset-btn" (click)="resetForm()">Nowe zamówienie</button>
+        <button type="button" class="login-btn" (click)="navigateTo('/login')">Przejdź do logowania</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sekcja "Jak działamy" z ograniczoną szerokością -->
+  <section id="how-it-works" class="content-section how-it-works-limited">
+    <h2>Jak działamy</h2>
+    
+    <!-- Przyciski przełączania widoku -->
+    <div class="view-switcher">
+      <button 
+        type="button" 
+        class="view-btn hero-btn" 
+        [class.active]="activeHowItWorksView === 'transport'"
+        (click)="switchHowItWorksView('transport')"
+      >
+        Transport Rowerów
+      </button>
+      <!-- Można odkomentować jak będzie potrzeba
+      <button 
+        type="button" 
+        class="view-btn hero-btn" 
+        [class.active]="activeHowItWorksView === 'service'"
+        (click)="switchHowItWorksView('service')"
+      >
+        Serwis
+      </button>
+      -->
+    </div>
+    
+    <h1>Wieczorem odbieramy Twój rower i zawozimy do serwisu, w dniu zakończenia serwisu odbieramy rower od serwisu i wieczorem odstawiamy go z powrotem pod Twój dom.</h1>
+    
+    <div class="steps-container">
+      <div *ngFor="let step of currentSteps" class="step-card">
+        <div class="step-number">{{ step.number }}</div>
+        <div class="step-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.class]="'feather feather-' + step.icon">
+            <ng-container [ngSwitch]="step.icon">
+              <ng-container *ngSwitchCase="'file-text'">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </ng-container>
+              <ng-container *ngSwitchCase="'package'">
+                <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </ng-container>
+              <ng-container *ngSwitchCase="'calendar'">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </ng-container>
+              <ng-container *ngSwitchCase="'clock'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </ng-container>
+              <ng-container *ngSwitchCase="'tool'">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+              </ng-container>
+              <ng-container *ngSwitchCase="'truck'">
+                <rect x="1" y="3" width="15" height="13"></rect>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+              </ng-container>
+              <ng-container *ngSwitchCase="'credit-card'">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+              </ng-container>
+            </ng-container>
+          </svg>
+        </div>
+        <div class="step-content">
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Przyciski akcji -->
+    <div class="how-it-works-actions">
+      <button 
+        type="button" 
+        class="hero-btn learn-more-btn" 
+        (click)="goToMap()"
+      >
+        Zobacz mapę serwisów
+      </button>
+    </div>
+    
+    <div class="process-summary">
+      <p style="font-weight: normal !important;">Proste, wygodne i bezproblemowe!</p>
+    </div>
+
+    <div class="service-area-info">
+      <div class="service-area-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+      </div>
+      <div class="service-area-text">
+        <strong>Obszar działania:</strong> Kraków, Węgrzce, Zielonki, Bosutów, Bibice, Batowice, Michałowice, Dziekanowice, Raciborowice, Boleń
+      </div>
+    </div>
+  </section>
+
+  <!-- Sekcja kontaktowa -->
+    <div class="contact-info-container">
+      <div class="contact-info-item">
+        <div class="contact-icon email-icon">
+          <a href="mailto:cyclopick@gmail.com" 
+             aria-label="Wyślij email na adres cyclopick@gmail.com"
+             title="Wyślij email: cyclopick@gmail.com">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </a>
+        </div>
+        <div class="contact-text">cyclopick{{'@'}}gmail.com</div>
+      </div>
+      
+      <div class="contact-info-item">
+        <div class="contact-icon phone-icon">
+          <a href="tel:+48667757920" 
+             aria-label="Zadzwoń pod numer +48 667 757 920"
+             title="Zadzwoń: +48 667 757 920">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+          </a>
+        </div>
+        <div class="contact-text">+48 667 757 920</div>
+      </div>
+      
+      <div class="contact-info-item">
+        <div class="contact-icon facebook-icon">
+          <a href="https://www.facebook.com/cyclopick" 
+             target="_blank" 
+             rel="noopener noreferrer" 
+             aria-label="Odwiedź naszą stronę na Facebooku"
+             title="Znajdź nas na Facebooku">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+            </svg>
+          </a>
+        </div>
+        <div class="contact-text">Facebook</div>
+      </div>
+    </div>
+</div>

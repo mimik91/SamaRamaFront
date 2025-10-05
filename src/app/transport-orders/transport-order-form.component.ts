@@ -5,7 +5,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Va
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../core/notification.service';
 import { TransportOrderService, TransportOrderRequest } from './transport-order.service';
-import { MapService } from '../shared/services/map.service';
+import { MapService } from '../pages/services-map-page/services/map.service';
 import { EnumerationService } from '../core/enumeration.service';
 
 export interface BicycleFormData {

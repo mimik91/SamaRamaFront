@@ -31,100 +31,254 @@ import { CourierPanelComponent } from './courier-panel/courier-panel.component';
 import { TermsOfServiceComponent } from './core/terms-of-service.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
 
-// NOWE KOMPONENTY
+// REFACTORED COMPONENTS - NEW STRUCTURE
 import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
 import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-page.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
     
-    // Home route - teraz tylko z mapą
-    { path: '', component: ServicesMapPageComponent },
+    // Home route - REFACTORED: Nowy komponent z architekturą Smart/Dumb
+    { 
+      path: '', 
+      component: ServicesMapPageComponent,
+      title: 'Mapa Serwisów Rowerowych - Napravelo'
+    },
+    
+    // Aliasy dla mapy
     { path: 'mapa', redirectTo: '', pathMatch: 'full' },
-    { path: 'jak-dzialamy', component: HowItWorksPageComponent },
-    { path: 'terms-of-service', component: TermsOfServiceComponent, title: 'Regulamin Serwisu'},
-    { path: 'privacy-policy', component: PrivacyPolicyComponent, title: 'Polityka Prywatności' },
+    { path: 'mapa-serwisow', redirectTo: '', pathMatch: 'full' },
+    { path: 'services-map', redirectTo: '', pathMatch: 'full' },
+    
+    // Jak działamy
+    { 
+      path: 'jak-dzialamy', 
+      component: HowItWorksPageComponent,
+      title: 'Jak Działamy - Napravelo'
+    },
+    
+    // Legal pages
+    { 
+      path: 'terms-of-service', 
+      component: TermsOfServiceComponent, 
+      title: 'Regulamin Serwisu - Napravelo'
+    },
+    { 
+      path: 'privacy-policy', 
+      component: PrivacyPolicyComponent, 
+      title: 'Polityka Prywatności - Napravelo' 
+    },
     
     // Pricing route - dostępna dla wszystkich
-    { path: 'cennik', component: PricingComponent },
+    { 
+      path: 'cennik', 
+      component: PricingComponent,
+      title: 'Cennik - Napravelo'
+    },
     
     // Guest order route - dostępna dla niezalogowanych
-    { path: 'guest-order', component: GuestServiceOrderComponent },
+    { 
+      path: 'guest-order', 
+      component: GuestServiceOrderComponent,
+      title: 'Zamów Serwis jako Gość - Napravelo'
+    },
     
     // Transport order - dostępna dla wszystkich (bez guarda)
-    { path: 'order-transport', component: TransportOrderFormComponent },
-    { path: 'ordersummary', component: OrderSummaryComponent },
+    { 
+      path: 'order-transport', 
+      component: TransportOrderFormComponent,
+      title: 'Zamów Transport - Napravelo'
+    },
+    { 
+      path: 'ordersummary', 
+      component: OrderSummaryComponent,
+      title: 'Podsumowanie Zamówienia - Napravelo'
+    },
     
     // Auth routes - NIGDY nie dodawaj guard do tras logowania!
-    { path: 'login', component: LoginComponent },
-    { path: 'register', component: RegistrationComponent, data: { userType: 'client' } },
-    { path: 'verify-account', component: VerificationComponent },
-    { path: 'password-reset-request', component: PasswordResetRequestComponent },
-    { path: 'password-reset', component: PasswordResetComponent },
+    { 
+      path: 'login', 
+      component: LoginComponent,
+      title: 'Logowanie - Napravelo'
+    },
+    { 
+      path: 'register', 
+      component: RegistrationComponent, 
+      data: { userType: 'client' },
+      title: 'Rejestracja - Napravelo'
+    },
+    { 
+      path: 'verify-account', 
+      component: VerificationComponent,
+      title: 'Weryfikacja Konta - Napravelo'
+    },
+    { 
+      path: 'password-reset-request', 
+      component: PasswordResetRequestComponent,
+      title: 'Reset Hasła - Napravelo'
+    },
+    { 
+      path: 'password-reset', 
+      component: PasswordResetComponent,
+      title: 'Nowe Hasło - Napravelo'
+    },
     
     // Service registration - teraz dostępna w menu
-    { path: 'register-service', component: ServiceRegistrationComponent },
+    { 
+      path: 'register-service', 
+      component: ServiceRegistrationComponent,
+      title: 'Zarejestruj Serwis - Napravelo'
+    },
     
     // About page
-    { path: 'about', component: AboutUsComponent },
+    { 
+      path: 'about', 
+      component: AboutUsComponent,
+      title: 'O Nas - Napravelo'
+    },
     
     // === DASHBOARD ROUTES (dla przekierowań po logowaniu) ===
     
-    // NOWA TRASA: Dashboard dla klientów - bez bezpośredniego dostępu do guard-sensitive data
+    // Dashboard dla klientów
     { 
       path: 'client-dashboard', 
-      component: BicyclesListComponent, // lub stwórz DashboardComponent
+      component: BicyclesListComponent,
       canActivate: [clientGuard],
-      data: { roles: ['CLIENT'] }
+      data: { roles: ['CLIENT'] },
+      title: 'Panel Klienta - Napravelo'
     },
     
-    // NOWA TRASA: Dashboard dla adminów
+    // Dashboard dla adminów
     { 
       path: 'admin-dashboard', 
       component: AdminDashboardComponent, 
       canActivate: [adminGuard],
-      data: { roles: ['ADMIN', 'MODERATOR'] }
+      data: { roles: ['ADMIN', 'MODERATOR'] },
+      title: 'Panel Administracyjny - Napravelo'
     },
     
     // === CHRONIONE TRASY KLIENTÓW ===
     
-    { path: 'bicycles', component: BicyclesListComponent, canActivate: [clientGuard] },
-    { path: 'bicycles/add', component: BicycleFormComponent, canActivate: [clientGuard] },
-    { path: 'bicycles/:id', component: BicycleDetailsComponent, canActivate: [clientGuard], data: { RenderMode: 'client' } },
+    { 
+      path: 'bicycles', 
+      component: BicyclesListComponent, 
+      canActivate: [clientGuard],
+      title: 'Moje Rowery - Napravelo'
+    },
+    { 
+      path: 'bicycles/add', 
+      component: BicycleFormComponent, 
+      canActivate: [clientGuard],
+      title: 'Dodaj Rower - Napravelo'
+    },
+    { 
+      path: 'bicycles/:id', 
+      component: BicycleDetailsComponent, 
+      canActivate: [clientGuard], 
+      data: { RenderMode: 'client' },
+      title: 'Szczegóły Roweru - Napravelo'
+    },
     
     // Service order routes for clients
-    { path: 'order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard] },
-    { path: 'bicycles/:id/order-service', component: ServiceOrderFormComponent, canActivate: [clientGuard] }, // backward compatibility
-    { path: 'service-appointments', component: ServiceAppointmentsComponent, canActivate: [clientGuard] },
-    { path: 'service-appointments/:id', component: ServiceOrderDetailsComponent, canActivate: [clientGuard], data: { RenderMode: 'client' } },
+    { 
+      path: 'order-service', 
+      component: ServiceOrderFormComponent, 
+      canActivate: [clientGuard],
+      title: 'Zamów Serwis - Napravelo'
+    },
+    { 
+      path: 'bicycles/:id/order-service', 
+      component: ServiceOrderFormComponent, 
+      canActivate: [clientGuard],
+      title: 'Zamów Serwis - Napravelo'
+    },
+    { 
+      path: 'service-appointments', 
+      component: ServiceAppointmentsComponent, 
+      canActivate: [clientGuard],
+      title: 'Moje Wizyty - Napravelo'
+    },
+    { 
+      path: 'service-appointments/:id', 
+      component: ServiceOrderDetailsComponent, 
+      canActivate: [clientGuard], 
+      data: { RenderMode: 'client' },
+      title: 'Szczegóły Wizyty - Napravelo'
+    },
     
     // Account route - dostępna dla zalogowanych użytkowników
-    { path: 'account', component: AccountComponent, canActivate: [authGuard] },
+    { 
+      path: 'account', 
+      component: AccountComponent, 
+      canActivate: [authGuard],
+      title: 'Moje Konto - Napravelo'
+    },
     
     // === CHRONIONE TRASY ADMINÓW ===
     
-    { path: 'admin', component: AdminPanelComponent, canActivate: [adminGuard] },
+    { 
+      path: 'admin', 
+      component: AdminPanelComponent, 
+      canActivate: [adminGuard],
+      title: 'Panel Admina - Napravelo'
+    },
     
     // Admin Orders Routes
-    { path: 'admin-orders', component: AdminOrdersComponent, canActivate: [adminGuard] },
-    { path: 'admin-orders/:id', component: AdminOrderDetailsComponent, canActivate: [adminGuard] },
-    { path: 'admin-users', component: AdminUsersComponent, canActivate: [adminGuard] },
+    { 
+      path: 'admin-orders', 
+      component: AdminOrdersComponent, 
+      canActivate: [adminGuard],
+      title: 'Zamówienia - Admin - Napravelo'
+    },
+    { 
+      path: 'admin-orders/:id', 
+      component: AdminOrderDetailsComponent, 
+      canActivate: [adminGuard],
+      title: 'Szczegóły Zamówienia - Admin - Napravelo'
+    },
+    { 
+      path: 'admin-users', 
+      component: AdminUsersComponent, 
+      canActivate: [adminGuard],
+      title: 'Użytkownicy - Admin - Napravelo'
+    },
 
     // Pozostałe admin routes
-    { path: 'admin-enumerations', component: AdminEnumerationsManagerComponent, canActivate: [adminGuard] },
-    { path: 'admin-service-packages', component: AdminServicePackagesComponent, canActivate: [adminGuard] },
-    { path: 'admin-service-slots', component: AdminServiceSlotsComponent, canActivate: [adminGuard] },
-    { path: 'admin-bike-services', component: AdminBikeServicesComponent, canActivate: [adminGuard] },
+    { 
+      path: 'admin-enumerations', 
+      component: AdminEnumerationsManagerComponent, 
+      canActivate: [adminGuard],
+      title: 'Słowniki - Admin - Napravelo'
+    },
+    { 
+      path: 'admin-service-packages', 
+      component: AdminServicePackagesComponent, 
+      canActivate: [adminGuard],
+      title: 'Pakiety Serwisowe - Admin - Napravelo'
+    },
+    { 
+      path: 'admin-service-slots', 
+      component: AdminServiceSlotsComponent, 
+      canActivate: [adminGuard],
+      title: 'Sloty Czasowe - Admin - Napravelo'
+    },
+    { 
+      path: 'admin-bike-services', 
+      component: AdminBikeServicesComponent, 
+      canActivate: [adminGuard],
+      title: 'Serwisy - Admin - Napravelo'
+    },
     
     { 
       path: 'mistrzauta', 
       component: CourierPanelComponent, 
       canActivate: [adminGuard],
-      data: { roles: ['ADMIN', 'MODERATOR'] }
+      data: { roles: ['ADMIN', 'MODERATOR'] },
+      title: 'Panel Kuriera - Napravelo'
     },
     
     // === FALLBACK ===
     
-    // Wildcard route - ZAWSZE na końcu, przekieruj na HOME (nie na chronioną trasę!)
+    // Wildcard route - ZAWSZE na końcu
     { path: '**', redirectTo: '' }
 ];

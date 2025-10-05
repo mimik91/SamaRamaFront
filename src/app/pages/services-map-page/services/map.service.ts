@@ -1,103 +1,18 @@
+// src/app/pages/services-map-page/services/map.service.ts
+
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of, tap } from 'rxjs';
-import { environment } from '../../core/api-config';
-
-export interface MapPin {
-  id: number;
-  name: string;
-  latitude: number;
-  longitude: number;
-  address?: string;
-  description?: string;
-  phoneNumber?: string;
-  email?: string;
-  verified?: boolean;
-  category?: string;
-}
-
-export interface ServiceDetails {
-  id: number;
-  name: string;
-  street: string;
-  building: string;
-  flat?: string;
-  postalCode?: string;
-  city: string;
-  phoneNumber: string;
-  email: string;
-  latitude?: number;
-  longitude?: number;
-  description?: string;
-  verified: boolean;
-  transportCost?: number;
-  transportAvailable: boolean;
-  createdAt: string;
-  updatedAt?: string;
-  registered: boolean;
-}
-
-export interface CitySuggestion {
-  name: string;
-  displayName: string;
-  latitude: number;
-  longitude: number;
-  type: string;
-}
-
-export interface CityBounds {
-  sw: { latitude: number; longitude: number };
-  ne: { latitude: number; longitude: number };
-  center: { latitude: number; longitude: number };
-  zoom: number;
-}
-
-export interface BikeRepairCoverageDto {
-  id: number;
-  name: string;
-  categoryId: number;
-}
-
-export interface BikeRepairCoverageCategoryDto {
-  id: number;
-  name: string;
-  displayOrder: number;
-}
-
-export interface BikeRepairCoverageMapDto {
-  coveragesByCategory: { [key: string]: BikeRepairCoverageDto[] };
-}
-
-export interface MapServicesRequestDto {
-  type?: string;
-  payload?: {
-    website?: string;
-    screen?: string;
-    hostname?: string;
-    language?: string;
-    referrer?: string;
-    title?: string;
-    url?: string;
-  };
-  bounds?: string;
-  page?: number;
-  perPage?: number;
-  coverageIds?: number[];
-}
-
-export interface MapServicesResponseDto {
-  data: MapPin[];
-  total: number;
-  totalPages?: number;
-  sortColumn?: string;
-  sortDirection?: string;
-  page?: number;
-  previous?: number;
-  next?: number;
-  perPage?: number;
-  bounds?: any;
-  cache?: string;
-}
+import { environment } from '../../../core/api-config';
+import {
+  MapPin,
+  ServiceDetails,
+  CitySuggestion,
+  CityBounds,
+  BikeRepairCoverageMapDto,
+  MapServicesRequestDto,
+  MapServicesResponseDto
+} from './map.models';
 
 @Injectable({
   providedIn: 'root'
@@ -111,15 +26,7 @@ export class MapService {
     
     const requestBody: MapServicesRequestDto = {
       type: request.type || 'event',
-      payload: request.payload || {
-        website: window.location.hostname,
-        screen: `${window.screen.width}x${window.screen.height}`,
-        hostname: window.location.hostname,
-        language: navigator.language,
-        referrer: document.referrer,
-        title: document.title,
-        url: window.location.href
-      },
+      payload: request.payload || this.getDefaultPayload(),
       bounds: request.bounds,
       page: request.page || 0,
       perPage: request.perPage || 25,
@@ -152,26 +59,6 @@ export class MapService {
       catchError(error => {
         console.error('MapService: Error fetching service details:', error);
         return of(null);
-      })
-    );
-  }
-
-  searchServices(query: string, bounds?: string, verifiedOnly = false): Observable<MapServicesResponseDto> {
-    console.log('MapService: Searching services with query:', query);
-    
-    const params: any = {
-      query,
-      verifiedOnly: verifiedOnly.toString()
-    };
-    if (bounds) params.bounds = bounds;
-    
-    return this.http.get<MapServicesResponseDto>(`${this.apiUrl}/search`, { params }).pipe(
-      tap(response => {
-        console.log('MapService: Search results:', response);
-      }),
-      catchError(error => {
-        console.error('MapService: Error searching services:', error);
-        return of({ data: [], total: 0 });
       })
     );
   }
@@ -266,17 +153,19 @@ export class MapService {
     );
   }
 
-  filterByCoverages(coverageIds: number[]): Observable<MapServicesResponseDto> {
-    console.log('MapService: Filtering by coverages:', coverageIds);
+  private getDefaultPayload(): any {
+    if (typeof window === 'undefined') {
+      return {};
+    }
     
-    return this.http.post<MapServicesResponseDto>(`${this.apiUrl}/filter`, { coverageIds }).pipe(
-      tap(response => {
-        console.log('MapService: Filtered services:', response);
-      }),
-      catchError(error => {
-        console.error('MapService: Error filtering services:', error);
-        return of({ data: [], total: 0 });
-      })
-    );
+    return {
+      website: window.location.hostname,
+      screen: `${window.screen.width}x${window.screen.height}`,
+      hostname: window.location.hostname,
+      language: navigator.language,
+      referrer: document.referrer,
+      title: document.title,
+      url: window.location.href
+    };
   }
 }

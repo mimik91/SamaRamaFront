@@ -1,0 +1,81 @@
+<!-- src/app/pages/services-map-page/components/services-list/services-list.component.html -->
+
+<div class="services-list-container">
+  <!-- Header with results info -->
+  <div class="results-info" *ngIf="services.length > 0 || (!loading && !error)">
+    <p class="results-count">
+      <strong>{{ totalServices }}</strong> {{ totalServices === 1 ? 'serwis' : 'serwisów' }} • Strona {{ currentPage + 1 }}/{{ totalPages }}
+    </p>
+  </div>
+
+  <!-- Services list with scroll -->
+  <div class="services-list" (scroll)="onScroll($event)">
+    <!-- Initial loading state -->
+    <div *ngIf="loading && services.length === 0" class="service-item">
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Ładowanie serwisów...</p>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error" class="service-item error-state">
+      <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <p>Nie udało się załadować serwisów</p>
+        <button class="retry-button" (click)="onRetry()">Spróbuj ponownie</button>
+      </div>
+    </div>
+
+    <!-- Service items -->
+    <div 
+      *ngFor="let service of services; trackBy: trackByServiceId"
+      class="service-item"
+      [class.selected]="selectedServiceId === service.id"
+      (click)="onServiceClick(service)"
+    >
+      <div class="service-header">
+        <h3 class="service-name">{{ service.name }}</h3>
+      </div>
+
+      <div class="service-address" *ngIf="buildAddress(service)">
+        <span>📍</span>
+        <span>{{ buildAddress(service) }}</span>
+      </div>
+
+      <div class="service-phone" *ngIf="service.phoneNumber">
+        <span>📞</span>
+        <a href="tel:{{ service.phoneNumber }}">{{ service.phoneNumber }}</a>
+      </div>
+
+      <div class="service-details" *ngIf="showServiceTags(service)">
+        <span class="service-tag verified" *ngIf="isVerified(service)">
+          ✅ Zweryfikowany
+        </span>
+      </div>
+
+      <div class="service-actions">
+        <button 
+          class="service-action-btn primary"
+          (click)="onViewDetails(service, $event)"
+        >
+          Zobacz szczegóły
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="services.length === 0 && !loading && !error" class="service-item">
+      <div class="empty-container">
+        <div class="empty-icon">🔍</div>
+        <p>Nie znaleziono serwisów dla podanych kryteriów</p>
+      </div>
+    </div>
+
+    <!-- Loading more indicator -->
+    <div *ngIf="loadingMore && services.length > 0" class="loading-more">
+      <div class="loading-spinner"></div>
+      <p>Ładowanie kolejnych serwisów...</p>
+    </div>
+  </div>
+</div>

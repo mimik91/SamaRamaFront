@@ -1,0 +1,104 @@
+<!-- src/app/pages/services-map-page/services-map-page.component.html -->
+
+<div class="map-page-layout">
+  <!-- Fixed header with search and filters - MOBILE ONLY -->
+  <div class="fixed-header" *ngIf="isMobileView">
+    <app-search-filters
+      [isMobileView]="isMobileView"
+      [citySuggestions]="citySuggestions"
+      [serviceSuggestions]="serviceSuggestions"
+      [citySearchLoading]="citySearchLoading"
+      [serviceSearchLoading]="serviceSearchLoading"
+      [coverageCategories]="coverageCategories"
+      [filtersState]="filtersState"
+      (citySearchChanged)="onCitySearchChanged($event)"
+      (citySelected)="onCitySelected($event)"
+      (cityClearRequested)="onCityClearRequested()"
+      (serviceSearchChanged)="onServiceSearchChanged($event)"
+      (serviceSelected)="onServiceSelected($event)"
+      (serviceClearRequested)="onServiceClearRequested()"
+      (verifiedOnlyChanged)="onVerifiedOnlyChanged($event)"
+      (coverageToggled)="onCoverageToggled($event)"
+      (advancedFiltersApplied)="onAdvancedFiltersApplied()"
+      (advancedFiltersCleared)="onAdvancedFiltersCleared()"
+    ></app-search-filters>
+
+    <!-- Mobile view toggle button -->
+    <div class="mobile-view-toggle">
+      <button 
+        class="view-toggle-btn" 
+        (click)="toggleView()"
+      >
+        <span *ngIf="showMapView">📋 Lista ({{ totalServices }})</span>
+        <span *ngIf="!showMapView">🗺️ Mapa</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="content-area">
+    <!-- Sidebar with services list -->
+    <div class="sidebar" [class.hidden]="isMobileView && showMapView">
+      <!-- Sidebar header -->
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Serwisy rowerowe</h2>
+        <p class="sidebar-subtitle">Znajdź najbliższy serwis</p>
+      </div>
+
+      <!-- Search and filters - DESKTOP ONLY -->
+      <div class="sidebar-search-filters" *ngIf="!isMobileView">
+        <app-search-filters
+          [isMobileView]="isMobileView"
+          [citySuggestions]="citySuggestions"
+          [serviceSuggestions]="serviceSuggestions"
+          [citySearchLoading]="citySearchLoading"
+          [serviceSearchLoading]="serviceSearchLoading"
+          [coverageCategories]="coverageCategories"
+          [filtersState]="filtersState"
+          (citySearchChanged)="onCitySearchChanged($event)"
+          (citySelected)="onCitySelected($event)"
+          (cityClearRequested)="onCityClearRequested()"
+          (serviceSearchChanged)="onServiceSearchChanged($event)"
+          (serviceSelected)="onServiceSelected($event)"
+          (serviceClearRequested)="onServiceClearRequested()"
+          (verifiedOnlyChanged)="onVerifiedOnlyChanged($event)"
+          (coverageToggled)="onCoverageToggled($event)"
+          (advancedFiltersApplied)="onAdvancedFiltersApplied()"
+          (advancedFiltersCleared)="onAdvancedFiltersCleared()"
+        ></app-search-filters>
+      </div>
+
+      <!-- Services list -->
+      <app-services-list
+        [services]="services"
+        [selectedServiceId]="selectedServiceId"
+        [loading]="loadingServices"
+        [loadingMore]="loadingMore"
+        [hasMoreServices]="hasMoreServices"
+        [error]="servicesError"
+        [totalServices]="totalServices"
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        (serviceSelected)="onServiceSelected($event)"
+        (serviceDetailsRequested)="onServiceDetailsRequested($event)"
+        (scrollEnd)="onScrollEnd()"
+        (retryRequested)="onRetryRequested()"
+      ></app-services-list>
+    </div>
+
+    <!-- Map container -->
+    <div class="map-container" [class.hidden]="isMobileView && !showMapView">
+      <app-map
+        [pins]="mapPins"
+        [selectedPinId]="selectedServiceId"
+        [initialView]="currentMapView"
+        [visible]="mapVisible"
+        (mapReady)="onMapReady()"
+        (mapMoved)="onMapMoved($event)"
+        (pinClicked)="onPinClicked($event)"
+        (clusterClicked)="onClusterClicked($event)"
+        (mapError)="onMapError($event)"
+      ></app-map>
+    </div>
+  </div>
+</div>

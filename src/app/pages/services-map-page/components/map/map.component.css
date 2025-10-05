@@ -1,0 +1,213 @@
+/* src/app/pages/services-map-page/components/map/map.component.css */
+
+.map-component-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.map-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* ============ MAP PLACEHOLDER STATES ============ */
+
+.map-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: #f8fafc;
+  color: #64748b;
+  text-align: center;
+  padding: 20px;
+}
+
+.map-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+  opacity: 0.6;
+}
+
+.map-placeholder p {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  color: #64748b;
+}
+
+.show-map-button {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(43, 130, 173, 0.2);
+}
+
+.show-map-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(43, 130, 173, 0.3);
+}
+
+/* ============ LOADING STATE ============ */
+
+.loading-spinner {
+  border: 3px solid #f1f5f9;
+  border-radius: 50%;
+  border-top: 3px solid #2B82AD;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ============ ERROR STATE ============ */
+
+.error-state {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.error-state p {
+  color: #dc2626;
+}
+
+.retry-button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #2B82AD;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background-color: #1e5f82;
+  transform: translateY(-1px);
+}
+
+/* ============ ACTUAL MAP STYLES ============ */
+
+#services-map {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+:global(.leaflet-container) {
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
+  font-family: inherit !important;
+}
+
+:global(.leaflet-popup-content-wrapper) {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+  padding: 0 !important;
+  max-width: 380px !important;
+  border: none !important;
+}
+
+:global(.leaflet-popup-content) {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+  font-family: inherit !important;
+}
+
+:global(.leaflet-popup-tip) {
+  background: white !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+:global(.custom-service-marker) {
+  background: transparent !important;
+  border: none !important;
+}
+
+:global(.custom-marker-icon) {
+  background-color: #2B82AD;
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 16px rgba(43, 130, 173, 0.4);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  transform: rotate(-45deg);
+  position: relative;
+}
+
+:global(.custom-marker-icon svg) {
+  transform: rotate(45deg);
+  width: 20px;
+  height: 20px;
+}
+
+:global(.custom-marker-icon:hover) {
+  transform: rotate(-45deg) scale(1.15);
+  box-shadow: 0 6px 20px rgba(43, 130, 173, 0.5);
+}
+
+:global(.custom-marker-icon.selected) {
+  background-color: #e11d48;
+  transform: rotate(-45deg) scale(1.25);
+  z-index: 1000;
+  box-shadow: 0 6px 24px rgba(225, 29, 72, 0.6);
+}
+
+:global(.custom-marker-icon.selected:hover) {
+  transform: rotate(-45deg) scale(1.3);
+}
+
+:global(.cluster-marker-svg) {
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+:global(.cluster-marker-svg svg) {
+  display: block !important;
+  transition: transform 0.2s ease !important;
+}
+
+:global(.cluster-marker-svg:hover svg) {
+  transform: scale(1.15) !important;
+}
+
+:global(.leaflet-marker-icon) {
+  transition: transform 0.2s ease, filter 0.2s ease !important;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+:global(.leaflet-marker-icon:hover) {
+  transform: scale(1.15) !important;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+  z-index: 10000 !important;
+}

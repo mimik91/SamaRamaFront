@@ -1,14 +1,6 @@
-<div class="map-layout">
-  <button class="mobile-toggle" (click)="toggleSidebar()" *ngIf="isBrowser">
-    {{ sidebarOpen ? '✕' : '☰' }} Lista serwisów
-  </button>
-
-  <div class="sidebar" [class.open]="sidebarOpen">
-    <div class="sidebar-header">
-      <h2 class="sidebar-title">Serwisy rowerowe</h2>
-      <p class="sidebar-subtitle">Znajdź najbliższy serwis</p>
-    </div>
-
+<div class="map-layout" [class.mobile-view]="isMobileView">
+  <!-- Fixed search and filters header - ONLY on mobile -->
+  <div class="fixed-header" *ngIf="isMobileView">
     <div class="search-section">
       <div class="search-box">
         <label class="search-label">🏙️ Szukaj po mieście</label>
@@ -103,115 +95,304 @@
     </div>
 
     <div class="filters-section">
-      <h4 class="filters-title">Filtry</h4>
-      
-      <label class="filter-label">
-        <input 
-          type="checkbox" 
-          class="filter-checkbox"
-          [(ngModel)]="showVerifiedOnly"
-          (change)="onFilterChange()"
-        >
-        Tylko zweryfikowane serwisy
-      </label>
-    </div>
-
-    <div class="results-info" *ngIf="pins.length > 0 || (!loadingSidebar && !mapError)">
-      <p class="results-count">
-        <strong>{{ totalServices }}</strong> {{ totalServices === 1 ? 'serwis' : 'serwisów' }} • Strona {{ currentPage + 1 }}/{{ totalPages }}
-      </p>
-    </div>
-
-    <!-- DODANO SCROLL HANDLER -->
-    <div class="services-list" (scroll)="onSidebarScroll($event)">
-      <div *ngIf="loadingSidebar && pins.length === 0" class="service-item">
-        <div style="text-align: center; padding: 30px 20px;">
-          <div class="loading-spinner"></div>
-          <p style="margin: 0; color: #64748b;">Ładowanie serwisów...</p>
-        </div>
-      </div>
-
-      <div *ngIf="mapError" class="service-item error-state">
-        <div style="text-align: center; padding: 30px 20px;">
-          <div class="error-icon">⚠️</div>
-          <p style="margin: 0;">Nie udało się załadować serwisów</p>
-          <button class="retry-button" (click)="retryMapLoad()">Spróbuj ponownie</button>
-        </div>
-      </div>
-
-      <div 
-        *ngFor="let pin of pins; trackBy: trackByPinId"
-        class="service-item"
-        [class.selected]="selectedPinId === pin.id"
-        (click)="selectService(pin)"
-      >
-        <div class="service-header">
-          <h3 class="service-name">{{ pin.name }}</h3>
-        </div>
-
-        <div class="service-address" *ngIf="pin.address">
-          <span>📍</span>
-          <span>{{ pin.address }}</span>
-        </div>
-
-        <div class="service-phone" *ngIf="pin.phoneNumber">
-          <span>📞</span>
-          <a href="tel:{{ pin.phoneNumber }}">{{ pin.phoneNumber }}</a>
-        </div>
-
-        <div class="service-details" *ngIf="showServiceTags(pin)">
-          <span class="service-tag verified" *ngIf="isVerified(pin)">
-            ✅ Zweryfikowany
-          </span>
-        </div>
-
-        <div class="service-actions">
-          <button 
-            class="service-action-btn primary"
-            (click)="viewServiceDetails(pin); $event.stopPropagation()"
+      <div class="filters-row">
+        <label class="filter-label">
+          <input 
+            type="checkbox" 
+            class="filter-checkbox"
+            [(ngModel)]="showVerifiedOnly"
+            (change)="onFilterChange()"
           >
-            Zobacz szczegóły
-          </button>
-        </div>
+          Tylko zweryfikowane serwisy
+        </label>
+        
+        <button 
+          class="advanced-filters-btn" 
+          (click)="toggleAdvancedFilters()"
+          [class.active]="showAdvancedFilters || selectedCoverageIds.length > 0"
+        >
+          <span>🎯</span>
+          <span>Zaawansowane filtry</span>
+          <span class="filter-count" *ngIf="selectedCoverageIds.length > 0">{{ selectedCoverageIds.length }}</span>
+        </button>
       </div>
+    </div>
 
-      <div *ngIf="pins.length === 0 && !loadingSidebar && !mapError" class="service-item">
-        <div style="text-align: center; padding: 30px 20px; color: #64748b;">
-          <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;">🔍</div>
-          <p style="margin: 0;">Nie znaleziono serwisów dla podanych kryteriów</p>
-        </div>
-      </div>
-
-      <!-- INFINITE SCROLL LOADER -->
-      <div *ngIf="loadingSidebar && pins.length > 0" class="loading-more">
-        <div class="loading-spinner"></div>
-        <p>Ładowanie kolejnych serwisów...</p>
-      </div>
+    <!-- Mobile view toggle -->
+    <div class="mobile-view-toggle">
+      <button 
+        class="view-toggle-btn" 
+        [class.active]="!showMapView"
+        (click)="toggleView()"
+      >
+        <span *ngIf="showMapView">📋 Lista ({{ totalServices }})</span>
+        <span *ngIf="!showMapView">🗺️ Mapa</span>
+      </button>
     </div>
   </div>
 
-  <div class="map-container">
-    <div #mapContainer class="map-wrapper" id="services-map">
-      <div *ngIf="!mapVisible && !loading && !mapError && isBrowser" class="map-placeholder">
-        <div class="map-icon">🗺️</div>
-        <p>Kliknij aby załadować mapę serwisów</p>
-        <button class="show-map-button" (click)="showMap()">Pokaż mapę serwisów</button>
+  <!-- Advanced Filters Panel -->
+  <div class="advanced-filters-panel" *ngIf="showAdvancedFilters" [class.mobile]="isMobileView">
+    <div class="filters-panel-header">
+      <h3>Zaawansowane filtry</h3>
+      <button class="close-filters-btn" (click)="toggleAdvancedFilters()">✕</button>
+    </div>
+    
+    <div class="filters-panel-content">
+      <div class="filter-category" *ngFor="let categoryGroup of coverageCategories">
+        <h4 class="category-title">{{ categoryGroup.category.name }}</h4>
+        
+        <div class="coverage-list">
+          <label 
+            class="coverage-item" 
+            *ngFor="let coverage of categoryGroup.coverages"
+          >
+            <input 
+              type="checkbox" 
+              class="coverage-checkbox"
+              [checked]="isCoverageSelected(coverage.id)"
+              (change)="toggleCoverage(coverage.id)"
+            >
+            <span class="coverage-name">{{ coverage.name }}</span>
+          </label>
+        </div>
       </div>
-      
-      <div *ngIf="loading && !mapError" class="map-placeholder">
-        <div class="loading-spinner"></div>
-        <p>Ładowanie mapy...</p>
+    </div>
+    
+    <div class="filters-panel-actions">
+      <button class="filter-action-btn secondary" (click)="clearAdvancedFilters()">
+        Wyczyść
+      </button>
+      <button class="filter-action-btn primary" (click)="applyAdvancedFilters()">
+        Zastosuj ({{ selectedCoverageIds.length }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Content area - responsive -->
+  <div class="content-area">
+    <!-- Sidebar/List - with search on desktop -->
+    <div class="sidebar" [class.hidden]="isMobileView && showMapView">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Serwisy rowerowe</h2>
+        <p class="sidebar-subtitle">Znajdź najbliższy serwis</p>
       </div>
-      
-      <div *ngIf="mapError" class="map-placeholder error-state">
-        <div class="error-icon">⚠️</div>
-        <p>Nie udało się załadować mapy</p>
-        <button class="retry-button" (click)="retryMapLoad()">Spróbuj ponownie</button>
+
+      <!-- Search section in sidebar - DESKTOP ONLY -->
+      <div class="search-section-sidebar" *ngIf="!isMobileView">
+        <div class="search-box">
+          <label class="search-label">🏙️ Szukaj po mieście</label>
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input 
+              type="text" 
+              class="search-input"
+              placeholder="Wpisz nazwę miasta (min. 3 litery)..."
+              [(ngModel)]="citySearchQuery"
+              (input)="onCitySearchChange()"
+              (focus)="citySearchFocused = true"
+            >
+            <button 
+              *ngIf="citySearchQuery" 
+              class="search-clear"
+              (click)="clearCitySearch()"
+              type="button"
+            >
+              ✕
+            </button>
+          </div>
+          
+          <div 
+            class="autocomplete-dropdown" 
+            *ngIf="citySearchFocused && (citySuggestions.length > 0 || citySearchLoading)"
+          >
+            <div class="autocomplete-loading" *ngIf="citySearchLoading">
+              Szukam miast...
+            </div>
+            
+            <div 
+              class="autocomplete-item"
+              *ngFor="let city of citySuggestions"
+              (click)="selectCity(city)"
+            >
+              <div class="autocomplete-item-title">{{ city.name }}</div>
+              <div class="autocomplete-item-subtitle">{{ city.displayName }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <label class="search-label">🔧 Szukaj po nazwie serwisu</label>
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input 
+              type="text" 
+              class="search-input"
+              placeholder="Wpisz nazwę serwisu (min. 3 litery)..."
+              [(ngModel)]="serviceSearchQuery"
+              (input)="onServiceSearchChange()"
+              (focus)="serviceSearchFocused = true"
+            >
+            <button 
+              *ngIf="serviceSearchQuery" 
+              class="search-clear"
+              (click)="clearServiceSearch()"
+              type="button"
+            >
+              ✕
+            </button>
+          </div>
+          
+          <div 
+            class="autocomplete-dropdown" 
+            *ngIf="serviceSearchFocused && (serviceSuggestions.length > 0 || serviceSearchLoading)"
+          >
+            <div class="autocomplete-loading" *ngIf="serviceSearchLoading">
+              Szukam serwisów...
+            </div>
+            
+            <div 
+              class="autocomplete-item"
+              *ngFor="let service of serviceSuggestions"
+              (click)="selectService(service)"
+            >
+              <div class="autocomplete-item-title">
+                {{ service.name }}
+                <span class="autocomplete-item-badge" *ngIf="service.verified">✓ Zweryfikowany</span>
+              </div>
+              <div class="autocomplete-item-subtitle" *ngIf="service.address">
+                📍 {{ service.address }}
+              </div>
+            </div>
+            
+            <div class="autocomplete-empty" *ngIf="!serviceSearchLoading && serviceSuggestions.length === 0 && serviceSearchQuery.length >= 3">
+              Nie znaleziono serwisów dla "{{ serviceSearchQuery }}"
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <div *ngIf="!isBrowser" class="map-placeholder">
-        <div style="color: #64748b; text-align: center;">
-          <p>Mapa będzie dostępna po załadowaniu strony w przeglądarce</p>
+
+      <!-- Filters section in sidebar - DESKTOP ONLY -->
+      <div class="filters-section-sidebar" *ngIf="!isMobileView">
+        <h4 class="filters-title">Filtry</h4>
+        
+        <label class="filter-label">
+          <input 
+            type="checkbox" 
+            class="filter-checkbox"
+            [(ngModel)]="showVerifiedOnly"
+            (change)="onFilterChange()"
+          >
+          Tylko zweryfikowane serwisy
+        </label>
+
+        <button 
+          class="advanced-filters-btn-sidebar" 
+          (click)="toggleAdvancedFilters()"
+          [class.active]="showAdvancedFilters || selectedCoverageIds.length > 0"
+        >
+          <span>🎯</span>
+          <span>Więcej filtrów</span>
+          <span class="filter-count" *ngIf="selectedCoverageIds.length > 0">{{ selectedCoverageIds.length }}</span>
+        </button>
+      </div>
+
+      <div class="results-info" *ngIf="pins.length > 0 || (!loadingSidebar && !mapError)">
+        <p class="results-count">
+          <strong>{{ totalServices }}</strong> {{ totalServices === 1 ? 'serwis' : 'serwisów' }} • Strona {{ currentPage + 1 }}/{{ totalPages }}
+        </p>
+      </div>
+
+      <div class="services-list" (scroll)="onSidebarScroll($event)">
+        <div *ngIf="loadingSidebar && pins.length === 0" class="service-item">
+          <div style="text-align: center; padding: 30px 20px;">
+            <div class="loading-spinner"></div>
+            <p style="margin: 0; color: #64748b;">Ładowanie serwisów...</p>
+          </div>
+        </div>
+
+        <div *ngIf="mapError" class="service-item error-state">
+          <div style="text-align: center; padding: 30px 20px;">
+            <div class="error-icon">⚠️</div>
+            <p style="margin: 0;">Nie udało się załadować serwisów</p>
+            <button class="retry-button" (click)="retryMapLoad()">Spróbuj ponownie</button>
+          </div>
+        </div>
+
+        <div 
+          *ngFor="let pin of pins; trackBy: trackByPinId"
+          class="service-item"
+          [class.selected]="selectedPinId === pin.id"
+          (click)="selectService(pin)"
+        >
+          <div class="service-header">
+            <h3 class="service-name">{{ pin.name }}</h3>
+          </div>
+
+          <div class="service-address" *ngIf="pin.address">
+            <span>📍</span>
+            <span>{{ pin.address }}</span>
+          </div>
+
+          <div class="service-phone" *ngIf="pin.phoneNumber">
+            <span>📞</span>
+            <a href="tel:{{ pin.phoneNumber }}">{{ pin.phoneNumber }}</a>
+          </div>
+
+          <div class="service-details" *ngIf="showServiceTags(pin)">
+            <span class="service-tag verified" *ngIf="isVerified(pin)">
+              ✅ Zweryfikowany
+            </span>
+          </div>
+
+          <div class="service-actions">
+            <button 
+              class="service-action-btn primary"
+              (click)="viewServiceDetails(pin); $event.stopPropagation()"
+            >
+              Zobacz szczegóły
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="pins.length === 0 && !loadingSidebar && !mapError" class="service-item">
+          <div style="text-align: center; padding: 30px 20px; color: #64748b;">
+            <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;">🔍</div>
+            <p style="margin: 0;">Nie znaleziono serwisów dla podanych kryteriów</p>
+          </div>
+        </div>
+
+        <div *ngIf="loadingSidebar && pins.length > 0" class="loading-more">
+          <div class="loading-spinner"></div>
+          <p>Ładowanie kolejnych serwisów...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Container -->
+    <div class="map-container" [class.hidden]="isMobileView && !showMapView">
+      <div #mapContainer class="map-wrapper" id="services-map">
+        <div *ngIf="!mapVisible && !loading && !mapError && isBrowser" class="map-placeholder">
+          <div class="map-icon">🗺️</div>
+          <p>Kliknij aby załadować mapę serwisów</p>
+          <button class="show-map-button" (click)="displayMap()">Pokaż mapę serwisów</button>
+        </div>
+        
+        <div *ngIf="loading && !mapError" class="map-placeholder">
+          <div class="loading-spinner"></div>
+          <p>Ładowanie mapy...</p>
+        </div>
+        
+        <div *ngIf="mapError" class="map-placeholder error-state">
+          <div class="error-icon">⚠️</div>
+          <p>Nie udało się załadować mapy</p>
+          <button class="retry-button" (click)="retryMapLoad()">Spróbuj ponownie</button>
+        </div>
+        
+        <div *ngIf="!isBrowser" class="map-placeholder">
+          <div style="color: #64748b; text-align: center;">
+            <p>Mapa będzie dostępna po załadowaniu strony w przeglądarce</p>
+          </div>
         </div>
       </div>
     </div>

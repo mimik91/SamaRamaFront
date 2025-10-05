@@ -52,6 +52,22 @@ export interface CityBounds {
   zoom: number;
 }
 
+export interface BikeRepairCoverageDto {
+  id: number;
+  name: string;
+  categoryId: number;
+}
+
+export interface BikeRepairCoverageCategoryDto {
+  id: number;
+  name: string;
+  displayOrder: number;
+}
+
+export interface BikeRepairCoverageMapDto {
+  coveragesByCategory: { [key: string]: BikeRepairCoverageDto[] };
+}
+
 export interface MapServicesRequestDto {
   type?: string;
   payload?: {
@@ -64,19 +80,20 @@ export interface MapServicesRequestDto {
     url?: string;
   };
   bounds?: string;
-  page?: number;      // DODANE
-  perPage?: number;   // DODANE
+  page?: number;
+  perPage?: number;
+  coverageIds?: number[];
 }
 
 export interface MapServicesResponseDto {
   data: MapPin[];
   total: number;
-  totalPages?: number;    // DODANE
+  totalPages?: number;
   sortColumn?: string;
   sortDirection?: string;
-  page?: number;          // DODANE
+  page?: number;
   previous?: number;
-  next?: number;          // DODANE
+  next?: number;
   perPage?: number;
   bounds?: any;
   cache?: string;
@@ -89,10 +106,6 @@ export class MapService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/map`;
 
-  /**
-   * Pobiera serwisy z nowego endpointu MapController (POST /api/map/services)
-   * Z paginacją dla sidebara
-   */
   getServices(request: MapServicesRequestDto): Observable<MapServicesResponseDto> {
     console.log('MapService: Fetching services from:', `${this.apiUrl}/services`);
     
@@ -109,7 +122,8 @@ export class MapService {
       },
       bounds: request.bounds,
       page: request.page || 0,
-      perPage: request.perPage || 25
+      perPage: request.perPage || 25,
+      coverageIds: request.coverageIds
     };
     
     return this.http.post<MapServicesResponseDto>(`${this.apiUrl}/services`, requestBody).pipe(
@@ -128,9 +142,6 @@ export class MapService {
     );
   }
 
-  /**
-   * Pobiera szczegóły serwisu po ID z MapController
-   */
   getServiceDetails(id: number): Observable<ServiceDetails | null> {
     console.log('MapService: Fetching service details for ID:', id);
     
@@ -145,9 +156,6 @@ export class MapService {
     );
   }
 
-  /**
-   * Wyszukuje serwisy po nazwie/mieście
-   */
   searchServices(query: string, bounds?: string, verifiedOnly = false): Observable<MapServicesResponseDto> {
     console.log('MapService: Searching services with query:', query);
     
@@ -168,9 +176,6 @@ export class MapService {
     );
   }
 
-  /**
-   * Autocomplete dla serwisów (szybkie wyszukiwanie z limitem)
-   */
   searchServicesAutocomplete(query: string, limit: number = 10, registeredFirst: boolean = true): Observable<MapServicesResponseDto> {
     if (!query || query.trim().length < 3) {
       return of({ data: [], total: 0 });
@@ -195,9 +200,6 @@ export class MapService {
     );
   }
 
-  /**
-   * Wyszukiwanie miast (autocomplete)
-   */
   searchCities(query: string): Observable<CitySuggestion[]> {
     if (!query || query.trim().length < 3) {
       return of([]);
@@ -218,9 +220,6 @@ export class MapService {
     );
   }
 
-  /**
-   * Pobiera granice miasta
-   */
   getCityBounds(cityName: string): Observable<CityBounds | null> {
     console.log('MapService: Fetching bounds for city:', cityName);
     
@@ -235,10 +234,6 @@ export class MapService {
     );
   }
 
-  /**
-   * Pobiera klastrowane piny z backendu
-   * GET /api/map/pins/clustered?zoom=10&bounds=...
-   */
   getClusteredPins(zoom: number, bounds?: string, city?: string): Observable<any> {
     console.log('MapService: Fetching clustered pins with zoom:', zoom);
     
@@ -252,6 +247,34 @@ export class MapService {
       }),
       catchError(error => {
         console.error('MapService: Error fetching clustered pins:', error);
+        return of({ data: [], total: 0 });
+      })
+    );
+  }
+
+  getAllRepairCoverages(): Observable<BikeRepairCoverageMapDto | null> {
+    console.log('MapService: Fetching repair coverages');
+    
+    return this.http.get<BikeRepairCoverageMapDto>(`${environment.apiUrl}/bike-services/repair-coverage/all`).pipe(
+      tap(coverages => {
+        console.log('MapService: Received repair coverages:', coverages);
+      }),
+      catchError(error => {
+        console.error('MapService: Error fetching repair coverages:', error);
+        return of(null);
+      })
+    );
+  }
+
+  filterByCoverages(coverageIds: number[]): Observable<MapServicesResponseDto> {
+    console.log('MapService: Filtering by coverages:', coverageIds);
+    
+    return this.http.post<MapServicesResponseDto>(`${this.apiUrl}/filter`, { coverageIds }).pipe(
+      tap(response => {
+        console.log('MapService: Filtered services:', response);
+      }),
+      catchError(error => {
+        console.error('MapService: Error filtering services:', error);
         return of({ data: [], total: 0 });
       })
     );

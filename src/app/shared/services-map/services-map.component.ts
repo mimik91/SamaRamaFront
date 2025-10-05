@@ -1,9 +1,9 @@
-// src/app/shared/services-map/services-map.component.ts - FINAL VERSION
+// src/app/shared/services-map/services-map.component.ts - FULL VERSION WITH ALL FEATURES
 import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MapService, MapPin, CitySuggestion, MapServicesRequestDto } from '../services/map.service';
+import { MapService, MapPin, CitySuggestion, MapServicesRequestDto, BikeRepairCoverageMapDto, BikeRepairCoverageDto, BikeRepairCoverageCategoryDto } from '../services/map.service';
 import { NotificationService } from '../../core/notification.service';
 import { AuthService } from '../../auth/auth.service';
 import { debounceTime, Subject } from 'rxjs';
@@ -40,6 +40,10 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
   sidebarOpen = false;
   selectedPinId: number | null = null;
   
+  // Mobile view toggle
+  isMobileView = false;
+  showMapView = true; // true = mapa, false = lista
+  
   // Pagination dla sidebara
   totalServices = 0;
   currentPage = 0;
@@ -58,7 +62,12 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
   serviceSearchFocused = false;
   serviceSearchLoading = false;
   
+  // Filtry
   showVerifiedOnly = false;
+  showAdvancedFilters = false;
+  repairCoverages: BikeRepairCoverageMapDto | null = null;
+  selectedCoverageIds: number[] = [];
+  coverageCategories: Array<{ category: BikeRepairCoverageCategoryDto; coverages: BikeRepairCoverageDto[] }> = [];
   
   private readonly DEFAULT_CENTER = {
     lat: 50.0647,
@@ -87,10 +96,17 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  @HostListener('window:resize', ['$event'])
+  onResize(): void {
+    if (this.isBrowser) {
+      this.checkMobileView();
+    }
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('.search-box')) {
+    if (!target.closest('.search-box') && !target.closest('.advanced-filters-panel')) {
       this.citySearchFocused = false;
       this.serviceSearchFocused = false;
     }
@@ -98,7 +114,10 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     if (this.isBrowser) {
+      this.checkMobileView();
       this.mapVisible = true;
+      this.loadRepairCoverages();
+      
       setTimeout(() => {
         // Załaduj klastrowane piny NA MAPĘ
         this.loadClusteredPins(12, undefined);
@@ -124,6 +143,10 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
     this.mapMoveSubject.complete();
   }
 
+  private checkMobileView(): void {
+    this.isMobileView = window.innerWidth <= 768;
+  }
+
   private destroyMap(): void {
     if (this.map) {
       try {
@@ -136,6 +159,79 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  toggleView(): void {
+    this.showMapView = !this.showMapView;
+    if (this.showMapView && this.map) {
+      setTimeout(() => {
+        this.map.invalidateSize();
+      }, 100);
+    }
+  }
+
+  // ============ ŁADOWANIE FILTRÓW ============
+
+  private loadRepairCoverages(): void {
+    this.mapService.getAllRepairCoverages().subscribe({
+      next: (coverages: BikeRepairCoverageMapDto | null) => {
+        if (coverages && coverages.coveragesByCategory) {
+          this.repairCoverages = coverages;
+          this.processCoverageCategories();
+        }
+      },
+      error: (error: any) => {
+        console.error('Error loading repair coverages:', error);
+      }
+    });
+  }
+
+  private processCoverageCategories(): void {
+    if (!this.repairCoverages) return;
+    
+    const categoriesMap = new Map<string, { category: BikeRepairCoverageCategoryDto; coverages: BikeRepairCoverageDto[] }>();
+    
+    Object.entries(this.repairCoverages.coveragesByCategory).forEach(([key, coverages]) => {
+      const categoryData = JSON.parse(key) as BikeRepairCoverageCategoryDto;
+      
+      categoriesMap.set(key, {
+        category: categoryData,
+        coverages: coverages
+      });
+    });
+    
+    this.coverageCategories = Array.from(categoriesMap.values())
+      .sort((a, b) => (a.category.displayOrder || 0) - (b.category.displayOrder || 0));
+  }
+
+  toggleAdvancedFilters(): void {
+    this.showAdvancedFilters = !this.showAdvancedFilters;
+  }
+
+  toggleCoverage(coverageId: number): void {
+    const index = this.selectedCoverageIds.indexOf(coverageId);
+    if (index > -1) {
+      this.selectedCoverageIds.splice(index, 1);
+    } else {
+      this.selectedCoverageIds.push(coverageId);
+    }
+  }
+
+  isCoverageSelected(coverageId: number): boolean {
+    return this.selectedCoverageIds.includes(coverageId);
+  }
+
+  applyAdvancedFilters(): void {
+    console.log('Applying filters with coverage IDs:', this.selectedCoverageIds);
+    this.loadServicesForSidebar(0);
+    if (this.isMobileView) {
+      this.showAdvancedFilters = false;
+    }
+  }
+
+  clearAdvancedFilters(): void {
+    this.selectedCoverageIds = [];
+    this.loadServicesForSidebar(0);
+  }
+
   // ============ ŁADOWANIE SERWISÓW DO SIDEBARA ============
 
   private loadServicesForSidebar(page: number = 0): void {
@@ -145,7 +241,8 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
       type: 'event',
       bounds: this.getCurrentBounds(),
       page: page,
-      perPage: 25
+      perPage: 25,
+      coverageIds: this.selectedCoverageIds.length > 0 ? this.selectedCoverageIds : undefined
     };
     
     this.mapService.getServices(request).subscribe({
@@ -404,8 +501,8 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
       this.loadServiceDetailsFromAPI(pin.id, this.markers.get(pin.id));
     }
     
-    if (window.innerWidth <= 768) {
-      this.sidebarOpen = false;
+    if (this.isMobileView) {
+      this.showMapView = true;
     }
   }
 
@@ -519,7 +616,8 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
       doubleClickZoom: true,
       touchZoom: true,
       preferCanvas: false,
-      attributionControl: true
+      attributionControl: true,
+      wheelPxPerZoomLevel: 120  // WOLNIEJSZY ZOOM - domyślnie 60
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -901,7 +999,7 @@ export class ServicesMapComponent implements OnInit, OnDestroy, AfterViewInit {
     }, 100);
   }
 
-  showMap(): void {
+  displayMap(): void {
     if (!this.mapVisible && !this.loading && !this.mapError) {
       this.loading = true;
       this.initializeMapAsync();

@@ -46,6 +46,9 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   @Output() clusterClicked = new EventEmitter<{ lat: number; lng: number; zoom: number }>();
   @Output() mapError = new EventEmitter<string>();
   @Output() serviceDetailsRequested = new EventEmitter<number>();
+  @Output() viewServiceDetails = new EventEmitter<ServiceDetails>();
+  @Output() registerService = new EventEmitter<ServiceDetails>();
+  @Output() orderTransport = new EventEmitter<ServiceDetails>();
 
   // Internal state
   private map: any;
@@ -316,8 +319,173 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
         });
       } else {
         this.pinClicked.emit(pin);
+        // Request service details from parent
+        this.serviceDetailsRequested.emit(pinId);
       }
     });
+  }
+
+  // ============ POPUP MANAGEMENT ============
+
+  public showServicePopup(serviceDetails: ServiceDetails, marker?: any): void {
+    // Find marker by service ID if not provided
+    if (!marker) {
+      marker = this.markers.get(serviceDetails.id);
+    }
+
+    if (!marker) {
+      console.error('Marker not found for service:', serviceDetails.id);
+      return;
+    }
+
+    const popupContent = this.buildPopupContent(serviceDetails);
+    
+    marker.bindPopup(popupContent, {
+      maxWidth: 400,
+      className: 'detailed-service-popup',
+      closeButton: true
+    }).openPopup();
+
+    // Attach event listeners after popup is rendered
+    setTimeout(() => {
+      this.attachPopupEventListeners(serviceDetails);
+    }, 100);
+  }
+
+  private buildPopupContent(serviceDetails: ServiceDetails): string {
+    const addressParts = [];
+    if (serviceDetails.street) addressParts.push(serviceDetails.street);
+    if (serviceDetails.building) addressParts.push(serviceDetails.building);
+    if (serviceDetails.flat) addressParts.push(`/${serviceDetails.flat}`);
+    
+    let fullAddress = addressParts.join(' ');
+    if (serviceDetails.city) {
+      fullAddress += fullAddress ? `, ${serviceDetails.city}` : serviceDetails.city;
+    }
+    
+    let popupContent = `
+      <div style="font-family: inherit; min-width: 300px; max-width: 380px;">
+        <div style="background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%); color: white; padding: 18px; margin: -12px -18px 18px -18px; border-radius: 12px 12px 0 0;">
+          <h4 style="margin: 0; font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${serviceDetails.name}</h4>
+        </div>
+    `;
+    
+    if (fullAddress) {
+      popupContent += `
+        <div style="display: flex; align-items: flex-start; gap: 10px; margin: 0 0 14px 0; padding: 12px; background-color: #f8fafc; border-radius: 8px; border-left: 3px solid #e2e8f0;">
+          <span style="color: #64748b; font-size: 1.1rem; flex-shrink: 0;">📍</span>
+          <span style="color: #1e293b; line-height: 1.4; flex: 1; font-weight: 500;">${fullAddress}</span>
+        </div>
+      `;
+    }
+    
+    if (serviceDetails.phoneNumber) {
+      popupContent += `
+        <div style="display: flex; align-items: center; gap: 10px; margin: 0 0 14px 0; padding: 12px; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 8px; border-left: 3px solid #22c55e;">
+          <span style="color: #15803d; font-size: 1.1rem;">📞</span>
+          <a href="tel:${serviceDetails.phoneNumber}" style="color: #15803d; text-decoration: none; font-weight: 600; flex: 1; font-size: 1rem;">${serviceDetails.phoneNumber}</a>
+        </div>
+      `;
+    }
+
+    if (serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+      popupContent += `
+        <div style="margin: 14px 0; padding: 14px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-radius: 8px; border-left: 3px solid #3b82f6;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <span style="font-size: 1.2rem;">🚚</span>
+            <strong style="color: #1e40af; font-size: 1rem;">Transport dostępny</strong>
+          </div>
+          <p style="margin: 0; color: #1e40af; font-size: 1.2rem; font-weight: 700;">${serviceDetails.transportCost} PLN</p>
+          <p style="margin: 6px 0 0 0; font-size: 0.85rem; color: #64748b;">Cena za transport w obie strony</p>
+        </div>
+      `;
+    }
+    
+    if (serviceDetails.description && serviceDetails.description.trim()) {
+      popupContent += `
+        <div style="margin: 18px 0; padding: 14px; background-color: #f8fafc; border-radius: 8px; border-left: 3px solid #2B82AD;">
+          <p style="margin: 0; color: #475569; font-size: 0.9rem; line-height: 1.6;">${serviceDetails.description}</p>
+        </div>
+      `;
+    }
+    
+    if (serviceDetails.verified) {
+      popupContent += `
+        <div style="display: flex; align-items: center; gap: 8px; margin: 14px 0; color: #059669; font-weight: 600; font-size: 0.9rem;">
+          <span>✅</span>
+          <span>Zweryfikowany serwis</span>
+        </div>
+      `;
+    }
+
+    popupContent += `
+      <div style="margin: 20px 0 0 0; padding: 16px 0 0 0; border-top: 2px solid #f1f5f9; display: flex; gap: 10px; flex-wrap: wrap;">
+    `;
+
+    if (serviceDetails.verified) {
+      popupContent += `
+        <button 
+          id="view-details-btn-${serviceDetails.id}" 
+          class="popup-action-btn primary"
+          style="flex: 1; min-width: 120px; padding: 12px 18px; background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(43, 130, 173, 0.3);"
+        >
+          Zobacz szczegóły
+        </button>
+      `;
+    } else {
+      popupContent += `
+        <button 
+          id="register-service-btn-${serviceDetails.id}" 
+          class="popup-action-btn warning"
+          style="flex: 1; min-width: 120px; padding: 12px 18px; background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);"
+        >
+          Zarejestruj ten serwis
+        </button>
+      `;
+    }
+
+    if (serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+      popupContent += `
+        <button 
+          id="order-transport-btn-${serviceDetails.id}" 
+          class="popup-action-btn success"
+          style="flex: 1; min-width: 120px; padding: 12px 18px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);"
+        >
+          Zamów transport
+        </button>
+      `;
+    }
+
+    popupContent += `</div></div>`;
+
+    return popupContent;
+  }
+
+  private attachPopupEventListeners(serviceDetails: ServiceDetails): void {
+    if (serviceDetails.verified) {
+      const viewDetailsBtn = document.getElementById(`view-details-btn-${serviceDetails.id}`);
+      if (viewDetailsBtn) {
+        viewDetailsBtn.addEventListener('click', () => {
+          this.viewServiceDetails.emit(serviceDetails);
+        });
+      }
+    } else {
+      const registerBtn = document.getElementById(`register-service-btn-${serviceDetails.id}`);
+      if (registerBtn) {
+        registerBtn.addEventListener('click', () => {
+          this.registerService.emit(serviceDetails);
+        });
+      }
+    }
+
+    if (serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+      const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
+      if (transportBtn) {
+        transportBtn.addEventListener('click', () => {
+          this.orderTransport.emit(serviceDetails);
+        });
+      }
+    }
   }
 
   private createClusterIcon(count: number): any {

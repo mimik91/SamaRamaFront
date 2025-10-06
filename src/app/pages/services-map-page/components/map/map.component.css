@@ -211,3 +211,26 @@
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
   z-index: 10000 !important;
 }
+
+/* ============ POPUP BUTTONS ============ */
+
+:global(.popup-action-btn) {
+  font-family: inherit !important;
+}
+
+:global(.popup-action-btn:hover) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+:global(.popup-action-btn.primary:hover) {
+  box-shadow: 0 4px 16px rgba(43, 130, 173, 0.4) !important;
+}
+
+:global(.popup-action-btn.warning:hover) {
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4) !important;
+}
+
+:global(.popup-action-btn.success:hover) {
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4) !important;
+}

@@ -438,7 +438,54 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
 
   onPinClicked(pin: MapPin): void {
     this.selectedServiceId = pin.id;
-    // Load service details if needed
+    // Load service details and show popup
+    this.loadServiceDetailsAndShowPopup(pin.id);
+  }
+
+  private loadServiceDetailsAndShowPopup(serviceId: number): void {
+    this.mapService.getServiceDetails(serviceId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (serviceDetails) => {
+          if (serviceDetails && this.mapComponent) {
+            this.mapComponent.showServicePopup(serviceDetails);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading service details:', error);
+          this.notificationService.error('Nie udało się załadować szczegółów serwisu');
+        }
+      });
+  }
+
+  onViewServiceDetails(serviceDetails: ServiceDetails): void {
+    this.router.navigate(['/service', serviceDetails.id]);
+  }
+
+  onRegisterService(serviceDetails: ServiceDetails): void {
+    this.router.navigate(['/register-service'], {
+      queryParams: {
+        serviceId: serviceDetails.id,
+        serviceName: serviceDetails.name,
+        street: serviceDetails.street || '',
+        building: serviceDetails.building || '',
+        flat: serviceDetails.flat || '',
+        city: serviceDetails.city || '',
+        phoneNumber: serviceDetails.phoneNumber || '',
+        email: serviceDetails.email || ''
+      }
+    });
+  }
+
+  onOrderTransport(serviceDetails: ServiceDetails): void {
+    this.router.navigate(['/order-transport'], {
+      queryParams: {
+        serviceId: serviceDetails.id,
+        serviceName: serviceDetails.name,
+        serviceAddress: `${serviceDetails.street} ${serviceDetails.building}${serviceDetails.flat ? '/' + serviceDetails.flat : ''}, ${serviceDetails.city}`,
+        transportCost: serviceDetails.transportCost
+      }
+    });
   }
 
   onClusterClicked(data: { lat: number; lng: number; zoom: number }): void {

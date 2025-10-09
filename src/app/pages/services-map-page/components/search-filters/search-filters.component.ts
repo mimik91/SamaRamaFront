@@ -51,6 +51,13 @@ export class SearchFiltersComponent {
   citySearchFocused = false;
   serviceSearchFocused = false;
   showAdvancedFilters = false;
+  
+  // Pozycje dropdown (dla fixed positioning)
+  cityDropdownStyle: any = {};
+  serviceDropdownStyle: any = {};
+  
+  // Wyszukiwarka filtrów
+  filterSearchQuery = '';
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -59,6 +66,26 @@ export class SearchFiltersComponent {
       this.citySearchFocused = false;
       this.serviceSearchFocused = false;
     }
+  }
+
+  // Oblicz pozycję dropdown dla city search
+  calculateCityDropdownPosition(inputElement: HTMLElement): void {
+    const rect = inputElement.getBoundingClientRect();
+    this.cityDropdownStyle = {
+      top: `${rect.bottom + 4}px`,
+      left: `${rect.left}px`,
+      width: `${rect.width}px`
+    };
+  }
+
+  // Oblicz pozycję dropdown dla service search
+  calculateServiceDropdownPosition(inputElement: HTMLElement): void {
+    const rect = inputElement.getBoundingClientRect();
+    this.serviceDropdownStyle = {
+      top: `${rect.bottom + 4}px`,
+      left: `${rect.left}px`,
+      width: `${rect.width}px`
+    };
   }
 
   // City search methods
@@ -83,8 +110,10 @@ export class SearchFiltersComponent {
     this.cityClearRequested.emit();
   }
 
-  onCityFocus(): void {
+  onCityFocus(event: FocusEvent): void {
     this.citySearchFocused = true;
+    const inputElement = event.target as HTMLElement;
+    this.calculateCityDropdownPosition(inputElement);
   }
 
   // Service search methods
@@ -108,8 +137,31 @@ export class SearchFiltersComponent {
     this.serviceClearRequested.emit();
   }
 
-  onServiceFocus(): void {
+  onServiceFocus(event: FocusEvent): void {
     this.serviceSearchFocused = true;
+    const inputElement = event.target as HTMLElement;
+    this.calculateServiceDropdownPosition(inputElement);
+  }
+
+  // Filter search (frontend only)
+  get filteredCoverageCategories(): CoverageCategory[] {
+    if (!this.filterSearchQuery || this.filterSearchQuery.length < 2) {
+      return this.coverageCategories;
+    }
+
+    const query = this.filterSearchQuery.toLowerCase();
+    return this.coverageCategories
+      .map(category => ({
+        ...category,
+        coverages: category.coverages.filter(coverage => 
+          coverage.name.toLowerCase().includes(query)
+        )
+      }))
+      .filter(category => category.coverages.length > 0);
+  }
+
+  clearFilterSearch(): void {
+    this.filterSearchQuery = '';
   }
 
   // Filter methods

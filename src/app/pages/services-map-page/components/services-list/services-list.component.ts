@@ -31,9 +31,22 @@ export class ServicesListComponent {
 
   onScroll(event: any): void {
     const element = event.target;
-    const atBottom = Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 5;
+    const scrollTop = element.scrollTop;
+    const scrollHeight = element.scrollHeight;
+    const clientHeight = element.clientHeight;
+    const atBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 5;
+    
+    console.log('Scroll event:', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      atBottom,
+      hasMore: this.hasMoreServices,
+      loadingMore: this.loadingMore
+    });
     
     if (atBottom && this.hasMoreServices && !this.loadingMore) {
+      console.log('Triggering scrollEnd event - loading more services');
       this.scrollEnd.emit();
     }
   }

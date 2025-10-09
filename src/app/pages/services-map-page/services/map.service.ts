@@ -24,16 +24,19 @@ export class MapService {
   getServices(request: MapServicesRequestDto): Observable<MapServicesResponseDto> {
     console.log('MapService: Fetching services from:', `${this.apiUrl}/services`);
     
-    const requestBody: MapServicesRequestDto = {
+    const finalRequestBody: any = {
       type: request.type || 'event',
       payload: request.payload || this.getDefaultPayload(),
       bounds: request.bounds,
       page: request.page || 0,
       perPage: request.perPage || 25,
-      coverageIds: request.coverageIds
-    };
+  };
+
+  if (request.coverageIds && request.coverageIds.length > 0) {
+      finalRequestBody.coverageIds = request.coverageIds;
+  }
     
-    return this.http.post<MapServicesResponseDto>(`${this.apiUrl}/services`, requestBody).pipe(
+    return this.http.post<MapServicesResponseDto>(`${this.apiUrl}/services`, finalRequestBody).pipe(
       tap(response => {
         console.log('MapService: Received services:', response);
         const validPins = response.data.filter(pin => 
@@ -121,12 +124,13 @@ export class MapService {
     );
   }
 
-  getClusteredPins(zoom: number, bounds?: string, city?: string): Observable<any> {
+  getClusteredPins(zoom: number, bounds?: string, city?: string, coverageIds?: number[]): Observable<any> {
     console.log('MapService: Fetching clustered pins with zoom:', zoom);
     
     const params: any = { zoom: zoom.toString() };
     if (bounds) params.bounds = bounds;
     if (city) params.city = city;
+    if (coverageIds && coverageIds.length > 0) params.coveragesIds = coverageIds; 
     
     return this.http.get<any>(`${this.apiUrl}/pins/clustered`, { params }).pipe(
       tap(response => {
@@ -149,6 +153,23 @@ export class MapService {
       catchError(error => {
         console.error('MapService: Error fetching repair coverages:', error);
         return of(null);
+      })
+    );
+  }
+
+  filterByCoverages(coverageIds: number[]): Observable<MapServicesResponseDto> {
+    console.log('MapService: Filtering by coverage IDs:', coverageIds);
+    
+    return this.http.post<MapServicesResponseDto>(
+      `${environment.apiUrl}/bike-services/filter-coverage`,
+      { coverageIds }
+    ).pipe(
+      tap(response => {
+        console.log('MapService: Filtered services response:', response);
+      }),
+      catchError(error => {
+        console.error('MapService: Error filtering by coverages:', error);
+        return of({ data: [], total: 0 });
       })
     );
   }

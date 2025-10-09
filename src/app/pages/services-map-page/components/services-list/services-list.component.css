@@ -5,6 +5,7 @@
   flex-direction: column;
   height: 100%;
   background-color: #fefefe;
+  overflow: hidden; /* Prevent double scrollbars */
 }
 
 /* ============ RESULTS INFO ============ */
@@ -14,6 +15,7 @@
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   border-bottom: 1px solid #e2e8f0;
   text-align: center;
+  flex-shrink: 0; /* Don't shrink when content grows */
 }
 
 .results-count {

@@ -204,12 +204,98 @@
 :global(.leaflet-marker-icon) {
   transition: transform 0.2s ease, filter 0.2s ease !important;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  cursor: pointer;
 }
 
 :global(.leaflet-marker-icon:hover) {
+  transform: scale(1.2) !important;
+  filter: drop-shadow(0 8px 16px rgba(43, 130, 173, 0.6));
+  z-index: 1000;
+}
+
+/* Pin marker specific hover */
+:global(.leaflet-marker-icon.pin-marker) {
+  transition: all 0.25s ease !important;
+}
+
+:global(.leaflet-marker-icon.pin-marker:hover) {
+  transform: scale(1.25) !important;
+  filter: drop-shadow(0 10px 20px rgba(43, 130, 173, 0.7)) brightness(1.1);
+  animation: pin-pulse 0.6s ease-in-out;
+}
+
+@keyframes pin-pulse {
+  0%, 100% { transform: scale(1.25); }
+  50% { transform: scale(1.3); }
+}
+
+/* Cluster marker hover */
+:global(.leaflet-marker-icon.cluster-marker) {
+  transition: all 0.2s ease !important;
+}
+
+:global(.leaflet-marker-icon.cluster-marker:hover) {
   transform: scale(1.15) !important;
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
-  z-index: 10000 !important;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5)) brightness(1.05);
+  animation: cluster-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes cluster-pulse {
+  0%, 100% { 
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5)) brightness(1.05);
+  }
+  50% { 
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.6)) brightness(1.1);
+  }
+}
+
+/* Selected pin highlight */
+:global(.leaflet-marker-icon.selected-pin) {
+  filter: drop-shadow(0 8px 20px rgba(225, 29, 72, 0.8)) brightness(1.1);
+  z-index: 999 !important;
+  animation: selected-bounce 0.5s ease-out;
+}
+
+@keyframes selected-bounce {
+  0% { transform: scale(1) translateY(0); }
+  30% { transform: scale(1.3) translateY(-10px); }
+  50% { transform: scale(1.25) translateY(-5px); }
+  70% { transform: scale(1.28) translateY(-8px); }
+  100% { transform: scale(1.25) translateY(-5px); }
+}
+
+/* ============ TOOLTIPS ============ */
+
+:global(.custom-tooltip) {
+  background: rgba(43, 130, 173, 0.95) !important;
+  border: 2px solid white !important;
+  border-radius: 8px !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  font-family: inherit !important;
+}
+
+:global(.custom-tooltip::before) {
+  border-top-color: white !important;
+}
+
+:global(.leaflet-tooltip-top::before) {
+  border-top-color: rgba(43, 130, 173, 0.95) !important;
+}
+
+:global(.leaflet-tooltip-bottom::before) {
+  border-bottom-color: rgba(43, 130, 173, 0.95) !important;
+}
+
+:global(.leaflet-tooltip-left::before) {
+  border-left-color: rgba(43, 130, 173, 0.95) !important;
+}
+
+:global(.leaflet-tooltip-right::before) {
+  border-right-color: rgba(43, 130, 173, 0.95) !important;
 }
 
 /* ============ POPUP BUTTONS ============ */
@@ -234,3 +320,5 @@
 :global(.popup-action-btn.success:hover) {
   box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4) !important;
 }
+
+

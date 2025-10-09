@@ -1,3 +1,4 @@
+// src/app/pages/services-map-page/services/map.models.ts
 
 export interface MapPin {
   id: number;
@@ -62,6 +63,10 @@ export interface BikeRepairCoverageCategoryDto {
 
 export interface BikeRepairCoverageMapDto {
   coveragesByCategory: { [key: string]: BikeRepairCoverageDto[] };
+}
+
+export interface FilterByCoverageRequest {
+  coverageIds: number[];
 }
 
 export interface MapServicesRequestDto {

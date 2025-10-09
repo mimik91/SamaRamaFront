@@ -292,20 +292,53 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     
     let markerIcon;
     let zIndexOffset = 0;
+    let markerClassName = '';
     
     if (isCluster) {
       const count = parseInt(pin.name.split(' ')[0]);
       markerIcon = this.createClusterIcon(count);
       zIndexOffset = count >= 50 ? 3000 : (count >= 10 ? 2000 : 1000);
+      markerClassName = 'cluster-marker';
     } else {
       markerIcon = this.createPinIcon();
       zIndexOffset = 500;
+      markerClassName = 'pin-marker';
     }
 
     const marker = L.marker([pin.latitude, pin.longitude], { 
       icon: markerIcon,
       zIndexOffset: zIndexOffset
     }).addTo(this.map);
+
+    // Add tooltip on hover (only for service pins, not clusters)
+    if (!isCluster) {
+      marker.bindTooltip(pin.name, {
+        permanent: false,
+        direction: 'top',
+        offset: [0, -35],
+        opacity: 0.95,
+        className: 'custom-tooltip'
+      });
+    }
+
+    // Add custom CSS class to marker element
+    const markerElement = marker.getElement();
+    if (markerElement) {
+      markerElement.classList.add(markerClassName);
+      
+      // Add hover brightness effect
+      markerElement.addEventListener('mouseenter', () => {
+        if (!isCluster) {
+          markerElement.style.transition = 'all 0.25s ease';
+        }
+      });
+      
+      markerElement.addEventListener('mouseleave', () => {
+        if (!isCluster && this.selectedPinId !== pin.id) {
+          markerElement.classList.remove('selected-pin');
+        }
+      });
+    }
 
     const pinId = isCluster ? pin.id : parseInt(pin.id.toString());
     this.markers.set(pinId, marker);
@@ -321,6 +354,11 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
         this.pinClicked.emit(pin);
         // Request service details from parent
         this.serviceDetailsRequested.emit(pinId);
+        
+        // Highlight selected pin
+        if (markerElement) {
+          this.highlightMarker(markerElement, pinId);
+        }
       }
     });
   }
@@ -515,22 +553,52 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
 
   private createPinIcon(): any {
     const pinSize = 40;
-    const svg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${pinSize}' height='${pinSize * 1.2}' viewBox='0 0 40 48'%3E%3Cpath d='M20 0c-8.284 0-15 6.656-15 14.866 0 8.211 15 33.134 15 33.134s15-24.923 15-33.134C35 6.656 28.284 0 20 0zm0 20c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z' fill='%232B82AD' stroke='white' stroke-width='2'/%3E%3Ccircle cx='20' cy='14' r='4' fill='white'/%3E%3C/svg%3E`;
+    // SVG with glow effect for better hover visibility
+    const svg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${pinSize}' height='${pinSize * 1.2}' viewBox='0 0 40 48'%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='2' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M20 0c-8.284 0-15 6.656-15 14.866 0 8.211 15 33.134 15 33.134s15-24.923 15-33.134C35 6.656 28.284 0 20 0zm0 20c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z' fill='%232B82AD' stroke='white' stroke-width='2' filter='url(%23glow)'/%3E%3Ccircle cx='20' cy='14' r='4' fill='white'/%3E%3C/svg%3E`;
     
     return L.icon({
       iconUrl: svg,
       iconSize: [pinSize, pinSize * 1.2],
       iconAnchor: [pinSize/2, pinSize * 1.2],
-      popupAnchor: [0, -pinSize * 1.2]
+      popupAnchor: [0, -pinSize * 1.2],
+      className: 'custom-pin-icon'
     });
   }
 
   private highlightSelectedPin(pinId: number | null): void {
-    // Update marker styles based on selection
-    this.markers.forEach((marker, id) => {
-      const icon = marker.getIcon();
-      // Visual feedback could be added here
+    // Remove highlight from all markers
+    this.markers.forEach((marker) => {
+      const element = marker.getElement();
+      if (element) {
+        element.classList.remove('selected-pin');
+      }
     });
+
+    // Add highlight to selected marker
+    if (pinId !== null) {
+      const selectedMarker = this.markers.get(pinId);
+      if (selectedMarker) {
+        const element = selectedMarker.getElement();
+        if (element) {
+          element.classList.add('selected-pin');
+        }
+      }
+    }
+  }
+
+  private highlightMarker(markerElement: HTMLElement, pinId: number): void {
+    // Remove highlight from all other markers
+    this.markers.forEach((marker, id) => {
+      if (id !== pinId) {
+        const element = marker.getElement();
+        if (element) {
+          element.classList.remove('selected-pin');
+        }
+      }
+    });
+
+    // Add highlight to clicked marker
+    markerElement.classList.add('selected-pin');
   }
 
   // ============ PUBLIC METHODS ============

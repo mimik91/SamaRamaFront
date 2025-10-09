@@ -17,13 +17,14 @@ import {
   SearchFiltersState,
   CoverageCategory,
   MapServicesRequestDto,
-  ServiceDetails
+  ServiceDetails,
+  BikeRepairCoverageCategoryDto
 } from './services/map.models';
 
 // Components
 import { MapComponent } from './components/map/map.component';
 import { ServicesListComponent } from './components/services-list/services-list.component';
-import { SearchFiltersComponent } from './components/search-filers/search-filters.component';
+import { SearchFiltersComponent } from './components/search-filters/search-filters.component';
 
 @Component({
   selector: 'app-services-map-page',
@@ -150,41 +151,90 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   // ============ REPAIR COVERAGES ============
 
   private loadRepairCoverages(): void {
+    console.log('Starting to load repair coverages...');
     this.mapService.getAllRepairCoverages()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (coverages) => {
+          console.log('Received coverages from API:', coverages);
           if (coverages?.coveragesByCategory) {
+            console.log('CoveragesByCategory exists, processing...');
             this.processCoverageCategories(coverages.coveragesByCategory);
+          } else {
+            console.warn('No coveragesByCategory in response');
           }
         },
-        error: (error) => console.error('Error loading coverages:', error)
+        error: (error) => {
+          console.error('Error loading coverages:', error);
+          this.notificationService.error('Nie udało się załadować filtrów');
+        }
       });
   }
 
   private processCoverageCategories(coveragesByCategory: any): void {
     const categoriesMap = new Map<string, CoverageCategory>();
     
+    console.log('Processing coverage categories:', coveragesByCategory);
+    console.log('Keys:', Object.keys(coveragesByCategory));
+    
     Object.entries(coveragesByCategory).forEach(([key, coverages]: [string, any]) => {
+      console.log('Processing key:', key);
+      
       try {
-        const categoryData = JSON.parse(key);
-        categoriesMap.set(key, {
-          category: categoryData,
-          coverages: coverages
-        });
+        // Parse the string format: "BikeRepairCoverageCategoryDto(id=1, name=Typ roweru, displayOrder=1)"
+        const idMatch = key.match(/id=(\d+)/);
+        const nameMatch = key.match(/name=([^,)]+)/);
+        const displayOrderMatch = key.match(/displayOrder=(\d+)/);
+        
+        if (idMatch && nameMatch) {
+          const categoryData: BikeRepairCoverageCategoryDto = {
+            id: parseInt(idMatch[1]),
+            name: nameMatch[1].trim(),
+            displayOrder: displayOrderMatch ? parseInt(displayOrderMatch[1]) : 0
+          };
+          
+          console.log('Parsed category:', categoryData);
+          
+          // Filter out empty coverage arrays
+          if (Array.isArray(coverages) && coverages.length > 0) {
+            categoriesMap.set(key, {
+              category: categoryData,
+              coverages: coverages
+            });
+            console.log('Added category with', coverages.length, 'coverages');
+          } else {
+            console.log('Skipping empty category:', categoryData.name);
+          }
+        } else {
+          console.warn('Could not parse category key:', key);
+        }
       } catch (error) {
-        console.error('Error parsing category:', error);
+        console.error('Error processing category:', key, error);
       }
     });
     
     this.coverageCategories = Array.from(categoriesMap.values())
       .sort((a, b) => (a.category.displayOrder || 0) - (b.category.displayOrder || 0));
+    
+    console.log('Final processed coverage categories:', this.coverageCategories);
+    console.log('Total categories:', this.coverageCategories.length);
+    
+    if (this.coverageCategories.length === 0) {
+      console.error('No categories were processed! Check the data format.');
+    }
   }
 
   // ============ MAP PINS (CLUSTERED) ============
 
   private loadMapPins(zoom: number, bounds?: string): void {
-    this.mapService.getClusteredPins(zoom, bounds, this.filtersState.cityQuery || undefined)
+    this.mapService.getClusteredPins(
+      zoom, 
+      bounds, 
+      this.filtersState.cityQuery || undefined, 
+      this.filtersState.selectedCoverageIds.length > 0 
+      ? this.filtersState.selectedCoverageIds 
+      : undefined
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -401,11 +451,16 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
     } else {
       this.filtersState.selectedCoverageIds.push(coverageId);
     }
+    const boundsStr = this.getBoundsString(this.currentMapView.bounds);
+    this.loadMapPins(this.currentMapView.zoom, boundsStr);
+  
+    this.loadServicesForList(0);
   }
 
   onAdvancedFiltersApplied(): void {
     this.loadServicesForList(0);
   }
+
 
   onAdvancedFiltersCleared(): void {
     this.filtersState.selectedCoverageIds = [];

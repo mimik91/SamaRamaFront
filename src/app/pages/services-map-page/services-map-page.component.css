@@ -1,11 +1,9 @@
-/* src/app/pages/services-map-page/services-map-page.component.css */
-
 .map-page-layout {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: calc(100vh - 60px);
-  margin-top: 60px;
+  margin-top: 0px;
   position: relative;
   background-color: #f8fafc;
   overflow: hidden;
@@ -73,6 +71,9 @@
   display: flex;
   flex-direction: column;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
+  height: 100%; /* Ensure full height */
+  overflow-y: auto; /* Allow vertical scroll for entire sidebar */
+  overflow-x: visible; /* WAŻNE: Pozwól autocomplete wyjść w poziomie */
 }
 
 .sidebar.hidden {
@@ -80,10 +81,11 @@
 }
 
 .sidebar-header {
-  padding: 20px;
+  padding: 20x;
   border-bottom: 1px solid #f1f5f9;
   background-color: #2B82AD;
   color: white;
+  flex-shrink: 0; /* Don't shrink */
 }
 
 .sidebar-title {
@@ -103,6 +105,19 @@
 
 .sidebar-search-filters {
   border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0; /* Don't shrink */
+  overflow: visible; /* WAŻNE: Pozwól autocomplete wyjść poza */
+  position: relative;
+  z-index: 100; /* Wyższy z-index */
+}
+
+/* Ensure services-list takes remaining space */
+:host ::ng-deep app-services-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Important for flex overflow */
+  overflow: hidden;
 }
 
 /* ============ MAP CONTAINER ============ */

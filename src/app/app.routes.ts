@@ -42,7 +42,7 @@ export const routes: Routes = [
     { 
       path: '', 
       component: ServicesMapPageComponent,
-      title: 'Mapa Serwisów Rowerowych - Napravelo'
+      title: 'Mapa Serwisów Rowerowych'
     },
     
     // Aliasy dla mapy
@@ -54,87 +54,87 @@ export const routes: Routes = [
     { 
       path: 'jak-dzialamy', 
       component: HowItWorksPageComponent,
-      title: 'Jak Działamy - Napravelo'
+      title: 'Jak Działamy'
     },
     
     // Legal pages
     { 
       path: 'terms-of-service', 
       component: TermsOfServiceComponent, 
-      title: 'Regulamin Serwisu - Napravelo'
+      title: 'Regulamin Serwisu'
     },
     { 
       path: 'privacy-policy', 
       component: PrivacyPolicyComponent, 
-      title: 'Polityka Prywatności - Napravelo' 
+      title: 'Polityka Prywatności' 
     },
     
     // Pricing route - dostępna dla wszystkich
     { 
       path: 'cennik', 
       component: PricingComponent,
-      title: 'Cennik - Napravelo'
+      title: 'Cennik'
     },
     
     // Guest order route - dostępna dla niezalogowanych
     { 
       path: 'guest-order', 
       component: GuestServiceOrderComponent,
-      title: 'Zamów Serwis jako Gość - Napravelo'
+      title: 'Zamów Serwis jako Gość'
     },
     
     // Transport order - dostępna dla wszystkich (bez guarda)
     { 
       path: 'order-transport', 
       component: TransportOrderFormComponent,
-      title: 'Zamów Transport - Napravelo'
+      title: 'Zamów Transport'
     },
     { 
       path: 'ordersummary', 
       component: OrderSummaryComponent,
-      title: 'Podsumowanie Zamówienia - Napravelo'
+      title: 'Podsumowanie Zamówienia'
     },
     
     // Auth routes - NIGDY nie dodawaj guard do tras logowania!
     { 
       path: 'login', 
       component: LoginComponent,
-      title: 'Logowanie - Napravelo'
+      title: 'Logowanie'
     },
     { 
       path: 'register', 
       component: RegistrationComponent, 
       data: { userType: 'client' },
-      title: 'Rejestracja - Napravelo'
+      title: 'Rejestracja'
     },
     { 
       path: 'verify-account', 
       component: VerificationComponent,
-      title: 'Weryfikacja Konta - Napravelo'
+      title: 'Weryfikacja Konta'
     },
     { 
       path: 'password-reset-request', 
       component: PasswordResetRequestComponent,
-      title: 'Reset Hasła - Napravelo'
+      title: 'Reset Hasła'
     },
     { 
       path: 'password-reset', 
       component: PasswordResetComponent,
-      title: 'Nowe Hasło - Napravelo'
+      title: 'Nowe Hasło'
     },
     
     // Service registration - teraz dostępna w menu
     { 
       path: 'register-service', 
       component: ServiceRegistrationComponent,
-      title: 'Zarejestruj Serwis - Napravelo'
+      title: 'Zarejestruj Serwis'
     },
     
     // About page
     { 
       path: 'about', 
       component: AboutUsComponent,
-      title: 'O Nas - Napravelo'
+      title: 'O Nas'
     },
     
     // === DASHBOARD ROUTES (dla przekierowań po logowaniu) ===
@@ -145,7 +145,7 @@ export const routes: Routes = [
       component: BicyclesListComponent,
       canActivate: [clientGuard],
       data: { roles: ['CLIENT'] },
-      title: 'Panel Klienta - Napravelo'
+      title: 'Panel Klienta'
     },
     
     // Dashboard dla adminów
@@ -154,7 +154,7 @@ export const routes: Routes = [
       component: AdminDashboardComponent, 
       canActivate: [adminGuard],
       data: { roles: ['ADMIN', 'MODERATOR'] },
-      title: 'Panel Administracyjny - Napravelo'
+      title: 'Panel Administracyjny'
     },
     
     // === CHRONIONE TRASY KLIENTÓW ===
@@ -163,20 +163,20 @@ export const routes: Routes = [
       path: 'bicycles', 
       component: BicyclesListComponent, 
       canActivate: [clientGuard],
-      title: 'Moje Rowery - Napravelo'
+      title: 'Moje Rowery'
     },
     { 
       path: 'bicycles/add', 
       component: BicycleFormComponent, 
       canActivate: [clientGuard],
-      title: 'Dodaj Rower - Napravelo'
+      title: 'Dodaj Rower'
     },
     { 
       path: 'bicycles/:id', 
       component: BicycleDetailsComponent, 
       canActivate: [clientGuard], 
       data: { RenderMode: 'client' },
-      title: 'Szczegóły Roweru - Napravelo'
+      title: 'Szczegóły Roweru'
     },
     
     // Service order routes for clients
@@ -184,26 +184,26 @@ export const routes: Routes = [
       path: 'order-service', 
       component: ServiceOrderFormComponent, 
       canActivate: [clientGuard],
-      title: 'Zamów Serwis - Napravelo'
+      title: 'Zamów Serwis'
     },
     { 
       path: 'bicycles/:id/order-service', 
       component: ServiceOrderFormComponent, 
       canActivate: [clientGuard],
-      title: 'Zamów Serwis - Napravelo'
+      title: 'Zamów Serwis'
     },
     { 
       path: 'service-appointments', 
       component: ServiceAppointmentsComponent, 
       canActivate: [clientGuard],
-      title: 'Moje Wizyty - Napravelo'
+      title: 'Moje Wizyty'
     },
     { 
       path: 'service-appointments/:id', 
       component: ServiceOrderDetailsComponent, 
       canActivate: [clientGuard], 
       data: { RenderMode: 'client' },
-      title: 'Szczegóły Wizyty - Napravelo'
+      title: 'Szczegóły Wizyty'
     },
     
     // Account route - dostępna dla zalogowanych użytkowników
@@ -211,7 +211,7 @@ export const routes: Routes = [
       path: 'account', 
       component: AccountComponent, 
       canActivate: [authGuard],
-      title: 'Moje Konto - Napravelo'
+      title: 'Moje Konto'
     },
     
     // === CHRONIONE TRASY ADMINÓW ===
@@ -220,7 +220,7 @@ export const routes: Routes = [
       path: 'admin', 
       component: AdminPanelComponent, 
       canActivate: [adminGuard],
-      title: 'Panel Admina - Napravelo'
+      title: 'Panel Admina'
     },
     
     // Admin Orders Routes
@@ -228,19 +228,19 @@ export const routes: Routes = [
       path: 'admin-orders', 
       component: AdminOrdersComponent, 
       canActivate: [adminGuard],
-      title: 'Zamówienia - Admin - Napravelo'
+      title: 'Zamówienia - Admin'
     },
     { 
       path: 'admin-orders/:id', 
       component: AdminOrderDetailsComponent, 
       canActivate: [adminGuard],
-      title: 'Szczegóły Zamówienia - Admin - Napravelo'
+      title: 'Szczegóły Zamówienia - Admin'
     },
     { 
       path: 'admin-users', 
       component: AdminUsersComponent, 
       canActivate: [adminGuard],
-      title: 'Użytkownicy - Admin - Napravelo'
+      title: 'Użytkownicy - Admin'
     },
 
     // Pozostałe admin routes
@@ -248,25 +248,25 @@ export const routes: Routes = [
       path: 'admin-enumerations', 
       component: AdminEnumerationsManagerComponent, 
       canActivate: [adminGuard],
-      title: 'Słowniki - Admin - Napravelo'
+      title: 'Słowniki - Admin'
     },
     { 
       path: 'admin-service-packages', 
       component: AdminServicePackagesComponent, 
       canActivate: [adminGuard],
-      title: 'Pakiety Serwisowe - Admin - Napravelo'
+      title: 'Pakiety Serwisowe - Admin'
     },
     { 
       path: 'admin-service-slots', 
       component: AdminServiceSlotsComponent, 
       canActivate: [adminGuard],
-      title: 'Sloty Czasowe - Admin - Napravelo'
+      title: 'Sloty Czasowe - Admin'
     },
     { 
       path: 'admin-bike-services', 
       component: AdminBikeServicesComponent, 
       canActivate: [adminGuard],
-      title: 'Serwisy - Admin - Napravelo'
+      title: 'Serwisy - Admin'
     },
     
     { 
@@ -274,7 +274,7 @@ export const routes: Routes = [
       component: CourierPanelComponent, 
       canActivate: [adminGuard],
       data: { roles: ['ADMIN', 'MODERATOR'] },
-      title: 'Panel Kuriera - Napravelo'
+      title: 'Panel Kuriera'
     },
     
     // === FALLBACK ===

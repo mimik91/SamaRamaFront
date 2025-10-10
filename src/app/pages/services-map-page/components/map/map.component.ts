@@ -266,6 +266,10 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   private updateMapPins(pins: MapPin[]): void {
     if (!this.map || !this.isMapInitialized) return;
 
+    if (this.map.closePopup) {
+        this.map.closePopup(); 
+    }
+
     this.markers.forEach(marker => {
       this.map.removeLayer(marker);
     });
@@ -366,29 +370,37 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   // ============ POPUP MANAGEMENT ============
 
   public showServicePopup(serviceDetails: ServiceDetails, marker?: any): void {
-    // Find marker by service ID if not provided
-    if (!marker) {
-      marker = this.markers.get(serviceDetails.id);
-    }
-
-    if (!marker) {
-      console.error('Marker not found for service:', serviceDetails.id);
-      return;
-    }
-
-    const popupContent = this.buildPopupContent(serviceDetails);
-    
-    marker.bindPopup(popupContent, {
-      maxWidth: 400,
-      className: 'detailed-service-popup',
-      closeButton: true
-    }).openPopup();
-
-    // Attach event listeners after popup is rendered
-    setTimeout(() => {
-      this.attachPopupEventListeners(serviceDetails);
-    }, 100);
+  // 1. Znajdź marker po ID serwisu
+  if (!marker) {
+    marker = this.markers.get(serviceDetails.id);
   }
+
+  if (!marker) {
+    console.error('Marker not found for service:', serviceDetails.id);
+    return;
+  }
+  
+  const popupContent = this.buildPopupContent(serviceDetails);
+  
+  if (!marker.getPopup()) {
+      marker.bindPopup(popupContent, {
+          maxWidth: 400,
+          className: 'detailed-service-popup',
+          closeButton: true
+      });
+  } else {
+      marker.getPopup().setContent(popupContent);
+  }
+  
+  marker.openPopup(); 
+
+  
+  setTimeout(() => {
+    this.attachPopupEventListeners(serviceDetails);
+  }, 100);
+
+  this.highlightSelectedPin(serviceDetails.id);
+}
 
   private buildPopupContent(serviceDetails: ServiceDetails): string {
     const addressParts = [];

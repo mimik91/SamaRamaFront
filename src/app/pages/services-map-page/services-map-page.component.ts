@@ -110,7 +110,10 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
     this.checkMobileView();
     this.setupDebouncing();
     this.loadRepairCoverages();
-    this.loadInitialData();
+
+    setTimeout(() => {
+      this.loadInitialData();
+    }, 100);
   }
 
   ngOnDestroy(): void {
@@ -419,14 +422,19 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   }
 
   onServiceSelected(service: MapPin): void {
-    this.selectedServiceId = service.id;
-    if (this.mapComponent) {
-      this.mapComponent.centerOn(service.latitude, service.longitude, 15);
-    }
-    if (this.isMobileView) {
-      this.showMapView = true;
-    }
+  if (!service.id) return; // Zabezpieczenie
+
+  this.selectedServiceId = service.id;
+
+  if (this.mapComponent) {
+    this.mapComponent.centerOn(service.latitude, service.longitude, 15);
   }
+
+  if (this.isMobileView) {
+    this.showMapView = true;
+  }
+  this.loadServiceDetailsAndShowPopup(service.id);
+}
 
   onServiceClearRequested(): void {
     this.filtersState.serviceQuery = '';

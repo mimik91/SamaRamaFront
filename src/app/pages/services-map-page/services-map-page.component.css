@@ -14,7 +14,7 @@
 .fixed-header {
   position: sticky;
   top: 0;
-  z-index: 2000;
+  z-index: 1000; /* Niżej niż navbar */
   background: white;
   border-bottom: 2px solid #e2e8f0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -60,6 +60,8 @@
   flex: 1;
   display: flex;
   overflow: hidden;
+  position: relative;
+  z-index: 1; /* KLUCZOWE - niżej niż navbar */
 }
 
 /* ============ SIDEBAR ============ */
@@ -71,9 +73,11 @@
   display: flex;
   flex-direction: column;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
-  height: 100%; /* Ensure full height */
-  overflow-y: auto; /* Allow vertical scroll for entire sidebar */
-  overflow-x: visible; /* WAŻNE: Pozwól autocomplete wyjść w poziomie */
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: visible;
+  position: relative;
+  z-index: 100; /* Wyżej niż mapa, ale niżej niż navbar */
 }
 
 .sidebar.hidden {
@@ -81,11 +85,11 @@
 }
 
 .sidebar-header {
-  padding: 20x;
+  padding: 20px;
   border-bottom: 1px solid #f1f5f9;
   background-color: #2B82AD;
   color: white;
-  flex-shrink: 0; /* Don't shrink */
+  flex-shrink: 0;
 }
 
 .sidebar-title {
@@ -105,18 +109,17 @@
 
 .sidebar-search-filters {
   border-bottom: 1px solid #f1f5f9;
-  flex-shrink: 0; /* Don't shrink */
-  overflow: visible; /* WAŻNE: Pozwól autocomplete wyjść poza */
+  flex-shrink: 0;
+  overflow: visible;
   position: relative;
-  z-index: 100; /* Wyższy z-index */
+  z-index: 101;
 }
 
-/* Ensure services-list takes remaining space */
 :host ::ng-deep app-services-list {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Important for flex overflow */
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -126,6 +129,7 @@
   flex: 1;
   position: relative;
   height: 100%;
+  z-index: 1; /* KLUCZOWE - niżej niż sidebar i navbar */
 }
 
 .map-container.hidden {

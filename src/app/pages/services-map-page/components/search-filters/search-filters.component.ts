@@ -1,6 +1,7 @@
 // src/app/pages/services-map-page/components/search-filters/search-filters.component.ts
 
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnInit, HostListener, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -46,11 +47,19 @@ export class SearchFiltersComponent {
   @Output() coverageToggled = new EventEmitter<number>();
   @Output() advancedFiltersApplied = new EventEmitter<void>();
   @Output() advancedFiltersCleared = new EventEmitter<void>();
+ 
+
 
   // Stan lokalny (tylko UI)
   citySearchFocused = false;
   serviceSearchFocused = false;
   showAdvancedFilters = false;
+  isBrowser: boolean;
+  filtersExpanded = true;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
   
   // Pozycje dropdown (dla fixed positioning)
   cityDropdownStyle: any = {};
@@ -86,6 +95,31 @@ export class SearchFiltersComponent {
       left: `${rect.left}px`,
       width: `${rect.width}px`
     };
+  }
+
+  ngOnInit(): void {
+    if (this.isBrowser && window.innerWidth <= 768) {
+      this.filtersExpanded = false;
+    }
+  
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (!this.isBrowser) return;
+        if (window.innerWidth > 768 && !this.filtersExpanded) {
+    }
+  }
+
+  getActiveFiltersCount(): number {
+    let count = 0;
+    
+    if (this.filtersState.cityQuery) count++;
+    if (this.filtersState.serviceQuery) count++;
+    if (this.filtersState.verifiedOnly) count++;
+    count += this.filtersState.selectedCoverageIds.length;
+    
+    return count;
   }
 
   // City search methods
@@ -178,6 +212,10 @@ export class SearchFiltersComponent {
     this.coverageToggled.emit(coverageId);
   }
 
+   toggleFilters(): void {
+    this.filtersExpanded = !this.filtersExpanded;
+  }
+
   isCoverageSelected(coverageId: number): boolean {
     return this.filtersState.selectedCoverageIds.includes(coverageId);
   }
@@ -196,4 +234,17 @@ export class SearchFiltersComponent {
   get hasActiveFilters(): boolean {
     return this.filtersState.selectedCoverageIds.length > 0 || this.filtersState.verifiedOnly;
   }
+
+  clearAllFilters(): void {
+  this.clearCitySearch();
+  this.clearServiceSearch();
+  this.clearFilterSearch();
+  this.advancedFiltersCleared.emit();
+}
+
+closeFiltersPanel(): void {
+    this.showAdvancedFilters = !this.showAdvancedFilters;
+    this.advancedFiltersToggled.emit();
+}
+
 }

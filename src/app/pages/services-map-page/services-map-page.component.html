@@ -4,6 +4,7 @@
   <!-- Fixed header with search and filters - MOBILE ONLY -->
   <div class="fixed-header" *ngIf="isMobileView">
     <app-search-filters
+    
       [isMobileView]="isMobileView"
       [citySuggestions]="citySuggestions"
       [serviceSuggestions]="serviceSuggestions"
@@ -21,6 +22,7 @@
       (coverageToggled)="onCoverageToggled($event)"
       (advancedFiltersApplied)="onAdvancedFiltersApplied()"
       (advancedFiltersCleared)="onAdvancedFiltersCleared()"
+      (closePanelRequested)="isAdvandedFiltersPanelOpen = false" 
     ></app-search-filters>
 
     <!-- Mobile view toggle button -->
@@ -65,6 +67,7 @@
           (coverageToggled)="onCoverageToggled($event)"
           (advancedFiltersApplied)="onAdvancedFiltersApplied()"
           (advancedFiltersCleared)="onAdvancedFiltersCleared()"
+          
         ></app-search-filters>
       </div>
 

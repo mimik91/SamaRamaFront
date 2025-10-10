@@ -66,7 +66,6 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   }
 
   ngOnInit(): void {
-    // Component initialization
   }
 
   ngAfterViewInit(): void {
@@ -123,6 +122,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
       this.isMapInitialized = true;
       this.loading = false;
       this.mapReady.emit();
+       this.updateMapPins(this.pins); 
       
     } catch (err) {
       console.error('Failed to initialize map:', err);

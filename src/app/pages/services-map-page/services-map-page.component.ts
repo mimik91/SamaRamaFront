@@ -50,6 +50,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   isMobileView = false;
   showMapView = true; // true = mapa, false = lista (mobile only)
 
+  isAdvandedFiltersPanelOpen = false;
   // Map state
   mapPins: MapPin[] = []; // Piny na mapie (clustered)
   mapVisible = true;
@@ -109,10 +110,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
     this.checkMobileView();
     this.setupDebouncing();
     this.loadRepairCoverages();
-
-    setTimeout(() => {
-      this.loadInitialData();
-    }, 100);
+    this.loadInitialData();
   }
 
   ngOnDestroy(): void {

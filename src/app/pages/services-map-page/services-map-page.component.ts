@@ -249,6 +249,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
 
   // ============ SERVICES LIST ============
 
+
   private loadServicesForList(page: number = 0): void {
     this.loadingServices = page === 0;
     this.loadingMore = page > 0;
@@ -304,6 +305,11 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   private getBoundsString(bounds: any): string | undefined {
     if (!bounds) return undefined;
     return `${bounds.south},${bounds.west},${bounds.north},${bounds.east}`;
+  }
+
+  onPopupReopenRequested(serviceId: number): void {
+
+    this.loadServiceDetailsAndShowPopup(serviceId); 
   }
 
   // ============ CITY SEARCH ============
@@ -424,8 +430,6 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   onServiceSelected(service: MapPin): void {
   if (!service.id) return; // Zabezpieczenie
 
-  this.selectedServiceId = service.id;
-
   if (this.mapComponent) {
     this.mapComponent.centerOn(service.latitude, service.longitude, 15);
   }
@@ -433,6 +437,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   if (this.isMobileView) {
     this.showMapView = true;
   }
+  
   this.loadServiceDetailsAndShowPopup(service.id);
 }
 
@@ -498,8 +503,6 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   }
 
   onPinClicked(pin: MapPin): void {
-    this.selectedServiceId = pin.id;
-    // Load service details and show popup
     this.loadServiceDetailsAndShowPopup(pin.id);
   }
 
@@ -509,6 +512,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (serviceDetails) => {
           if (serviceDetails && this.mapComponent) {
+            this.selectedServiceId = serviceId; 
             this.mapComponent.showServicePopup(serviceDetails);
           }
         },

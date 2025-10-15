@@ -106,17 +106,44 @@
           
           <div class="form-group">
             <label for="serviceName">Nazwa serwisu * <span class="char-limit">(max 50 znaków)</span></label>
-            <input 
-              type="text" 
-              id="serviceName" 
-              formControlName="serviceName"
-              [class.is-invalid]="isFieldInvalid(basicInfoForm, 'serviceName')"
-              placeholder="Nazwa Twojego serwisu rowerowego"
-              maxlength="50"
-            >
+            <div class="input-with-status">
+              <input 
+                type="text" 
+                id="serviceName" 
+                formControlName="serviceName"
+                [class.is-invalid]="isFieldInvalid(basicInfoForm, 'serviceName')"
+                [class.is-checking]="isCheckingServiceName"
+                [class.is-available]="serviceNameCheckResult === 'available'"
+                [class.is-taken]="serviceNameCheckResult === 'taken'"
+                placeholder="Nazwa Twojego serwisu rowerowego"
+                maxlength="50"
+              >
+              <div class="suffix-status" *ngIf="basicInfoForm.get('serviceName')?.value?.trim()">
+                <span class="status-indicator checking" *ngIf="isCheckingServiceName">
+                  <svg class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  <span>Sprawdzanie...</span>
+                </span>
+                <span class="status-indicator available" *ngIf="!isCheckingServiceName && serviceNameCheckResult === 'available'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>Dostępna</span>
+                </span>
+                <span class="status-indicator taken" *ngIf="!isCheckingServiceName && serviceNameCheckResult === 'taken'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                  <span>Zajęta</span>
+                </span>
+              </div>
+            </div>
             <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'serviceName') }}/50</div>
             <div *ngIf="isFieldInvalid(basicInfoForm, 'serviceName')" class="error-message">
-              Pole wymagane
+              <span *ngIf="basicInfoForm.get('serviceName')?.hasError('required')">Pole wymagane</span>
+              <span *ngIf="basicInfoForm.get('serviceName')?.hasError('serviceNameTaken')">Ta nazwa jest już zajęta</span>
             </div>
           </div>
 
@@ -140,7 +167,7 @@
               <p>Przykład: <strong>www.cyclopick.pl/bike-service-warszawa</strong></p>
             </div>
             <div *ngIf="isFieldInvalid(basicInfoForm, 'suffix')" class="error-message">
-              Wprowadź poprawny sufiks (tylko litery, cyfry i myślniki)
+              Ten suffix jest zajęty lub posiada coś więcej niż tylko litery, cyfry i myślniki
             </div>
           </div>
 

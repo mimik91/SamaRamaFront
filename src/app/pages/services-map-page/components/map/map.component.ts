@@ -46,6 +46,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   @Output() clusterClicked = new EventEmitter<{ lat: number; lng: number; zoom: number }>();
   @Output() mapError = new EventEmitter<string>();
   @Output() serviceDetailsRequested = new EventEmitter<number>();
+  @Output() popupReopenRequested = new EventEmitter<number>(); 
   @Output() viewServiceDetails = new EventEmitter<ServiceDetails>();
   @Output() registerService = new EventEmitter<ServiceDetails>();
   @Output() orderTransport = new EventEmitter<ServiceDetails>();
@@ -77,20 +78,24 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['pins'] && !changes['pins'].firstChange && this.isMapInitialized) {
-      this.updateMapPins(this.pins);
+    const pinsChange = changes['pins'];
+    const selectedPinIdChange = changes['selectedPinId'];
+    if (pinsChange && !pinsChange.firstChange && this.isMapInitialized) {
+        if (pinsChange.currentValue?.length !== pinsChange.previousValue?.length) {
+             this.updateMapPins(this.pins);
+        } 
     }
-
-    if (changes['selectedPinId'] && !changes['selectedPinId'].firstChange && this.isMapInitialized) {
-      this.highlightSelectedPin(this.selectedPinId);
+    if (selectedPinIdChange && this.isMapInitialized) {
+        setTimeout(() => {
+          this.highlightSelectedPin(this.selectedPinId);
+        }, 50); 
     }
-
     if (changes['visible'] && changes['visible'].currentValue && !this.isMapInitialized) {
-      setTimeout(() => {
-        this.initializeMapAsync();
-      }, 100);
+        setTimeout(() => {
+            this.initializeMapAsync();
+        }, 100);
     }
-  }
+}
 
   ngOnDestroy(): void {
     this.destroyMap();
@@ -266,6 +271,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   private updateMapPins(pins: MapPin[]): void {
     if (!this.map || !this.isMapInitialized) return;
 
+    const currentlySelectedPinId = this.selectedPinId;
     if (this.map.closePopup) {
         this.map.closePopup(); 
     }
@@ -289,6 +295,16 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
         console.error(`Error adding marker for pin ${pin.id}:`, error);
       }
     });
+    if (currentlySelectedPinId !== null) {
+    const pinToReopen = pins.find(p => p.id === currentlySelectedPinId);
+    
+    if (pinToReopen) {
+  
+      setTimeout(() => {
+        this.popupReopenRequested.emit(currentlySelectedPinId);
+      }, 50);
+    }
+  }
   }
 
   private addPinToMap(pin: MapPin): void {

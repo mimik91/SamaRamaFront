@@ -16,6 +16,38 @@ body.overflow-hidden {
   overflow: hidden;
 }
 
+/* Dodaj do styles.css lub do komponentu notyfikacji */
+.notification-container {
+  position: fixed;
+  top: 80px; /* Wysokość paska nawigacji + margines */
+  right: 30px;
+  z-index: 9999; /* Bardzo wysoki z-index */
+  pointer-events: none;
+}
+
+.notification {
+  pointer-events: all;
+  margin-top: 40px;
+  margin-bottom: 12px;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 300px;
+  max-width: 500px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* Ogólne style responsywne */
 @media screen and (max-width: 768px) {
   .content-container {
@@ -36,3 +68,5 @@ body.overflow-hidden {
 }
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+

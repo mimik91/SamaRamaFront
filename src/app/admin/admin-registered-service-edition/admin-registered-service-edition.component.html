@@ -1,0 +1,157 @@
+<div class="edition-container">
+  <div class="header">
+    <button class="back-button" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Powrót
+    </button>
+    <h1>Edycja Serwisu</h1>
+  </div>
+
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div *ngIf="!loading" class="form-container">
+    <form (ngSubmit)="saveService()">
+      <!-- Basic Info Section -->
+      <div class="form-section">
+        <h2 class="section-title">Podstawowe informacje</h2>
+        
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="name">Nazwa serwisu *</label>
+            <input type="text" id="name" [(ngModel)]="editForm.name" name="name" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" [(ngModel)]="editForm.email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="phoneNumber">Telefon</label>
+            <input type="tel" id="phoneNumber" [(ngModel)]="editForm.phoneNumber" name="phoneNumber" placeholder="+48 123 456 789">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="suffix">Sufiks</label>
+            <input type="text" id="suffix" [(ngModel)]="editForm.suffix" name="suffix">
+          </div>
+          <div class="form-group">
+            <label for="contactPerson">Osoba kontaktowa</label>
+            <input type="text" id="contactPerson" [(ngModel)]="editForm.contactPerson" name="contactPerson">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="website">Strona internetowa</label>
+            <input type="url" id="website" [(ngModel)]="editForm.website" name="website" placeholder="https://example.com">
+          </div>
+        </div>
+      </div>
+
+      <!-- Address Section -->
+      <div class="form-section">
+        <h2 class="section-title">Adres</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="street">Ulica</label>
+            <input type="text" id="street" [(ngModel)]="editForm.street" name="street">
+          </div>
+          <div class="form-group small">
+            <label for="building">Nr budynku</label>
+            <input type="text" id="building" [(ngModel)]="editForm.building" name="building">
+          </div>
+          <div class="form-group small">
+            <label for="flat">Nr mieszkania</label>
+            <input type="text" id="flat" [(ngModel)]="editForm.flat" name="flat">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">Miasto</label>
+            <input type="text" id="city" [(ngModel)]="editForm.city" name="city">
+          </div>
+          <div class="form-group">
+            <label for="postalCode">Kod pocztowy</label>
+            <input type="text" id="postalCode" [(ngModel)]="editForm.postalCode" name="postalCode" placeholder="00-000">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="latitude">Szerokość geograficzna</label>
+            <input type="number" id="latitude" [(ngModel)]="editForm.latitude" name="latitude" step="0.000001" placeholder="50.061389">
+          </div>
+          <div class="form-group">
+            <label for="longitude">Długość geograficzna</label>
+            <input type="number" id="longitude" [(ngModel)]="editForm.longitude" name="longitude" step="0.000001" placeholder="19.936944">
+          </div>
+        </div>
+      </div>
+
+      <!-- Transport Section -->
+      <div class="form-section">
+        <h2 class="section-title">Transport</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="transportCost">Koszt transportu (PLN)</label>
+            <input type="number" id="transportCost" [(ngModel)]="editForm.transportCost" name="transportCost" step="0.01" min="0" placeholder="0.00">
+          </div>
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" [(ngModel)]="editForm.transportAvailable" name="transportAvailable">
+              Transport dostępny
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description Section -->
+      <div class="form-section">
+        <h2 class="section-title">Dodatkowe informacje</h2>
+        
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="description">Opis serwisu</label>
+            <textarea id="description" [(ngModel)]="editForm.description" name="description" rows="5" placeholder="Wprowadź opis serwisu, oferowane usługi, godziny otwarcia, itp."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-delete" (click)="deleteService()" [disabled]="deleting || saving">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          {{ deleting ? 'Usuwanie...' : 'Usuń serwis' }}
+        </button>
+
+        <div class="actions-right">
+          <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="saving || deleting">
+            Anuluj
+          </button>
+          <button type="submit" class="btn-save" [disabled]="saving || deleting">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" *ngIf="!saving">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            {{ saving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

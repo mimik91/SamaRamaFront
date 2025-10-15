@@ -26,6 +26,7 @@ export class AdminDashboardComponent implements OnInit {
   totalBicycles: number = 0;
   totalServices: number = 0;
   pendingOrders: number = 0;
+  pendingServicesVerification: number = 0;
   
   // UI state
   loading: boolean = true;
@@ -33,11 +34,9 @@ export class AdminDashboardComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    // Get user info from auth service
     this.getUserInfo();
-    
-    // Load dashboard stats from backend
     this.loadDashboardStats();
+    this.loadPendingServicesCount();
   }
   
   private getUserInfo(): void {
@@ -60,11 +59,9 @@ export class AdminDashboardComponent implements OnInit {
         this.totalServices = stats.totalServices;
         this.pendingOrders = stats.pendingOrders;
         
-        // If user info is returned from backend, update it
         if (stats.user) {
           this.userName = stats.user.email;
           
-          // Determine role from authorities
           if (stats.authorities) {
             if (stats.authorities.includes('ROLE_ADMIN')) {
               this.userRole = 'ADMIN';
@@ -81,7 +78,6 @@ export class AdminDashboardComponent implements OnInit {
         this.notificationService.error('Nie udało się załadować statystyk panelu administracyjnego');
         this.loading = false;
         
-        // Set default values in case of error
         this.totalUsers = 0;
         this.totalBicycles = 0;
         this.totalServices = 0;
@@ -90,26 +86,36 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
   
-navigateToModule(module: string): void {
-  if (module === 'orders') {
-    this.router.navigate(['/admin-orders']);
-  } else if (module === 'packages') {
-    this.router.navigate(['/admin-service-packages']);
-  } else if (module === 'services') {
-    this.router.navigate(['/admin-bike-services']);
-  } else if (module === 'users') {
-    this.router.navigate(['/admin-users']);
-  } else {
-    this.notificationService.info(`Moduł ${module} jest w przygotowaniu`);
+  private loadPendingServicesCount(): void {
+    this.adminService.getPendingVerificationServices().subscribe({
+      next: (services) => {
+        this.pendingServicesVerification = services.length;
+      },
+      error: (error) => {
+        console.error('Error loading pending services count:', error);
+        this.pendingServicesVerification = 0;
+      }
+    });
   }
-}
   
-  // Navigate to enumerations manager
+  navigateToModule(module: string): void {
+    if (module === 'orders') {
+      this.router.navigate(['/admin-orders']);
+    } else if (module === 'services') {
+      this.router.navigate(['/admin-bike-services']);
+    } else if (module === 'users') {
+      this.router.navigate(['/admin-users']);
+    } else if (module === 'services-verification') {
+      this.router.navigate(['/admin-services-verification']);
+    } else {
+      this.notificationService.info(`Moduł ${module} jest w przygotowaniu`);
+    }
+  }
+  
   navigateToEnumerationsManager(): void {
     this.router.navigate(['/admin-enumerations']);
   }
   
-  // Navigate to service slots manager
   navigateToServiceSlots(): void {
     this.router.navigate(['/admin-service-slots']);
   }

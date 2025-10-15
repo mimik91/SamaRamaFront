@@ -1,8 +1,6 @@
 <div class="admin-dashboard-container">
   <div class="header">
-    <h1>
-      Panel Administracyjny
-    </h1>
+    <h1>Panel Administracyjny</h1>
     <div class="user-info">
       <div class="user-email">{{ userName }}</div>
       <div class="user-role" [ngClass]="{'admin': userRole === 'ADMIN', 'moderator': userRole === 'MODERATOR'}">
@@ -28,7 +26,6 @@
         <div class="stat-value">{{ totalServices }}</div>
       </div>
       
-      <!-- Make the pending orders card clickable -->
       <div class="stat-card orders clickable" (click)="navigateToModule('orders')">
         <div class="stat-title">Oczekujące zamówienia</div>
         <div class="stat-value">{{ pendingOrders }}</div>
@@ -49,15 +46,15 @@
         <div class="action-title">Zarządzaj użytkownikami</div>
       </div>
       
-    <div class="action-card" (click)="navigateToModule('services')">
-      <div class="action-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 6v6l4 2"></path>
-        </svg>
+      <div class="action-card" (click)="navigateToModule('services')">
+        <div class="action-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+        </div>
+        <div class="action-title">Zarządzaj serwisami</div>
       </div>
-      <div class="action-title">Zarządzaj serwisami</div>
-    </div>
       
       <div class="action-card" (click)="navigateToEnumerationsManager()">
         <div class="action-icon">
@@ -73,14 +70,17 @@
         <div class="action-title">Edytuj Enumy</div>
       </div>
       
-      <div class="action-card" (click)="navigateToModule('packages')">
+      <div class="action-card" (click)="navigateToModule('services-verification')">
         <div class="action-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
           </svg>
         </div>
-        <div class="action-title">Pakiety serwisowe</div>
+        <div class="action-title">Serwisy do weryfikacji</div>
+        <div class="action-badge" *ngIf="pendingServicesVerification > 0">
+          {{ pendingServicesVerification }}
+        </div>
       </div>
       
       <div class="action-card" (click)="navigateToServiceSlots()">
@@ -89,8 +89,11 @@
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
             <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <line x1="3" y1="10" x2="21" y10="10"></line>
           </svg>
         </div>
         <div class="action-title">Sloty serwisowe</div>
       </div>
+    </div>
+  </section>
+</div>

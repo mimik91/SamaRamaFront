@@ -643,6 +643,56 @@
   flex-wrap: wrap;
 }
 
+.suffix-input-container {
+  display: flex;
+  align-items: stretch;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.suffix-input-container:focus-within {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.suffix-prefix {
+  background: #f8f9fa;
+  color: #495057;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  border-right: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+}
+
+.suffix-input {
+  border: none !important;
+  box-shadow: none !important;
+  flex: 1;
+  margin: 0;
+  width: 100%;
+}
+
+.suffix-input-container .input-with-status {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.suffix-input-container .suffix-status {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .service-registration-container {

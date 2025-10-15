@@ -59,6 +59,11 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   suffixCheckResult: 'available' | 'taken' | null = null;
   private suffixStatusSubscription?: Subscription;
 
+  // Stan sprawdzania nazwy serwisu
+  isCheckingServiceName = false;
+  serviceNameCheckResult: 'available' | 'taken' | null = null;
+  private serviceNameStatusSubscription?: Subscription;
+
   // Dane coverage
   availableCoverages: BikeRepairCoverageMapDto | null = null;
   categories: BikeRepairCoverageCategory[] = [];
@@ -75,7 +80,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
       contactPerson: ['', [Validators.required, Validators.maxLength(100)]],
       phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
       email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
-      serviceName: ['', [Validators.required, Validators.maxLength(50)]],
+      serviceName: ['', [Validators.required, Validators.maxLength(50)], [this.serviceNameAsyncValidator.bind(this)]],
       suffix: ['', [Validators.maxLength(100)], [this.suffixAsyncValidator.bind(this)]],
       website: ['', [Validators.maxLength(255)]],
       description: ['', [Validators.maxLength(1500)]],
@@ -95,8 +100,9 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
 
-    // Nasłuchuj zmian statusu pola suffix
+    // Nasłuchuj zmian statusu pola suffix i serviceName
     this.setupSuffixStatusListener();
+    this.setupServiceNameStatusListener();
   }
 
   private setupSuffixStatusListener(): void {
@@ -117,6 +123,56 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
           this.suffixCheckResult = null;
         }
       }
+    });
+  }
+
+  private setupServiceNameStatusListener(): void {
+    this.serviceNameStatusSubscription = this.basicInfoForm.get('serviceName')?.statusChanges.subscribe(status => {
+      const serviceNameControl = this.basicInfoForm.get('serviceName');
+      
+      if (status === 'PENDING') {
+        this.isCheckingServiceName = true;
+        this.serviceNameCheckResult = null;
+      } else {
+        this.isCheckingServiceName = false;
+        
+        if (serviceNameControl?.valid && serviceNameControl.value && serviceNameControl.value.trim()) {
+          this.serviceNameCheckResult = 'available';
+        } else if (serviceNameControl?.hasError('serviceNameTaken')) {
+          this.serviceNameCheckResult = 'taken';
+        } else {
+          this.serviceNameCheckResult = null;
+        }
+      }
+    });
+  }
+
+  // Asynchroniczny walidator nazwy serwisu
+  private serviceNameAsyncValidator(control: AbstractControl): Observable<ValidationErrors | null> {
+    // Jeśli pole jest puste, nie sprawdzamy
+    if (!control.value || control.value.trim() === '') {
+      return of(null);
+    }
+
+    const trimmedValue = control.value.trim();
+
+    return timer(500).pipe( // Debounce 500ms
+      switchMap(() => this.checkServiceNameAvailability(trimmedValue)),
+      map(isTaken => {
+        return isTaken ? { serviceNameTaken: true } : null;
+      }),
+      catchError(() => {
+        // W przypadku błędu API, nie blokujemy formularza
+        console.error('Error checking service name availability');
+        return of(null);
+      })
+    );
+  }
+
+  // Metoda sprawdzająca dostępność nazwy serwisu
+  private checkServiceNameAvailability(serviceName: string): Observable<boolean> {
+    return this.http.get<boolean>(`${environment.apiUrl}/bike-services/check-service-name`, {
+      params: { serviceName: serviceName }
     });
   }
 
@@ -166,22 +222,27 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Sprawdź parametry URL i wypełnij formularz jeśli są dostępne
     this.route.queryParams.subscribe(params => {
+      console.log('Received query params:', params);
+      
       if (params['serviceId']) {
         this.isExistingService = true;
         this.serviceId = +params['serviceId'];
         
-        // Wypełnij formularz danymi z parametrów URL
-        this.basicInfoForm.patchValue({
+        const formData = {
           serviceName: params['serviceName'] || '',
           phoneNumber: params['phoneNumber'] || '',
+          email: params['email'] || '',
           street: params['street'] || '',
           building: params['building'] || '',
           flat: params['flat'] || '',
-          city: params['city'] || '',
-          description: params['description'] || ''
-        });
+          city: params['city'] || ''
+        };
+        
+        console.log('About to patch form with:', formData);
+        this.basicInfoForm.patchValue(formData);
+        
+        console.log('Form values after patch:', this.basicInfoForm.value);
       }
     });
   }
@@ -189,6 +250,9 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.suffixStatusSubscription) {
       this.suffixStatusSubscription.unsubscribe();
+    }
+    if (this.serviceNameStatusSubscription) {
+      this.serviceNameStatusSubscription.unsubscribe();
     }
   }
 
@@ -319,7 +383,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
       this.customCoverages[categoryId][index] = value;
     
 
-      // JeÅ›li to ostatnie pole i nie jest puste, dodaj nowe
+      // Jeśli to ostatnie pole i nie jest puste, dodaj nowe
       if (index === this.customCoverages[categoryId].length - 1 && value.trim()) {
         this.addCustomCoverage(categoryId);
       }
@@ -357,10 +421,8 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   }
 
   trackByFn(index: number, item: any): number {
-  return index; // Używamy indeksu, ponieważ elementy są stringami
-}
-
-  
+    return index; // Używamy indeksu, ponieważ elementy są stringami
+  }
 
   // Finalizacja rejestracji
   async finalizeRegistration(): Promise<void> {
@@ -411,7 +473,29 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
       this.isSubmitting = false;
       console.error('Error during registration:', error);
       
-      // Bardziej szczegółowa obsługa błędów
+      // Obsługa błędu HTTP 409 (CONFLICT) - nazwa lub suffix zajęty
+      if (error?.status === 409) {
+        // Sprawdź różne miejsca gdzie może być komunikat
+        let errorMessage = 'Nazwa serwisu lub suffix jest już zajęty. Wróć i zmień dane.';
+        
+        // Sprawdź errorText (dodany w registerBikeService)
+        if (error?.errorText && typeof error.errorText === 'string') {
+          errorMessage = error.errorText;
+        }
+        // Sprawdź statusText
+        else if (error?.statusText && error.statusText !== 'Unknown Error' && error.statusText !== 'Conflict') {
+          errorMessage = error.statusText;
+        }
+        // Fallback na domyślny komunikat
+        
+        console.log('Displaying 409 error message:', errorMessage);
+        this.notificationService.error(errorMessage);
+        
+        // NIE przekierowuj - użytkownik zostaje na kroku 3 i może się cofnąć
+        return;
+      }
+      
+      // Inne błędy
       if (error?.error?.message) {
         this.notificationService.error(`Błąd rejestracji: ${error.error.message}`);
       } else if (error?.message) {
@@ -448,6 +532,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
 
   private async registerBikeService(serviceData: any): Promise<any> {
     try {
+      // Dla sukcesu oczekujemy JSON, dla błędów będziemy obsługiwać text
       const response = await firstValueFrom(
         this.http.post(`${environment.apiUrl}/bike-services/register`, serviceData)
       );
@@ -455,6 +540,35 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
       return response;
     } catch (error: any) {
       console.error('Error registering bike service:', error);
+      
+      // Jeśli to błąd 409, spróbuj pobrać tekst z odpowiedzi jeszcze raz
+      if (error?.status === 409) {
+        try {
+          // Spróbuj pobrać response jako text
+          const textResponse = await firstValueFrom(
+            this.http.post(`${environment.apiUrl}/bike-services/register`, serviceData, {
+              responseType: 'text'
+            })
+          );
+          // To nie powinno się wykonać, bo to był błąd, ale dla pewności
+          console.log('Text response:', textResponse);
+        } catch (textError: any) {
+          // Teraz textError.error powinien zawierać text
+          console.log('Text error details:', {
+            status: textError?.status,
+            error: textError?.error,
+            errorType: typeof textError?.error
+          });
+          
+          // Rzuć nowy błąd z tekstem
+          const enhancedError = {
+            ...error,
+            errorText: textError?.error || error.statusText
+          };
+          throw enhancedError;
+        }
+      }
+      
       throw error;
     }
   }

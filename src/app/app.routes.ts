@@ -10,15 +10,15 @@ import { ServiceOrderFormComponent } from './service-orders/service-order-form/s
 import { GuestServiceOrderComponent } from './service-orders/guest-service-order/guest-service-order.component';
 import { TransportOrderFormComponent } from './transport-orders/transport-order-form.component';
 import { OrderSummaryComponent } from './transport-orders/order-summary/order-summary.component';
-import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/admin-enumerations-manager.component';
-import { AdminServicePackagesComponent } from './admin/admin-service-packages/admin-service-package.component';
 import { AdminBikeServicesComponent } from './admin/admin-bike-services/admin-bike-services.component';
 import { AdminServiceSlotsComponent } from './admin/service-slots/admin-service-slots.component';
 import { AdminOrdersComponent } from './admin/admin-orders/admin-orders.component';
 import { AdminOrderDetailsComponent } from './admin/admin-orders/admin-order-details/admin-order-details.component';
 import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
+import { AdminServicesVerificationComponent } from './admin/admin-services-verification/admin-services-verification.component';
+import { AdminRegisteredServiceEditionComponent } from './admin/admin-registered-service-edition/admin-registered-service-edition.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
 import { ServiceOrderDetailsComponent } from './service-orders/service-order-details/service-order-details.component';
@@ -216,13 +216,6 @@ export const routes: Routes = [
     
     // === CHRONIONE TRASY ADMINÓW ===
     
-    { 
-      path: 'admin', 
-      component: AdminPanelComponent, 
-      canActivate: [adminGuard],
-      title: 'Panel Admina'
-    },
-    
     // Admin Orders Routes
     { 
       path: 'admin-orders', 
@@ -242,6 +235,21 @@ export const routes: Routes = [
       canActivate: [adminGuard],
       title: 'Użytkownicy - Admin'
     },
+    
+    // Admin Services Verification - NOWY MODUŁ
+    { 
+      path: 'admin-services-verification', 
+      component: AdminServicesVerificationComponent, 
+      canActivate: [adminGuard],
+      title: 'Weryfikacja Serwisów - Admin'
+    },
+
+    { 
+  path: 'admin-service-edit/:id', 
+  component: AdminRegisteredServiceEditionComponent, 
+  canActivate: [adminGuard],
+  title: 'Edycja Serwisu - Admin'
+},
 
     // Pozostałe admin routes
     { 
@@ -249,12 +257,6 @@ export const routes: Routes = [
       component: AdminEnumerationsManagerComponent, 
       canActivate: [adminGuard],
       title: 'Słowniki - Admin'
-    },
-    { 
-      path: 'admin-service-packages', 
-      component: AdminServicePackagesComponent, 
-      canActivate: [adminGuard],
-      title: 'Pakiety Serwisowe - Admin'
     },
     { 
       path: 'admin-service-slots', 

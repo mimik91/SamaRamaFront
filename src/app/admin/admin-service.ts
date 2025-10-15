@@ -32,6 +32,29 @@ export interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+export interface BikeServiceRegisteredDto {
+  id: number;
+  name: string;
+  email: string;
+  street?: string;
+  building?: string;
+  flat?: string;
+  postalCode?: string;
+  city?: string;
+  latitude?: number;
+  longitude?: number;
+  phoneNumber?: string;
+  transportCost?: number;
+  transportAvailable: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  suffix?: string;
+  contactPerson?: string;
+  website?: string;
+  description?: string;
+  isRegistered: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -138,6 +161,82 @@ export class AdminService {
       catchError(error => {
         console.error(`Error updating order ${orderId} status:`, error);
         return of({ success: false, message: 'Failed to update status' });
+      })
+    );
+  }
+
+  // =================== BIKE SERVICES REGISTERED MANAGEMENT ===================
+
+  /**
+   * Pobiera wszystkie zarejestrowane serwisy rowerowe
+   */
+  getAllRegisteredBikeServices(): Observable<BikeServiceRegisteredDto[]> {
+    return this.http.get<BikeServiceRegisteredDto[]>(`${this.apiUrl}/bike-services-registered`).pipe(
+      catchError(error => {
+        console.error('Error fetching registered bike services:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Pobiera tylko serwisy oczekujące na weryfikację (isRegistered = false)
+   */
+  getPendingVerificationServices(): Observable<BikeServiceRegisteredDto[]> {
+    return this.http.get<BikeServiceRegisteredDto[]>(`${this.apiUrl}/bike-services-registered/pending`).pipe(
+      catchError(error => {
+        console.error('Error fetching pending verification services:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Weryfikuje serwis - ustawia isRegistered na true
+   * Tylko dla administratorów
+   */
+  verifyBikeService(serviceId: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/bike-services-registered/${serviceId}/verify`, {}).pipe(
+      catchError(error => {
+        console.error(`Error verifying bike service ${serviceId}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Pobiera szczegóły konkretnego zarejestrowanego serwisu
+   */
+  getRegisteredServiceDetails(serviceId: number): Observable<BikeServiceRegisteredDto> {
+    return this.http.get<BikeServiceRegisteredDto>(`${this.apiUrl}/bike-services-registered/${serviceId}`).pipe(
+      catchError(error => {
+        console.error(`Error fetching service ${serviceId} details:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Aktualizuje dane zarejestrowanego serwisu
+   */
+  updateRegisteredBikeService(serviceId: number, serviceData: BikeServiceRegisteredDto): Observable<any> {
+    return this.http.put(`${this.apiUrl}/bike-services-registered/${serviceId}`, serviceData).pipe(
+      catchError(error => {
+        console.error(`Error updating bike service ${serviceId}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Usuwa serwis (używa standardowej metody deleteBikeService)
+   * BikeServiceRegistered dziedziczy po BikeService więc używamy tej samej metody
+   */
+  deleteBikeService(serviceId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/bike-services/${serviceId}`).pipe(
+      catchError(error => {
+        console.error(`Error deleting bike service ${serviceId}:`, error);
+        return throwError(() => error);
       })
     );
   }

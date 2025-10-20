@@ -84,7 +84,7 @@
           </div>
           
           <div class="form-group">
-            <label for="email">Email * <span class="char-limit">(max 100 znaków)</span></label>
+            <label for="email">Email serwisu * <span class="char-limit">(max 100 znaków)</span></label>
             <input 
               type="email" 
               id="email" 
@@ -94,6 +94,7 @@
               maxlength="100"
             >
             <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'email') }}/100</div>
+            <p class="form-help">Ten email będzie widoczny dla klientów jako kontakt do serwisu</p>
             <div *ngIf="isFieldInvalid(basicInfoForm, 'email')" class="error-message">
               Wprowadź poprawny adres email
             </div>
@@ -409,8 +410,11 @@
         <div class="info-content">
           <h3>Utwórz konto do zarządzania serwisem</h3>
           <p>
-            Wprowadź hasło, które będzie służyć do logowania się do panelu zarządzania Twoim serwisem. 
+            Wprowadź email i hasło, które będą służyć do logowania się do panelu zarządzania Twoim serwisem. 
             Będziesz mógł zarządzać cenami, godzinami otwarcia i innymi danymi serwisu.
+          </p>
+          <p>
+            <strong>Ważne:</strong> Na podany adres email zostanie wysłany link aktywacyjny, który musisz kliknąć, aby aktywować konto.
           </p>
         </div>
       </div>
@@ -420,15 +424,32 @@
           <h3>Dane logowania</h3>
           
           <div class="form-group">
-            <label for="email-display">Email (login)</label>
+            <label for="service-email-display">Email serwisu (z kroku 1)</label>
             <input 
               type="email" 
-              id="email-display"
+              id="service-email-display"
               [value]="basicInfoForm.value.email"
               readonly
               class="readonly-input"
             >
-            <p class="form-help">Ten email będzie służył jako login do Twojego konta</p>
+            <p class="form-help">Ten email będzie widoczny dla klientów jako kontakt do serwisu</p>
+          </div>
+
+          <div class="form-group">
+            <label for="userEmail">Email do logowania * <span class="char-limit">(max 100 znaków)</span></label>
+            <input 
+              type="email" 
+              id="userEmail" 
+              formControlName="userEmail"
+              [class.is-invalid]="isFieldInvalid(passwordForm, 'userEmail')"
+              placeholder="email@przyklad.pl"
+              maxlength="100"
+            >
+            <div class="char-counter">{{ getCharacterCount(passwordForm, 'userEmail') }}/100</div>
+            <p class="form-help">Na ten adres zostanie wysłany link aktywacyjny. Możesz użyć tego samego emaila co w kroku 1 lub innego.</p>
+            <div *ngIf="isFieldInvalid(passwordForm, 'userEmail')" class="error-message">
+              Wprowadź poprawny adres email
+            </div>
           </div>
 
           <div class="form-group">
@@ -514,9 +535,29 @@
     <h2>Rejestracja zakończona pomyślnie!</h2>
     
     <p class="success-message">
-      Twój serwis został zarejestrowany w systemie CycloPick. Możesz teraz zalogować się do panelu zarządzania 
-      i uzupełnić dodatkowe informacje jak cennik czy godziny otwarcia.
+      Twój serwis został zarejestrowany w systemie CycloPick. 
     </p>
+
+    <div class="info-box" style="text-align: left; margin: 20px auto; max-width: 600px;">
+      <div class="info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+      </div>
+      <div class="info-content">
+        <h3>Potwierdź swój adres email</h3>
+        <p>
+          Na adres <strong>{{ passwordForm.value.userEmail }}</strong> wysłaliśmy wiadomość z linkiem aktywacyjnym.
+        </p>
+        <p>
+          Kliknij link w emailu, aby aktywować swoje konto i uzyskać pełny dostęp do panelu zarządzania serwisem.
+        </p>
+        <p style="margin-bottom: 0;">
+          <em>Jeśli nie widzisz wiadomości, sprawdź folder SPAM.</em>
+        </p>
+      </div>
+    </div>
     
     <div class="success-actions">
       <button class="secondary-btn" (click)="goToHome()">Wróć do strony głównej</button>

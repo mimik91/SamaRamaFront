@@ -25,6 +25,7 @@ export interface AuthResponse {
   name?: string;
   role: 'CLIENT' | 'SERVICE' | 'ADMIN' | 'MODERATOR';
   redirectUrl?: string;
+  suffix?: string;
 }
 
 interface UserSession {
@@ -244,6 +245,11 @@ export class AuthService {
     }
     
     return true;
+  }
+
+  isService(): boolean {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser?.role === 'SERVICE';
   }
   
   isClient(): boolean {

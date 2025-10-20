@@ -10,6 +10,7 @@ import {
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { VerificationService } from '../verification.service';
+import { BikeServiceVerificationService } from '../bike-service-verification.service';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -24,6 +25,7 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private verificationService = inject(VerificationService);
+  private serviceVerificationService = inject(BikeServiceVerificationService);
 
   loginForm: FormGroup;
   resendVerificationForm: FormGroup;
@@ -67,9 +69,12 @@ export class LoginComponent {
           setTimeout(() => {
             console.log('User role:', this.authService.getUserRole());
             
-            // Poprawiona logika przekierowywania
+            // Poprawiona logika przekierowywania z obsługą użytkowników SERVICE
             if (this.authService.isAdmin() || this.authService.isModerator()) {
               this.router.navigate(['/admin-dashboard']);
+            } else if (this.authService.isService()) {
+              // Dla użytkowników SERVICE sprawdź status weryfikacji
+              this.checkServiceVerificationStatus();
             } else if (this.authService.isClient()) {
               this.router.navigate(['/bicycles']);
             } else {
@@ -102,6 +107,37 @@ export class LoginComponent {
     } else {
       this.markFormGroupTouched(this.loginForm);
     }
+  }
+
+  /**
+   * Sprawdza status weryfikacji serwisu dla użytkowników SERVICE
+   * Przekierowuje do odpowiedniej strony w zależności od statusu
+   */
+  private checkServiceVerificationStatus(): void {
+    this.serviceVerificationService.checkVerificationStatus().subscribe({
+      next: (status) => {
+        console.log('Service verification status:', status);
+        
+        if (!status.hasService) {
+          // Użytkownik SERVICE nie ma przypisanego serwisu
+          console.log('Service not assigned, redirecting to pending verification');
+          this.router.navigate(['/service-pending-verification']);
+        } else if (status.suffix) {
+          // Serwis jest zweryfikowany i ma suffix - przekieruj do panelu
+          console.log('Service verified with suffix:', status.suffix);
+          this.router.navigate([`/${status.suffix}/panel-administratora`]);
+        } else {
+          // Serwis jest przypisany ale nie ma suffixu (nie jest zweryfikowany)
+          console.log('Service assigned but not verified, redirecting to pending verification');
+          this.router.navigate(['/service-pending-verification']);
+        }
+      },
+      error: (error) => {
+        console.error('Error checking service verification status:', error);
+        // W przypadku błędu przekieruj do strony oczekiwania
+        this.router.navigate(['/service-pending-verification']);
+      }
+    });
   }
 
   // Metoda do ponownego wysłania maila weryfikacyjnego

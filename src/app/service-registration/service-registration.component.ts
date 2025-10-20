@@ -96,6 +96,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
     });
 
     this.passwordForm = this.fb.group({
+      userEmail: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
       password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(120)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
@@ -317,6 +318,10 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
       }
       this.currentStep = 2;
     } else if (this.currentStep === 2) {
+      // Przejście do kroku 3 - skopiuj email z kroku 1 do pola userEmail
+      this.passwordForm.patchValue({
+        userEmail: this.basicInfoForm.value.email
+      });
       this.currentStep = 3;
     } else if (this.currentStep === 1) {
       // Oznacz wszystkie pola jako dotknięte, aby pokazać błędy walidacji
@@ -575,7 +580,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
 
   private async registerServiceUser(): Promise<any> {
     const userData = {
-      email: this.basicInfoForm.value.email,
+      email: this.passwordForm.value.userEmail, // Używamy emaila z kroku 3
       password: this.passwordForm.value.password,
       bikeServiceId: this.registeredServiceId
     };

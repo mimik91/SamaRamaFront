@@ -2,7 +2,9 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { RegistrationComponent } from './auth/registration/registration.component';
 import { VerificationComponent } from './auth/verification/verification.component';
-import { authGuard, clientGuard, adminGuard } from './auth/auth.guard';
+import { ServicePendingVerificationComponent } from './pages/service-admin-panel/service-pending-verification/service-pending-verification.component';
+import { ServiceAdminPanelComponent } from './pages/service-admin-panel/service-admin-panel.component';
+import { authGuard, clientGuard, adminGuard, serviceGuard} from './auth/auth.guard';
 import { BicyclesListComponent } from './bicycles/bicycles-list/bicycles-list.component';
 import { BicycleFormComponent } from './bicycles/bicycle-form/bicycle-form.component';
 import { BicycleDetailsComponent } from './bicycles/bicycle-details/bicycle-details.component';
@@ -135,6 +137,24 @@ export const routes: Routes = [
       path: 'about', 
       component: AboutUsComponent,
       title: 'O Nas'
+    },
+
+     // === CHRONIONE TRASY UŻYTKOWNIKÓW SERVICE ===
+    
+    // Strona oczekiwania na weryfikację
+    { 
+      path: 'service-pending-verification', 
+      component: ServicePendingVerificationComponent,
+      canActivate: [serviceGuard],
+      title: 'Oczekiwanie na Weryfikację'
+    },
+    
+    // Panel administracyjny serwisu (z suffixem)
+    { 
+      path: ':suffix/panel-administratora', 
+      component: ServiceAdminPanelComponent,
+      canActivate: [serviceGuard],
+      title: 'Panel Administratora Serwisu'
     },
     
     // === DASHBOARD ROUTES (dla przekierowań po logowaniu) ===

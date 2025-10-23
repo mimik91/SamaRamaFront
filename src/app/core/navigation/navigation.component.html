@@ -20,7 +20,7 @@
       <ng-container *ngIf="authService.isLoggedIn() && authService.isClient() && !authService.hasAdminPrivileges()">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>
         <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a>
-        <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">O nas</a>
+        <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
         <a routerLink="/register-service" routerLinkActive="active" (click)="closeMobileMenu()">Zarejestruj serwis</a>
       </ng-container>
       
@@ -36,7 +36,7 @@
       <ng-container *ngIf="!authService.isLoggedIn()">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>
         <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a>
-        <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">O nas</a>
+        <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
         <a routerLink="/register-service" routerLinkActive="active" (click)="closeMobileMenu()">Zarejestruj serwis</a>
       </ng-container>
     </div>
@@ -71,7 +71,7 @@
       <ng-container *ngIf="isServiceRegisterPage()">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>
         <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a>
-        <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">O nas</a>
+        <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
       </ng-container>
     </div>
   </div>

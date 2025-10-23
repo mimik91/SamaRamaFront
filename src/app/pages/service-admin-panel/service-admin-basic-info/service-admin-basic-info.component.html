@@ -1,0 +1,234 @@
+<div class="basic-info-container">
+  <!-- Header with Edit/Save buttons -->
+  <div class="header-section">
+    <div class="header-actions">
+      <button 
+        *ngIf="!isEditMode" 
+        (click)="toggleEditMode()" 
+        class="edit-btn">
+        Edytuj dane
+      </button>
+      <ng-container *ngIf="isEditMode">
+        <button (click)="toggleEditMode()" class="cancel-btn">
+          Anuluj
+        </button>
+        <button 
+          (click)="saveChanges()" 
+          [disabled]="isSaving"
+          class="save-btn">
+          {{ isSaving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+        </button>
+      </ng-container>
+    </div>
+    
+    <div *ngIf="saveSuccess" class="success-message">
+      ✓ Zmiany zostały zapisane pomyślnie
+    </div>
+    <div *ngIf="saveError" class="error-message">
+      {{ saveError }}
+    </div>
+  </div>
+
+  <!-- Details Grid -->
+  <div class="details-grid">
+
+        <!-- Opis -->
+    <div class="detail-card full-width">
+      <h2>Opis</h2>
+      <p class="description-text" *ngIf="!isEditMode">
+        {{ serviceDetails.description || 'Brak opisu' }}
+      </p>
+      <textarea 
+        *ngIf="isEditMode" 
+        [(ngModel)]="editableData.description"
+        rows="5"
+        placeholder="Dodaj opis swojego serwisu..."
+        class="edit-textarea"></textarea>
+    </div>
+    <!-- Informacje podstawowe -->
+    <div class="detail-card">
+      <h2>Informacje podstawowe</h2>
+      <div class="detail-item">
+        <span class="label">Nazwa:</span>
+        <span class="value">{{ serviceDetails.name }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="label">Suffix:</span>
+        <span class="value">{{ serviceDetails.suffix || '-' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="label">Email:</span>
+        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.email || '-' }}</span>
+        <input 
+          *ngIf="isEditMode" 
+          type="email" 
+          [(ngModel)]="editableData.email"
+          class="edit-input"
+          placeholder="email@example.com">
+      </div>
+      <div class="detail-item">
+        <span class="label">Telefon:</span>
+        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.phoneNumber || '-' }}</span>
+        <input 
+          *ngIf="isEditMode" 
+          type="tel" 
+          [(ngModel)]="editableData.phoneNumber"
+          maxlength="9"
+          class="edit-input"
+          placeholder="123456789">
+      </div>
+      <div class="detail-item">
+        <span class="label">Osoba kontaktowa:</span>
+        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.contactPerson || '-' }}</span>
+        <input 
+          *ngIf="isEditMode" 
+          type="text" 
+          [(ngModel)]="editableData.contactPerson"
+          class="edit-input"
+          placeholder="Jan Kowalski">
+      </div>
+    </div>
+
+    <!-- Adres -->
+    <div class="detail-card">
+      <h2>Adres</h2>
+      <div class="detail-item">
+        <span class="label">Miasto:</span>
+        <span class="value">{{ serviceDetails.city }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="label">Ulica:</span>
+        <span class="value">{{ serviceDetails.street || '-' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="label">Budynek:</span>
+        <span class="value">{{ serviceDetails.building || '-' }}</span>
+      </div>
+      <div class="detail-item" *ngIf="serviceDetails.flat">
+        <span class="label">Lokal:</span>
+        <span class="value">{{ serviceDetails.flat }}</span>
+      </div>
+      <div class="detail-item" *ngIf="serviceDetails.postalCode">
+        <span class="label">Kod pocztowy:</span>
+        <span class="value">{{ serviceDetails.postalCode }}</span>
+      </div>
+      
+      <div class="detail-item" *ngIf="serviceDetails.latitude && serviceDetails.longitude">
+        <span class="label">Współrzędne:</span>
+        <span class="value">{{ serviceDetails.latitude }}, {{ serviceDetails.longitude }}</span>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="detail-card">
+      <h2>Status</h2>
+      <div class="detail-item">
+        <span class="label">Status rejestracji:</span>
+        <span class="value">
+          <span [class.badge-success]="serviceDetails.isRegistered" 
+                [class.badge-inactive]="!serviceDetails.isRegistered"
+                class="badge">
+            {{ serviceDetails.isRegistered ? 'Zarejestrowany' : 'Oczekuje' }}
+          </span>
+        </span>
+      </div>
+      <div class="detail-item" *ngIf="serviceDetails.createdAt">
+        <span class="label">Data utworzenia:</span>
+        <span class="value">{{ formatDate(serviceDetails.createdAt) }}</span>
+      </div>
+      <div class="detail-item" *ngIf="serviceDetails.updatedAt">
+        <span class="label">Ostatnia aktualizacja:</span>
+        <span class="value">{{ formatDate(serviceDetails.updatedAt) }}</span>
+      </div>
+    </div>
+
+    <!-- Strona WWW -->
+    <div class="detail-card full-width">
+      <h2>Strona WWW</h2>
+      <div class="detail-item">
+        <span class="label">Adres strony:</span>
+        <span class="value" *ngIf="!isEditMode">
+          <a *ngIf="serviceDetails.website" [href]="serviceDetails.website" target="_blank">
+            {{ serviceDetails.website }}
+          </a>
+          <span *ngIf="!serviceDetails.website">-</span>
+        </span>
+        <input 
+          *ngIf="isEditMode" 
+          type="url" 
+          [(ngModel)]="editableData.website"
+          placeholder="https://example.com"
+          class="edit-input">
+      </div>
+    </div>
+
+    <!-- Social Media -->
+    <div class="detail-card full-width">
+      <h2>Media społecznościowe</h2>
+      <div class="social-grid">
+        <div class="detail-item">
+          <span class="label">Facebook:</span>
+          <span class="value" *ngIf="!isEditMode">
+            <a *ngIf="serviceDetails.facebook" [href]="serviceDetails.facebook" target="_blank">
+              {{ serviceDetails.facebook }}
+            </a>
+            <span *ngIf="!serviceDetails.facebook">-</span>
+          </span>
+          <input 
+            *ngIf="isEditMode" 
+            type="url" 
+            [(ngModel)]="editableData.facebook"
+            placeholder="https://facebook.com/..."
+            class="edit-input">
+        </div>
+        <div class="detail-item">
+          <span class="label">Instagram:</span>
+          <span class="value" *ngIf="!isEditMode">
+            <a *ngIf="serviceDetails.instagram" [href]="serviceDetails.instagram" target="_blank">
+              {{ serviceDetails.instagram }}
+            </a>
+            <span *ngIf="!serviceDetails.instagram">-</span>
+          </span>
+          <input 
+            *ngIf="isEditMode" 
+            type="url" 
+            [(ngModel)]="editableData.instagram"
+            placeholder="https://instagram.com/..."
+            class="edit-input">
+        </div>
+        <div class="detail-item">
+          <span class="label">TikTok:</span>
+          <span class="value" *ngIf="!isEditMode">
+            <a *ngIf="serviceDetails.tiktok" [href]="serviceDetails.tiktok" target="_blank">
+              {{ serviceDetails.tiktok }}
+            </a>
+            <span *ngIf="!serviceDetails.tiktok">-</span>
+          </span>
+          <input 
+            *ngIf="isEditMode" 
+            type="url" 
+            [(ngModel)]="editableData.tiktok"
+            placeholder="https://tiktok.com/@..."
+            class="edit-input">
+        </div>
+        <div class="detail-item">
+          <span class="label">YouTube:</span>
+          <span class="value" *ngIf="!isEditMode">
+            <a *ngIf="serviceDetails.youtube" [href]="serviceDetails.youtube" target="_blank">
+              {{ serviceDetails.youtube }}
+            </a>
+            <span *ngIf="!serviceDetails.youtube">-</span>
+          </span>
+          <input 
+            *ngIf="isEditMode" 
+            type="url" 
+            [(ngModel)]="editableData.youtube"
+            placeholder="https://youtube.com/..."
+            class="edit-input">
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>

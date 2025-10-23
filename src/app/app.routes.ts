@@ -27,11 +27,13 @@ import { ServiceOrderDetailsComponent } from './service-orders/service-order-det
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
-import { AboutUsComponent } from './about-us/about-us.component';
+import { ForServicesComponent } from './for-services/for-services.component';
 import { PricingComponent } from './pricing/pricing.component';
 import { CourierPanelComponent } from './courier-panel/courier-panel.component';
 import { TermsOfServiceComponent } from './core/terms-of-service.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
+import { suffixValidationGuard } from './auth/suffix-validation.guard';
+
 
 // REFACTORED COMPONENTS - NEW STRUCTURE
 import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
@@ -134,9 +136,9 @@ export const routes: Routes = [
     
     // About page
     { 
-      path: 'about', 
-      component: AboutUsComponent,
-      title: 'O Nas'
+      path: 'for-services', 
+      component: ForServicesComponent,
+      title: 'Dla Serwisów'
     },
 
      // === CHRONIONE TRASY UŻYTKOWNIKÓW SERVICE ===
@@ -153,7 +155,7 @@ export const routes: Routes = [
     { 
       path: ':suffix/panel-administratora', 
       component: ServiceAdminPanelComponent,
-      canActivate: [serviceGuard],
+      canActivate: [serviceGuard, suffixValidationGuard], 
       title: 'Panel Administratora Serwisu'
     },
     

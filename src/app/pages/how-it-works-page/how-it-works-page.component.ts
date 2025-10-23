@@ -300,7 +300,7 @@ export class HowItWorksPageComponent implements OnInit {
   }
 
   switchHowItWorksView(view: 'transport' | 'service'): void {
-    this.activeHowItWorksView = view;
+    this.router.navigate(['/']);
   }
 
   goToMap(): void {

@@ -164,6 +164,6 @@ export class AccountComponent implements OnInit {
   }
   
   goBack(): void {
-    this.router.navigate(['/bicycles']);
+    this.router.navigate(['/']);
   }
 }

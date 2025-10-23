@@ -31,7 +31,7 @@ import { RouterModule } from '@angular/router';
               Dowiedz się więcej
             </button>
             <button type="button" class="hero-btn order-btn" (click)="scrollToSection('order-form')">
-              Zamów serwis
+              Zamów transport
             </button>
           </div>
         </div>

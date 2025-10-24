@@ -77,7 +77,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
 
   private initializeForms(): void {
     this.basicInfoForm = this.fb.group({
-      contactPerson: ['', [Validators.required, Validators.maxLength(100)]],
+      contactPerson: ['', [Validators.maxLength(100)]],
       phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
       email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
       serviceName: ['', [Validators.required, Validators.maxLength(50)], [this.serviceNameAsyncValidator.bind(this)]],

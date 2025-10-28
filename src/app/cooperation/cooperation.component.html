@@ -1,0 +1,77 @@
+<div class="cooperation-container">
+  <!-- Hero Section -->
+  <section class="cooperation-hero">
+    <div class="hero-content-wrapper">
+      <div class="hero-text">
+        <h1>Dołącz do CycloPick</h1>
+        <h2>Twórz z nami przyszłość branży rowerowej 🚴‍♂️</h2>
+        <p>
+          Masz głowę pełną pomysłów, chcesz się rozwijać i kochasz rowery?  
+          Świetnie się składa — <strong>CycloPick</strong> to miejsce dla ludzi takich jak Ty!  
+          Tworzymy społeczność, która zmienia sposób, w jaki Polacy serwisują swoje rowery.
+        </p>
+        <a (click)="scrollToSection('areas')" class="primary-btn">Zobacz obszary współpracy</a>
+      </div>
+      <div class="hero-image-container">
+        <img src="assets/images/cooperation/team.jpg" alt="CycloPick zespół" class="hero-image">
+      </div>
+    </div>
+  </section>
+
+  <!-- Cooperation Areas -->
+  <section id="areas" class="areas-section">
+    <h2>Obszary współpracy</h2>
+    <div class="areas-container">
+      <div *ngFor="let area of cooperationAreas" class="area-card">
+        <img [src]="area.image" [alt]="area.title" class="area-image">
+        <div class="area-content">
+          <h3>{{ area.title }}</h3>
+          <p>{{ area.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission Section -->
+  <section class="mission-section">
+    <div class="mission-container">
+      <h2>Dlaczego właśnie Ty?</h2>
+      <p>
+        W CycloPick wierzymy, że najlepsze projekty powstają dzięki współpracy ludzi z pasją.  
+        Nie szukamy perfekcyjnych CV — szukamy osób, które chcą działać, uczyć się i rozwijać razem z nami.  
+        Każdy wnosi coś wyjątkowego: doświadczenie, pomysł, energię.  
+        <strong>Twoje zaangażowanie naprawdę może coś zmienić.</strong>
+      </p>
+    </div>
+  </section>
+
+
+  <!-- Benefits Section -->
+  <section class="benefits-section">
+    <h2>Co zyskasz współpracując z nami?</h2>
+    <div class="benefits-container">
+      <div *ngFor="let benefit of benefits" class="benefit-card">
+        <div class="benefit-icon">{{ benefit.icon }}</div>
+        <div class="benefit-content">
+          <h3>{{ benefit.title }}</h3>
+          <p>{{ benefit.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2>Gotowy na wspólną jazdę?</h2>
+      <p>
+        Nie czekaj — napisz do nas i sprawdź, jak możemy działać razem!  
+        Każdy pomysł jest wart rozmowy, a każda współpraca zaczyna się od jednego „cześć”.
+      </p>
+      <div class="cta-buttons">
+        <a href="mailto:cyclopick@gmail.com" class="primary-btn">Napisz do nas</a>
+        <a href="https://facebook.com/cyclopick" target="_blank" rel="noopener noreferrer" class="secondary-btn">Facebook</a>
+      </div>
+    </div>
+  </section>
+</div>

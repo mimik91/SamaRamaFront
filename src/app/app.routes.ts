@@ -28,7 +28,6 @@ import { ServiceRegistrationComponent } from './service-registration/service-reg
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { ForServicesComponent } from './for-services/for-services.component';
-import { PricingComponent } from './pricing/pricing.component';
 import { CourierPanelComponent } from './courier-panel/courier-panel.component';
 import { TermsOfServiceComponent } from './core/terms-of-service.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
@@ -38,6 +37,7 @@ import { suffixValidationGuard } from './auth/suffix-validation.guard';
 // REFACTORED COMPONENTS - NEW STRUCTURE
 import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
 import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-page.component';
+import { CooperationComponent } from './cooperation/cooperation.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
@@ -75,9 +75,9 @@ export const routes: Routes = [
     
     // Pricing route - dostępna dla wszystkich
     { 
-      path: 'cennik', 
-      component: PricingComponent,
-      title: 'Cennik'
+      path: 'cooperation', 
+      component: CooperationComponent,
+      title: 'współpraca'
     },
     
     // Guest order route - dostępna dla niezalogowanych

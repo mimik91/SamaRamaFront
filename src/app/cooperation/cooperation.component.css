@@ -1,0 +1,440 @@
+.cooperation-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #2c3e50;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Hero Section */
+.cooperation-hero {
+  margin-bottom: 50px;
+  padding: 30px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.hero-content-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 40px;
+}
+
+.hero-text {
+  flex: 1;
+}
+
+.hero-image-container {
+  flex: 1;
+}
+
+.hero-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.hero-image:hover {
+  transform: scale(1.02);
+}
+
+.cooperation-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 30px;
+  color: #2B82AD;
+  font-weight: 700;
+}
+
+.cooperation-hero h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #3498db;
+}
+
+.cooperation-hero p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Mission Section */
+.mission-section {
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.mission-container {
+  background-color: #e3f2fd;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.mission-icon {
+  color: #2B82AD;
+  margin-bottom: 20px;
+}
+
+.mission-container h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #2B82AD;
+}
+
+.mission-container p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Areas Section */
+.areas-section {
+  margin-bottom: 50px;
+}
+
+.areas-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 40px;
+  color: #2B82AD;
+}
+
+.areas-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
+}
+
+.area-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  padding: 25px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-top: 4px solid #3498db;
+}
+
+.area-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.area-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #f0f9ff;
+  color: #3498db;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  transition: transform 0.3s ease;
+}
+
+.area-card:hover .area-icon {
+  transform: scale(1.1);
+}
+
+.area-content h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.area-content p {
+  color: #7f8c8d;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Benefits Section */
+.benefits-section {
+  margin-bottom: 50px;
+}
+
+.benefits-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 40px;
+  color: #2B82AD;
+}
+
+.benefits-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+.benefit-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  padding: 25px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-top: 4px solid #27ae60;
+}
+
+.benefit-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.benefit-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #f0fff4;
+  color: #27ae60;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  transition: transform 0.3s ease;
+}
+
+.benefit-card:hover .benefit-icon {
+  transform: scale(1.1);
+}
+
+.benefit-content h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.benefit-content p {
+  color: #7f8c8d;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Call to Action Section */
+.cta-section {
+  margin-bottom: 50px;
+  background-color: #2B82AD;
+  color: white;
+  padding: 60px 40px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.cta-content {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.cta-section h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.cta-section p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.primary-btn, .secondary-btn {
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.primary-btn {
+  background-color: white;
+  color: #2B82AD;
+  border: none;
+}
+
+.primary-btn:hover {
+  background-color: #f5f5f5;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+.secondary-btn {
+  background-color: transparent;
+  color: white;
+  border: 2px solid white;
+}
+
+.secondary-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+/* Contact Section */
+.contact-section {
+  margin-bottom: 30px;
+  padding: 40px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.contact-section h2 {
+  font-size: 2rem;
+  margin-bottom: 40px;
+  color: #2B82AD;
+}
+
+.contact-details {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.contact-item {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  text-align: left;
+  width: 300px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contact-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.contact-icon {
+  color: #3498db;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.contact-text h3 {
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.contact-text p {
+  color: #7f8c8d;
+  line-height: 1.4;
+}
+
+/* Obrazy w kartach obszarów */
+.area-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+/* Zdjęcie w sekcji misji */
+.mission-image {
+  margin-top: 25px;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 10px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.4s ease;
+}
+
+.mission-image:hover {
+  transform: scale(1.03);
+}
+
+/* Emoji w benefitach */
+.benefit-icon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .hero-content-wrapper {
+    flex-direction: column;
+  }
+  
+  .cooperation-hero {
+    padding: 30px 15px;
+  }
+  
+  .cooperation-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .cooperation-hero h2 {
+    font-size: 1.5rem;
+  }
+    
+  .mission-container, 
+  .contact-section {
+    padding: 30px 20px;
+  }
+  
+  .steps-container,
+  .benefits-container,
+  .areas-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .cta-section {
+    padding: 40px 20px;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .primary-btn, .secondary-btn {
+    width: 100%;
+  }
+  
+  .contact-item {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .cooperation-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .cooperation-hero h2 {
+    font-size: 1.3rem;
+  }
+  
+  section {
+    margin-bottom: 30px;
+  }
+  
+  .contact-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .contact-icon {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+}

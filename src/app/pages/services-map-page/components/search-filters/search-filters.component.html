@@ -60,8 +60,8 @@
             *ngFor="let city of citySuggestions"
             (click)="onCitySelect(city)"
           >
-            <div class="autocomplete-item-title">{{ city.name }}</div>
-            <div class="autocomplete-item-subtitle">{{ city.displayName }}</div>
+            <div class="autocomplete-item-title">{{ city.cityName }}</div>
+            <div class="autocomplete-item-subtitle">{{ city.cityLabel }}</div>
           </div>
         </div>
 

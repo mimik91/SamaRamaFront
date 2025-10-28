@@ -94,12 +94,14 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
 
   saveChanges(): void {
     if (!this.serviceId) return;
+
+      const url = `http://localhost:8080/api/bike-services-registered/my-service?serviceId=${this.serviceId}`;
     
     this.isSaving = true;
     this.saveError = '';
     this.saveSuccess = false;
 
-    const url = `/api/bike-service/my-service?serviceId=${this.serviceId}`;
+  
     
     this.http.put(url, this.editableData).subscribe({
       next: () => {

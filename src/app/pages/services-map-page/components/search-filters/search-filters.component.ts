@@ -133,7 +133,7 @@ export class SearchFiltersComponent {
   }
 
   onCitySelect(city: CitySuggestion): void {
-    this.filtersState.cityQuery = city.name;
+    this.filtersState.cityQuery = city.cityName;
     this.citySearchFocused = false;
     this.citySelected.emit(city);
   }

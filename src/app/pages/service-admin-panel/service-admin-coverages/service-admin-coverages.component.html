@@ -1,0 +1,171 @@
+<div class="coverages-container">
+  <!-- Loading state -->
+  <div *ngIf="isLoadingCoverages || isLoadingAssignedCoverages" class="loading-state">
+    <div class="spinner"></div>
+    <p>Ładowanie usług serwisu...</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoadingCoverages && !isLoadingAssignedCoverages && availableCoverages" class="coverages-content">
+    
+    <!-- Info box -->
+    <div class="info-box">
+      <div class="info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+      </div>
+      <div class="info-content">
+        <h3>Wybierz na co klient może liczyć w Twoim serwisie</h3>
+        <p>
+          Zaznacz wszystkie usługi i specjalizacje, które oferuje Twój serwis. 
+          Pomoże to klientom znaleźć odpowiedni serwis dla swoich potrzeb.
+        </p>
+      </div>
+    </div>
+
+    <!-- Existing categories -->
+    <div class="coverage-section">
+      <h3>Usługi i specjalizacje serwisu</h3>
+
+      <div *ngFor="let category of categories" class="coverage-category">
+        <h4>{{ category.name }}</h4>
+        
+        <div class="coverage-items">
+          <div *ngFor="let coverage of getCoveragesForCategory(category.id)" class="coverage-item">
+            <label class="coverage-toggle">
+              <input 
+                type="checkbox"
+                [checked]="isCoverageSelected(category.id, coverage.id)"
+                (change)="toggleCoverage(category.id, coverage.id)"
+              >
+              <span class="coverage-slider"></span>
+              <span class="coverage-name">{{ coverage.name }}</span>
+            </label>
+          </div>
+          
+          <!-- Custom coverages for existing category -->
+          <div *ngFor="let customCoverage of customCoverages[category.id]; let i = index; trackBy: trackByFn" 
+               class="custom-coverage-item">
+            <input 
+              type="text"
+              [(ngModel)]="customCoverages[category.id][i]"
+              (input)="updateCustomCoverage(category.id, i, customCoverages[category.id][i])"
+              placeholder="Dodaj własną usługę..."
+              class="custom-coverage-input"
+              maxlength="100"
+            >
+            <button 
+              *ngIf="customCoverages[category.id].length > 1"
+              type="button" 
+              class="remove-btn"
+              (click)="removeCustomCoverage(category.id, i)"
+              title="Usuń"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom categories -->
+      <div class="custom-categories" *ngIf="customCategories.length > 0">
+        <div *ngFor="let customCategory of customCategories; let categoryIndex = index" 
+             class="custom-category">
+          <div class="custom-category-header">
+            <input 
+              type="text"
+              [value]="customCategory.name"
+              (input)="updateCustomCategoryName(categoryIndex, $any($event.target).value)"
+              placeholder="Nazwa nowej kategorii..."
+              class="custom-category-name"
+              maxlength="100"
+            >
+            <button 
+              type="button" 
+              class="remove-btn"
+              (click)="removeCustomCategory(categoryIndex)"
+              title="Usuń kategorię"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div class="custom-category-items">
+            <div *ngFor="let item of customCategory.coverages; let itemIndex = index; trackBy: trackByFn" 
+                 class="custom-coverage-item">
+              <input 
+                type="text"
+                [value]="item"
+                (input)="updateCustomCategoryItem(categoryIndex, itemIndex, $any($event.target).value)"
+                placeholder="Dodaj usługę do tej kategorii..."
+                class="custom-coverage-input"
+                maxlength="100"
+              >
+              <button 
+                *ngIf="customCategory.coverages.length > 1"
+                type="button" 
+                class="remove-btn"
+                (click)="removeCustomCategoryItem(categoryIndex, itemIndex)"
+                title="Usuń"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add new category button -->
+      <button type="button" class="add-category-btn" (click)="addCustomCategory()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Dodaj nową kategorię
+      </button>
+    </div>
+
+    <!-- Action buttons -->
+    <div *ngIf="hasChanges" class="action-buttons">
+      <button 
+        type="button" 
+        class="cancel-btn"
+        (click)="cancelChanges()"
+        [disabled]="isSaving"
+      >
+        Anuluj zmiany
+      </button>
+      
+      <button 
+        type="button" 
+        class="save-btn"
+        (click)="saveChanges()"
+        [disabled]="isSaving"
+      >
+        <span *ngIf="!isSaving">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Zapisz zmiany
+        </span>
+        <span *ngIf="isSaving">
+          <div class="button-spinner"></div>
+          Zapisywanie...
+        </span>
+      </button>
+    </div>
+
+    <!-- Info about no changes -->
+    <div *ngIf="!hasChanges && !isSaving" class="no-changes-info">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <span>Wszystkie zmiany są zapisane</span>
+    </div>
+  </div>
+</div>

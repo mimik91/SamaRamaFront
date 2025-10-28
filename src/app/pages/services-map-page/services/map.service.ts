@@ -97,9 +97,9 @@ export class MapService {
 
     console.log('MapService: Searching cities with query:', query);
     
-    const params = { q: query.trim() };
+    const params = { city: query.trim() };
     
-    return this.http.get<CitySuggestion[]>(`${this.apiUrl}/cities/search`, { params }).pipe(
+    return this.http.get<CitySuggestion[]>(`${this.apiUrl}/cities/coords`, { params }).pipe(
       tap(cities => {
         console.log('MapService: Found cities:', cities);
       }),

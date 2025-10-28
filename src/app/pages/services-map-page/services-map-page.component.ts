@@ -345,27 +345,24 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  onCitySelected(city: CitySuggestion): void {
-    this.mapService.getCityBounds(city.name)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (bounds) => {
-          if (bounds && this.mapComponent) {
-            this.mapComponent.fitBounds(
-              { lat: bounds.sw.latitude, lng: bounds.sw.longitude },
-              { lat: bounds.ne.latitude, lng: bounds.ne.longitude }
-            );
-          } else if (this.mapComponent) {
-            this.mapComponent.centerOn(city.latitude, city.longitude, 12);
-          }
-        },
-        error: (error) => {
-          console.error('Error fetching city bounds:', error);
-          if (this.mapComponent) {
-            this.mapComponent.centerOn(city.latitude, city.longitude, 12);
-          }
-        }
-      });
+onCitySelected(city: CitySuggestion): void {
+    // Wykorzystujemy współrzędne bezpośrednio z odpowiedzi
+    const latitude = city.latitude;
+    const longitude = city.longitude;
+    
+    console.log('City selected:', city);
+    console.log('Coordinates:', { latitude, longitude });
+    console.log('Map component exists:', !!this.mapComponent);
+    
+    if (this.mapComponent && latitude && longitude) {
+      // Centrujemy mapę na współrzędnych miasta z odpowiednim zoomem
+      this.mapComponent.centerOn(latitude, longitude, 13);
+      
+      console.log(`Map centered on ${city.cityName} at coordinates: ${latitude}, ${longitude}`);
+    } else {
+      console.error('Missing coordinates or map component for city:', city);
+      console.error('latitude:', latitude, 'longitude:', longitude, 'mapComponent:', !!this.mapComponent);
+    }
   }
 
   onCityClearRequested(): void {

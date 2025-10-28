@@ -35,11 +35,14 @@ export interface ServiceDetails {
 }
 
 export interface CitySuggestion {
-  name: string;
-  displayName: string;
+  cityName: string;
+  cityLabel : string;
   latitude: number;
   longitude: number;
   type: string;
+  point?: {
+    coordinates: [number, number];
+  };
 }
 
 export interface CityBounds {

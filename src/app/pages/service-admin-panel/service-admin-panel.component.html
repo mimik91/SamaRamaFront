@@ -92,7 +92,8 @@
 
         <!-- Services/Coverages Tab -->
         <app-service-admin-coverages 
-          *ngIf="activeTab === 'services'">
+          *ngIf="activeTab === 'services'"
+          [serviceId]="selectedServiceId!">
         </app-service-admin-coverages>
 
         <!-- Pricelist Tab -->

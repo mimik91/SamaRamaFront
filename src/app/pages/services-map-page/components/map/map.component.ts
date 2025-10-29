@@ -454,7 +454,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
       `;
     }
 
-    if (serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+    if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
       popupContent += `
         <div style="margin: 14px 0; padding: 14px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-radius: 8px; border-left: 3px solid #3b82f6;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
@@ -510,7 +510,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
       `;
     }
 
-    if (serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+    if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
       popupContent += `
         <button 
           id="order-transport-btn-${serviceDetails.id}" 

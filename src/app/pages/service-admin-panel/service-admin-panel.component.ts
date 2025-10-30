@@ -5,7 +5,8 @@ import { BikeServiceVerificationService } from '../../auth/bike-service-verifica
 import { ServiceAdminBasicInfoComponent } from './service-admin-basic-info/service-admin-basic-info.component';
 import { ServiceAdminCoveragesComponent } from './service-admin-coverages/service-admin-coverages.component';
 import { ServiceAdminPricelistComponent } from './service-admin-pricelist/service-admin-pricelist.component';
-//import { ServiceAdminOpeningHoursComponent } from './service-admin-opening-hours/service-admin-opening-hours.component';
+import { ServiceAdminOpeningHoursComponent } from './service-admin-opening-hours/service-admin-opening-hours.component';
+
 
 interface BikeServiceNameIdDto {
   id: number;
@@ -52,7 +53,7 @@ interface BikeServiceRegisteredDto {
     ServiceAdminBasicInfoComponent,
     ServiceAdminCoveragesComponent,
     ServiceAdminPricelistComponent,
-    //ServiceAdminOpeningHoursComponent
+    ServiceAdminOpeningHoursComponent
   ],
   templateUrl: './service-admin-panel.component.html',
   styleUrls: ['./service-admin-panel.component.css']

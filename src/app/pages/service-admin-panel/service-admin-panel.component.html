@@ -102,9 +102,10 @@
         </app-service-admin-pricelist>
 
         <!-- Opening Hours Tab -->
-        <!--<app-service-admin-opening-hours 
-          *ngIf="activeTab === 'hours'">
-        </app-service-admin-opening-hours> -->
+        <app-service-admin-opening-hours 
+          *ngIf="activeTab === 'hours'"
+          [serviceId]="selectedServiceId!">
+        </app-service-admin-opening-hours>
       </div>
     </div>
   </div>

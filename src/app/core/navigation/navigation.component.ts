@@ -27,6 +27,7 @@ export class NavigationComponent implements OnInit {
   
   mobileMenuOpen = false;
   currentUrl: string = '';
+  serviceSuffix: string = '';
   
   ngOnInit(): void {
     // Monitorowanie zmian adresu URL
@@ -39,6 +40,69 @@ export class NavigationComponent implements OnInit {
 
     // Pobierz aktualny URL
     this.currentUrl = this.router.url;
+    
+    // Pobierz suffix serwisu jeśli użytkownik jest serwisem
+    console.log('NavigationComponent ngOnInit');
+    console.log('isService:', this.authService.isService());
+    
+    if (this.authService.isService()) {
+      this.loadServiceSuffix();
+      console.log('Service suffix loaded in ngOnInit:', this.serviceSuffix);
+    }
+  }
+  
+  // Pobierz suffix serwisu z AuthService
+  private loadServiceSuffix(): void {
+    this.serviceSuffix = this.authService.getServiceSuffix() || '';
+    console.log('loadServiceSuffix - suffix loaded:', this.serviceSuffix);
+    if (!this.serviceSuffix) {
+      console.warn('Service suffix not found for logged in service user');
+      // Sprawdź localStorage bezpośrednio
+      if (typeof localStorage !== 'undefined') {
+        const directSuffix = localStorage.getItem('service_suffix');
+        console.log('Direct localStorage check:', directSuffix);
+      }
+    }
+  }
+  
+  // Metoda do nawigacji do panelu administratora serwisu
+  navigateToServicePanel(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    console.log('=== navigateToServicePanel START ===');
+    console.log('Current suffix:', this.serviceSuffix);
+    
+    if (!this.serviceSuffix) {
+      console.log('Suffix empty, reloading...');
+      this.loadServiceSuffix();
+      console.log('After reload, suffix:', this.serviceSuffix);
+    }
+    
+    if (this.serviceSuffix) {
+      const path = `/${this.serviceSuffix}/panel-administratora`;
+      console.log('Attempting navigation to:', path);
+      
+      this.router.navigate([this.serviceSuffix, 'panel-administratora']).then(
+        success => {
+          console.log('Navigation success:', success);
+          if (success) {
+            this.closeMobileMenu();
+          }
+        },
+        error => {
+          console.error('Navigation error:', error);
+        }
+      );
+    } else {
+      console.error('Service suffix is still empty after reload!');
+      console.log('AuthService.isService():', this.authService.isService());
+      console.log('AuthService.getActiveServiceSuffix():', this.authService.getActiveServiceSuffix());
+      this.notification.error('Nie można załadować danych serwisu. Spróbuj się wylogować i zalogować ponownie.');
+    }
+    console.log('=== navigateToServicePanel END ===');
   }
   
   // Zamknij menu mobilne gdy rozmiar ekranu przekracza 768px

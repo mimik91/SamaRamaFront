@@ -16,6 +16,16 @@
     </button>
     
     <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
+
+      <ng-container *ngIf="authService.isLoggedIn() && authService.isService() && !authService.hasAdminPrivileges()">
+        <a href="javascript:void(0)" (click)="navigateToServicePanel($event)" class="nav-link">Panel Serwisu</a>
+        <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a>
+        <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
+      </ng-container>
+
+
+
+
       <!-- Menu dla zalogowanych klientów (bez uprawnień administratora) -->
       <ng-container *ngIf="authService.isLoggedIn() && authService.isClient() && !authService.hasAdminPrivileges()">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>

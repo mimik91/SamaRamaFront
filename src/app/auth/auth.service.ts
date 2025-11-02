@@ -25,7 +25,9 @@ export interface AuthResponse {
   name?: string;
   role: 'CLIENT' | 'SERVICE' | 'ADMIN' | 'MODERATOR';
   redirectUrl?: string;
-  suffix?: string;
+  // Dla SERVICE users - tablice
+  bikeServiceIds?: number[];
+  suffixes?: string[];
 }
 
 interface UserSession {
@@ -35,6 +37,12 @@ interface UserSession {
   email: string;
   name?: string;
   expiresAt: number;
+}
+
+// Nowy interface dla danych serwisu
+interface ServiceData {
+  serviceId: number;
+  suffix: string;
 }
 
 @Injectable({
@@ -119,7 +127,7 @@ export class AuthService {
           console.log('Login response:', response);
           
           // Determine the redirect URL based on role - BEZPIECZNE TRASY
-          let redirectUrl = '/client-dashboard'; // Zmieniono z /bicycles
+          let redirectUrl = '/client-dashboard';
           
           if (response.role === 'ADMIN' || response.role === 'MODERATOR') {
             redirectUrl = '/admin-dashboard';
@@ -153,6 +161,7 @@ export class AuthService {
   private handleAuthResponse(response: AuthResponse): void {
     if (response && response.token) {
       console.log('Saving auth token for:', response.email);
+      console.log('Response role:', response.role);
       
       const session: UserSession = {
         token: response.token,
@@ -167,6 +176,45 @@ export class AuthService {
       this.currentUserSubject.next(session);
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('auth_session', JSON.stringify(session));
+        
+        // Obsługa wielu serwisów dla SERVICE users
+        if (response.role === 'SERVICE' && response.bikeServiceIds && response.suffixes) {
+          console.log('Processing service data:', {
+            ids: response.bikeServiceIds,
+            suffixes: response.suffixes
+          });
+          
+          // Sparuj ID z suffixami
+          const services: ServiceData[] = response.bikeServiceIds.map((id, index) => ({
+            serviceId: id,
+            suffix: response.suffixes![index]
+          }));
+          
+          // Zapisz wszystkie serwisy
+          localStorage.setItem('user_services', JSON.stringify(services));
+          console.log('Services saved:', services);
+          
+          // Sprawdź czy jest zapamiętany aktywny serwis
+          const savedActiveService = localStorage.getItem('active_service_id');
+          let activeService: ServiceData;
+          
+          if (savedActiveService) {
+            // Znajdź zapamiętany serwis
+            const foundService = services.find(s => s.serviceId.toString() === savedActiveService);
+            activeService = foundService || services[0];
+          } else {
+            // Domyślnie pierwszy serwis
+            activeService = services[0];
+          }
+          
+          // Zapisz aktywny serwis
+          this.setActiveService(activeService.serviceId);
+          
+          console.log('Active service set:', activeService);
+        } else if (response.role === 'SERVICE') {
+          console.warn('SERVICE role but missing bikeServiceIds or suffixes in response!');
+        }
+        
         console.log('Session saved to localStorage');
       }
     }
@@ -215,6 +263,79 @@ export class AuthService {
     return currentUser ? currentUser.userId : null;
   }
 
+  // === METODY DLA OBSŁUGI WIELU SERWISÓW ===
+  
+  /**
+   * Pobiera wszystkie serwisy przypisane do użytkownika SERVICE
+   */
+  getAllServices(): ServiceData[] {
+    if (typeof localStorage === 'undefined') {
+      return [];
+    }
+    const servicesJson = localStorage.getItem('user_services');
+    if (!servicesJson) {
+      return [];
+    }
+    try {
+      return JSON.parse(servicesJson) as ServiceData[];
+    } catch (e) {
+      console.error('Error parsing services data', e);
+      return [];
+    }
+  }
+  
+  /**
+   * Pobiera ID aktywnego serwisu
+   */
+  getActiveServiceId(): number | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+    const activeId = localStorage.getItem('active_service_id');
+    return activeId ? parseInt(activeId, 10) : null;
+  }
+  
+  /**
+   * Pobiera suffix aktywnego serwisu
+   */
+  getActiveServiceSuffix(): string | null {
+    const activeId = this.getActiveServiceId();
+    if (!activeId) {
+      return null;
+    }
+    
+    const services = this.getAllServices();
+    const activeService = services.find(s => s.serviceId === activeId);
+    return activeService ? activeService.suffix : null;
+  }
+  
+  /**
+   * Ustawia aktywny serwis
+   */
+  setActiveService(serviceId: number): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+    
+    const services = this.getAllServices();
+    const service = services.find(s => s.serviceId === serviceId);
+    
+    if (service) {
+      localStorage.setItem('active_service_id', serviceId.toString());
+      localStorage.setItem('active_service_suffix', service.suffix);
+      console.log('Active service changed to:', service);
+    } else {
+      console.error('Service with id', serviceId, 'not found');
+    }
+  }
+  
+  /**
+   * Pobiera suffix serwisu (alias dla kompatybilności)
+   */
+  getServiceSuffix(): string | null {
+    return this.getActiveServiceSuffix();
+  }
+
   logout(): void {
     console.log('Logging out user');
     this.clearSession();
@@ -224,6 +345,9 @@ export class AuthService {
     this.currentUserSubject.next(null);
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('auth_session');
+      localStorage.removeItem('user_services');
+      localStorage.removeItem('active_service_id');
+      localStorage.removeItem('active_service_suffix');
     }
     // Reset flag żeby umożliwić ponowne załadowanie w przyszłości
     this.isSessionLoaded = false;

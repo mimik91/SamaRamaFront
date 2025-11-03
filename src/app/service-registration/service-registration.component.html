@@ -482,6 +482,32 @@
           </div>
         </div>
       </form>
+      <form [formGroup]="acceptTermsForm">
+        <div class="form-section">
+          <h3>Akceptacja regulaminu</h3>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                formControlName="acceptPrivacyPolicy"
+                [class.is-invalid]="isFieldInvalid(acceptTermsForm, 'acceptPrivacyPolicy')"
+              >
+              <span class="checkbox-text">
+                Akceptuję 
+                <a href="/privacy-policy" target="_blank" class="policy-link">Politykę Prywatności</a>
+                oraz 
+                <a href="/terms-of-service-workshops" target="_blank" class="policy-link">Regulamin Serwisu</a>
+                *
+              </span>
+            </label>
+            <div *ngIf="isFieldInvalid(acceptTermsForm, 'acceptPrivacyPolicy')" class="error-message">
+              Musisz zaakceptować politykę prywatności i regulamin, aby kontynuować
+            </div>
+          </div>
+        </div>
+      </form>
+
+
 
       <div class="benefits-box">
         <h3>Co zyskasz po rejestracji?</h3>
@@ -516,7 +542,7 @@
         type="button" 
         class="primary-btn"
         (click)="finalizeRegistration()"
-        [disabled]="passwordForm.invalid || isSubmitting"
+        [disabled]="passwordForm.invalid || acceptTermsForm.invalid || isSubmitting"
       >
         {{ isSubmitting ? 'Rejestrowanie...' : 'Zarejestruj serwis' }}
       </button>

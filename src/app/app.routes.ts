@@ -30,6 +30,7 @@ import { PasswordResetComponent } from './auth/password-reset/password-reset.com
 import { ForServicesComponent } from './for-services/for-services.component';
 import { CourierPanelComponent } from './courier-panel/courier-panel.component';
 import { TermsOfServiceComponent } from './core/terms-of-service.component'
+import { TermsOfServiceWorkshopsComponent } from './core/terms-of-service-workshops.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
 import { suffixValidationGuard } from './auth/suffix-validation.guard';
 
@@ -66,6 +67,11 @@ export const routes: Routes = [
       path: 'terms-of-service', 
       component: TermsOfServiceComponent, 
       title: 'Regulamin Serwisu'
+    },
+    { 
+      path: 'terms-of-service-workshops', 
+      component: TermsOfServiceWorkshopsComponent, 
+      title: 'Regulamin dla Serwisu'
     },
     { 
       path: 'privacy-policy', 

@@ -43,6 +43,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   basicInfoForm!: FormGroup;
   coverageForm!: FormGroup;
   passwordForm!: FormGroup;
+  acceptTermsForm!: FormGroup;
   
   // Stan komponentu
   currentStep = 1;
@@ -98,8 +99,11 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
     this.passwordForm = this.fb.group({
       userEmail: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
       password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(120)]],
-      confirmPassword: ['', [Validators.required]]
+      confirmPassword: ['', [Validators.required]],
     }, { validators: this.passwordMatchValidator });
+    this.acceptTermsForm = this.fb.group({
+      acceptPrivacyPolicy: [false, [Validators.required, Validators.requiredTrue]] // KONTROLKA Z HTML
+    });
 
     // Nasłuchuj zmian statusu pola suffix i serviceName
     this.setupSuffixStatusListener();
@@ -431,12 +435,18 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
 
   // Finalizacja rejestracji
   async finalizeRegistration(): Promise<void> {
-    if (this.passwordForm.invalid) {
+    if (this.passwordForm.invalid || this.acceptTermsForm.invalid) {
       Object.keys(this.passwordForm.controls).forEach(key => {
         const control = this.passwordForm.get(key);
         control?.markAsTouched();
       });
-      this.notificationService.warning('Wypełnij poprawnie dane hasła.');
+
+      Object.keys(this.acceptTermsForm.controls).forEach(key => {
+        const control = this.acceptTermsForm.get(key);
+        control?.markAsTouched();
+      });
+
+      this.notificationService.warning('Wypełnij poprawnie dane hasła i zaakceptuj regulamin.');
       return;
     }
 

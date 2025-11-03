@@ -19,7 +19,7 @@ import { Router } from '@angular/router';
           <p>1.2. Kontakt z Usługodawcą:</p>
           <ul>
             <li>e-mail: <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a></li>
-            <li>tel.: 723 45 25 87</li>
+            <li>tel.: 667 757 920</li>
           </ul>
           <p>1.3. Regulamin obowiązuje od 7 lipca 2025 r. i jest dostępny nieodpłatnie na stronie <a href="https://cyclopick.pl">cyclopick.pl</a>.</p>
 
@@ -51,12 +51,6 @@ import { Router } from '@angular/router';
             <li>Dostawa do serwisu: tak, aby rower był gotowy następnego dnia roboczego.</li>
             <li>Odbiór z serwisu po potwierdzeniu gotowości i dostarczenie do Klienta w oknie 18:00–22:00.</li>
           </ul>
-          <h3>4.2. Usługa serwisowa z transportem</h3>
-          <ul>
-            <li>Odbiór i dostawa w oknie 18:00–22:00.</li>
-            <li>Standardowy termin naprawy: do 24 h roboczych.</li>
-            <li>Jeśli naprawa nie zakończy się w 48 h roboczych, Klient otrzymuje informację o przyczynie opóźnienia i nowym terminie.</li>
-          </ul>
 
           <h2>5. Obowiązki i odpowiedzialność Klienta</h2>
           <ul>
@@ -64,7 +58,7 @@ import { Router } from '@angular/router';
             <li>Przygotowanie roweru do transportu (zabezpieczenie luzem elementów).</li>
             <li>Przekazanie prawdziwych informacji o rodzaju i wartości roweru.</li>
           </ul>
-          <p>Usługodawca odpowiada do wysokości 6000 zł. Rowery o wyższej wartości i z karbonową ramą/obręczami przewożone są na ryzyko Klienta. Usługodawca nie odpowiada za ukryte wady roweru ani opóźnienia z winy serwisu.</p>
+          <p>Usługodawca odpowiada do wysokości 8000 zł. Rowery o wyższej wartości i z karbonową ramą/obręczami przewożone są na ryzyko Klienta. Usługodawca nie odpowiada za ukryte wady roweru ani opóźnienia z winy serwisu.</p>
 
           <h2>6. Cennik i warunki płatności</h2>
           <ul>

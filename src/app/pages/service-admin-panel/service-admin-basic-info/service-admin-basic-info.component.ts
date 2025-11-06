@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../core/api-config';
 
 interface BikeServiceRegisteredDto {
   id: number;
@@ -95,7 +96,7 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
   saveChanges(): void {
     if (!this.serviceId) return;
 
-      const url = `http://localhost:8080/api/bike-services-registered/my-service?serviceId=${this.serviceId}`;
+      const url = `${environment.apiUrl}/bike-services-registered/my-service?serviceId=${this.serviceId}`;
     
     this.isSaving = true;
     this.saveError = '';

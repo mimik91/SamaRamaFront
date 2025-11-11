@@ -41,7 +41,7 @@ export class LoginComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
-    
+
     this.resendVerificationForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });
@@ -56,19 +56,19 @@ export class LoginComponent {
       this.isSubmitting = true;
       this.errorMessage = '';
       this.successMessage = 'Próba logowania...';
-      
+
       const credentials = this.loginForm.value;
-  
+
       this.authService.loginClient(credentials).subscribe({
         next: (response) => {
           console.log('Login successful', response);
           this.successMessage = 'Logowanie udane!';
           console.log('Token saved to localStorage:', localStorage.getItem('auth_session'));
-  
+
           // Add a delay to see the success message
           setTimeout(() => {
             console.log('User role:', this.authService.getUserRole());
-            
+
             // Poprawiona logika przekierowywania z obsługą użytkowników SERVICE
             if (this.authService.isAdmin() || this.authService.isModerator()) {
               this.router.navigate(['/admin-dashboard']);
@@ -85,10 +85,10 @@ export class LoginComponent {
         },
         error: (error) => {
           console.error('Logowanie nie powiodło się', error);
-          
+
           // Sprawdzenie, czy konto nie jest zweryfikowane
-          if (error.error && error.error.message && 
-              (error.error.message.includes('not verified') || 
+          if (error.error && error.error.message &&
+              (error.error.message.includes('not verified') ||
                error.error.message.includes('nie zweryfikowane') ||
                error.error.message.includes('nie zostało zweryfikowane'))) {
             this.errorMessage = 'Konto nie zostało zweryfikowane. Sprawdź swoją skrzynkę email lub kliknij poniżej, aby wysłać link weryfikacyjny ponownie.';
@@ -117,20 +117,31 @@ export class LoginComponent {
     this.serviceVerificationService.checkVerificationStatus().subscribe({
       next: (status) => {
         console.log('Service verification status:', status);
-        
+
+        // 1. Brak przypisanego serwisu
         if (!status.hasService) {
-          // Użytkownik SERVICE nie ma przypisanego serwisu
           console.log('Service not assigned, redirecting to pending verification');
           this.router.navigate(['/service-pending-verification']);
-        } else if (status.suffix) {
-          // Serwis jest zweryfikowany i ma suffix - przekieruj do panelu
+          return;
+        }
+
+        // 2. Serwis nie jest zweryfikowany (verified: false)
+        if (status.verified === false) {
+          console.log('Service exists but not verified (verified: false), redirecting to pending verification');
+          this.router.navigate(['/service-pending-verification']);
+          return;
+        }
+
+        // 3. Serwis jest zweryfikowany i ma suffix
+        if (status.verified === true && status.suffix) {
           console.log('Service verified with suffix:', status.suffix);
           this.router.navigate([`/${status.suffix}/panel-administratora`]);
-        } else {
-          // Serwis jest przypisany ale nie ma suffixu (nie jest zweryfikowany)
-          console.log('Service assigned but not verified, redirecting to pending verification');
-          this.router.navigate(['/service-pending-verification']);
+          return;
         }
+
+        // 4. Fallback - jeśli coś jest nie tak (brak suffixu mimo weryfikacji)
+        console.log('Unexpected state, redirecting to pending verification');
+        this.router.navigate(['/service-pending-verification']);
       },
       error: (error) => {
         console.error('Error checking service verification status:', error);
@@ -150,7 +161,7 @@ export class LoginComponent {
     const email = this.resendVerificationForm.get('email')?.value;
     this.isResendingVerification = true;
     this.errorMessage = '';
-    
+
     this.verificationService.resendVerificationEmail(email).subscribe({
       next: (response) => {
         this.isResendingVerification = false;
@@ -174,13 +185,13 @@ export class LoginComponent {
       }
     });
   }
-  
+
   // Funkcja sprawdzająca, czy dane pole formularza jest nieprawidłowe
   isFieldInvalid(formGroup: FormGroup, fieldName: string): boolean {
     const control = formGroup.get(fieldName);
     return control ? (control.invalid && control.touched) : false;
   }
-  
+
   // Włączanie/wyłączanie formularza ponownego wysyłania
   toggleResendForm() {
     this.showResendVerification = !this.showResendVerification;

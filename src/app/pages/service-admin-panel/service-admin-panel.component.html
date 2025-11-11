@@ -19,9 +19,9 @@
     <!-- Service Selector -->
     <div class="service-selector" *ngIf="myServices.length > 1">
       <label for="service-select">Wybierz serwis:</label>
-      <select 
-        id="service-select" 
-        [value]="selectedServiceId" 
+      <select
+        id="service-select"
+        [value]="selectedServiceId"
         (change)="onServiceChange($event)"
         class="service-dropdown">
         <option *ngFor="let service of myServices" [value]="service.id">
@@ -55,26 +55,26 @@
 
       <!-- Tabs Navigation -->
       <div class="tabs-container">
-        <button 
-          [class.active]="activeTab === 'basic'" 
+        <button
+          [class.active]="activeTab === 'basic'"
           (click)="setActiveTab('basic')"
           class="tab-btn">
           podstawowe informacje
         </button>
-        <button 
-          [class.active]="activeTab === 'services'" 
+        <button
+          [class.active]="activeTab === 'services'"
           (click)="setActiveTab('services')"
           class="tab-btn">
           dostępne usługi
         </button>
-        <button 
-          [class.active]="activeTab === 'pricelist'" 
+        <button
+          [class.active]="activeTab === 'pricelist'"
           (click)="setActiveTab('pricelist')"
           class="tab-btn">
           zarządzaj cennikiem
         </button>
-        <button 
-          [class.active]="activeTab === 'hours'" 
+        <button
+          [class.active]="activeTab === 'hours'"
           (click)="setActiveTab('hours')"
           class="tab-btn">
           godziny otwarcia
@@ -84,25 +84,26 @@
       <!-- Tab Content -->
       <div class="tab-content">
         <!-- Basic Info Tab -->
-        <app-service-admin-basic-info 
+        <app-service-admin-basic-info
           *ngIf="activeTab === 'basic'"
           [serviceDetails]="serviceDetails"
           [serviceId]="selectedServiceId!">
         </app-service-admin-basic-info>
 
         <!-- Services/Coverages Tab -->
-        <app-service-admin-coverages 
+        <app-service-admin-coverages
           *ngIf="activeTab === 'services'"
           [serviceId]="selectedServiceId!">
         </app-service-admin-coverages>
 
         <!-- Pricelist Tab -->
-        <app-service-admin-pricelist 
-          *ngIf="activeTab === 'pricelist'">
+        <app-service-admin-pricelist
+          *ngIf="activeTab === 'pricelist'"
+          [serviceId]="selectedServiceId!">
         </app-service-admin-pricelist>
 
         <!-- Opening Hours Tab -->
-        <app-service-admin-opening-hours 
+        <app-service-admin-opening-hours
           *ngIf="activeTab === 'hours'"
           [serviceId]="selectedServiceId!">
         </app-service-admin-opening-hours>

@@ -118,21 +118,16 @@ export class LoginComponent {
       next: (status) => {
         console.log('Service verification status:', status);
 
-        // 1. Brak przypisanego serwisu
         if (!status.hasService) {
           console.log('Service not assigned, redirecting to pending verification');
           this.router.navigate(['/service-pending-verification']);
           return;
         }
-
-        // 2. Serwis nie jest zweryfikowany (verified: false)
         if (status.verified === false) {
           console.log('Service exists but not verified (verified: false), redirecting to pending verification');
           this.router.navigate(['/service-pending-verification']);
           return;
         }
-
-        // 3. Serwis jest zweryfikowany i ma suffix
         if (status.verified === true && status.suffix) {
           console.log('Service verified with suffix:', status.suffix);
           this.router.navigate([`/${status.suffix}/panel-administratora`]);

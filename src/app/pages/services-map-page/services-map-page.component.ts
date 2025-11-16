@@ -56,8 +56,8 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   mapVisible = true;
   mapInitialized = false;
   currentMapView: MapViewState = {
-    center: { lat: 50.0647, lng: 19.9450 },
-    zoom: 12
+    center: { lat: 52.0100, lng: 19.5111 },
+    zoom: 7
   };
 
   // Services list state
@@ -144,7 +144,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   private loadInitialData(): void {
     // Load clustered pins for map
     this.loadMapPins(this.currentMapView.zoom, this.getBoundsString(this.currentMapView.bounds));
-    
+
     // Load services for sidebar
     this.loadServicesForList(0);
   }
@@ -174,28 +174,28 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
 
   private processCoverageCategories(coveragesByCategory: any): void {
     const categoriesMap = new Map<string, CoverageCategory>();
-    
+
     console.log('Processing coverage categories:', coveragesByCategory);
     console.log('Keys:', Object.keys(coveragesByCategory));
-    
+
     Object.entries(coveragesByCategory).forEach(([key, coverages]: [string, any]) => {
       console.log('Processing key:', key);
-      
+
       try {
         // Parse the string format: "BikeRepairCoverageCategoryDto(id=1, name=Typ roweru, displayOrder=1)"
         const idMatch = key.match(/id=(\d+)/);
         const nameMatch = key.match(/name=([^,)]+)/);
         const displayOrderMatch = key.match(/displayOrder=(\d+)/);
-        
+
         if (idMatch && nameMatch) {
           const categoryData: BikeRepairCoverageCategoryDto = {
             id: parseInt(idMatch[1]),
             name: nameMatch[1].trim(),
             displayOrder: displayOrderMatch ? parseInt(displayOrderMatch[1]) : 0
           };
-          
+
           console.log('Parsed category:', categoryData);
-          
+
           // Filter out empty coverage arrays
           if (Array.isArray(coverages) && coverages.length > 0) {
             categoriesMap.set(key, {
@@ -213,13 +213,13 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
         console.error('Error processing category:', key, error);
       }
     });
-    
+
     this.coverageCategories = Array.from(categoriesMap.values())
       .sort((a, b) => (a.category.displayOrder || 0) - (b.category.displayOrder || 0));
-    
+
     console.log('Final processed coverage categories:', this.coverageCategories);
     console.log('Total categories:', this.coverageCategories.length);
-    
+
     if (this.coverageCategories.length === 0) {
       console.error('No categories were processed! Check the data format.');
     }
@@ -229,11 +229,11 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
 
   private loadMapPins(zoom: number, bounds?: string): void {
     this.mapService.getClusteredPins(
-      zoom, 
-      bounds, 
-      this.filtersState.cityQuery || undefined, 
-      this.filtersState.selectedCoverageIds.length > 0 
-      ? this.filtersState.selectedCoverageIds 
+      zoom,
+      bounds,
+      this.filtersState.cityQuery || undefined,
+      this.filtersState.selectedCoverageIds.length > 0
+      ? this.filtersState.selectedCoverageIds
       : undefined
     )
       .pipe(takeUntil(this.destroy$))
@@ -253,17 +253,17 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   private loadServicesForList(page: number = 0): void {
     this.loadingServices = page === 0;
     this.loadingMore = page > 0;
-    
+
     const request: MapServicesRequestDto = {
       type: 'event',
       bounds: this.getBoundsString(this.currentMapView.bounds),
       page: page,
       perPage: 25,
-      coverageIds: this.filtersState.selectedCoverageIds.length > 0 
-        ? this.filtersState.selectedCoverageIds 
+      coverageIds: this.filtersState.selectedCoverageIds.length > 0
+        ? this.filtersState.selectedCoverageIds
         : undefined
     };
-    
+
     this.mapService.getServices(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -279,7 +279,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
             } else {
               this.services = [...this.services, ...servicesWithAddress];
             }
-            
+
             this.allServices = [...this.services];
             this.totalServices = response.total;
             this.currentPage = response.page ?? 0;
@@ -309,7 +309,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
 
   onPopupReopenRequested(serviceId: number): void {
 
-    this.loadServiceDetailsAndShowPopup(serviceId); 
+    this.loadServiceDetailsAndShowPopup(serviceId);
   }
 
   // ============ CITY SEARCH ============
@@ -349,15 +349,15 @@ onCitySelected(city: CitySuggestion): void {
     // Wykorzystujemy współrzędne bezpośrednio z odpowiedzi
     const latitude = city.latitude;
     const longitude = city.longitude;
-    
+
     console.log('City selected:', city);
     console.log('Coordinates:', { latitude, longitude });
     console.log('Map component exists:', !!this.mapComponent);
-    
+
     if (this.mapComponent && latitude && longitude) {
       // Centrujemy mapę na współrzędnych miasta z odpowiednim zoomem
       this.mapComponent.centerOn(latitude, longitude, 13);
-      
+
       console.log(`Map centered on ${city.cityName} at coordinates: ${latitude}, ${longitude}`);
     } else {
       console.error('Missing coordinates or map component for city:', city);
@@ -369,10 +369,9 @@ onCitySelected(city: CitySuggestion): void {
     this.filtersState.cityQuery = '';
     this.citySuggestions = [];
     if (this.mapComponent) {
-      this.mapComponent.centerOn(50.0647, 19.9450, 12);
+      this.mapComponent.centerOn(52.0100, 19.5111, 7);
     }
   }
-
   // ============ SERVICE SEARCH ============
 
   onServiceSearchChanged(query: string): void {
@@ -434,7 +433,7 @@ onCitySelected(city: CitySuggestion): void {
   if (this.isMobileView) {
     this.showMapView = true;
   }
-  
+
   this.loadServiceDetailsAndShowPopup(service.id);
 }
 
@@ -461,7 +460,7 @@ onCitySelected(city: CitySuggestion): void {
     }
     const boundsStr = this.getBoundsString(this.currentMapView.bounds);
     this.loadMapPins(this.currentMapView.zoom, boundsStr);
-  
+
     this.loadServicesForList(0);
   }
 
@@ -509,7 +508,7 @@ onCitySelected(city: CitySuggestion): void {
       .subscribe({
         next: (serviceDetails) => {
           if (serviceDetails && this.mapComponent) {
-            this.selectedServiceId = serviceId; 
+            this.selectedServiceId = serviceId;
             this.mapComponent.showServicePopup(serviceDetails);
           }
         },

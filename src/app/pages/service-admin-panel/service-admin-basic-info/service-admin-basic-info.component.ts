@@ -58,7 +58,7 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
   isSaving: boolean = false;
   saveError: string = '';
   saveSuccess: boolean = false;
-
+  
   editableData: ServiceProfileUpdateDto = {};
 
   constructor(private http: HttpClient) {}
@@ -69,7 +69,7 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
 
   initEditableData(): void {
     if (!this.serviceDetails) return;
-
+    
     this.editableData = {
       email: this.serviceDetails.email || '',
       phoneNumber: this.serviceDetails.phoneNumber || '',
@@ -97,22 +97,22 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
     if (!this.serviceId) return;
 
       const url = `${environment.apiUrl}/bike-services-registered/my-service?serviceId=${this.serviceId}`;
-
+    
     this.isSaving = true;
     this.saveError = '';
     this.saveSuccess = false;
 
-
-
+  
+    
     this.http.put(url, this.editableData).subscribe({
       next: () => {
         this.isSaving = false;
         this.saveSuccess = true;
         this.isEditMode = false;
-
+        
         // Update service details with new values
         Object.assign(this.serviceDetails, this.editableData);
-
+        
         // Hide success message after 3 seconds
         setTimeout(() => {
           this.saveSuccess = false;

@@ -12,6 +12,9 @@ import { MapPin } from '../../services/map.models';
   styleUrls: ['./services-list.component.css']
 })
 export class ServicesListComponent {
+  // Default logo path
+  private readonly DEFAULT_LOGO = 'assets/images/cyclopick-logo.svg';
+
   // Inputs
   @Input() services: MapPin[] = [];
   @Input() selectedServiceId: number | null = null;
@@ -64,14 +67,6 @@ export class ServicesListComponent {
     this.retryRequested.emit();
   }
 
-  isVerified(service: MapPin): boolean {
-    return service.verified === true;
-  }
-
-  showServiceTags(service: MapPin): boolean {
-    return service.verified !== undefined;
-  }
-
   trackByServiceId(index: number, service: MapPin): number {
     return service.id;
   }
@@ -81,5 +76,22 @@ export class ServicesListComponent {
       return service.address;
     }
     return service.name || 'Serwis rowerowy';
+  }
+
+  /**
+   * Returns the logo URL for the service
+   * If logoUrl is null or undefined, returns the default logo
+   */
+  getServiceLogo(service: MapPin): string {
+    return service.logoUrl || this.DEFAULT_LOGO;
+  }
+
+  /**
+   * Handles image loading errors by falling back to default logo
+   */
+  onImageError(event: any): void {
+    console.log('Failed to load service logo, falling back to default logo');
+    event.target.src = this.DEFAULT_LOGO;
+    event.target.onerror = null;
   }
 }

@@ -79,6 +79,12 @@
           class="tab-btn">
           godziny otwarcia
         </button>
+        <button
+          [class.active]="activeTab === 'images'"
+          (click)="setActiveTab('images')"
+          class="tab-btn">
+          zarządzaj zdjęciami
+        </button>
       </div>
 
       <!-- Tab Content -->
@@ -107,6 +113,12 @@
           *ngIf="activeTab === 'hours'"
           [serviceId]="selectedServiceId!">
         </app-service-admin-opening-hours>
+
+        <!-- Images Tab -->
+        <app-service-admin-images
+          *ngIf="activeTab === 'images'"
+          [serviceId]="selectedServiceId!">
+        </app-service-admin-images>
       </div>
     </div>
   </div>

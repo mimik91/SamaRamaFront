@@ -34,6 +34,16 @@
       [class.selected]="selectedServiceId === service.id"
       (click)="onServiceClick(service)"
     >
+      <!-- Service Logo -->
+      <div class="service-logo-container">
+        <img 
+          [src]="getServiceLogo(service)" 
+          [alt]="service.name + ' logo'"
+          class="service-logo"
+          (error)="onImageError($event)"
+        />
+      </div>
+
       <div class="service-header">
         <h3 class="service-name">{{ service.name }}</h3>
       </div>
@@ -46,12 +56,6 @@
       <div class="service-phone" *ngIf="service.phoneNumber">
         <span>📞</span>
         <a href="tel:{{ service.phoneNumber }}">{{ service.phoneNumber }}</a>
-      </div>
-
-      <div class="service-details" *ngIf="showServiceTags(service)">
-        <span class="service-tag verified" *ngIf="isVerified(service)">
-          ✅ Zweryfikowany
-        </span>
       </div>
 
       <div class="service-actions">

@@ -6,6 +6,7 @@ import { ServiceAdminBasicInfoComponent } from './service-admin-basic-info/servi
 import { ServiceAdminCoveragesComponent } from './service-admin-coverages/service-admin-coverages.component';
 import { ServiceAdminPricelistComponent } from './service-admin-pricelist/service-admin-pricelist.component';
 import { ServiceAdminOpeningHoursComponent } from './service-admin-opening-hours/service-admin-opening-hours.component';
+import { ServiceAdminImagesComponent } from './service-admin-images/service-admin-images.component';
 
 
 interface BikeServiceNameIdDto {
@@ -53,7 +54,8 @@ interface BikeServiceRegisteredDto {
     ServiceAdminBasicInfoComponent,
     ServiceAdminCoveragesComponent,
     ServiceAdminPricelistComponent,
-    ServiceAdminOpeningHoursComponent
+    ServiceAdminOpeningHoursComponent,
+    ServiceAdminImagesComponent
   ],
   templateUrl: './service-admin-panel.component.html',
   styleUrls: ['./service-admin-panel.component.css']
@@ -73,7 +75,7 @@ export class ServiceAdminPanelComponent implements OnInit {
   detailsError: string = '';
   
   // Active tab
-  activeTab: 'basic' | 'services' | 'pricelist' | 'hours' = 'basic';
+  activeTab: 'basic' | 'services' | 'pricelist' | 'hours' | 'images' = 'basic';
 
   ngOnInit(): void {
     this.loadMyServices();
@@ -126,7 +128,7 @@ export class ServiceAdminPanelComponent implements OnInit {
     });
   }
 
-  setActiveTab(tab: 'basic' | 'services' | 'pricelist' | 'hours'): void {
+  setActiveTab(tab: 'basic' | 'services' | 'pricelist' | 'hours' | 'images'): void {
     this.activeTab = tab;
   }
 }

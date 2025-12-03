@@ -11,6 +11,7 @@ export interface MapPin {
   email?: string;
   verified?: boolean;
   category?: string;
+  logoUrl?: string;
 }
 
 export interface ServiceDetails {
@@ -32,6 +33,7 @@ export interface ServiceDetails {
   createdAt: string;
   updatedAt?: string;
   registered: boolean;
+  logoUrl?: string
 }
 
 export interface CitySuggestion {

@@ -13,7 +13,7 @@ import { Inject } from '@angular/core';
   styleUrls: ['./services-list.component.css']
 })
 export class ServicesListComponent {
-  // Inputs
+private readonly DEFAULT_LOGO = 'assets/images/cyclopick-logo.svg';
   @Input() services: MapPin[] = [];
   @Input() selectedServiceId: number | null = null;
   @Input() loading = false;
@@ -26,6 +26,7 @@ export class ServicesListComponent {
 
   // Outputs
   @Output() serviceSelected = new EventEmitter<MapPin>();
+  @Output() serviceDetailsRequested = new EventEmitter<MapPin>();
   @Output() scrollEnd = new EventEmitter<void>();
   @Output() retryRequested = new EventEmitter<void>();
 
@@ -68,6 +69,7 @@ export class ServicesListComponent {
    */
   onViewDetails(service: MapPin, event: Event): void {
     event.stopPropagation();
+    this.serviceDetailsRequested.emit(service);
     
     // Zabezpieczenie na wypadek, gdyby przycisk został jakimś cudem kliknięty, 
     // choć serwis nie jest zweryfikowany.
@@ -125,4 +127,16 @@ export class ServicesListComponent {
     }
     return service.name || 'Serwis rowerowy';
   }
+
+getServiceLogo(service: MapPin): string {
+    return service.logoUrl || this.DEFAULT_LOGO;
+  }
+
+  onImageError(event: any): void {
+    console.log('Failed to load service logo, falling back to default logo');
+    event.target.src = this.DEFAULT_LOGO;
+    event.target.onerror = null;
+  }
+
+
 }

@@ -1,5 +1,3 @@
-// src/app/pages/services-map-page/components/map/map.component.ts
-
 import { 
   Component, 
   Input, 
@@ -17,6 +15,8 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MapPin, ServiceDetails, MapViewState, MapBounds } from '../../services/map.models';
+import { MapService } from '../../services/map.service';
+import { Router } from '@angular/router';
 
 declare var L: any;
 
@@ -62,8 +62,11 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   error = false;
   errorMessage = '';
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
+  constructor(@Inject(PLATFORM_ID) private platformId: Object,
+    private mapService: MapService, 
+    private router: Router
+  ) {
+     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   ngOnInit(): void {
@@ -428,23 +431,11 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     if (serviceDetails.city) {
       fullAddress += fullAddress ? `, ${serviceDetails.city}` : serviceDetails.city;
     }
-
-    const logoUrl = serviceDetails.logoUrl || 'assets/images/cyclopick-logo.svg';
-
     
     let popupContent = `
       <div style="font-family: inherit; min-width: 300px; max-width: 380px;">
-        <div style="background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%); color: white; padding: 18px; margin: -12px -18px 18px -18px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-          <h4 style="margin: 0; font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.1); flex: 1;">${serviceDetails.name}</h4>
-          <div style="background: white; padding: 6px 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; min-width: 50px; max-width: 80px; height: 50px;">
-            <img 
-              src="${logoUrl}" 
-              alt="${serviceDetails.name} logo"
-              id="popup-logo-${serviceDetails.id}"
-              style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;"
-              onerror="this.src='assets/images/cyclopick-logo.svg'; this.onerror=null;"
-            />
-          </div>
+        <div style="background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%); color: white; padding: 18px; margin: -12px -18px 18px -18px; border-radius: 12px 12px 0 0;">
+          <h4 style="margin: 0; font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${serviceDetails.name}</h4>
         </div>
     `;
     
@@ -500,7 +491,10 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
       <div style="margin: 20px 0 0 0; padding: 16px 0 0 0; border-top: 2px solid #f1f5f9; display: flex; gap: 10px; flex-wrap: wrap;">
     `;
 
-    if (serviceDetails.verified) {
+    const isVerified = Boolean(serviceDetails.registered);
+  
+
+    if (isVerified) {
       popupContent += `
         <button 
           id="view-details-btn-${serviceDetails.id}" 
@@ -540,31 +534,64 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   }
 
   private attachPopupEventListeners(serviceDetails: ServiceDetails): void {
-    if (serviceDetails.verified) {
-      const viewDetailsBtn = document.getElementById(`view-details-btn-${serviceDetails.id}`);
-      if (viewDetailsBtn) {
-        viewDetailsBtn.addEventListener('click', () => {
-          this.viewServiceDetails.emit(serviceDetails);
+  // UWAGA: Logika przycisku 'Zobacz szczegóły' bazuje na 'serviceDetails.verified'
+  // i odpowiada za niego przycisk id="view-details-btn-${serviceDetails.id}"
+  
+  if (serviceDetails.registered) {
+    const viewDetailsBtn = document.getElementById(`view-details-btn-${serviceDetails.id}`);
+    if (viewDetailsBtn) {
+      viewDetailsBtn.addEventListener('click', () => {
+        // Zamiast emitować 'viewServiceDetails', wykonujemy zapytanie o suffix
+        console.log('View Details button clicked. Requesting suffix...');
+        
+        // 1. Użyj MapService do pobrania sufiksu
+        this.mapService.getServiceSuffix(serviceDetails.id).subscribe({
+          next: (response) => {
+            if (response && response.suffix) {
+              const suffix = response.suffix;
+              // 2. Przekierowanie na nową stronę
+              // Użyj this.router.navigate([suffix]) jeśli jest zaimportowany
+              // lub window.location.href dla prostej nawigacji
+              this.router.navigate([suffix]); 
+              
+              // Alternatywnie (mniej "angularowo"):
+              // window.location.href = `/${suffix}`;
+              
+            } else {
+              console.error('Could not retrieve suffix for service:', serviceDetails.id);
+              alert('Nie udało się pobrać linku do serwisu. Spróbuj ponownie.');
+            }
+          },
+          error: (err) => {
+            console.error('Error during suffix fetch:', err);
+            alert('Wystąpił błąd podczas pobierania szczegółów serwisu.');
+          }
         });
-      }
-    } else {
-      const registerBtn = document.getElementById(`register-service-btn-${serviceDetails.id}`);
-      if (registerBtn) {
-        registerBtn.addEventListener('click', () => {
-          this.registerService.emit(serviceDetails);
-        });
-      }
+        
+        // Poprzednia emisja (możesz ją usunąć, jeśli nie jest potrzebna po nowej logice)
+        // this.viewServiceDetails.emit(serviceDetails);
+      });
     }
-
-    if (serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
-      const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
-      if (transportBtn) {
-        transportBtn.addEventListener('click', () => {
-          this.orderTransport.emit(serviceDetails);
-        });
-      }
+  } else {
+    // ... (pozostała logika dla 'register-service-btn')
+    const registerBtn = document.getElementById(`register-service-btn-${serviceDetails.id}`);
+    if (registerBtn) {
+      registerBtn.addEventListener('click', () => {
+        this.registerService.emit(serviceDetails);
+      });
     }
   }
+
+  // ... (pozostała logika dla transportu)
+  if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+    const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
+    if (transportBtn) {
+      transportBtn.addEventListener('click', () => {
+        this.orderTransport.emit(serviceDetails);
+      });
+    }
+  }
+}
 
   private createClusterIcon(count: number): any {
     let color, size, fontSize;

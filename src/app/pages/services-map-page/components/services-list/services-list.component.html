@@ -59,9 +59,10 @@
       </div>
 
       <div class="service-actions">
-        <button 
+        <button
           class="service-action-btn primary"
           (click)="onViewDetails(service, $event)"
+          *ngIf="isVerified(service)"
         >
           Zobacz szczegóły
         </button>

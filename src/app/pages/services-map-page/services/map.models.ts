@@ -17,15 +17,15 @@ export interface MapPin {
 export interface ServiceDetails {
   id: number;
   name: string;
+  email: string;
   street: string;
   building: string;
   flat?: string;
   postalCode?: string;
   city: string;
-  phoneNumber: string;
-  email: string;
   latitude?: number;
   longitude?: number;
+  phoneNumber: string;
   description?: string;
   verified: boolean;
   transportCost?: number;

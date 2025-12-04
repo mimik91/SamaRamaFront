@@ -157,7 +157,7 @@ export class MapService {
     );
   }
 
-  filterByCoverages(coverageIds: number[]): Observable<MapServicesResponseDto> {
+    filterByCoverages(coverageIds: number[]): Observable<MapServicesResponseDto> {
     console.log('MapService: Filtering by coverage IDs:', coverageIds);
     
     return this.http.post<MapServicesResponseDto>(
@@ -171,6 +171,24 @@ export class MapService {
         console.error('MapService: Error filtering by coverages:', error);
         return of({ data: [], total: 0 });
       })
+    );
+  }
+
+  getServiceSuffix(serviceId: number): Observable<{ suffix: string } | null> {
+    console.log('MapService: Fetching suffix for service ID:', serviceId);
+    
+    // Używamy endpointu zadeklarowanego w backendzie: /get-suffix
+    return this.http.get<{ suffix: string }>(`${environment.apiUrl}/bike-services/get-suffix`, {
+        params: { serviceId: serviceId.toString() }
+    }).pipe(
+        tap(response => {
+            console.log('MapService: Received service suffix:', response.suffix);
+        }),
+        catchError(error => {
+            console.error('MapService: Error fetching service suffix:', error);
+            // Zwróć null w przypadku błędu
+            return of(null);
+        })
     );
   }
 

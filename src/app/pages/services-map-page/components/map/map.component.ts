@@ -431,11 +431,22 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     if (serviceDetails.city) {
       fullAddress += fullAddress ? `, ${serviceDetails.city}` : serviceDetails.city;
     }
+
+    const logoUrl = serviceDetails.logoUrl || 'assets/images/cyclopick-logo.svg';
     
     let popupContent = `
       <div style="font-family: inherit; min-width: 300px; max-width: 380px;">
-        <div style="background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%); color: white; padding: 18px; margin: -12px -18px 18px -18px; border-radius: 12px 12px 0 0;">
-          <h4 style="margin: 0; font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${serviceDetails.name}</h4>
+        <div style="background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%); color: white; padding: 18px; margin: -12px -18px 18px -18px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <h4 style="margin: 0; font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.1); flex: 1;">${serviceDetails.name}</h4>
+          <div style="background: white; padding: 6px 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; min-width: 50px; max-width: 80px; height: 50px;">
+            <img 
+              src="${logoUrl}" 
+              alt="${serviceDetails.name} logo"
+              id="popup-logo-${serviceDetails.id}"
+              style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;"
+              onerror="this.src='assets/images/cyclopick-logo.svg'; this.onerror=null;"
+            />
+          </div>viceDetails.name}</h4>
         </div>
     `;
     

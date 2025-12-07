@@ -1,4 +1,4 @@
-/* src/app/pages/services-map-page/components/map/map.component.css */
+@import '@colors';
 
 .map-component-container {
   width: 100%;
@@ -20,8 +20,8 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  background-color: #f8fafc;
-  color: #64748b;
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-500);
   text-align: center;
   padding: 20px;
 }
@@ -35,33 +35,33 @@
 .map-placeholder p {
   margin: 0 0 15px 0;
   font-size: 1rem;
-  color: #64748b;
+  color: var(--color-slate-500);
 }
 
 .show-map-button {
   padding: 14px 28px;
-  background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--color-white);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 1.05rem;
   font-weight: 600;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(43, 130, 173, 0.2);
+  box-shadow: 0 4px 12px var(--color-primary-alpha-20);
 }
 
 .show-map-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(43, 130, 173, 0.3);
+  box-shadow: 0 8px 20px var(--color-primary-alpha-30);
 }
 
 /* ============ LOADING STATE ============ */
 
 .loading-spinner {
-  border: 3px solid #f1f5f9;
+  border: 3px solid var(--color-slate-100);
   border-radius: 50%;
-  border-top: 3px solid #2B82AD;
+  border-top: 3px solid var(--color-primary);
   width: 32px;
   height: 32px;
   animation: spin 1s linear infinite;
@@ -76,8 +76,8 @@
 /* ============ ERROR STATE ============ */
 
 .error-state {
-  background-color: #fef2f2;
-  color: #dc2626;
+  background-color: var(--color-danger-bg-light);
+  color: var(--color-danger-red);
 }
 
 .error-icon {
@@ -86,14 +86,14 @@
 }
 
 .error-state p {
-  color: #dc2626;
+  color: var(--color-danger-red);
 }
 
 .retry-button {
   margin-top: 15px;
   padding: 10px 20px;
-  background-color: #2B82AD;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -103,7 +103,7 @@
 }
 
 .retry-button:hover {
-  background-color: #1e5f82;
+  background-color: var(--color-primary-darker);
   transform: translateY(-1px);
 }
 
@@ -123,7 +123,7 @@
 
 :global(.leaflet-popup-content-wrapper) {
   border-radius: 12px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 8px 32px var(--color-black-alpha-15) !important;
   padding: 0 !important;
   max-width: 380px !important;
   border: none !important;
@@ -136,9 +136,9 @@
 }
 
 :global(.leaflet-popup-tip) {
-  background: white !important;
+  background: var(--color-white) !important;
   border: none !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 2px 8px var(--color-black-alpha-15) !important;
 }
 
 :global(.custom-service-marker) {
@@ -147,17 +147,17 @@
 }
 
 :global(.custom-marker-icon) {
-  background-color: #2B82AD;
-  border: 3px solid white;
+  background-color: var(--color-primary);
+  border: 3px solid var(--color-white);
   border-radius: 50% 50% 50% 0;
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--color-white);
   font-weight: bold;
-  box-shadow: 0 4px 16px rgba(43, 130, 173, 0.4);
+  box-shadow: 0 4px 16px var(--color-primary-alpha-40);
   cursor: pointer;
   transition: all 0.25s ease;
   transform: rotate(-45deg);
@@ -172,14 +172,14 @@
 
 :global(.custom-marker-icon:hover) {
   transform: rotate(-45deg) scale(1.15);
-  box-shadow: 0 6px 20px rgba(43, 130, 173, 0.5);
+  box-shadow: 0 6px 20px var(--color-primary-alpha-50);
 }
 
 :global(.custom-marker-icon.selected) {
-  background-color: #e11d48;
+  background-color: var(--color-secondary);
   transform: rotate(-45deg) scale(1.25);
   z-index: 1000;
-  box-shadow: 0 6px 24px rgba(225, 29, 72, 0.6);
+  box-shadow: 0 6px 24px var(--color-secondary-alpha-60);
 }
 
 :global(.custom-marker-icon.selected:hover) {
@@ -203,13 +203,13 @@
 
 :global(.leaflet-marker-icon) {
   transition: transform 0.2s ease, filter 0.2s ease !important;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 6px var(--color-black-alpha-30));
   cursor: pointer;
 }
 
 :global(.leaflet-marker-icon:hover) {
   transform: scale(1.2) !important;
-  filter: drop-shadow(0 8px 16px rgba(43, 130, 173, 0.6));
+  filter: drop-shadow(0 8px 16px var(--color-primary-alpha-60));
   z-index: 1000;
 }
 
@@ -220,7 +220,7 @@
 
 :global(.leaflet-marker-icon.pin-marker:hover) {
   transform: scale(1.25) !important;
-  filter: drop-shadow(0 10px 20px rgba(43, 130, 173, 0.7)) brightness(1.1);
+  filter: drop-shadow(0 10px 20px var(--color-primary-alpha-70)) brightness(1.1);
   animation: pin-pulse 0.6s ease-in-out;
 }
 
@@ -236,22 +236,22 @@
 
 :global(.leaflet-marker-icon.cluster-marker:hover) {
   transform: scale(1.15) !important;
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5)) brightness(1.05);
+  filter: drop-shadow(0 6px 12px var(--color-black-alpha-50)) brightness(1.05);
   animation: cluster-pulse 0.8s ease-in-out infinite;
 }
 
 @keyframes cluster-pulse {
   0%, 100% { 
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5)) brightness(1.05);
+    filter: drop-shadow(0 6px 12px var(--color-black-alpha-50)) brightness(1.05);
   }
   50% { 
-    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.6)) brightness(1.1);
+    filter: drop-shadow(0 8px 16px var(--color-black-alpha-60)) brightness(1.1);
   }
 }
 
 /* Selected pin highlight */
 :global(.leaflet-marker-icon.selected-pin) {
-  filter: drop-shadow(0 8px 20px rgba(225, 29, 72, 0.8)) brightness(1.1);
+  filter: drop-shadow(0 8px 20px var(--color-secondary-alpha-80)) brightness(1.1);
   z-index: 999 !important;
   animation: selected-bounce 0.5s ease-out;
 }
@@ -267,35 +267,35 @@
 /* ============ TOOLTIPS ============ */
 
 :global(.custom-tooltip) {
-  background: rgba(43, 130, 173, 0.95) !important;
-  border: 2px solid white !important;
+  background: var(--color-primary-alpha-95) !important;
+  border: 2px solid var(--color-white) !important;
   border-radius: 8px !important;
-  color: white !important;
+  color: var(--color-white) !important;
   font-weight: 600 !important;
   font-size: 0.9rem !important;
   padding: 8px 12px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 4px 12px var(--color-black-alpha-30) !important;
   font-family: inherit !important;
 }
 
 :global(.custom-tooltip::before) {
-  border-top-color: white !important;
+  border-top-color: var(--color-white) !important;
 }
 
 :global(.leaflet-tooltip-top::before) {
-  border-top-color: rgba(43, 130, 173, 0.95) !important;
+  border-top-color: var(--color-primary-alpha-95) !important;
 }
 
 :global(.leaflet-tooltip-bottom::before) {
-  border-bottom-color: rgba(43, 130, 173, 0.95) !important;
+  border-bottom-color: var(--color-primary-alpha-95) !important;
 }
 
 :global(.leaflet-tooltip-left::before) {
-  border-left-color: rgba(43, 130, 173, 0.95) !important;
+  border-left-color: var(--color-primary-alpha-95) !important;
 }
 
 :global(.leaflet-tooltip-right::before) {
-  border-right-color: rgba(43, 130, 173, 0.95) !important;
+  border-right-color: var(--color-primary-alpha-95) !important;
 }
 
 /* ============ POPUP BUTTONS ============ */
@@ -306,11 +306,11 @@
 
 :global(.popup-action-btn:hover) {
   transform: translateY(-2px) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 4px 16px var(--color-black-alpha-20) !important;
 }
 
 :global(.popup-action-btn.primary:hover) {
-  box-shadow: 0 4px 16px rgba(43, 130, 173, 0.4) !important;
+  box-shadow: 0 4px 16px var(--color-primary-alpha-40) !important;
 }
 
 :global(.popup-action-btn.warning:hover) {
@@ -320,5 +320,3 @@
 :global(.popup-action-btn.success:hover) {
   box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4) !important;
 }
-
-

@@ -1,3 +1,5 @@
+@import '@colors';
+
 .map-page-layout {
   display: flex;
   flex-direction: column;
@@ -5,7 +7,7 @@
   height: calc(100vh - 60px);
   margin-top: 0px;
   position: relative;
-  background-color: #f8fafc;
+  background-color: var(--color-slate-50);
   overflow: hidden;
 }
 
@@ -15,9 +17,9 @@
   position: sticky;
   top: 0;
   z-index: 1000; /* Niżej niż navbar */
-  background: white;
-  border-bottom: 2px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--color-white);
+  border-bottom: 2px solid var(--color-slate-200);
+  box-shadow: var(--shadow-sm);
   display: none;
 }
 
@@ -31,27 +33,27 @@
 
 .mobile-view-toggle {
   padding: 12px 20px;
-  border-top: 1px solid #f1f5f9;
-  background: #fefefe;
+  border-top: 1px solid var(--border-color-light);
+  background: var(--color-white-alt);
 }
 
 .view-toggle-btn {
   width: 100%;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--color-primary);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(43, 130, 173, 0.3);
+  box-shadow: var(--shadow-primary);
 }
 
 .view-toggle-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(43, 130, 173, 0.4);
+  box-shadow: var(--shadow-primary-hover);
 }
 
 /* ============ CONTENT AREA ============ */
@@ -68,11 +70,11 @@
 
 .sidebar {
   width: 420px;
-  background-color: white;
-  border-right: 1px solid #e2e8f0;
+  background-color: var(--color-white);
+  border-right: 1px solid var(--color-slate-200);
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 2px 0 10px var(--color-black-alpha-08);
   height: 100%;
   overflow-y: auto;
   overflow-x: visible;
@@ -86,29 +88,29 @@
 
 .sidebar-header {
   padding: 20px;
-  border-bottom: 1px solid #f1f5f9;
-  background-color: #2B82AD;
-  color: white;
+  border-bottom: 1px solid var(--border-color-light);
+  background-color: var(--color-primary);
+  color: var(--color-white);
   flex-shrink: 0;
 }
 
 .sidebar-title {
   font-size: 1.3rem;
   font-weight: 700;
-  color: white;
+  color: var(--color-white);
   margin: 0 0 6px 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px var(--color-black-alpha-10);
 }
 
 .sidebar-subtitle {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--overlay-light-alt);
   margin: 0;
   font-weight: 400;
 }
 
 .sidebar-search-filters {
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-color-light);
   flex-shrink: 0;
   overflow: visible;
   position: relative;

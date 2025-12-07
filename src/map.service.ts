@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, NgZone } from '@angular/core';
 import { Observable, BehaviorSubject, catchError, throwError, tap } from 'rxjs';
-import { environment } from './core/api-config';
+import { environment } from './app/core/api-config';
 
 // Interface dla koordynatów serwisu
 export interface Coordinate {

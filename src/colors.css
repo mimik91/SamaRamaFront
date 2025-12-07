@@ -2,7 +2,7 @@
    PALETA KOLORÓW - CENTRALNA DEFINICJA
    ============================================ */
 
-:host {
+:root {
   /* PRIMARY COLORS - Główne kolory aplikacji */
   --color-primary: #1B5E20;
   --color-primary-light: #2e7d32;

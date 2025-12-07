@@ -436,7 +436,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     
     let popupContent = `
       <div style="font-family: inherit; min-width: 300px; max-width: 380px;">
-        <div style="background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%); color: white; padding: 18px; margin: -12px -18px 18px -18px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div style="background: linear-gradient(135deg, #1B5E20 0%, #2e7d32 100%); color: white; padding: 18px; margin: -12px -18px 18px -18px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
           <h4 style="margin: 0; font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.1); flex: 1;">${serviceDetails.name}</h4>
           <div style="background: white; padding: 6px 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; min-width: 50px; max-width: 80px; height: 50px;">
             <img 
@@ -446,7 +446,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
               style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;"
               onerror="this.src='assets/images/cyclopick-logo.svg'; this.onerror=null;"
             />
-          </div>viceDetails.name}</h4>
+          </div>
         </div>
     `;
     
@@ -483,7 +483,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     
     if (serviceDetails.description && serviceDetails.description.trim()) {
       popupContent += `
-        <div style="margin: 18px 0; padding: 14px; background-color: #f8fafc; border-radius: 8px; border-left: 3px solid #2B82AD;">
+        <div style="margin: 18px 0; padding: 14px; background-color: #f8fafc; border-radius: 8px; border-left: 3px solid #1B5E20;">
           <p style="margin: 0; color: #475569; font-size: 0.9rem; line-height: 1.6;">${serviceDetails.description}</p>
         </div>
       `;
@@ -510,7 +510,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
         <button 
           id="view-details-btn-${serviceDetails.id}" 
           class="popup-action-btn primary"
-          style="flex: 1; min-width: 120px; padding: 12px 18px; background: linear-gradient(135deg, #2B82AD 0%, #3498db 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(43, 130, 173, 0.3);"
+          style="flex: 1; min-width: 120px; padding: 12px 18px; background: linear-gradient(135deg, #1B5E20 0%, #2e7d32 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(43, 130, 173, 0.3);"
         >
           Zobacz szczegóły
         </button>

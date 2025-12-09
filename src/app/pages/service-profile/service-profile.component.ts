@@ -184,7 +184,7 @@ export class ServiceProfilePageComponent implements OnInit {
   hasSocialMedia(): boolean {
     if (!this.publicInfo) return false;
     return !!(this.publicInfo.facebook || this.publicInfo.instagram || 
-              this.publicInfo.tiktok || this.publicInfo.youtube);
+              this.publicInfo.tiktok || this.publicInfo.youtube || this.publicInfo.website);
   }
 
   getDayInterval(dayKey: string) {

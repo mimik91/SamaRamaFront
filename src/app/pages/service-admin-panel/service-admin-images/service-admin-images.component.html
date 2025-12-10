@@ -1,12 +1,6 @@
 <div class="images-container">
-  <h2>Zarządzaj logo serwisu</h2>
-  <p class="description">Dodaj logo swojego serwisu, które będzie widoczne w wynikach wyszukiwania i na stronie profilu.</p>
-
-  <!-- Loading State -->
-  <div *ngIf="isLoadingLogo" class="loading-state">
-    <div class="spinner"></div>
-    <p>Ładowanie loga...</p>
-  </div>
+  <h2>Zarządzaj obrazami serwisu</h2>
+  <p class="description">Zarządzaj obrazami swojego serwisu, które będą widoczne w różnych sekcjach.</p>
 
   <!-- Error Message -->
   <div *ngIf="errorMessage" class="message error-message">
@@ -26,102 +20,260 @@
     <span>{{ successMessage }}</span>
   </div>
 
-  <!-- Current Logo -->
-  <div *ngIf="!isLoadingLogo && logoUrl" class="current-logo-section">
-    <h3>Obecne logo</h3>
-    <div class="logo-preview">
-      <img [src]="logoUrl" alt="Logo serwisu" class="logo-image">
-    </div>
-    <button 
-      (click)="deleteLogo()" 
-      [disabled]="isUploading"
-      class="btn btn-danger">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="3 6 5 6 21 6"></polyline>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-      </svg>
-      Usuń logo
-    </button>
-  </div>
-
-  <!-- No Logo State -->
-  <div *ngIf="!isLoadingLogo && !logoUrl && !selectedFile" class="no-logo-state">
-    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-      <circle cx="8.5" cy="8.5" r="1.5"></circle>
-      <polyline points="21 15 16 10 5 21"></polyline>
-    </svg>
-    <p>Nie masz jeszcze logo</p>
-  </div>
-
-  <!-- Upload Section -->
-  <div class="upload-section">
-    <h3>{{ logoUrl ? 'Zmień logo' : 'Dodaj logo' }}</h3>
-    
-    <div class="upload-requirements">
-      <p><strong>Wymagania:</strong></p>
-      <ul>
-        <li>Format: JPG, PNG, WEBP lub GIF</li>
-        <li>Maksymalny rozmiar: 1 MB</li>
-        <li>Zalecane proporcje: kwadratowe (1:1)</li>
-      </ul>
-    </div>
-
-    <!-- File Input -->
-    <div class="file-input-wrapper">
-      <input 
-        type="file" 
-        id="logo-upload"
-        accept="image/*"
-        (change)="onFileSelected($event)"
-        [disabled]="isUploading"
-        class="file-input">
-      <label for="logo-upload" class="file-input-label" [class.disabled]="isUploading">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="17 8 12 3 7 8"></polyline>
-          <line x1="12" y1="3" x2="12" y2="15"></line>
-        </svg>
-        {{ isUploading ? 'Przesyłanie...' : 'Wybierz plik' }}
-      </label>
-    </div>
-
-    <!-- Selected File Preview -->
-    <div *ngIf="selectedFile" class="selected-file-preview">
-      <div class="preview-image-wrapper">
-        <img [src]="previewUrl" alt="Podgląd" class="preview-image">
-      </div>
-      <div class="file-details">
-        <p class="file-name">{{ selectedFile.name }}</p>
-        <p class="file-size">{{ formatFileSize(selectedFile.size) }}</p>
-      </div>
-      <div class="upload-actions">
-        <button 
-          (click)="uploadLogo()" 
-          [disabled]="isUploading"
-          class="btn btn-primary">
-          <svg *ngIf="!isUploading" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          {{ isUploading ? 'Przesyłanie...' : 'Prześlij logo' }}
-        </button>
-        <button 
-          (click)="clearSelection()" 
-          [disabled]="isUploading"
-          class="btn btn-secondary">
-          Anuluj
-        </button>
+  <!-- Image Sections Loop -->
+  <ng-container *ngFor="let type of imageTypes">
+    <div class="image-section">
+      <div class="section-header">
+        <h3>{{ getImageTitle(type) }}</h3>
+        <p class="section-description">{{ getImageDescription(type) }}</p>
       </div>
 
-      <!-- Upload Progress -->
-      <div *ngIf="isUploading" class="progress-bar-wrapper">
-        <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+      <!-- Loading State -->
+      <div *ngIf="images[type].isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Ładowanie...</p>
+      </div>
+
+      <!-- LOGO Section (original) -->
+      <ng-container *ngIf="type === 'LOGO' && !images[type].isLoading">
+        <!-- Current Logo -->
+        <div *ngIf="images[type].url" class="current-image-section">
+          <h4>Obecne logo</h4>
+          <div class="image-preview">
+            <img [src]="images[type].url" [alt]="getImageTitle(type)" class="current-image">
+          </div>
+          <button 
+            (click)="deleteImage(type)" 
+            [disabled]="isUploading"
+            class="btn btn-danger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Usuń logo
+          </button>
         </div>
-        <p class="progress-text">{{ uploadProgress }}%</p>
-      </div>
+
+        <!-- No Logo State -->
+        <div *ngIf="!images[type].url && !images[type].selectedFile" class="no-image-state">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <p>Nie masz jeszcze logo</p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+          <h4>{{ images[type].url ? 'Zmień logo' : 'Dodaj logo' }}</h4>
+          
+          <div class="upload-requirements">
+            <p><strong>Wymagania:</strong></p>
+            <ul>
+              <li>Format: JPG, PNG, WEBP lub GIF</li>
+              <li>Maksymalny rozmiar: 1 MB</li>
+              <li>Zalecane proporcje: kwadratowe (1:1)</li>
+            </ul>
+          </div>
+
+          <div class="file-input-wrapper">
+            <input 
+              type="file" 
+              [id]="type.toLowerCase() + '-upload'"
+              accept="image/*"
+              (change)="onFileSelected($event, type)"
+              [disabled]="isUploading"
+              class="file-input">
+            <label [for]="type.toLowerCase() + '-upload'" class="file-input-label" [class.disabled]="isUploading">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              {{ isUploading ? 'Przesyłanie...' : 'Wybierz plik' }}
+            </label>
+          </div>
+
+          <!-- Selected File Preview -->
+          <div *ngIf="images[type].selectedFile" class="selected-preview">
+            <div class="preview-image-wrapper">
+              <img [src]="images[type].previewUrl" alt="Podgląd" class="preview-image">
+            </div>
+            <div class="file-details">
+              <p class="file-name">{{ images[type].selectedFile!.name }}</p>
+              <p class="file-size">{{ formatFileSize(images[type].selectedFile!.size) }}</p>
+            </div>
+            <div class="upload-actions">
+              <button 
+                (click)="uploadCustomImage(type)" 
+                [disabled]="isUploading"
+                class="btn btn-primary">
+                <svg *ngIf="!isUploading" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                {{ isUploading ? 'Przesyłanie...' : 'Prześlij logo' }}
+              </button>
+              <button 
+                (click)="clearSelection(type)" 
+                [disabled]="isUploading"
+                class="btn btn-secondary">
+                Anuluj
+              </button>
+            </div>
+
+            <!-- Upload Progress -->
+            <div *ngIf="isUploading" class="progress-bar-wrapper">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+              </div>
+              <p class="progress-text">{{ uploadProgress }}%</p>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- CAROUSEL Section (ABOUT_US & OPENING_HOURS) -->
+      <ng-container *ngIf="canShowCarousel(type) && !images[type].isLoading">
+        <div class="carousel-section">
+          <!-- Current Image Display with Delete -->
+          <div *ngIf="images[type].url" class="current-selection">
+            <div class="current-badge">Aktualnie wybrany obraz</div>
+            <button 
+              (click)="deleteImage(type)" 
+              [disabled]="isUploading"
+              class="btn btn-danger btn-sm delete-current">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Usuń
+            </button>
+          </div>
+
+          <!-- Carousel -->
+          <div class="carousel-container">
+            <button 
+              class="carousel-nav carousel-nav-left"
+              (click)="navigateCarousel(type, 'prev')"
+              [disabled]="isUploading">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+
+            <div class="carousel-images">
+              <!-- Previous Image -->
+              <div class="carousel-item carousel-item-side">
+                <img [src]="getPrevImageUrl(type)" alt="Poprzedni">
+              </div>
+
+              <!-- Current Image (main) -->
+              <div class="carousel-item carousel-item-main">
+                <img [src]="getCurrentImageUrl(type)" alt="Aktualny">
+              </div>
+
+              <!-- Next Image -->
+              <div class="carousel-item carousel-item-side">
+                <img [src]="getNextImageUrl(type)" alt="Następny">
+              </div>
+            </div>
+
+            <button 
+              class="carousel-nav carousel-nav-right"
+              (click)="navigateCarousel(type, 'next')"
+              [disabled]="isUploading">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="carousel-actions">
+            <button 
+              (click)="selectCurrentImage(type)"
+              [disabled]="isUploading"
+              class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Wybierz to zdjęcie
+            </button>
+
+            <div class="or-divider">lub</div>
+
+            <!-- Upload New Image -->
+            <div class="upload-new-section">
+              <input 
+                type="file" 
+                [id]="type.toLowerCase() + '-upload'"
+                accept="image/*"
+                (change)="onFileSelected($event, type)"
+                [disabled]="isUploading"
+                class="file-input">
+              <label [for]="type.toLowerCase() + '-upload'" class="file-input-label" [class.disabled]="isUploading">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Załaduj nowe zdjęcie
+              </label>
+            </div>
+          </div>
+
+          <!-- Custom Image Upload Preview -->
+          <div *ngIf="images[type].selectedFile" class="selected-preview">
+            <div class="preview-image-wrapper">
+              <img [src]="images[type].previewUrl" alt="Podgląd" class="preview-image">
+            </div>
+            <div class="file-details">
+              <p class="file-name">{{ images[type].selectedFile!.name }}</p>
+              <p class="file-size">{{ formatFileSize(images[type].selectedFile!.size) }}</p>
+            </div>
+            <div class="upload-actions">
+              <button 
+                (click)="uploadCustomImage(type)" 
+                [disabled]="isUploading"
+                class="btn btn-primary">
+                <svg *ngIf="!isUploading" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                {{ isUploading ? 'Przesyłanie...' : 'Prześlij obraz' }}
+              </button>
+              <button 
+                (click)="clearSelection(type)" 
+                [disabled]="isUploading"
+                class="btn btn-secondary">
+                Anuluj
+              </button>
+            </div>
+
+            <!-- Upload Progress -->
+            <div *ngIf="isUploading" class="progress-bar-wrapper">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+              </div>
+              <p class="progress-text">{{ uploadProgress }}%</p>
+            </div>
+          </div>
+
+          <!-- Requirements Info -->
+          <div class="upload-requirements">
+            <p><strong>Wymagania:</strong></p>
+            <ul>
+              <li>Format: JPG, PNG, WEBP lub GIF</li>
+              <li>Maksymalny rozmiar: 1 MB</li>
+              <li>Zalecane proporcje: pionowe (9:16)</li>
+            </ul>
+          </div>
+        </div>
+      </ng-container>
     </div>
-  </div>
+  </ng-container>
 </div>

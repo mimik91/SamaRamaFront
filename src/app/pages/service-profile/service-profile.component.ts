@@ -39,8 +39,8 @@ export class ServiceProfilePageComponent implements OnInit {
   
   // Obrazy serwisu
   logoUrl: string = 'assets/images/logo-cyclopick.png';
-  aboutUsImageUrl: string = 'assets/images/pictures/vertical/vertical-1.jpg';
-  openingHoursImageUrl: string = 'assets/images/pictures/vertical/vertical-2.jpg';
+  aboutUsImageUrl: string = 'assets/images/pictures/vertical/vertical1.jpg';
+  openingHoursImageUrl: string = 'assets/images/pictures/vertical/vertical2.jpg';
   
   // Aktywna zakładka
   activeTab: 'info' | 'hours' | 'pricelist' = 'info';

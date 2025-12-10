@@ -43,7 +43,7 @@
 
     <section class="main-content" id="info" *ngIf="activeTab === 'info'">
       <div class="content-left">
-        <img src="assets/images/logo-cyclopick.png" alt="Logo" class="service-logo">
+        <img [src]="logoUrl" alt="Logo" class="service-logo">
         <h2>{{ publicInfo.name }}</h2>
         <h3>{{ publicInfo.city }}</h3>
         <p *ngIf="publicInfo.description">{{ publicInfo.description }}</p>
@@ -67,7 +67,7 @@
       
       <div class="content-right">
         <img 
-          src="assets/images/pictures/vertical/vertical1.jpg" 
+          [src]="aboutUsImageUrl" 
           alt="Serwis rowerowy" 
           class="content-image">
       </div>
@@ -118,7 +118,7 @@
       
       <div class="content-right">
         <img 
-          src="assets/images/pictures/vertical/vertical2.jpg" 
+          [src]="openingHoursImageUrl" 
           alt="Godziny otwarcia" 
           class="content-image">
       </div>

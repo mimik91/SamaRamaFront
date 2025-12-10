@@ -37,6 +37,11 @@ export class ServiceProfilePageComponent implements OnInit {
   pricelist: ServicePricelist | null = null;
   availableItems: CategoryWithItems[] = [];
   
+  // Obrazy serwisu
+  logoUrl: string = 'assets/images/logo-cyclopick.png';
+  aboutUsImageUrl: string = 'assets/images/pictures/vertical/vertical-1.jpg';
+  openingHoursImageUrl: string = 'assets/images/pictures/vertical/vertical-2.jpg';
+  
   // Aktywna zakładka
   activeTab: 'info' | 'hours' | 'pricelist' = 'info';
   
@@ -101,6 +106,9 @@ export class ServiceProfilePageComponent implements OnInit {
         // Krok 3: Warunkowo załaduj dodatkowe dane
         const promises: Promise<any>[] = [];
         
+        // Załaduj obrazy
+        promises.push(this.loadServiceImages());
+        
         if (activeStatus?.openingHoursActive) {
           promises.push(
             this.profileService.getOpeningHours(this.serviceId!).toPromise()
@@ -133,6 +141,43 @@ export class ServiceProfilePageComponent implements OnInit {
         this.error = 'Nie udało się załadować danych serwisu';
         this.isLoading = false;
       });
+  }
+
+  private async loadServiceImages(): Promise<void> {
+    if (!this.serviceId) return;
+
+    // Załaduj LOGO
+    try {
+      const logoResponse = await this.profileService.getServiceImage(this.serviceId, 'LOGO').toPromise();
+      if (logoResponse?.url) {
+        this.logoUrl = logoResponse.url;
+      }
+    } catch (err) {
+      // Użyj domyślnego logo
+      console.log('No custom logo, using default');
+    }
+
+    // Załaduj ABOUT_US
+    try {
+      const aboutUsResponse = await this.profileService.getServiceImage(this.serviceId, 'ABOUT_US').toPromise();
+      if (aboutUsResponse?.url) {
+        this.aboutUsImageUrl = aboutUsResponse.url;
+      }
+    } catch (err) {
+      // Użyj domyślnego obrazu
+      console.log('No ABOUT_US image, using default');
+    }
+
+    // Załaduj OPENING_HOURS
+    try {
+      const openingHoursResponse = await this.profileService.getServiceImage(this.serviceId, 'OPENING_HOURS').toPromise();
+      if (openingHoursResponse?.url) {
+        this.openingHoursImageUrl = openingHoursResponse.url;
+      }
+    } catch (err) {
+      // Użyj domyślnego obrazu
+      console.log('No OPENING_HOURS image, using default');
+    }
   }
 
   // Metody pomocnicze dla zakładek
@@ -191,7 +236,6 @@ export class ServiceProfilePageComponent implements OnInit {
     if (!this.openingHours?.intervals) return null;
     return this.openingHours.intervals[dayKey] || null;
   }
-
 
   getWebsiteUrl(url: string): string {
     if (!url) return '';

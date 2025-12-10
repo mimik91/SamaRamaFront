@@ -101,7 +101,7 @@
 }
 
 .retry-button:hover {
-  background-color: var(--color-primary-darker);
+  background-color: var(--color-primary-dark);
   transform: translateY(-1px);
 }
 

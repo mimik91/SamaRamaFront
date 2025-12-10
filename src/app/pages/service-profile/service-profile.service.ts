@@ -70,12 +70,17 @@ export interface CategoryWithItems {
   items: PricelistItem[];
 }
 
+export interface ServiceImageResponse {
+  url: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ServiceProfileService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/bike-services`;
+  private servicesApiUrl = `${environment.apiUrl}/services`;
 
   /**
    * Pobiera ID serwisu na podstawie suffixu
@@ -119,4 +124,10 @@ export class ServiceProfileService {
     return this.http.get<CategoryWithItems[]>(`${this.apiUrl}/pricelist/available-items`);
   }
 
+  /**
+   * Pobiera obraz serwisu (LOGO, ABOUT_US, OPENING_HOURS)
+   */
+  getServiceImage(serviceId: number, imageType: 'LOGO' | 'ABOUT_US' | 'OPENING_HOURS'): Observable<ServiceImageResponse> {
+    return this.http.get<ServiceImageResponse>(`${this.servicesApiUrl}/${serviceId}/images/${imageType}`);
+  }
 }

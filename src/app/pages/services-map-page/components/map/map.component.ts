@@ -57,6 +57,9 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   private isMapInitialized = false;
   private initializationPromise: Promise<void> | null = null;
   
+  // Color cache from CSS variables
+  private cssColors: { [key: string]: string } = {};
+  
   isBrowser: boolean;
   loading = false;
   error = false;
@@ -70,6 +73,9 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   }
 
   ngOnInit(): void {
+    if (this.isBrowser) {
+      this.loadCSSColors();
+    }
   }
 
   ngAfterViewInit(): void {
@@ -83,25 +89,54 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   ngOnChanges(changes: SimpleChanges): void {
     const pinsChange = changes['pins'];
     const selectedPinIdChange = changes['selectedPinId'];
-    if (pinsChange && !pinsChange.firstChange && this.isMapInitialized) {
-        if (pinsChange.currentValue?.length !== pinsChange.previousValue?.length) {
-             this.updateMapPins(this.pins);
-        } 
+    
+    if (pinsChange && this.isMapInitialized) {
+      // ZAWSZE aktualizuj piny gdy się zmienią
+      if (!pinsChange.firstChange) {
+        this.updateMapPins(this.pins);
+      }
     }
+    
     if (selectedPinIdChange && this.isMapInitialized) {
-        setTimeout(() => {
-          this.highlightSelectedPin(this.selectedPinId);
-        }, 50); 
+      setTimeout(() => {
+        this.highlightSelectedPin(this.selectedPinId);
+      }, 50); 
     }
+    
     if (changes['visible'] && changes['visible'].currentValue && !this.isMapInitialized) {
-        setTimeout(() => {
-            this.initializeMapAsync();
-        }, 100);
+      setTimeout(() => {
+        this.initializeMapAsync();
+      }, 100);
     }
-}
+  }
 
   ngOnDestroy(): void {
     this.destroyMap();
+  }
+
+  // ============ CSS COLOR LOADING ============
+
+  private loadCSSColors(): void {
+    const root = document.documentElement;
+    const computedStyle = getComputedStyle(root);
+    
+    // Load all map-related colors from CSS variables
+    this.cssColors = {
+      'cluster-small': computedStyle.getPropertyValue('--map-cluster-small').trim(),
+      'cluster-medium': computedStyle.getPropertyValue('--map-cluster-medium').trim(),
+      'cluster-large': computedStyle.getPropertyValue('--map-cluster-large').trim(),
+      'cluster-hover-small': computedStyle.getPropertyValue('--map-cluster-hover-small').trim(),
+      'cluster-hover-medium': computedStyle.getPropertyValue('--map-cluster-hover-medium').trim(),
+      'cluster-hover-large': computedStyle.getPropertyValue('--map-cluster-hover-large').trim(),
+      'pin-verified': computedStyle.getPropertyValue('--map-pin-verified').trim(),
+      'pin-unverified': computedStyle.getPropertyValue('--map-pin-unverified').trim(),
+      'pin-hover-verified': computedStyle.getPropertyValue('--map-pin-hover-verified').trim(),
+      'pin-hover-unverified': computedStyle.getPropertyValue('--map-pin-hover-unverified').trim()
+    };
+  }
+
+  private getColor(key: string, fallback: string = '#2e7d32'): string {
+    return this.cssColors[key] || fallback;
   }
 
   // ============ MAP INITIALIZATION ============
@@ -279,8 +314,15 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
         this.map.closePopup(); 
     }
 
-    this.markers.forEach(marker => {
-      this.map.removeLayer(marker);
+    // KLUCZOWE: Wyczyść WSZYSTKIE markery przed dodaniem nowych
+    this.markers.forEach((marker, id) => {
+      if (marker && this.map) {
+        try {
+          this.map.removeLayer(marker);
+        } catch (e) {
+          console.warn('Error removing marker:', id, e);
+        }
+      }
     });
     this.markers.clear();
 
@@ -290,7 +332,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
       pin.latitude >= -90 && pin.latitude <= 90 &&
       pin.longitude >= -180 && pin.longitude <= 180
     );
-
+    
     validPins.forEach(pin => {
       try {
         this.addPinToMap(pin);
@@ -298,16 +340,16 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
         console.error(`Error adding marker for pin ${pin.id}:`, error);
       }
     });
-    if (currentlySelectedPinId !== null) {
-    const pinToReopen = pins.find(p => p.id === currentlySelectedPinId);
     
-    if (pinToReopen) {
-  
-      setTimeout(() => {
-        this.popupReopenRequested.emit(currentlySelectedPinId);
-      }, 50);
+    if (currentlySelectedPinId !== null) {
+      const pinToReopen = pins.find(p => p.id === currentlySelectedPinId);
+      
+      if (pinToReopen) {
+        setTimeout(() => {
+          this.popupReopenRequested.emit(currentlySelectedPinId);
+        }, 50);
+      }
     }
-  }
   }
 
   private addPinToMap(pin: MapPin): void {
@@ -315,17 +357,14 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     
     let markerIcon;
     let zIndexOffset = 0;
-    let markerClassName = '';
     
     if (isCluster) {
       const count = parseInt(pin.name.split(' ')[0]);
       markerIcon = this.createClusterIcon(count);
       zIndexOffset = count >= 50 ? 3000 : (count >= 10 ? 2000 : 1000);
-      markerClassName = 'cluster-marker';
     } else {
-      markerIcon = this.createPinIcon();
+      markerIcon = this.createPinIcon(pin.verified);
       zIndexOffset = 500;
-      markerClassName = 'pin-marker';
     }
 
     const marker = L.marker([pin.latitude, pin.longitude], { 
@@ -347,18 +386,77 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     // Add custom CSS class to marker element
     const markerElement = marker.getElement();
     if (markerElement) {
-      markerElement.classList.add(markerClassName);
+      // NAPRAWIONE: Dodaj klasy osobno, nie jako jeden string ze spacją
+      if (isCluster) {
+        markerElement.classList.add('cluster-marker');
+      } else {
+        markerElement.classList.add('pin-marker');
+        if (!pin.verified) {
+          markerElement.classList.add('unverified');
+        }
+      }
       
-      // Add hover brightness effect
+      // Add hover effect by manipulating SVG fill color
       markerElement.addEventListener('mouseenter', () => {
-        if (!isCluster) {
-          markerElement.style.transition = 'all 0.25s ease';
+        const svgElement = markerElement.querySelector('svg');
+        if (svgElement) {
+          if (isCluster) {
+            // Cluster hover effect
+            const circle = svgElement.querySelector('circle');
+            if (circle) {
+              const currentFill = circle.getAttribute('fill') || '';
+              circle.setAttribute('data-original-fill', currentFill);
+              
+              // Determine hover color based on current color
+              const count = parseInt(pin.name.split(' ')[0]);
+              let hoverColorKey;
+              if (count >= 50) {
+                hoverColorKey = 'cluster-hover-large';
+              } else if (count >= 10) {
+                hoverColorKey = 'cluster-hover-medium';
+              } else {
+                hoverColorKey = 'cluster-hover-small';
+              }
+              
+              circle.setAttribute('fill', this.getColor(hoverColorKey, '#4CAF50'));
+            }
+          } else {
+            // Pin hover effect
+            const path = svgElement.querySelector('path');
+            if (path) {
+              const currentFill = path.getAttribute('fill') || '';
+              path.setAttribute('data-original-fill', currentFill);
+              
+              // Brighten based on verification status - from CSS
+              const hoverColorKey = pin.verified ? 'pin-hover-verified' : 'pin-hover-unverified';
+              path.setAttribute('fill', this.getColor(hoverColorKey, '#4CAF50'));
+            }
+          }
         }
       });
       
       markerElement.addEventListener('mouseleave', () => {
-        if (!isCluster && this.selectedPinId !== pin.id) {
-          markerElement.classList.remove('selected-pin');
+        if (this.selectedPinId !== pin.id) {
+          const svgElement = markerElement.querySelector('svg');
+          if (svgElement) {
+            if (isCluster) {
+              const circle = svgElement.querySelector('circle');
+              if (circle) {
+                const originalFill = circle.getAttribute('data-original-fill');
+                if (originalFill) {
+                  circle.setAttribute('fill', originalFill);
+                }
+              }
+            } else {
+              const path = svgElement.querySelector('path');
+              if (path) {
+                const originalFill = path.getAttribute('data-original-fill');
+                if (originalFill) {
+                  path.setAttribute('fill', originalFill);
+                }
+              }
+            }
+          }
         }
       });
     }
@@ -545,29 +643,17 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   }
 
   private attachPopupEventListeners(serviceDetails: ServiceDetails): void {
-  // UWAGA: Logika przycisku 'Zobacz szczegóły' bazuje na 'serviceDetails.verified'
-  // i odpowiada za niego przycisk id="view-details-btn-${serviceDetails.id}"
-  
   if (serviceDetails.registered) {
     const viewDetailsBtn = document.getElementById(`view-details-btn-${serviceDetails.id}`);
     if (viewDetailsBtn) {
       viewDetailsBtn.addEventListener('click', () => {
-        // Zamiast emitować 'viewServiceDetails', wykonujemy zapytanie o suffix
         console.log('View Details button clicked. Requesting suffix...');
         
-        // 1. Użyj MapService do pobrania sufiksu
         this.mapService.getServiceSuffix(serviceDetails.id).subscribe({
           next: (response) => {
             if (response && response.suffix) {
               const suffix = response.suffix;
-              // 2. Przekierowanie na nową stronę
-              // Użyj this.router.navigate([suffix]) jeśli jest zaimportowany
-              // lub window.location.href dla prostej nawigacji
               this.router.navigate([suffix]); 
-              
-              // Alternatywnie (mniej "angularowo"):
-              // window.location.href = `/${suffix}`;
-              
             } else {
               console.error('Could not retrieve suffix for service:', serviceDetails.id);
               alert('Nie udało się pobrać linku do serwisu. Spróbuj ponownie.');
@@ -578,13 +664,9 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
             alert('Wystąpił błąd podczas pobierania szczegółów serwisu.');
           }
         });
-        
-        // Poprzednia emisja (możesz ją usunąć, jeśli nie jest potrzebna po nowej logice)
-        // this.viewServiceDetails.emit(serviceDetails);
       });
     }
   } else {
-    // ... (pozostała logika dla 'register-service-btn')
     const registerBtn = document.getElementById(`register-service-btn-${serviceDetails.id}`);
     if (registerBtn) {
       registerBtn.addEventListener('click', () => {
@@ -593,7 +675,6 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     }
   }
 
-  // ... (pozostała logika dla transportu)
   if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
     const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
     if (transportBtn) {
@@ -605,37 +686,68 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
 }
 
   private createClusterIcon(count: number): any {
-    let color, size, fontSize;
+    let colorKey, size, fontSize;
+    
+    // Wszystkie klastry używają tego samego schematu kolorów (zielone odcienie)
     if (count >= 50) {
-      color = '%23dc2626';
+      colorKey = 'cluster-large';
       size = 60;
       fontSize = 18;
     } else if (count >= 10) {
-      color = '%23f59e0b';
+      colorKey = 'cluster-medium';
       size = 55;
       fontSize = 17;
     } else {
-      color = '%232B82AD';
+      colorKey = 'cluster-small';
       size = 50;
       fontSize = 16;
     }
     
-    const svg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'%3E%3Ccircle cx='${size/2}' cy='${size/2}' r='${size/2 - 4}' fill='${color}' stroke='white' stroke-width='4'/%3E%3Ctext x='${size/2}' y='${size/2}' text-anchor='middle' dominant-baseline='central' fill='white' font-size='${fontSize}' font-weight='700' font-family='Arial'%3E${count}%3C/text%3E%3C/svg%3E`;
+    const color = this.getColor(colorKey, '#2e7d32');
     
-    return L.icon({
-      iconUrl: svg,
+    const iconHtml = `
+      <div style="width: ${size}px; height: ${size}px; position: relative; cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" style="display: block; transition: all 0.3s ease;">
+          <circle cx="${size/2}" cy="${size/2}" r="${size/2 - 4}" fill="${color}" stroke="white" stroke-width="4" style="transition: fill 0.3s ease;"/>
+          <text x="${size/2}" y="${size/2}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${fontSize}" font-weight="700" font-family="Arial">${count}</text>
+        </svg>
+      </div>
+    `;
+    
+    return L.divIcon({
+      html: iconHtml,
       iconSize: [size, size],
-      iconAnchor: [size/2, size/2]
+      iconAnchor: [size/2, size/2],
+      className: 'custom-cluster-icon'
     });
   }
 
-  private createPinIcon(): any {
+  private createPinIcon(verified: boolean = true): any {
     const pinSize = 40;
-    // SVG with glow effect for better hover visibility
-    const svg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${pinSize}' height='${pinSize * 1.2}' viewBox='0 0 40 48'%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='2' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M20 0c-8.284 0-15 6.656-15 14.866 0 8.211 15 33.134 15 33.134s15-24.923 15-33.134C35 6.656 28.284 0 20 0zm0 20c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z' fill='%232B82AD' stroke='white' stroke-width='2' filter='url(%23glow)'/%3E%3Ccircle cx='20' cy='14' r='4' fill='white'/%3E%3C/svg%3E`;
+    // Kolor zależny od statusu weryfikacji - z CSS variables
+    const colorKey = verified ? 'pin-verified' : 'pin-unverified';
+    const pinColor = this.getColor(colorKey, '#2e7d32');
     
-    return L.icon({
-      iconUrl: svg,
+    const iconHtml = `
+      <div style="width: ${pinSize}px; height: ${pinSize * 1.2}px; position: relative; cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="${pinSize}" height="${pinSize * 1.2}" viewBox="0 0 40 48" style="display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); transition: all 0.3s ease;">
+          <defs>
+            <filter id="glow-${verified ? 'verified' : 'unverified'}">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          <path d="M20 0c-8.284 0-15 6.656-15 14.866 0 8.211 15 33.134 15 33.134s15-24.923 15-33.134C35 6.656 28.284 0 20 0zm0 20c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z" fill="${pinColor}" stroke="white" stroke-width="2" filter="url(#glow-${verified ? 'verified' : 'unverified'})" style="transition: fill 0.3s ease;"/>
+          <circle cx="20" cy="14" r="4" fill="white"/>
+        </svg>
+      </div>
+    `;
+    
+    return L.divIcon({
+      html: iconHtml,
       iconSize: [pinSize, pinSize * 1.2],
       iconAnchor: [pinSize/2, pinSize * 1.2],
       popupAnchor: [0, -pinSize * 1.2],

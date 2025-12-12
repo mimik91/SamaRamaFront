@@ -319,50 +319,60 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   // ============ PINS MANAGEMENT ============
 
   private updateMapPins(pins: MapPin[]): void {
-    if (!this.map || !this.isMapInitialized) return;
+  if (!this.map || !this.isMapInitialized) return;
 
-    const currentlySelectedPinId = this.selectedPinId;
-    if (this.map.closePopup) {
-        this.map.closePopup(); 
-    }
+  const currentlySelectedPinId = this.selectedPinId;
+  if (this.map.closePopup) {
+    this.map.closePopup(); 
+  }
 
-    // KLUCZOWE: Wyczyść WSZYSTKIE markery przed dodaniem nowych
-    this.markers.forEach((marker, id) => {
-      if (marker && this.map) {
-        try {
-          this.map.removeLayer(marker);
-        } catch (e) {
-          console.warn('Error removing marker:', id, e);
-        }
-      }
-    });
-    this.markers.clear();
-
-    const validPins = pins.filter(pin => 
-      pin.latitude && pin.longitude && 
-      !isNaN(pin.latitude) && !isNaN(pin.longitude) &&
-      pin.latitude >= -90 && pin.latitude <= 90 &&
-      pin.longitude >= -180 && pin.longitude <= 180
-    );
-    
-    validPins.forEach(pin => {
+  // ============ KLUCZOWE: Usuń event listenery PRZED usunięciem markerów ============
+  this.markers.forEach((marker, id) => {
+    if (marker && this.map) {
       try {
-        this.addPinToMap(pin);
-      } catch (error) {
-        console.error(`Error adding marker for pin ${pin.id}:`, error);
+        // Usuń event listenery z DOM
+        const markerElement = marker.getElement();
+        if (markerElement && (marker as any)._hoverListeners) {
+          const listeners = (marker as any)._hoverListeners;
+          markerElement.removeEventListener('mouseenter', listeners.mouseenter);
+          markerElement.removeEventListener('mouseleave', listeners.mouseleave);
+          delete (marker as any)._hoverListeners;
+        }
+        
+        // Usuń marker z mapy
+        this.map.removeLayer(marker);
+      } catch (e) {
+        console.warn('Error removing marker:', id, e);
       }
-    });
+    }
+  });
+  this.markers.clear();
+
+  const validPins = pins.filter(pin => 
+    pin.latitude && pin.longitude && 
+    !isNaN(pin.latitude) && !isNaN(pin.longitude) &&
+    pin.latitude >= -90 && pin.latitude <= 90 &&
+    pin.longitude >= -180 && pin.longitude <= 180
+  );
+  
+  validPins.forEach(pin => {
+    try {
+      this.addPinToMap(pin);
+    } catch (error) {
+      console.error(`Error adding marker for pin ${pin.id}:`, error);
+    }
+  });
+  
+  if (currentlySelectedPinId !== null) {
+    const pinToReopen = pins.find(p => p.id === currentlySelectedPinId);
     
-    if (currentlySelectedPinId !== null) {
-      const pinToReopen = pins.find(p => p.id === currentlySelectedPinId);
-      
-      if (pinToReopen) {
-        setTimeout(() => {
-          this.popupReopenRequested.emit(currentlySelectedPinId);
-        }, 50);
-      }
+    if (pinToReopen) {
+      setTimeout(() => {
+        this.popupReopenRequested.emit(currentlySelectedPinId);
+      }, 50);
     }
   }
+}
 
 // W addPinToMap() ZAMIEŃ sekcję event listenerów na:
 

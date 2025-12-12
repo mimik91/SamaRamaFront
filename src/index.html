@@ -1,21 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="pl">
   <head>
     <meta charset="utf-8" />
     <title>CycloPick</title>
     <base href="/" />
+    
+    <!-- PRECONNECT - MUSI BYĆ PRZED FONTAMI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- FONTY Z display=swap (zapobiega CLS) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" rel="stylesheet">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon-32x32-bez-ramki.ico" />
+    
+    <!-- Open Graph Meta Tags -->
     <meta name="facebook-domain-verification" content="zcvvzmlw6evkrj1qftf1axmn15bzpy" />
     <meta property="og:title" content="CycloPick.pl | Znajdź najlepszy serwis rowerowy w swojej okolicy. Szybka naprawa roweru w sprawdzonych punktach. Sprawdź naszą mapę serwisów rowerowych" />
     <meta property="og:description" content="CycloPick – Znajdź Serwis Rowerowy w Okolicy | Mapa Serwisów Rowerowych" />
-    
     <meta property="og:image" content="https://cyclopick.pl/assets/images/pictures/picture1.jpg" /> 
     <meta property="og:url" content="https://cyclopick.pl" />
     <meta property="og:type" content="website" />
-    <meta property="fb:app_id"       content="1299095961865088" />
-
+    <meta property="fb:app_id" content="1299095961865088" />
 
     <!-- Meta Pixel Code -->
-     <script data-cookieconsent="marketing">
+    <script data-cookieconsent="marketing">
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -27,25 +38,23 @@
     fbq('init', '1907660046720887');
     fbq('track', 'PageView');
     </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=1907660046720887&ev=PageView&noscript=1"
-    /></noscript> 
+    <noscript>
+      <img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1907660046720887&ev=PageView&noscript=1" />
+    </noscript> 
     
+    <!-- Cookiebot -->
     <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="3ed9403c-42a5-4fe8-8a37-f17eae8c4b74" type="text/javascript" async></script>
     
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9ZYH1T3NCJ"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-9ZYH1T3NCJ');
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="favicon-32x32-bez-ramki.ico" />
-      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-</head>
+  </head>
   <body class="mat-typography">
     <app-root></app-root>
   </body>

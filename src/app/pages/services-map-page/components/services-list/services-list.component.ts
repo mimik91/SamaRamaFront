@@ -34,7 +34,10 @@ private readonly DEFAULT_LOGO = 'assets/images/cyclopick-logo.svg';
   constructor(
     private mapService: MapService, 
     private router: Router
-  ) {}
+){
+  const img = new Image();
+  img.src = this.DEFAULT_LOGO;
+  }
 
   // Logika przewijania (bez zmian)
   onScroll(event: any): void {

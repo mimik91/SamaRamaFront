@@ -40,6 +40,7 @@
           [src]="getServiceLogo(service)" 
           [alt]="service.name + ' logo'"
           class="service-logo"
+          loading="lazy"
           (error)="onImageError($event)"
         />
       </div>

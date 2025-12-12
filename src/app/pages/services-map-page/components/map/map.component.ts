@@ -270,16 +270,28 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   }
 
   private destroyMap(): void {
-    if (this.map) {
-      try {
-        this.map.remove();
-        this.map = null;
-        this.isMapInitialized = false;
-      } catch (error) {
-        console.error('Error destroying map:', error);
-      }
+  if (this.map) {
+    try {
+      // ============ USUŃ WSZYSTKIE EVENT LISTENERY ============
+      this.markers.forEach((marker) => {
+        const markerElement = marker.getElement();
+        if (markerElement && (marker as any)._hoverListeners) {
+          const listeners = (marker as any)._hoverListeners;
+          markerElement.removeEventListener('mouseenter', listeners.mouseenter);
+          markerElement.removeEventListener('mouseleave', listeners.mouseleave);
+          delete (marker as any)._hoverListeners;
+        }
+      });
+      
+      this.markers.clear();
+      this.map.remove();
+      this.map = null;
+      this.isMapInitialized = false;
+    } catch (error) {
+      console.error('Error destroying map:', error);
     }
   }
+}
 
   // ============ MAP INTERACTION ============
 
@@ -352,137 +364,142 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     }
   }
 
-  private addPinToMap(pin: MapPin): void {
-    const isCluster = pin.category === 'cluster';
-    
-    let markerIcon;
-    let zIndexOffset = 0;
-    
+// W addPinToMap() ZAMIEŃ sekcję event listenerów na:
+
+private addPinToMap(pin: MapPin): void {
+  const isCluster = pin.category === 'cluster';
+  
+  let markerIcon;
+  let zIndexOffset = 0;
+  
+  if (isCluster) {
+    const count = parseInt(pin.name.split(' ')[0]);
+    markerIcon = this.createClusterIcon(count);
+    zIndexOffset = count >= 50 ? 3000 : (count >= 10 ? 2000 : 1000);
+  } else {
+    markerIcon = this.createPinIcon(pin.verified);
+    zIndexOffset = 500;
+  }
+
+  const marker = L.marker([pin.latitude, pin.longitude], { 
+    icon: markerIcon,
+    zIndexOffset: zIndexOffset
+  }).addTo(this.map);
+
+  // Add tooltip on hover (only for service pins, not clusters)
+  if (!isCluster) {
+    marker.bindTooltip(pin.name, {
+      permanent: false,
+      direction: 'top',
+      offset: [0, -35],
+      opacity: 0.95,
+      className: 'custom-tooltip'
+    });
+  }
+
+  // ============ NAPRAWIONY KOD - UŻYWAMY NAMED FUNCTIONS ============
+  const markerElement = marker.getElement();
+  if (markerElement) {
     if (isCluster) {
-      const count = parseInt(pin.name.split(' ')[0]);
-      markerIcon = this.createClusterIcon(count);
-      zIndexOffset = count >= 50 ? 3000 : (count >= 10 ? 2000 : 1000);
+      markerElement.classList.add('cluster-marker');
     } else {
-      markerIcon = this.createPinIcon(pin.verified);
-      zIndexOffset = 500;
+      markerElement.classList.add('pin-marker');
+      if (!pin.verified) {
+        markerElement.classList.add('unverified');
+      }
     }
-
-    const marker = L.marker([pin.latitude, pin.longitude], { 
-      icon: markerIcon,
-      zIndexOffset: zIndexOffset
-    }).addTo(this.map);
-
-    // Add tooltip on hover (only for service pins, not clusters)
-    if (!isCluster) {
-      marker.bindTooltip(pin.name, {
-        permanent: false,
-        direction: 'top',
-        offset: [0, -35],
-        opacity: 0.95,
-        className: 'custom-tooltip'
-      });
-    }
-
-    // Add custom CSS class to marker element
-    const markerElement = marker.getElement();
-    if (markerElement) {
-      // NAPRAWIONE: Dodaj klasy osobno, nie jako jeden string ze spacją
-      if (isCluster) {
-        markerElement.classList.add('cluster-marker');
-      } else {
-        markerElement.classList.add('pin-marker');
-        if (!pin.verified) {
-          markerElement.classList.add('unverified');
+    
+    // KLUCZOWE: Używamy named functions żeby móc je później usunąć
+    const handleMouseEnter = () => {
+      const svgElement = markerElement.querySelector('svg');
+      if (svgElement) {
+        if (isCluster) {
+          const circle = svgElement.querySelector('circle');
+          if (circle) {
+            const currentFill = circle.getAttribute('fill') || '';
+            circle.setAttribute('data-original-fill', currentFill);
+            
+            const count = parseInt(pin.name.split(' ')[0]);
+            let hoverColorKey;
+            if (count >= 50) {
+              hoverColorKey = 'cluster-hover-large';
+            } else if (count >= 10) {
+              hoverColorKey = 'cluster-hover-medium';
+            } else {
+              hoverColorKey = 'cluster-hover-small';
+            }
+            
+            circle.setAttribute('fill', this.getColor(hoverColorKey, '#4CAF50'));
+          }
+        } else {
+          const path = svgElement.querySelector('path');
+          if (path) {
+            const currentFill = path.getAttribute('fill') || '';
+            path.setAttribute('data-original-fill', currentFill);
+            
+            const hoverColorKey = pin.verified ? 'pin-hover-verified' : 'pin-hover-unverified';
+            path.setAttribute('fill', this.getColor(hoverColorKey, '#4CAF50'));
+          }
         }
       }
-      
-      // Add hover effect by manipulating SVG fill color
-      markerElement.addEventListener('mouseenter', () => {
+    };
+    
+    const handleMouseLeave = () => {
+      if (this.selectedPinId !== pin.id) {
         const svgElement = markerElement.querySelector('svg');
         if (svgElement) {
           if (isCluster) {
-            // Cluster hover effect
             const circle = svgElement.querySelector('circle');
             if (circle) {
-              const currentFill = circle.getAttribute('fill') || '';
-              circle.setAttribute('data-original-fill', currentFill);
-              
-              // Determine hover color based on current color
-              const count = parseInt(pin.name.split(' ')[0]);
-              let hoverColorKey;
-              if (count >= 50) {
-                hoverColorKey = 'cluster-hover-large';
-              } else if (count >= 10) {
-                hoverColorKey = 'cluster-hover-medium';
-              } else {
-                hoverColorKey = 'cluster-hover-small';
+              const originalFill = circle.getAttribute('data-original-fill');
+              if (originalFill) {
+                circle.setAttribute('fill', originalFill);
               }
-              
-              circle.setAttribute('fill', this.getColor(hoverColorKey, '#4CAF50'));
             }
           } else {
-            // Pin hover effect
             const path = svgElement.querySelector('path');
             if (path) {
-              const currentFill = path.getAttribute('fill') || '';
-              path.setAttribute('data-original-fill', currentFill);
-              
-              // Brighten based on verification status - from CSS
-              const hoverColorKey = pin.verified ? 'pin-hover-verified' : 'pin-hover-unverified';
-              path.setAttribute('fill', this.getColor(hoverColorKey, '#4CAF50'));
-            }
-          }
-        }
-      });
-      
-      markerElement.addEventListener('mouseleave', () => {
-        if (this.selectedPinId !== pin.id) {
-          const svgElement = markerElement.querySelector('svg');
-          if (svgElement) {
-            if (isCluster) {
-              const circle = svgElement.querySelector('circle');
-              if (circle) {
-                const originalFill = circle.getAttribute('data-original-fill');
-                if (originalFill) {
-                  circle.setAttribute('fill', originalFill);
-                }
-              }
-            } else {
-              const path = svgElement.querySelector('path');
-              if (path) {
-                const originalFill = path.getAttribute('data-original-fill');
-                if (originalFill) {
-                  path.setAttribute('fill', originalFill);
-                }
+              const originalFill = path.getAttribute('data-original-fill');
+              if (originalFill) {
+                path.setAttribute('fill', originalFill);
               }
             }
           }
-        }
-      });
-    }
-
-    const pinId = isCluster ? pin.id : parseInt(pin.id.toString());
-    this.markers.set(pinId, marker);
-
-    marker.on('click', () => {
-      if (isCluster) {
-        this.clusterClicked.emit({
-          lat: pin.latitude,
-          lng: pin.longitude,
-          zoom: this.map.getZoom() + 2
-        });
-      } else {
-        this.pinClicked.emit(pin);
-        // Request service details from parent
-        this.serviceDetailsRequested.emit(pinId);
-        
-        // Highlight selected pin
-        if (markerElement) {
-          this.highlightMarker(markerElement, pinId);
         }
       }
-    });
+    };
+    
+    // Dodaj listenery
+    markerElement.addEventListener('mouseenter', handleMouseEnter);
+    markerElement.addEventListener('mouseleave', handleMouseLeave);
+    
+    // KLUCZOWE: Zapisz referencje do listenerów w markerze
+    (marker as any)._hoverListeners = {
+      mouseenter: handleMouseEnter,
+      mouseleave: handleMouseLeave
+    };
   }
+
+  const pinId = isCluster ? pin.id : parseInt(pin.id.toString());
+  this.markers.set(pinId, marker);
+
+  marker.on('click', () => {
+    if (isCluster) {
+      this.clusterClicked.emit({
+        lat: pin.latitude,
+        lng: pin.longitude,
+        zoom: this.map.getZoom() + 2
+      });
+    } else {
+      this.pinClicked.emit(pin);
+      this.serviceDetailsRequested.emit(pinId);
+      
+      if (markerElement) {
+        this.highlightMarker(markerElement, pinId);
+      }
+    }
+  });
+}
 
   // ============ POPUP MANAGEMENT ============
 

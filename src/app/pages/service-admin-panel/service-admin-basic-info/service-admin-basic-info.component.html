@@ -32,7 +32,7 @@
   <!-- Details Grid -->
   <div class="details-grid">
 
-        <!-- Opis -->
+    <!-- Opis -->
     <div class="detail-card full-width">
       <h2>Opis</h2>
       <p class="description-text" *ngIf="!isEditMode">
@@ -45,6 +45,7 @@
         placeholder="Dodaj opis swojego serwisu..."
         class="edit-textarea"></textarea>
     </div>
+
     <!-- Informacje podstawowe -->
     <div class="detail-card">
       <h2>Informacje podstawowe</h2>
@@ -66,6 +67,23 @@
           class="edit-input"
           placeholder="email@example.com">
       </div>
+      <div class="detail-item" *ngIf="isEditMode || serviceDetails.email">
+        <span class="label">Wyświetlaj email:</span>
+        <span class="value" *ngIf="!isEditMode">
+          <span [class.badge-success]="serviceDetails.displayEmail" 
+                [class.badge-inactive]="!serviceDetails.displayEmail"
+                class="badge">
+            {{ serviceDetails.displayEmail ? 'Tak' : 'Nie' }}
+          </span>
+        </span>
+        <label *ngIf="isEditMode" class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="editableData.displayEmail"
+            class="edit-checkbox">
+          <span class="checkbox-text">Pokaż email publicznie</span>
+        </label>
+      </div>
       <div class="detail-item">
         <span class="label">Telefon:</span>
         <span class="value" *ngIf="!isEditMode">{{ serviceDetails.phoneNumber || '-' }}</span>
@@ -76,6 +94,23 @@
           maxlength="9"
           class="edit-input"
           placeholder="123456789">
+      </div>
+      <div class="detail-item" *ngIf="isEditMode || serviceDetails.phoneNumber">
+        <span class="label">Wyświetlaj telefon:</span>
+        <span class="value" *ngIf="!isEditMode">
+          <span [class.badge-success]="serviceDetails.displayPhoneNumber" 
+                [class.badge-inactive]="!serviceDetails.displayPhoneNumber"
+                class="badge">
+            {{ serviceDetails.displayPhoneNumber ? 'Tak' : 'Nie' }}
+          </span>
+        </span>
+        <label *ngIf="isEditMode" class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="editableData.displayPhoneNumber"
+            class="edit-checkbox">
+          <span class="checkbox-text">Pokaż telefon publicznie</span>
+        </label>
       </div>
       <div class="detail-item">
         <span class="label">Osoba kontaktowa:</span>
@@ -228,7 +263,6 @@
         </div>
       </div>
     </div>
-
 
   </div>
 </div>

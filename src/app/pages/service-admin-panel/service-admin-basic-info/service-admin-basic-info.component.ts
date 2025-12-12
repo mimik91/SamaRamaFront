@@ -29,6 +29,8 @@ interface BikeServiceRegisteredDto {
   youtube?: string;
   description?: string;
   isRegistered: boolean;
+  displayEmail?: boolean;
+  displayPhoneNumber?: boolean;
 }
 
 interface ServiceProfileUpdateDto {
@@ -41,6 +43,8 @@ interface ServiceProfileUpdateDto {
   tiktok?: string;
   youtube?: string;
   description?: string;
+  displayEmail?: boolean;
+  displayPhoneNumber?: boolean;
 }
 
 @Component({
@@ -79,7 +83,9 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
       instagram: this.serviceDetails.instagram || '',
       tiktok: this.serviceDetails.tiktok || '',
       youtube: this.serviceDetails.youtube || '',
-      description: this.serviceDetails.description || ''
+      description: this.serviceDetails.description || '',
+      displayEmail: this.serviceDetails.displayEmail ?? true,
+      displayPhoneNumber: this.serviceDetails.displayPhoneNumber ?? true
     };
   }
 
@@ -96,13 +102,11 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
   saveChanges(): void {
     if (!this.serviceId) return;
 
-      const url = `${environment.apiUrl}/bike-services-registered/my-service?serviceId=${this.serviceId}`;
+    const url = `${environment.apiUrl}/bike-services-registered/my-service?serviceId=${this.serviceId}`;
     
     this.isSaving = true;
     this.saveError = '';
     this.saveSuccess = false;
-
-  
     
     this.http.put(url, this.editableData).subscribe({
       next: () => {

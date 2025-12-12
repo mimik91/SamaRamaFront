@@ -11,7 +11,7 @@
   /* SECONDARY COLORS */
   --color-secondary: #e11d48;
   
-  /* ACCENT COLORS - Niebieskie jako akcent */
+  /* ACCENT COLORS - Zielone jako akcent */
   --color-accent: #4CAF50;
   --color-accent-dark: #388E3C;
   --color-accent-light: #81C784;
@@ -202,9 +202,9 @@
      ============================================ */
   
   /* Kolory klastrów - odcienie zieleni dla zweryfikowanych */
-  --map-cluster-small: #2B82AD;        /* Zielony (< 10) */
-  --map-cluster-medium: #f59e0b;       /* Ciemny zielony (10-49) */
-  --map-cluster-large: #dc2626 ;        /* Bardzo ciemny zielony (50+) */
+  --map-cluster-small: #2B82AD;        /* Niebieski (< 10) */
+  --map-cluster-medium: #f59e0b;       /* Pomarańczowy (10-49) */
+  --map-cluster-large: #dc2626;        /* Czerwony (50+) */
   
   /* Kolory hover dla klastrów */
   --map-cluster-hover-small: #2b9ead;
@@ -212,8 +212,8 @@
   --map-cluster-hover-large: #dc4a26;
   
   /* Kolory pinezek pojedynczych serwisów */
-  --map-pin-verified: #2B82AD;         /* Ciemny zielony dla zweryfikowanych */
-  --map-pin-unverified: #4caf4fa9;       /* Stonowany jasny zielony dla niezweryfikowanych */
+  --map-pin-verified: #2B82AD;         /* Niebieski dla zweryfikowanych */
+  --map-pin-unverified: #4caf4fa9;     /* Stonowany jasny zielony dla niezweryfikowanych */
   --map-pin-hover-verified: #2b9ead;   /* Jaśniejszy przy hover */
   --map-pin-hover-unverified: #81c784a9; /* Jaśniejszy przy hover dla niezweryfikowanych */
   --map-pin-selected: #e11d48;         /* Czerwony dla wybranej pinezki */
@@ -224,7 +224,7 @@
   --map-shadow-hover-verified: rgba(76, 175, 80, 0.6);
   --map-shadow-hover-unverified: rgba(165, 214, 167, 0.5);
 
-  /* LOGIN VARIABLES */
+  /* SHARED VARIABLES */
   --radius-sm: 4px;
   --radius-md: 8px;
   --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);

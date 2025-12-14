@@ -92,8 +92,16 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
       city: ['', [Validators.maxLength(100)]]
     });
 
+    this.basicInfoForm.get('suffix')?.valueChanges.subscribe(value => {
+      if (value && typeof value === 'string') {
+        const lowercase = value.toLowerCase();
+        if (value !== lowercase) {
+          this.basicInfoForm.get('suffix')?.setValue(lowercase, { emitEvent: false });
+        }
+      }
+    });
+
     this.coverageForm = this.fb.group({
-      // Dynamiczne pola będą dodawane dla każdej kategorii
     });
 
     this.passwordForm = this.fb.group({

@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MapService } from '../../services/map.service';
+import { LogoCacheService } from '../../services/logo-cache.service';
 import { Router } from '@angular/router';
 import { MapPin } from '../../services/map.models';
 import { Inject } from '@angular/core';
@@ -15,6 +16,12 @@ import { Inject } from '@angular/core';
 export class ServicesListComponent {
 private readonly DEFAULT_LOGO = 'assets/images/cyclopick-logo.svg';
   @Input() services: MapPin[] = [];
+  @Input() set servicesInput(value: MapPin[]) { 
+      this.services = value;
+    if (value && value.length > 0) {
+      this.logoCacheService.preloadBatch(value);
+    }
+  }
   @Input() selectedServiceId: number | null = null;
   @Input() loading = false;
   @Input() loadingMore = false;
@@ -33,11 +40,9 @@ private readonly DEFAULT_LOGO = 'assets/images/cyclopick-logo.svg';
   // Wstrzyknięcie MapService i Router
   constructor(
     private mapService: MapService, 
-    private router: Router
-){
-  const img = new Image();
-  img.src = this.DEFAULT_LOGO;
-  }
+    private router: Router,
+    private logoCacheService: LogoCacheService
+  ) {}
 
   // Logika przewijania (bez zmian)
   onScroll(event: any): void {
@@ -131,15 +136,16 @@ private readonly DEFAULT_LOGO = 'assets/images/cyclopick-logo.svg';
     return service.name || 'Serwis rowerowy';
   }
 
-getServiceLogo(service: MapPin): string {
-    return service.logoUrl || this.DEFAULT_LOGO;
+  getServiceLogo(service: MapPin): string {
+    return this.logoCacheService.getLogoUrl(service.id, service.logoUrl);
   }
 
   onImageError(event: any): void {
-    console.log('Failed to load service logo, falling back to default logo');
-    event.target.src = this.DEFAULT_LOGO;
+    const serviceId = parseInt(event.target.getAttribute('data-service-id'));
+    if (serviceId) {
+      this.logoCacheService.markAsInvalid(serviceId);
+    }
+    event.target.src = this.logoCacheService.getLogoUrl(serviceId);
     event.target.onerror = null;
   }
-
-
 }

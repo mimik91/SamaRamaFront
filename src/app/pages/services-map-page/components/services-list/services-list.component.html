@@ -39,6 +39,7 @@
         <img 
           [src]="getServiceLogo(service)" 
           [alt]="service.name + ' logo'"
+          [attr.data-service-id]="service.id"
           class="service-logo"
           loading="lazy"
           (error)="onImageError($event)"

@@ -13,6 +13,7 @@ import {
   Inject,
   PLATFORM_ID
 } from '@angular/core';
+import { LogoCacheService } from '../../services/logo-cache.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MapPin, ServiceDetails, MapViewState, MapBounds } from '../../services/map.models';
 import { MapService } from '../../services/map.service';
@@ -67,7 +68,8 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object,
     private mapService: MapService, 
-    private router: Router
+    private router: Router,
+    private logoCacheService: LogoCacheService
   ) {
      this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -557,7 +559,10 @@ if (markerElement) {
       fullAddress += fullAddress ? `, ${serviceDetails.city}` : serviceDetails.city;
     }
 
-    const logoUrl = serviceDetails.logoUrl || 'assets/images/cyclopick-logo.svg';
+    const logoUrl = this.logoCacheService.getLogoUrl(
+    serviceDetails.id, 
+    serviceDetails.logoUrl
+  );
     
     let popupContent = `
       <div style="font-family: inherit; min-width: 300px; max-width: 380px;">

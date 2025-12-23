@@ -209,6 +209,19 @@ export const routes: Routes = [
     },
     
     // Service order routes for clients
+
+    {
+      path: 'admin-orders/:id',
+      component: AdminOrderDetailsComponent,
+      canActivate: [adminGuard],
+      title: 'Szczegóły Zamówienia - Admin'
+    },
+    {
+      path: 'admin-orders',
+      component: AdminOrdersComponent,
+      canActivate: [adminGuard],
+      title: 'Zamówienia - Admin'
+    },
     { 
       path: 'order-service', 
       component: ServiceOrderFormComponent, 
@@ -251,12 +264,6 @@ export const routes: Routes = [
       component: AdminOrdersComponent, 
       canActivate: [adminGuard],
       title: 'Zamówienia - Admin'
-    },
-    { 
-      path: 'admin-orders/:id', 
-      component: AdminOrderDetailsComponent, 
-      canActivate: [adminGuard],
-      title: 'Szczegóły Zamówienia - Admin'
     },
     { 
       path: 'admin-users', 

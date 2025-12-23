@@ -311,6 +311,9 @@ export class ServiceAdminImagesComponent implements OnInit {
         body: compressedFile,
       });
 
+      console.log('Upload status:', uploadResult.status);
+      console.log('Upload headers:', uploadResult.headers);
+
       if (!uploadResult.ok) {
         throw new Error('Nie udało się przesłać pliku do serwera');
       }

@@ -30,7 +30,6 @@ export class NavigationComponent implements OnInit {
   serviceSuffix: string = '';
   
   ngOnInit(): void {
-    // Monitorowanie zmian adresu URL
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
@@ -38,10 +37,8 @@ export class NavigationComponent implements OnInit {
       this.closeMobileMenu();
     });
 
-    // Pobierz aktualny URL
     this.currentUrl = this.router.url;
     
-    // Pobierz suffix serwisu jeśli użytkownik jest serwisem
     console.log('NavigationComponent ngOnInit');
     console.log('isService:', this.authService.isService());
     
@@ -51,13 +48,11 @@ export class NavigationComponent implements OnInit {
     }
   }
   
-  // Pobierz suffix serwisu z AuthService
   private loadServiceSuffix(): void {
     this.serviceSuffix = this.authService.getServiceSuffix() || '';
     console.log('loadServiceSuffix - suffix loaded:', this.serviceSuffix);
     if (!this.serviceSuffix) {
       console.warn('Service suffix not found for logged in service user');
-      // Sprawdź localStorage bezpośrednio
       if (typeof localStorage !== 'undefined') {
         const directSuffix = localStorage.getItem('service_suffix');
         console.log('Direct localStorage check:', directSuffix);
@@ -65,7 +60,7 @@ export class NavigationComponent implements OnInit {
     }
   }
   
-  // Metoda do nawigacji do panelu administratora serwisu
+  // POPRAWIONA METODA - używa navigateByUrl zamiast navigate
   navigateToServicePanel(event?: Event): void {
     if (event) {
       event.preventDefault();
@@ -82,18 +77,26 @@ export class NavigationComponent implements OnInit {
     }
     
     if (this.serviceSuffix) {
-      const path = `/${this.serviceSuffix}/panel-administratora`;
+      // KLUCZOWA ZMIANA: używamy pełnego URL jako string
+      // encodeURIComponent zapewnia poprawne kodowanie znaków specjalnych
+      const encodedSuffix = encodeURIComponent(this.serviceSuffix);
+      const path = `/${encodedSuffix}/panel-administratora`;
       console.log('Attempting navigation to:', path);
       
-      this.router.navigate([this.serviceSuffix, 'panel-administratora']).then(
+      // navigateByUrl traktuje URL jako całość, bez parsowania segmentów
+      this.router.navigateByUrl(path).then(
         success => {
           console.log('Navigation success:', success);
           if (success) {
             this.closeMobileMenu();
+          } else {
+            console.error('Navigation returned false');
+            this.notification.error('Nie można przejść do panelu administratora');
           }
         },
         error => {
           console.error('Navigation error:', error);
+          this.notification.error('Błąd nawigacji');
         }
       );
     } else {
@@ -105,7 +108,6 @@ export class NavigationComponent implements OnInit {
     console.log('=== navigateToServicePanel END ===');
   }
   
-  // Zamknij menu mobilne gdy rozmiar ekranu przekracza 768px
   @HostListener('window:resize', ['$event'])
   onResize(event: any): void {
     if (window.innerWidth > 768) {
@@ -116,7 +118,6 @@ export class NavigationComponent implements OnInit {
   toggleMobileMenu(): void {
     this.mobileMenuOpen = !this.mobileMenuOpen;
     
-    // Zablokuj przewijanie strony gdy menu mobilne jest otwarte
     if (this.mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -145,7 +146,6 @@ export class NavigationComponent implements OnInit {
     this.closeMobileMenu();
   }
 
-  // Sprawdza, czy jesteśmy na stronie logowania lub rejestracji
   isAuthPage(): boolean {
     return this.currentUrl.includes('/login') || 
            this.currentUrl.includes('/register') ||
@@ -153,17 +153,14 @@ export class NavigationComponent implements OnInit {
            this.currentUrl.includes('/register-serviceman');
   }
 
-  // Sprawdza, czy jesteśmy na stronie logowania klienta
   isLoginPage(): boolean {
     return this.currentUrl === '/login';
   }
 
-  // Sprawdza, czy jesteśmy na stronie rejestracji klienta
   isRegisterPage(): boolean {
     return this.currentUrl === '/register';
   }
 
-  // Sprawdza, czy jesteśmy na stronie rejestracji serwisu
   isServiceRegisterPage(): boolean {
     return this.currentUrl === '/register-service' || this.currentUrl === '/register-serviceman';
   }

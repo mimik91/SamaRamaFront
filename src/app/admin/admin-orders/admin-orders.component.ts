@@ -2,8 +2,13 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AdminOrdersService, ServiceAndTransportOrder, OrderFilter, PagedResponse } from './admin-orders.service';
+import { AdminOrdersService } from './admin-orders.service';
 import { NotificationService } from '../../core/notification.service';
+import { 
+  TransportOrder, 
+  OrderFilter, 
+  PagedResponse 
+} from '../../core/models/transport-order.models';
 
 @Component({
   selector: 'app-admin-orders',
@@ -18,7 +23,7 @@ export class AdminOrdersComponent implements OnInit {
   private router = inject(Router);
 
   // Data
-  orders: ServiceAndTransportOrder[] = [];
+  orders: TransportOrder[] = [];
   
   // Pagination
   currentPage = 0;
@@ -30,20 +35,21 @@ export class AdminOrdersComponent implements OnInit {
   loading = true;
   error: string | null = null;
   
-  // View mode
-  viewMode: 'all' | 'service' | 'transport' = 'all';
-  
   // Filters
   filters: OrderFilter = {};
   searchTerm = '';
   statusFilter = '';
-  orderTypeFilter = '';
   pickupDateFrom = '';
   pickupDateTo = '';
   
   // Sorting
   sortBy = 'orderDate';
-  sortOrder = 'DESC';
+  sortOrder: 'ASC' | 'DESC' = 'DESC';
+  
+  // Status Modal
+  showStatusModal = false;
+  selectedOrder: TransportOrder | null = null;
+  newStatus = '';
   
   constructor() { }
 
@@ -62,28 +68,14 @@ export class AdminOrdersComponent implements OnInit {
       ...this.filters,
       searchTerm: this.searchTerm || undefined,
       status: this.statusFilter || undefined,
-      orderType: this.orderTypeFilter || undefined,
       pickupDateFrom: this.pickupDateFrom || undefined,
       pickupDateTo: this.pickupDateTo || undefined,
       sortBy: this.sortBy,
       sortOrder: this.sortOrder
     };
 
-    let loadMethod: any;
-    
-    switch (this.viewMode) {
-      case 'service':
-        loadMethod = this.adminOrdersService.getAllServiceOrders(filter, this.currentPage, this.pageSize);
-        break;
-      case 'transport':
-        loadMethod = this.adminOrdersService.getAllTransportOrders(filter, this.currentPage, this.pageSize);
-        break;
-      default:
-        loadMethod = this.adminOrdersService.getAllOrders(filter, this.currentPage, this.pageSize);
-    }
-
-    loadMethod.subscribe({
-      next: (response: PagedResponse<ServiceAndTransportOrder>) => {
+    this.adminOrdersService.getAllTransportOrders(filter, this.currentPage, this.pageSize).subscribe({
+      next: (response: PagedResponse<TransportOrder>) => {
         this.orders = response.content;
         this.totalElements = response.totalElements;
         this.totalPages = response.totalPages;
@@ -96,15 +88,6 @@ export class AdminOrdersComponent implements OnInit {
         this.notificationService.error(this.error);
       }
     });
-  }
-
-  // === VIEW MODE CHANGES ===
-
-  changeViewMode(mode: 'all' | 'service' | 'transport'): void {
-    this.viewMode = mode;
-    this.currentPage = 0;
-    this.clearFilters();
-    this.loadOrders();
   }
 
   // === FILTERING ===
@@ -127,7 +110,6 @@ export class AdminOrdersComponent implements OnInit {
   clearFilters(): void {
     this.searchTerm = '';
     this.statusFilter = '';
-    this.orderTypeFilter = '';
     this.pickupDateFrom = '';
     this.pickupDateTo = '';
     this.filters = {};
@@ -170,43 +152,37 @@ export class AdminOrdersComponent implements OnInit {
     this.router.navigate(['/admin-orders', orderId]);
   }
 
-  editOrder(order: ServiceAndTransportOrder): void {
-    // Navigate to edit page based on order type
-    if (order.orderType === 'SERVICE') {
-      this.router.navigate(['/admin-orders/service', order.id, 'edit']);
-    } else if (order.orderType === 'TRANSPORT') {
-      this.router.navigate(['/admin-orders/transport', order.id, 'edit']);
-    }
+  updateOrderStatus(order: TransportOrder): void {
+    this.selectedOrder = order;
+    this.newStatus = '';
+    this.showStatusModal = true;
   }
 
-  updateOrderStatus(order: ServiceAndTransportOrder): void {
-    const newStatus = prompt(`Zmień status zamówienia ${order.id}:`, order.status);
-    
-    if (newStatus && newStatus !== order.status) {
-      const updateMethod = order.orderType === 'SERVICE' 
-        ? this.adminOrdersService.updateServiceOrderStatus(order.id, newStatus)
-        : this.adminOrdersService.updateTransportOrderStatus(order.id, newStatus);
-
-      updateMethod.subscribe({
-        next: () => {
-          this.notificationService.success(`Status zamówienia ${order.id} został zaktualizowany`);
-          this.loadOrders();
-        },
-        error: (err) => {
-          console.error('Error updating order status:', err);
-          this.notificationService.error('Nie udało się zaktualizować statusu zamówienia');
-        }
-      });
-    }
+  closeStatusModal(): void {
+    this.showStatusModal = false;
+    this.selectedOrder = null;
+    this.newStatus = '';
   }
 
-  deleteOrder(order: ServiceAndTransportOrder): void {
+  confirmStatusUpdate(): void {
+    if (!this.selectedOrder || !this.newStatus) return;
+
+    this.adminOrdersService.updateTransportOrderStatus(this.selectedOrder.id, this.newStatus).subscribe({
+      next: () => {
+        this.notificationService.success(`Status zamówienia ${this.selectedOrder!.id} został zaktualizowany`);
+        this.closeStatusModal();
+        this.loadOrders();
+      },
+      error: (err) => {
+        console.error('Error updating order status:', err);
+        this.notificationService.error('Nie udało się zaktualizować statusu zamówienia');
+      }
+    });
+  }
+
+  deleteOrder(order: TransportOrder): void {
     if (confirm(`Czy na pewno chcesz usunąć zamówienie ${order.id}? Ta operacja jest nieodwracalna.`)) {
-      const deleteMethod = order.orderType === 'SERVICE'
-        ? this.adminOrdersService.deleteServiceOrder(order.id)
-        : this.adminOrdersService.deleteTransportOrder(order.id);
-
-      deleteMethod.subscribe({
+      this.adminOrdersService.deleteTransportOrder(order.id).subscribe({
         next: () => {
           this.notificationService.success(`Zamówienie ${order.id} zostało usunięte`);
           this.loadOrders();
@@ -225,26 +201,20 @@ export class AdminOrdersComponent implements OnInit {
     return this.adminOrdersService.getStatusDisplayName(status);
   }
 
-  getOrderTypeDisplayName(orderType: string): string {
-    return this.adminOrdersService.getOrderTypeDisplayName(orderType);
-  }
-
   getStatusClass(status: string): string {
     const statusClasses: Record<string, string> = {
       'PENDING': 'status-pending',
       'CONFIRMED': 'status-confirmed',
+      'TO_PICK_UP': 'status-to-pick-up',
       'PICKED_UP': 'status-picked-up',
-      'IN_SERVICE': 'status-in-service',
-      'ON_THE_WAY_BACK': 'status-in-transport-back',
-      'FINISHED': 'status-delivered',
+      'ON_THE_WAY': 'status-on-the-way',
+      'DELIVERED': 'status-delivered',
+      'RETURNING': 'status-returning',
+      'COMPLETED': 'status-completed',
       'CANCELLED': 'status-cancelled'
     };
 
     return statusClasses[status] || '';
-  }
-
-  getOrderTypeClass(orderType: string): string {
-    return orderType === 'SERVICE' ? 'order-type-service' : 'order-type-transport';
   }
 
   formatDate(dateString: string): string {
@@ -273,11 +243,11 @@ export class AdminOrdersComponent implements OnInit {
     return price ? price.toFixed(2) + ' zł' : '0.00 zł';
   }
 
-  canEditOrder(order: ServiceAndTransportOrder): boolean {
+  canEditOrder(order: TransportOrder): boolean {
     return this.adminOrdersService.canEditOrder(order);
   }
 
-  canDeleteOrder(order: ServiceAndTransportOrder): boolean {
+  canDeleteOrder(order: TransportOrder): boolean {
     return this.adminOrdersService.canDeleteOrder(order);
   }
 
@@ -293,37 +263,13 @@ export class AdminOrdersComponent implements OnInit {
   // === AVAILABLE STATUSES ===
 
   getAvailableStatuses(): Array<{value: string, label: string}> {
-    if (this.viewMode === 'service') {
-      return this.adminOrdersService.getServiceOrderStatuses();
-    } else if (this.viewMode === 'transport') {
-      return this.adminOrdersService.getTransportOrderStatuses();
-    } else {
-      // For 'all' view, combine both
-      const serviceStatuses = this.adminOrdersService.getServiceOrderStatuses();
-      const transportStatuses = this.adminOrdersService.getTransportOrderStatuses();
-      
-      // Remove duplicates
-      const allStatuses = [...serviceStatuses];
-      transportStatuses.forEach(ts => {
-        if (!allStatuses.find(as => as.value === ts.value)) {
-          allStatuses.push(ts);
-        }
-      });
-      
-      return allStatuses.sort((a, b) => a.label.localeCompare(b.label));
-    }
+    return this.adminOrdersService.getTransportOrderStatuses();
   }
 
-  // === EXPORT / BULK ACTIONS ===
+  // === EXPORT ===
 
   exportOrders(): void {
-    // Placeholder for export functionality
     this.notificationService.info('Funkcja eksportu zostanie dodana w przyszłej wersji');
-  }
-
-  bulkUpdateStatus(): void {
-    // Placeholder for bulk update functionality
-    this.notificationService.info('Funkcja zbiorczej aktualizacji zostanie dodana w przyszłej wersji');
   }
 
   // === PAGINATION HELPERS ===
@@ -336,7 +282,6 @@ export class AdminOrdersComponent implements OnInit {
     let startPage = Math.max(0, this.currentPage - halfVisible);
     let endPage = Math.min(this.totalPages - 1, startPage + maxVisiblePages - 1);
     
-    // Adjust start page if we're near the end
     if (endPage - startPage < maxVisiblePages - 1) {
       startPage = Math.max(0, endPage - maxVisiblePages + 1);
     }
@@ -346,12 +291,5 @@ export class AdminOrdersComponent implements OnInit {
     }
     
     return pages;
-  }
-
-  shouldShowPage(pageIndex: number): boolean {
-    if (this.totalPages <= 10) return true;
-    
-    const visiblePages = this.getPaginationPages();
-    return visiblePages.includes(pageIndex) || pageIndex === 0 || pageIndex === this.totalPages - 1;
   }
 }

@@ -202,9 +202,9 @@
      ============================================ */
   
   /* Kolory klastrów - odcienie zieleni dla zweryfikowanych */
-  --map-cluster-small: #2B82AD;        /* Niebieski (< 10) */
-  --map-cluster-medium: #f59e0b;       /* Pomarańczowy (10-49) */
-  --map-cluster-large: #dc2626;        /* Czerwony (50+) */
+  --map-cluster-small: #2B82AD;
+  --map-cluster-medium: #f59e0b;
+  --map-cluster-large: #dc2626;
   
   /* Kolory hover dla klastrów */
   --map-cluster-hover-small: #2b9ead;
@@ -212,11 +212,11 @@
   --map-cluster-hover-large: #dc4a26;
   
   /* Kolory pinezek pojedynczych serwisów */
-  --map-pin-verified: #2B82AD;         /* Niebieski dla zweryfikowanych */
-  --map-pin-unverified: #4caf4fa9;     /* Stonowany jasny zielony dla niezweryfikowanych */
-  --map-pin-hover-verified: #2b9ead;   /* Jaśniejszy przy hover */
-  --map-pin-hover-unverified: #81c784a9; /* Jaśniejszy przy hover dla niezweryfikowanych */
-  --map-pin-selected: #e11d48;         /* Czerwony dla wybranej pinezki */
+  --map-pin-verified: #2B82AD;
+  --map-pin-unverified: #4caf4fa9;
+  --map-pin-hover-verified: #2b9ead;
+  --map-pin-hover-unverified: #81c784a9;
+  --map-pin-selected: #e11d48;
 
   /* Cienie dla pinezek */
   --map-shadow-verified: rgba(46, 125, 50, 0.4);
@@ -224,7 +224,165 @@
   --map-shadow-hover-verified: rgba(76, 175, 80, 0.6);
   --map-shadow-hover-unverified: rgba(165, 214, 167, 0.5);
 
-  /* SHARED VARIABLES */
+  /* ============================================
+     TYPOGRAPHY - FONT SIZES
+     ============================================ */
+  
+  /* Base font size */
+  --font-size-base: 16px;
+  
+  /* Font sizes */
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-md: 1rem;         /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+  --font-size-5xl: 3rem;        /* 48px */
+  
+  /* Headings */
+  --font-size-h1: 2.25rem;      /* 36px */
+  --font-size-h2: 1.875rem;     /* 30px */
+  --font-size-h3: 1.5rem;       /* 24px */
+  --font-size-h4: 1.25rem;      /* 20px */
+  --font-size-h5: 1.125rem;     /* 18px */
+  --font-size-h6: 1rem;         /* 16px */
+  
+  /* Special text sizes */
+  --font-size-caption: 0.875rem;    /* 14px */
+  --font-size-label: 0.95rem;       /* 15.2px */
+  --font-size-button: 1rem;         /* 16px */
+  --font-size-input: 1rem;          /* 16px */
+  
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  
+  /* Line heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  --line-height-loose: 2;
+
+  /* ============================================
+     SPACING SYSTEM
+     ============================================ */
+  
+  /* Base spacing unit (4px) */
+  --spacing-unit: 0.25rem;      /* 4px */
+  
+  /* Spacing scale */
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;         /* 4px */
+  --spacing-2: 0.5rem;          /* 8px */
+  --spacing-3: 0.75rem;         /* 12px */
+  --spacing-4: 1rem;            /* 16px */
+  --spacing-5: 1.25rem;         /* 20px */
+  --spacing-6: 1.5rem;          /* 24px */
+  --spacing-7: 1.75rem;         /* 28px */
+  --spacing-8: 2rem;            /* 32px */
+  --spacing-10: 2.5rem;         /* 40px */
+  --spacing-12: 3rem;           /* 48px */
+  --spacing-15: 3.75rem;        /* 60px */
+  --spacing-16: 4rem;           /* 64px */
+  --spacing-20: 5rem;           /* 80px */
+  --spacing-24: 6rem;           /* 96px */
+  --spacing-32: 8rem;           /* 128px */
+  
+  /* Named spacings for common use cases */
+  --spacing-section: 3rem;      /* 48px - between sections */
+  --spacing-component: 1.5rem;  /* 24px - between components */
+  --spacing-element: 1rem;      /* 16px - between elements */
+  --spacing-inline: 0.5rem;     /* 8px - inline spacing */
+  
+  /* Padding presets */
+  --padding-xs: 0.5rem 0.75rem;    /* 8px 12px */
+  --padding-sm: 0.75rem 1rem;      /* 12px 16px */
+  --padding-md: 1rem 1.5rem;       /* 16px 24px */
+  --padding-lg: 1.25rem 2rem;      /* 20px 32px */
+  --padding-xl: 1.5rem 2.5rem;     /* 24px 40px */
+  
+  /* Margin presets */
+  --margin-xs: 0.5rem;
+  --margin-sm: 0.75rem;
+  --margin-md: 1rem;
+  --margin-lg: 1.5rem;
+  --margin-xl: 2rem;
+
+  /* ============================================
+     Z-INDEX SYSTEM
+     ============================================ */
+  
+  /* Base z-index values */
+  --z-index-base: 0;
+  --z-index-behind: -1;
+  
+  /* Content layers */
+  --z-index-content: 1;
+  --z-index-elevated: 10;
+  --z-index-sticky: 100;
+  --z-index-fixed: 200;
+  
+  /* UI element layers */
+  --z-index-dropdown: 1000;
+  --z-index-tooltip: 1100;
+  --z-index-overlay: 1200;
+  --z-index-modal-backdrop: 1300;
+  --z-index-modal: 1400;
+  --z-index-popover: 1500;
+  --z-index-notification: 1600;
+  
+  /* Top layers */
+  --z-index-header: 800;
+  --z-index-sidebar: 700;
+  --z-index-drawer: 900;
+  
+  /* Map specific */
+  --z-index-map-controls: 500;
+  --z-index-map-popup: 600;
+  --z-index-map-marker: 50;
+  
+  /* Maximum z-index (use sparingly) */
+  --z-index-maximum: 9999;
+
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  /* Named radius for components */
+  --radius-button: 8px;
+  --radius-input: 8px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+
+  /* ============================================
+     TRANSITIONS & ANIMATIONS
+     ============================================ */
+  
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  --transition-all: all 0.3s ease;
+  --transition-colors: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  --transition-transform: transform 0.3s ease;
+  --transition-opacity: opacity 0.3s ease;
+
+  /* SHARED VARIABLES (legacy - deprecated, use specific variables above) */
   --radius-sm: 4px;
   --radius-md: 8px;
   --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);

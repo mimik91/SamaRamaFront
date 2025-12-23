@@ -1,28 +1,16 @@
 // src/app/transport-orders/transport-order-form.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../core/notification.service';
-import { TransportOrderService, TransportOrderRequest } from './transport-order.service';
+import { TransportOrderService } from './transport-order.service';
 import { MapService } from '../pages/services-map-page/services/map.service';
 import { EnumerationService } from '../core/enumeration.service';
+import { I18nService } from '../core/i18n.service';
+import { environment } from '../environments/environments';
+import { BicycleFormData, BicycleData } from '../shared/models/bicycle.model';
 
-export interface BicycleFormData {
-  brand: string;
-  model: string;
-  type: string;
-  frameMaterial?: string;
-  description?: string;
-}
-
-export interface BicycleData {
-  brand: string;
-  model: string;
-  type: string;
-  frameMaterial?: string;
-  description?: string;
-}
 
 @Component({
   selector: 'app-transport-order-form',
@@ -39,6 +27,7 @@ export class TransportOrderFormComponent implements OnInit {
   private transportOrderService = inject(TransportOrderService);
   private mapService = inject(MapService);
   private enumerationService = inject(EnumerationService);
+  private i18n = inject(I18nService);
 
   // Multi-step form management
   currentStep = 1;
@@ -76,14 +65,17 @@ export class TransportOrderFormComponent implements OnInit {
   submitting = false;
   error: string | null = null;
 
+  // Expose environment links for template
+  readonly links = environment.links;
+
   constructor() {
-    // Ustawienie dat
+    // Ustawienie dat z environment
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setDate(tomorrow.getDate() + environment.settings.transport.minDaysInAdvance);
     this.minDate = tomorrow.toISOString().split('T')[0];
 
     const maxDate = new Date();
-    maxDate.setDate(maxDate.getDate() + 30);
+    maxDate.setDate(maxDate.getDate() + environment.settings.transport.maxDaysInAdvance);
     this.maxDate = maxDate.toISOString().split('T')[0];
 
     // Initialize forms
@@ -94,31 +86,32 @@ export class TransportOrderFormComponent implements OnInit {
     this.contactAndTransportForm = this.fb.group({
       // Dane kontaktowe
       clientEmail: ['', [Validators.required, Validators.email]],
-      clientPhone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
+      clientPhone: ['', [Validators.required, Validators.pattern(new RegExp(`^\\d{${environment.settings.validation.phoneNumberLength}}$`))]],
 
       // Szczegóły transportu
       pickupDate: ['', [Validators.required, this.dateValidator.bind(this)]],
 
-      // ROZBITY ADRES - bez pickupApartmentNumber
-      pickupStreet: ['', [Validators.required, Validators.minLength(2)]],
+      // ROZBITY ADRES
+      pickupStreet: ['', [Validators.required, Validators.minLength(environment.settings.validation.minModelLength)]],
       pickupBuildingNumber: ['', [Validators.required]],
       pickupCity: ['', [Validators.required]],
-      pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]],
+      pickupPostalCode: ['', [Validators.pattern(environment.settings.validation.postalCodePattern)]],
 
       additionalNotes: ['']
     });
   }
 
   // Validator sprawdzający czy wybrana data to niedziela-czwartek
-  dateValidator(control: any): {[key: string]: any} | null {
+  dateValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) {
       return null;
     }
 
-    const selectedDate = new Date(control.value);
+    const selectedDate = new Date(control.value + 'T00:00:00');
     const dayOfWeek = selectedDate.getDay();
 
-    if (dayOfWeek > 4) { // Piątek i sobota nie są dozwolone
+    // Sprawdź czy dzień jest w dozwolonych dniach z environment
+    if (!environment.settings.transport.allowedDays.includes(dayOfWeek)) {
       return { invalidDay: true };
     }
 
@@ -132,9 +125,9 @@ export class TransportOrderFormComponent implements OnInit {
     this.addBicycleToForm();
 
     this.contactAndTransportForm.get('pickupDate')?.valueChanges.subscribe(date => {
-        if (date) {
-            this.checkSlotAvailabilityForDate(date);
-        }
+      if (date) {
+        this.checkSlotAvailabilityForDate(date);
+      }
     });
   }
 
@@ -145,7 +138,7 @@ export class TransportOrderFormComponent implements OnInit {
         this.loadServiceDetails(serviceId);
       } else {
         this.selectedServiceInfo = { id: null, name: '', address: '' };
-        this.notificationService.error('Brak informacji o serwisie. Sprawdź link.');
+        this.notificationService.error(this.i18n.instant('transport_order.service_info.error_no_service'));
       }
     });
   }
@@ -164,15 +157,15 @@ export class TransportOrderFormComponent implements OnInit {
           console.log('Service details loaded:', this.selectedServiceInfo);
           console.log('Transport cost:', this.actualTransportCost);
         } else {
-          this.notificationService.error('Nie znaleziono serwisu o podanym ID');
-          this.router.navigate(['/']);
+          this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
+          this.router.navigate([environment.links.homepage]);
         }
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading service details:', error);
-        this.notificationService.error('Błąd podczas ładowania danych serwisu');
-        this.router.navigate(['/']);
+        this.notificationService.error(this.i18n.instant('transport_order.service_info.error_loading'));
+        this.router.navigate([environment.links.homepage]);
         this.loading = false;
       }
     });
@@ -196,7 +189,7 @@ export class TransportOrderFormComponent implements OnInit {
       },
       error: () => {
         this.loadingBrands = false;
-        this.brands = ['Trek', 'Specialized', 'Giant', 'Cannondale', 'Scott', 'Merida', 'Kona', 'Cube', 'Inna']; // Fallback brands
+        this.brands = environment.settings.fallback.brands;
       }
     });
   }
@@ -210,32 +203,38 @@ export class TransportOrderFormComponent implements OnInit {
       },
       error: () => {
         this.loadingCities = false;
-        this.cities = ['Kraków', 'Warszawa', 'Gdańsk', 'Poznań', 'Wrocław', 'Łódź']; // Fallback cities
+        this.cities = environment.settings.fallback.cities;
       }
     });
   }
 
-    checkSlotAvailabilityForDate(date: string): void {
-      const bikesCount = this.getSelectedBicyclesCount();
-      if (bikesCount > 0) {
-          this.transportOrderService.checkSlotAvailability(date, bikesCount).subscribe({
-              next: (response) => {
-                  // Handle the response from the backend
-                  if (!response.available) {
-                      this.notificationService.warning(`Brak wystarczającej liczby slotów na wybraną datę. Dostępnych rowerów: ${response.availableBikes}.`);
-                      // Optionally, set a custom form control error to prevent submission
-                      this.contactAndTransportForm.get('pickupDate')?.setErrors({ notEnoughSlots: true });
-                  } else {
-                      this.notificationService.success('Sloty dostępne!');
-                      this.contactAndTransportForm.get('pickupDate')?.setErrors(null);
-                  }
-              },
-              error: (err) => {
-                  this.notificationService.error('Nie można sprawdzić dostępności slotów. Spróbuj ponownie.');
-                  this.contactAndTransportForm.get('pickupDate')?.setErrors({ availabilityCheckFailed: true });
-              }
-          });
-      }
+  checkSlotAvailabilityForDate(date: string): void {
+    const bikesCount = this.getSelectedBicyclesCount();
+    if (bikesCount > 0) {
+      this.transportOrderService.checkSlotAvailability(date, bikesCount).subscribe({
+        next: (response) => {
+          const dateControl = this.contactAndTransportForm.get('pickupDate');
+          if (!response.available) {
+            this.notificationService.warning(
+              this.i18n.instant('transport_order.validation.slots_not_available') + ` ${response.availableBikes}.`
+            );
+            dateControl?.setErrors({ ...dateControl.errors, notEnoughSlots: true });
+          } else {
+            this.notificationService.success(this.i18n.instant('transport_order.validation.slots_available'));
+            // Usuń błąd notEnoughSlots, ale zachowaj inne błędy
+            if (dateControl?.errors) {
+              const { notEnoughSlots, availabilityCheckFailed, ...otherErrors } = dateControl.errors;
+              dateControl.setErrors(Object.keys(otherErrors).length > 0 ? otherErrors : null);
+            }
+          }
+        },
+        error: (err) => {
+          this.notificationService.error(this.i18n.instant('transport_order.validation.slots_check_error'));
+          const dateControl = this.contactAndTransportForm.get('pickupDate');
+          dateControl?.setErrors({ ...dateControl.errors, availabilityCheckFailed: true });
+        }
+      });
+    }
   }
 
   // Step navigation
@@ -244,7 +243,7 @@ export class TransportOrderFormComponent implements OnInit {
       if (this.currentStep < this.totalSteps) this.currentStep++;
     } else {
       this.markCurrentFormTouched();
-      this.notificationService.warning('Wypełnij poprawnie wszystkie wymagane pola w tym kroku');
+      this.notificationService.warning(this.i18n.instant('transport_order.validation.fill_required_fields'));
     }
   }
 
@@ -275,7 +274,7 @@ export class TransportOrderFormComponent implements OnInit {
     switch (step) {
       case 1: return this.bicyclesForm.valid && this.bicyclesArray.length > 0;
       case 2: return this.contactAndTransportForm.valid;
-      case 3: return true; // Summary step
+      case 3: return true;
       default: return false;
     }
   }
@@ -343,7 +342,7 @@ export class TransportOrderFormComponent implements OnInit {
 
     const orderDate = this.contactAndTransportForm.get('pickupDate')?.value;
     if (!orderDate) {
-      this.notificationService.warning('Proszę najpierw wybrać datę odbioru w kroku 2.');
+      this.notificationService.warning(this.i18n.instant('transport_order.discount.select_date_first'));
       this.isApplyingCoupon = false;
       return;
     }
@@ -359,18 +358,18 @@ export class TransportOrderFormComponent implements OnInit {
         const newPrice = response.newPrice;
         if (newPrice < this.getEstimatedTransportCost()) {
           this.finalTransportPrice = newPrice;
-          this.couponMessage = `Kupon "${couponCode}" został zastosowany!`;
+          this.couponMessage = this.i18n.instant('transport_order.discount.coupon_applied', { coupon: couponCode });
           this.isCouponInvalid = false;
         } else {
           this.finalTransportPrice = null;
-          this.couponMessage = 'Kupon jest niepoprawny lub stracił ważność.';
+          this.couponMessage = this.i18n.instant('transport_order.discount.coupon_invalid');
           this.isCouponInvalid = true;
         }
         this.isApplyingCoupon = false;
       },
       error: () => {
         this.finalTransportPrice = null;
-        this.couponMessage = 'Wystąpił błąd podczas sprawdzania kuponu. Spróbuj ponownie.';
+        this.couponMessage = this.i18n.instant('transport_order.discount.coupon_error');
         this.isCouponInvalid = true;
         this.isApplyingCoupon = false;
       }
@@ -381,12 +380,12 @@ export class TransportOrderFormComponent implements OnInit {
   onSubmit(): void {
     if (!this.isStepValid(1) || !this.isStepValid(2) || !this.termsAcceptedControl.valid) {
       this.termsAcceptedControl.markAsTouched();
-      this.notificationService.warning('Wypełnij poprawnie wszystkie wymagane pola i zaakceptuj regulamin');
+      this.notificationService.warning(this.i18n.instant('transport_order.validation.fill_all_and_accept'));
       return;
     }
 
     if (!this.selectedServiceInfo.id) {
-      this.notificationService.error('Nie wybrano serwisu docelowego');
+      this.notificationService.error(this.i18n.instant('transport_order.validation.no_service_selected'));
       return;
     }
 
@@ -396,7 +395,7 @@ export class TransportOrderFormComponent implements OnInit {
     const contactAndTransportData = this.contactAndTransportForm.value;
 
     const bicycleInfo = bicyclesData.map((bike, index) =>
-        `Rower ${index + 1}: ${bike.brand} ${bike.model || ''} (${bike.type || 'brak typu'})`
+        `${this.i18n.instant('transport_order.bicycle_form.bicycle_number')} ${index + 1}: ${bike.brand} ${bike.model || ''} (${bike.type || 'brak typu'})`
     ).join('\n');
 
     const finalPrice = this.getFinalPriceToSend();
@@ -425,15 +424,24 @@ export class TransportOrderFormComponent implements OnInit {
 
     this.transportOrderService.createGuestTransportOrder(transportOrder).subscribe({
       next: (response) => {
-        this.notificationService.success(`Zamówienie transportu zostało złożone pomyślnie!`);
+        this.notificationService.success(this.i18n.instant('transport_order.messages.order_success'));
         this.submitting = false;
-        // Zmiana: przekierowanie do nowego komponentu podsumowania
-        const orderIds = response.orderIds || [response.id];
-        this.router.navigate(['/ordersummary'], { queryParams: { orderIds: orderIds.join(',') } });
+        const orderIds = response.orderIds || (response.id ? [response.id] : []);
+        this.router.navigate([environment.links.orderSummary], { 
+          queryParams: { orderIds: orderIds.join(',') } 
+        });
       },
       error: (err) => {
         this.submitting = false;
-        const errorMessage = err.error?.message || 'Wystąpił błąd podczas składania zamówienia';
+        
+        let errorMessage: string;
+
+        if (err.error?.errors && Array.isArray(err.error.errors)) {
+          errorMessage = err.error.errors.join('\n');
+        } else {
+          errorMessage = err.error?.message || this.i18n.instant('transport_order.messages.order_error');
+        }
+
         this.notificationService.error(errorMessage);
       }
     });
@@ -445,17 +453,73 @@ export class TransportOrderFormComponent implements OnInit {
     return `${form.pickupStreet} ${form.pickupBuildingNumber}, ${form.pickupCity} ${form.pickupPostalCode || ''}`.trim();
   }
 
-  getBicyclesData(): any[] { return this.bicyclesArray.value || []; }
-  getSelectedBicyclesCount(): number { return this.getBicyclesData().length; }
-  goBack(): void { this.router.navigate(['/']); }
-  getBicycleTypes(): string[] { return ['Górski', 'Szosowy', 'Miejski', 'Trekkingowy', 'BMX', 'Elektryczny', 'Składany', 'Gravel', 'Cruiser', 'Inny']; }
-  getFrameMaterials(): string[] { return ['Aluminium', 'Stal', 'Carbon', 'Tytan', 'Stal chromowo-molibdenowa', 'Inny']; }
-  isFieldInvalid(fieldName: string, formGroup?: FormGroup): boolean { const form = formGroup || this.getCurrentForm(); const field = form.get(fieldName); return !!(field?.invalid && (field.dirty || field.touched)); }
-  isBicycleFieldInvalid(i: number, fieldName: string): boolean { const field = this.bicyclesArray.at(i)?.get(fieldName); return !!(field?.invalid && (field.dirty || field.touched)); }
-  getCurrentForm(): FormGroup { return this.currentStep === 1 ? this.bicyclesForm : this.contactAndTransportForm; }
-  isStepCompleted(step: number): boolean { return this.currentStep > step && this.isStepValid(step); }
-  isStepActive(step: number): boolean { return this.currentStep === step; }
-  isStepAccessible(step: number): boolean { return step <= this.getMaxAccessibleStep(); }
-  getStepTitle(step: number): string { return { 1: 'Dane rowerów', 2: 'Kontakt i transport', 3: 'Podsumowanie' }[step] || ''; }
-  getStepDescription(step: number): string { return { 1: 'Dodaj informacje o rowerach do transportu.', 2: 'Podaj dane kontaktowe i szczegóły odbioru.', 3: 'Sprawdź wszystkie dane przed wysłaniem.' }[step] || ''; }
+  getBicyclesData(): any[] {
+    return this.bicyclesArray.value || [];
+  }
+
+  getSelectedBicyclesCount(): number {
+    return this.getBicyclesData().length;
+  }
+
+  goBack(): void {
+    this.router.navigate([environment.links.homepage]);
+  }
+
+  getBicycleTypes(): string[] {
+    return this.i18n.instant('transport_order.bicycle_types') as string[];
+  }
+
+  getFrameMaterials(): string[] {
+    return this.i18n.instant('transport_order.frame_materials') as string[];
+  }
+
+  isFieldInvalid(fieldName: string, formGroup?: FormGroup): boolean {
+    const form = formGroup || this.getCurrentForm();
+    const field = form.get(fieldName);
+    return !!(field?.invalid && (field.dirty || field.touched));
+  }
+
+  isBicycleFieldInvalid(i: number, fieldName: string): boolean {
+    const field = this.bicyclesArray.at(i)?.get(fieldName);
+    return !!(field?.invalid && (field.dirty || field.touched));
+  }
+
+  getCurrentForm(): FormGroup {
+    return this.currentStep === 1 ? this.bicyclesForm : this.contactAndTransportForm;
+  }
+
+  isStepCompleted(step: number): boolean {
+    return this.currentStep > step && this.isStepValid(step);
+  }
+
+  isStepActive(step: number): boolean {
+    return this.currentStep === step;
+  }
+
+  isStepAccessible(step: number): boolean {
+    return step <= this.getMaxAccessibleStep();
+  }
+
+  getStepTitle(step: number): string {
+    const stepKeys: { [key: number]: string } = {
+      1: 'transport_order.steps.bicycle_data',
+      2: 'transport_order.steps.contact_transport',
+      3: 'transport_order.steps.summary'
+    };
+    return this.i18n.instant(stepKeys[step] || '');
+  }
+
+  getStepDescription(step: number): string {
+    const stepKeys: { [key: number]: string } = {
+      1: 'transport_order.step_descriptions.bicycle_data',
+      2: 'transport_order.step_descriptions.contact_transport',
+      3: 'transport_order.step_descriptions.summary'
+    };
+    return this.i18n.instant(stepKeys[step] || '');
+  }
+
+  // Translation helper for template
+  t(key: string, params?: any): string {
+    return this.i18n.instant(key, params);
+  }
 }

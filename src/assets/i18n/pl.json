@@ -1,0 +1,197 @@
+{
+  "transport_order": {
+    "page_title": "Zamówienie transportu roweru",
+    "loading": "Ładowanie danych...",
+    "steps": {
+      "bicycle_data": "Dane rowerów",
+      "contact_transport": "Kontakt i transport",
+      "summary": "Podsumowanie"
+    },
+    "step_descriptions": {
+      "bicycle_data": "Dodaj informacje o rowerach do transportu.",
+      "contact_transport": "Podaj dane kontaktowe i szczegóły odbioru.",
+      "summary": "Sprawdź wszystkie dane przed wysłaniem."
+    },
+    "service_info": {
+      "subtitle": "Serwis docelowy dla Twojego transportu",
+      "transport_to": "Transport do:",
+      "error_no_service": "Brak informacji o serwisie. Sprawdź link.",
+      "error_service_not_found": "Nie znaleziono serwisu o podanym ID",
+      "error_loading": "Błąd podczas ładowania danych serwisu"
+    },
+    "carbon_warning": {
+      "title": "Ważna informacja o transporcie",
+      "message": "Obsługa rowerów z ramą karbonową zostanie w pełni wprowadzona w 2026r. Aktualnie zamawiając transport dla roweru karbonowego, odpowiedzialność za potencjalne uszkodzenia w trakcie transportu pozostaje po stronie klienta. Dokładamy wszelkich starań, aby zapewnić najwyższą jakość usług, jednak obecnie nie jesteśmy w stanie zagwarantować specjalistycznych warunków transportu dla ram karbonowych i innych specjalnych rowerów."
+    },
+    "bicycle_form": {
+      "bicycle_number": "Rower",
+      "brand_label": "Marka roweru",
+      "brand_placeholder": "-- Wybierz markę --",
+      "brand_required": "Marka roweru jest wymagana",
+      "model_label": "Model roweru",
+      "model_placeholder": "np. Talon, Marlin, Rockhopper",
+      "model_min_length": "Model roweru musi mieć co najmniej 2 znaki",
+      "type_label": "Typ roweru",
+      "type_placeholder": "-- Wybierz typ --",
+      "type_required": "Typ roweru jest wymagany",
+      "frame_material_label": "Materiał ramy",
+      "frame_material_placeholder": "-- Wybierz materiał --",
+      "description_label": "Dodatkowe informacje o rowerze",
+      "description_placeholder": "Dodatkowe informacje o rowerze, usterki, specjalne wymagania...",
+      "remove_bicycle": "Usuń rower",
+      "add_bicycle": "Dodaj kolejny rower"
+    },
+    "selection_summary": {
+      "title": "Podsumowanie wyboru:",
+      "service_destination": "Serwis docelowy:",
+      "bicycle_count": "Liczba rowerów:",
+      "transport_cost": "Koszt transportu:",
+      "to_be_determined": "Do ustalenia",
+      "will_contact": "Skontaktujemy się z Tobą w sprawie kosztu transportu",
+      "cost_for_bikes": "Koszt za"
+    },
+    "contact_form": {
+      "section_title": "Dane kontaktowe",
+      "email_label": "Adres email",
+      "email_placeholder": "jan.kowalski@example.com",
+      "email_invalid": "Wprowadź poprawny adres email",
+      "phone_label": "Numer telefonu",
+      "phone_placeholder": "123456789",
+      "phone_invalid": "Wprowadź poprawny numer telefonu (9 cyfr)"
+    },
+    "transport_form": {
+      "section_title": "Szczegóły transportu",
+      "pickup_date_label": "Data odbioru",
+      "pickup_date_info": "Odbiór roweru dostępny od niedzieli do czwartku w godzinach 18:00-22:00.",
+      "pickup_date_required": "Wybierz datę odbioru",
+      "pickup_date_invalid_day": "Odbiór możliwy tylko od niedzieli do czwartku",
+      "address_section_title": "Adres odbioru",
+      "street_label": "Ulica",
+      "street_placeholder": "np. Floriańska",
+      "street_required": "Ulica jest wymagana",
+      "building_number_label": "Numer budynku",
+      "building_number_placeholder": "np. 15A",
+      "building_number_required": "Numer budynku jest wymagany",
+      "city_label": "Miasto",
+      "city_placeholder": "-- Wybierz miasto --",
+      "city_loading": "Ładowanie miast...",
+      "city_required": "Miasto jest wymagane",
+      "postal_code_label": "Kod pocztowy",
+      "postal_code_placeholder": "np. 31-000 (opcjonalne)",
+      "postal_code_invalid": "Kod pocztowy musi być w formacie XX-XXX",
+      "additional_notes_label": "Dodatkowe informacje",
+      "additional_notes_placeholder": "Informacje o preferowanych godzinach odbioru, dodatkowe wskazówki dla kuriera, kod do bramy, piętro, itp.",
+      "additional_notes_help": "Opcjonalne: Podaj wszelkie informacje, które ułatwią kuriemu odbiór rowerów"
+    },
+    "summary": {
+      "page_title": "Podsumowanie zamówienia transportu",
+      "bicycles_list": "Lista rowerów",
+      "contact_data": "Dane kontaktowe",
+      "email": "Email:",
+      "phone": "Telefon:",
+      "transport_details": "Szczegóły transportu",
+      "pickup_date": "Data odbioru:",
+      "pickup_address": "Adres odbioru:",
+      "target_service": "Serwis docelowy:",
+      "service_address": "Adres serwisu:",
+      "additional_info": "Dodatkowe informacje:",
+      "transport_cost": "Koszt transportu:",
+      "transport_cost_details": "Transport w obie strony dla",
+      "will_contact_details": "Skontaktujemy się w sprawie szczegółów",
+      "bikes_suffix_1": "rowera",
+      "bikes_suffix_2_4": "rowerów",
+      "bikes_suffix_5_plus": "rowerów"
+    },
+    "discount": {
+      "section_title": "Masz kupon rabatowy?",
+      "coupon_placeholder": "Wpisz kod kuponu",
+      "apply_button": "Zastosuj",
+      "select_date_first": "Proszę najpierw wybrać datę odbioru w kroku 2.",
+      "coupon_applied": "Kupon \"{coupon}\" został zastosowany!",
+      "coupon_invalid": "Kupon jest niepoprawny lub stracił ważność.",
+      "coupon_error": "Wystąpił błąd podczas sprawdzania kuponu. Spróbuj ponownie."
+    },
+    "payment_info": {
+      "title": "Metody płatności",
+      "description": "Płatność za transport jest możliwa <strong>gotówką lub BLIKIEM</strong> przy odbiorze rowerów przez kuriera."
+    },
+    "terms": {
+      "accept_label": "Akceptuję",
+      "terms_link": "regulamin serwisu",
+      "and": "oraz",
+      "privacy_link": "politykę prywatności",
+      "required": "Musisz zaakceptować regulamin, aby złożyć zamówienie"
+    },
+    "navigation": {
+      "back_to_map": "Wróć do mapy",
+      "previous_step": "Poprzedni krok",
+      "next_step": "Następny krok",
+      "submit_order": "Zamów transport",
+      "processing": "Przetwarzanie..."
+    },
+    "validation": {
+      "fill_required_fields": "Wypełnij poprawnie wszystkie wymagane pola w tym kroku",
+      "fill_all_and_accept": "Wypełnij poprawnie wszystkie wymagane pola i zaakceptuj regulamin",
+      "no_service_selected": "Nie wybrano serwisu docelowego",
+      "slots_not_available": "Brak wystarczającej liczby slotów na wybraną datę. Dostępnych rowerów:",
+      "slots_available": "Sloty dostępne!",
+      "slots_check_error": "Nie można sprawdzić dostępności slotów. Spróbuj ponownie."
+    },
+    "messages": {
+      "order_success": "Zamówienie transportu zostało złożone pomyślnie!",
+      "order_error": "Wystąpił błąd podczas składania zamówienia"
+    },
+    "bicycle_types": [
+      "Górski",
+      "Szosowy",
+      "Miejski",
+      "Trekkingowy",
+      "BMX",
+      "Elektryczny",
+      "Składany",
+      "Gravel",
+      "Cruiser",
+      "Inny"
+    ],
+    "frame_materials": [
+      "Aluminium",
+      "Stal",
+      "Carbon",
+      "Tytan",
+      "Stal chromowo-molibdenowa",
+      "Inny"
+    ]
+  },
+  "order_summary": {
+    "page_title": "Zamówienie złożone pomyślnie! 🎉",
+    "description": "Twoje zamówienie zostało przyjęte. Poniżej znajdziesz jego podsumowanie.",
+    "countdown": "Zostaniesz automatycznie przekierowany na stronę główną za <b>{seconds}</b> sekund.",
+    "summary_title": "Podsumowanie zamówienia",
+    "order_number": "Zamówienie",
+    "bicycle_count": "Liczba rowerów:",
+    "bicycles_label": "Rowery:",
+    "pickup_address": "Adres odbioru:",
+    "delivery_address": "Adres dostawy:",
+    "pickup_date": "Data odbioru:",
+    "contact_email": "Email kontaktowy:",
+    "transport_price": "Cena transportu:",
+    "payment_info_title": "Informacja o płatności:",
+    "payment_info_text": "Płatność za transport zostanie zrealizowana gotówką lub BLIKIEM przy odbiorze rowerów przez kuriera.",
+    "home_button": "Wróć na stronę główną",
+    "no_summary": "Nie udało się wyświetlić podsumowania zamówienia.",
+    "no_order_ids": "Brak identyfikatorów zamówień.",
+    "loading": "Przygotowywanie podsumowania...",
+    "error": "Wystąpił błąd podczas pobierania podsumowania zamówienia."
+  },
+  "common": {
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "success": "Sukces",
+    "cancel": "Anuluj",
+    "confirm": "Potwierdź",
+    "close": "Zamknij",
+    "save": "Zapisz",
+    "delete": "Usuń",
+    "edit": "Edytuj"
+  }
+}

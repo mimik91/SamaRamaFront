@@ -2,108 +2,35 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
-import { environment } from '../core/api-config';
-
-export interface TransportOrderRequest {
-  bicycleIds?: number[]; // dla zalogowanych
-  bicycles?: Array<{ // dla gości
-    brand: string;
-    model: string;
-    additionalInfo?: string;
-  }>;
-  
-  // === TRANSPORT ===
-  pickupDate: string;
-  pickupAddress: string;
-  pickupLatitude?: number;
-  pickupLongitude?: number;
-  
-  deliveryAddress?: string; // opcjonalne - może być z targetService
-  deliveryLatitude?: number;
-  deliveryLongitude?: number;
-  
-  targetServiceId: number; // zewnętrzny serwis
-  transportPrice?: number;
-  
-  pickupTimeFrom?: string;
-  pickupTimeTo?: string;
-  estimatedTime?: number;
-  transportNotes?: string;
-  additionalNotes?: string;
-  
-  // === DANE GOŚCI ===
-  clientEmail?: string;
-  clientPhone?: string;
-  clientName?: string;
-  city?: string;
-}
-
-export interface GuestTransportOrderRequest {
-  // USUNIĘTE - już nie potrzebne, używamy TransportOrderRequest
-}
-
-export interface TransportOrderResponse {
-  id: number;
-  orderType: string;
-  bicycleId?: number;
-  bicycleBrand?: string;
-  bicycleModel?: string;
-  clientEmail: string;
-  clientPhone?: string;
-  clientName?: string;
-  pickupDate: string;
-  pickupAddress: string;
-  deliveryAddress: string;
-  price: number;
-  orderDate: string;
-  additionalNotes?: string;
-  status: string;
-  serviceNotes?: string;
-  lastModifiedBy?: string;
-  lastModifiedDate?: string;
-}
-
-export interface BikeService {
-  id: number;
-  name: string;
-  street?: string;
-  city?: string;
-  latitude?: number;
-  longitude?: number;
-  phoneNumber?: string;
-  email?: string;
-}
-
-export interface TransportOrderSummaryDto {
-  bicycleIds?: number[];
-  bicycles?: Array<{
-    brand: string;
-    model: string;
-  }>;
-  pickupDate: string;
-  pickupAddress: string;
-  deliveryAddress?: string;
-  transportPrice: number;
-}
+import { environment } from '../environments/environments';
+import { 
+  TransportOrderRequest, 
+  TransportOrderResponse, 
+  TransportOrderSummaryDto,
+  TransportOrderCreateResponse 
+} from '../shared/models/transport-order.model';
+import { BikeService } from '../shared/models/bike-service.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TransportOrderService {
-  private apiUrl = `${environment.apiUrl}/guest-orders/transport`;
-  // DODANY NOWY ADRES URL DLA RABATÓW
-  private discountApiUrl = `${environment.apiUrl}/guest-orders/discounts`; 
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.guestOrders.transport}`;
+  private discountApiUrl = `${environment.apiUrl}${environment.endpoints.guestOrders.discounts}`;
   private http = inject(HttpClient);
 
   constructor() { }
 
-  createGuestTransportOrder(orderData: any): Observable<any> {
+  /**
+   * Tworzy zamówienie transportowe dla gościa
+   */
+  createGuestTransportOrder(orderData: any): Observable<TransportOrderCreateResponse> {
     console.log('Creating guest transport order with data:', orderData);
-    return this.http.post<any>(this.apiUrl, orderData).pipe(
-        catchError(error => {
-          console.error('Error creating guest transport order:', error);
-          return throwError(() => error);
-        })
+    return this.http.post<TransportOrderCreateResponse>(this.apiUrl, orderData).pipe(
+      catchError(error => {
+        console.error('Error creating guest transport order:', error);
+        return throwError(() => error);
+      })
     );
   }
 
@@ -119,17 +46,23 @@ export class TransportOrderService {
     );
   }
 
+  /**
+   * Sprawdza dostępność slotów na daną datę
+   */
   checkSlotAvailability(date: string, bikesCount: number): Observable<any> {
     const params = new HttpParams()
-        .set('date', date)
-        .set('bikesCount', bikesCount.toString());
-    return this.http.get(`${environment.apiUrl}/service-slots/check-availability`, { params }).pipe(
-        catchError(error => {
-            console.error('Error checking slot availability:', error);
-            return throwError(() => error);
-        })
+      .set('date', date)
+      .set('bikesCount', bikesCount.toString());
+    
+    const url = `${environment.apiUrl}${environment.endpoints.serviceSlots.checkAvailability}`;
+    
+    return this.http.get(url, { params }).pipe(
+      catchError(error => {
+        console.error('Error checking slot availability:', error);
+        return throwError(() => error);
+      })
     );
-}
+  }
 
   /**
    * Pobiera szczegóły konkretnego zamówienia transportowego
@@ -230,21 +163,33 @@ export class TransportOrderService {
     );
   }
 
+  /**
+   * Oblicza koszt transportu dla konkretnej liczby rowerów
+   */
   calculateTransportCostForBikes(bikesCount: number, serviceId?: number): Observable<any> {
-  const request = {
-    bicycleCount: bikesCount,
-    targetServiceId: serviceId
-  };
-  
-  return this.http.post<any>(`${environment.apiUrl}/guest-orders/calculate-transport-cost`, request).pipe(
-    catchError(error => {
-      console.error('Error calculating transport cost:', error);
-      return throwError(() => error);
-    })
-  );
-}
+    const request = {
+      bicycleCount: bikesCount,
+      targetServiceId: serviceId
+    };
+    
+    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.calculateTransportCost}`;
+    
+    return this.http.post<any>(url, request).pipe(
+      catchError(error => {
+        console.error('Error calculating transport cost:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 
-checkDiscount(data: { coupon: string; currentTransportPrice: number; orderDate: string; }): Observable<{ newPrice: number }> {
+  /**
+   * Sprawdza i aplikuje kupon rabatowy
+   */
+  checkDiscount(data: { 
+    coupon: string; 
+    currentTransportPrice: number; 
+    orderDate: string; 
+  }): Observable<{ newPrice: number }> {
     return this.http.post<{ newPrice: number }>(this.discountApiUrl, data).pipe(
       catchError(error => {
         console.error('Error checking discount coupon:', error);
@@ -253,6 +198,9 @@ checkDiscount(data: { coupon: string; currentTransportPrice: number; orderDate: 
     );
   }
 
+  /**
+   * Pobiera podsumowanie zamówień na podstawie ich ID
+   */
   getOrdersSummary(orderIds: number[]): Observable<TransportOrderSummaryDto[]> {
     const requestBody = { orderIds };
     return this.http.post<TransportOrderSummaryDto[]>(`${this.apiUrl}/summary`, requestBody).pipe(
@@ -262,7 +210,4 @@ checkDiscount(data: { coupon: string; currentTransportPrice: number; orderDate: 
       })
     );
   }
-
-  
-
 }

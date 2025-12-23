@@ -1,11 +1,11 @@
 <!-- src/app/transport-orders/transport-order-form.component.html -->
 <div class="transport-order-container">
-  <h1>Zamówienie transportu roweru</h1>
+  <h1>{{ t('transport_order.page_title') }}</h1>
   
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-message">
     <div class="loading-spinner"></div>
-    <p>Ładowanie danych...</p>
+    <p>{{ t('transport_order.loading') }}</p>
   </div>
 
   <!-- Error State -->
@@ -47,14 +47,14 @@
 
   <!-- Service Info Card -->
   <div class="service-info-card-enhanced" *ngIf="selectedServiceInfo.name && !loading && !error">
-  <div class="service-header">
-    <div class="service-icon">🏪</div>
-    <div class="service-main-info">
-      <h2 class="service-title">{{ selectedServiceInfo.name }}</h2>
-      <p class="service-subtitle">Serwis docelowy dla Twojego transportu</p>
+    <div class="service-header">
+      <div class="service-icon">🏪</div>
+      <div class="service-main-info">
+        <h2 class="service-title">{{ selectedServiceInfo.name }}</h2>
+        <p class="service-subtitle">{{ t('transport_order.service_info.subtitle') }}</p>
+      </div>
     </div>
   </div>
-</div>
 
   <!-- Main Form Content -->
   <div *ngIf="!loading && !error" class="step-content">
@@ -65,8 +65,8 @@
         <h2>{{ getStepTitle(1) }}</h2>
         <p class="step-description">{{ getStepDescription(1) }}</p>
         <div class="service-reminder" *ngIf="selectedServiceInfo.name">
-      <strong>Transport do:</strong> {{ selectedServiceInfo.name }}
-    </div>
+          <strong>{{ t('transport_order.service_info.transport_to') }}</strong> {{ selectedServiceInfo.name }}
+        </div>
       </div>
 
       <!-- Ostrzeżenie o rowerach karbonowych -->
@@ -74,15 +74,8 @@
         <div class="warning-content">
           <div class="warning-icon">⚠️</div>
           <div class="warning-text">
-            <h4>Ważna informacja o transporcie</h4>
-            <p>
-              Obsługa rowerów z ramą karbonową zostanie w pełni wprowadzona w 2026r. 
-              Aktualnie zamawiając transport dla roweru karbonowego, odpowiedzialność za 
-              potencjalne uszkodzenia w trakcie transportu pozostaje po stronie klienta. 
-              Dokładamy wszelkich starań, aby zapewnić najwyższą jakość usług, jednak 
-              obecnie nie jesteśmy w stanie zagwarantować specjalistycznych warunków 
-              transportu dla ram karbonowych i innych specjalnych rowerów.
-            </p>
+            <h4>{{ t('transport_order.carbon_warning.title') }}</h4>
+            <p>{{ t('transport_order.carbon_warning.message') }}</p>
           </div>
         </div>
       </div>
@@ -95,13 +88,13 @@
             class="bicycle-form-card"
           >
             <div class="bicycle-card-header">
-              <h4>Rower {{ i + 1 }}</h4>
+              <h4>{{ t('transport_order.bicycle_form.bicycle_number') }} {{ i + 1 }}</h4>
               <button 
                 type="button" 
                 class="remove-bicycle-btn" 
                 (click)="removeBicycleFromForm(i)"
                 *ngIf="bicyclesArray.length > 1"
-                title="Usuń rower"
+                [title]="t('transport_order.bicycle_form.remove_bicycle')"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -112,72 +105,44 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label [for]="'brand-' + i">Marka roweru *</label>
+                <label [for]="'brand-' + i">{{ t('transport_order.bicycle_form.brand_label') }} *</label>
                 <select 
                   [id]="'brand-' + i"
                   formControlName="brand"
                   [class.is-invalid]="isBicycleFieldInvalid(i, 'brand')"
                   [attr.disabled]="loadingBrands ? '' : null"
                 >
-                  <option value="" disabled>-- Wybierz markę --</option>
-                  <option *ngIf="loadingBrands" value="" disabled>Ładowanie...</option>
+                  <option value="" disabled>{{ t('transport_order.bicycle_form.brand_placeholder') }}</option>
+                  <option *ngIf="loadingBrands" value="" disabled>{{ t('common.loading') }}</option>
                   <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
                 </select>
                 <div *ngIf="isBicycleFieldInvalid(i, 'brand')" class="error-message">
-                  Marka roweru jest wymagana
+                  {{ t('transport_order.bicycle_form.brand_required') }}
                 </div>
               </div>
 
               <div class="form-group">
-                <label [for]="'model-' + i">Model roweru</label>
+                <label [for]="'model-' + i">{{ t('transport_order.bicycle_form.model_label') }}</label>
                 <input 
                   type="text" 
                   [id]="'model-' + i"
                   formControlName="model"
                   [class.is-invalid]="isBicycleFieldInvalid(i, 'model')"
-                  placeholder="np. Talon, Marlin, Rockhopper"
+                  [placeholder]="t('transport_order.bicycle_form.model_placeholder')"
                 >
                 <div *ngIf="isBicycleFieldInvalid(i, 'model')" class="error-message">
-                  Model roweru musi mieć co najmniej 2 znaki
+                  {{ t('transport_order.bicycle_form.model_min_length') }}
                 </div>
               </div>
             </div>
 
-            <!-- <div class="form-row">
-              <div class="form-group">
-                <label [for]="'type-' + i">Typ roweru</label>
-                <select 
-                  [id]="'type-' + i"
-                  formControlName="type"
-                  [class.is-invalid]="isBicycleFieldInvalid(i, 'type')"
-                >
-                  <option value="">-- Wybierz typ --</option>
-                  <option *ngFor="let type of getBicycleTypes()" [value]="type">{{ type }}</option>
-                </select>
-                <div *ngIf="isBicycleFieldInvalid(i, 'type')" class="error-message">
-                  Typ roweru jest wymagany
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label [for]="'frameMaterial-' + i">Materiał ramy</label>
-                <select 
-                  [id]="'frameMaterial-' + i"
-                  formControlName="frameMaterial"
-                >
-                  <option value="">-- Wybierz materiał --</option>
-                  <option *ngFor="let material of getFrameMaterials()" [value]="material">{{ material }}</option>
-                </select>
-              </div>
-            </div> -->
-
             <div class="form-group">
-              <label [for]="'description-' + i">Dodatkowe informacje o rowerze</label>
+              <label [for]="'description-' + i">{{ t('transport_order.bicycle_form.description_label') }}</label>
               <textarea 
                 [id]="'description-' + i"
                 formControlName="description"
                 rows="3"
-                placeholder="Dodatkowe informacje o rowerze, usterki, specjalne wymagania..."
+                [placeholder]="t('transport_order.bicycle_form.description_placeholder')"
               ></textarea>
             </div>
           </div>
@@ -188,35 +153,30 @@
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
-          Dodaj kolejny rower
+          {{ t('transport_order.bicycle_form.add_bicycle') }}
         </button>
 
         <!-- Selection Summary -->
         <div class="selection-summary" *ngIf="getSelectedBicyclesCount() > 0">
-          <h4>Podsumowanie wyboru:</h4>
+          <h4>{{ t('transport_order.selection_summary.title') }}</h4>
           <div class="summary-item service-destination">
             <span class="service-icon-small">🏪</span>
-            Serwis docelowy: <strong>{{ selectedServiceInfo.name }}</strong>
+            {{ t('transport_order.selection_summary.service_destination') }} <strong>{{ selectedServiceInfo.name }}</strong>
           </div>
           <div class="summary-item">
-            Liczba rowerów: <strong>{{ getSelectedBicyclesCount() }}</strong>
+            {{ t('transport_order.selection_summary.bicycle_count') }} <strong>{{ getSelectedBicyclesCount() }}</strong>
           </div>
           <div class="summary-item">
             <span *ngIf="getEstimatedTransportCost() > 0">
-              Koszt transportu: <strong>{{ getEstimatedTransportCost() }} zł</strong>
+              {{ t('transport_order.selection_summary.transport_cost') }} <strong>{{ getEstimatedTransportCost() }} zł</strong>
             </span>
             <span *ngIf="getEstimatedTransportCost() === 0">
-              Koszt transportu: <strong>Do ustalenia</strong>
+              {{ t('transport_order.selection_summary.transport_cost') }} <strong>{{ t('transport_order.selection_summary.to_be_determined') }}</strong>
             </span>
           </div>
           <div class="summary-item" *ngIf="getEstimatedTransportCost() === 0">
             <small style="color: #6c757d; font-style: italic;">
-              Skontaktujemy się z Tobą w sprawie kosztu transportu
-            </small>
-          </div>
-          <div class="summary-item" *ngIf="getSelectedBicyclesCount() > 1">
-            <small style="color: #28a745; font-style: italic;">
-              Koszt za {{ getSelectedBicyclesCount() }} rower{{ getSelectedBicyclesCount() > 1 ? 'ów' : 'a' }}
+              {{ t('transport_order.selection_summary.will_contact') }}
             </small>
           </div>
         </div>
@@ -229,41 +189,41 @@
         <h2>{{ getStepTitle(2) }}</h2>
         <p class="step-description">{{ getStepDescription(2) }}</p>
         <div class="service-reminder" *ngIf="selectedServiceInfo.name">
-      <strong>Transport do:</strong> {{ selectedServiceInfo.name }}
-    </div>
+          <strong>{{ t('transport_order.service_info.transport_to') }}</strong> {{ selectedServiceInfo.name }}
+        </div>
       </div>
 
       <form [formGroup]="contactAndTransportForm">
         <!-- Sekcja danych kontaktowych -->
         <div class="contact-section">
-          <h3>Dane kontaktowe</h3>
+          <h3>{{ t('transport_order.contact_form.section_title') }}</h3>
           <div class="form-row">
             <div class="form-group">
-              <label for="clientEmail">Adres email *</label>
+              <label for="clientEmail">{{ t('transport_order.contact_form.email_label') }} *</label>
               <input 
                 type="email" 
                 id="clientEmail" 
                 formControlName="clientEmail"
                 [class.is-invalid]="isFieldInvalid('clientEmail')"
-                placeholder="jan.kowalski@example.com"
+                [placeholder]="t('transport_order.contact_form.email_placeholder')"
               >
               <div *ngIf="isFieldInvalid('clientEmail')" class="error-message">
-                Wprowadź poprawny adres email
+                {{ t('transport_order.contact_form.email_invalid') }}
               </div>
             </div>
             
             <div class="form-group">
-              <label for="clientPhone">Numer telefonu *</label>
+              <label for="clientPhone">{{ t('transport_order.contact_form.phone_label') }} *</label>
               <input 
                 type="tel" 
                 id="clientPhone" 
                 formControlName="clientPhone"
                 [class.is-invalid]="isFieldInvalid('clientPhone')"
-                placeholder="123456789"
+                [placeholder]="t('transport_order.contact_form.phone_placeholder')"
                 maxlength="9"
               >
               <div *ngIf="isFieldInvalid('clientPhone')" class="error-message">
-                Wprowadź poprawny numer telefonu (9 cyfr)
+                {{ t('transport_order.contact_form.phone_invalid') }}
               </div>
             </div>
           </div>
@@ -271,11 +231,11 @@
 
         <!-- Sekcja szczegółów transportu -->
         <div class="transport-section">
-          <h3>Szczegóły transportu</h3>
+          <h3>{{ t('transport_order.transport_form.section_title') }}</h3>
           <div class="form-group">
-            <label for="pickupDate">Data odbioru *</label>
+            <label for="pickupDate">{{ t('transport_order.transport_form.pickup_date_label') }} *</label>
             <div class="date-info">
-              Odbiór roweru dostępny od niedzieli do czwartku w godzinach 18:00-22:00.
+              {{ t('transport_order.transport_form.pickup_date_info') }}
             </div>
             <input 
               type="date" 
@@ -286,97 +246,101 @@
               [max]="maxDate"
             >
             <div *ngIf="isFieldInvalid('pickupDate')" class="error-message">
-              <span *ngIf="contactAndTransportForm.get('pickupDate')?.hasError('required')">Wybierz datę odbioru</span>
-              <span *ngIf="contactAndTransportForm.get('pickupDate')?.hasError('invalidDay')">Odbiór możliwy tylko od niedzieli do czwartku</span>
+              <span *ngIf="contactAndTransportForm.get('pickupDate')?.hasError('required')">
+                {{ t('transport_order.transport_form.pickup_date_required') }}
+              </span>
+              <span *ngIf="contactAndTransportForm.get('pickupDate')?.hasError('invalidDay')">
+                {{ t('transport_order.transport_form.pickup_date_invalid_day') }}
+              </span>
             </div>
           </div>
           
           <!-- ROZBITY ADRES -->
           <div class="address-section">
-            <h4>Adres odbioru *</h4>
+            <h4>{{ t('transport_order.transport_form.address_section_title') }} *</h4>
             
             <div class="form-row">
               <div class="form-group">
-                <label for="pickupStreet">Ulica *</label>
+                <label for="pickupStreet">{{ t('transport_order.transport_form.street_label') }} *</label>
                 <input 
                   type="text" 
                   id="pickupStreet" 
                   formControlName="pickupStreet"
                   [class.is-invalid]="isFieldInvalid('pickupStreet')"
-                  placeholder="np. Floriańska"
+                  [placeholder]="t('transport_order.transport_form.street_placeholder')"
                 >
                 <div *ngIf="isFieldInvalid('pickupStreet')" class="error-message">
-                  Ulica jest wymagana
+                  {{ t('transport_order.transport_form.street_required') }}
                 </div>
               </div>
               
               <div class="form-group">
-                <label for="pickupBuildingNumber">Numer budynku *</label>
+                <label for="pickupBuildingNumber">{{ t('transport_order.transport_form.building_number_label') }} *</label>
                 <input 
                   type="text" 
                   id="pickupBuildingNumber" 
                   formControlName="pickupBuildingNumber"
                   [class.is-invalid]="isFieldInvalid('pickupBuildingNumber')"
-                  placeholder="np. 15A"
+                  [placeholder]="t('transport_order.transport_form.building_number_placeholder')"
                 >
                 <div *ngIf="isFieldInvalid('pickupBuildingNumber')" class="error-message">
-                  Numer budynku jest wymagany
+                  {{ t('transport_order.transport_form.building_number_required') }}
                 </div>
               </div>
             </div>
             
             <div class="form-row">
               <div class="form-group">
-                <label for="pickupCity">Miasto *</label>
+                <label for="pickupCity">{{ t('transport_order.transport_form.city_label') }} *</label>
                 <select 
                   id="pickupCity" 
                   formControlName="pickupCity"
                   [class.is-invalid]="isFieldInvalid('pickupCity')"
                   [attr.disabled]="loadingCities ? '' : null"
                 >
-                  <option value="" disabled>-- Wybierz miasto --</option>
-                  <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
+                  <option value="" disabled>{{ t('transport_order.transport_form.city_placeholder') }}</option>
+                  <option *ngIf="loadingCities" value="" disabled>{{ t('transport_order.transport_form.city_loading') }}</option>
                   <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
                 </select>
                 <div *ngIf="isFieldInvalid('pickupCity')" class="error-message">
-                  Miasto jest wymagane
+                  {{ t('transport_order.transport_form.city_required') }}
                 </div>
               </div>
               
               <div class="form-group">
-                <label for="pickupPostalCode">Kod pocztowy</label>
+                <label for="pickupPostalCode">{{ t('transport_order.transport_form.postal_code_label') }}</label>
                 <input 
                   type="text" 
                   id="pickupPostalCode" 
                   formControlName="pickupPostalCode"
                   [class.is-invalid]="isFieldInvalid('pickupPostalCode')"
-                  placeholder="np. 31-000 (opcjonalne)"
+                  [placeholder]="t('transport_order.transport_form.postal_code_placeholder')"
                   pattern="\d{2}-\d{3}"
                 >
                 <div *ngIf="isFieldInvalid('pickupPostalCode')" class="error-message">
-                  Kod pocztowy musi być w formacie XX-XXX
+                  {{ t('transport_order.transport_form.postal_code_invalid') }}
                 </div>
               </div>
             </div>
           </div>
           
           <div class="form-group">
-            <label for="additionalNotes">Dodatkowe informacje</label>
+            <label for="additionalNotes">{{ t('transport_order.transport_form.additional_notes_label') }}</label>
             <textarea 
               id="additionalNotes" 
               formControlName="additionalNotes"
               rows="4"
-              placeholder="Informacje o preferowanych godzinach odbioru, dodatkowe wskazówki dla kuriera, kod do bramy, piętro, itp."
+              [placeholder]="t('transport_order.transport_form.additional_notes_placeholder')"
             ></textarea>
             <div class="help-text">
-              Opcjonalne: Podaj wszelkie informacje, które ułatwią kuriemu odbiór rowerów
+              {{ t('transport_order.transport_form.additional_notes_help') }}
             </div>
           </div>
         </div>
       </form>
     </div>
 
-    <!-- KROK 3: Podsumowanie -->
+    <!-- KROK 3: Podsumowanie - TO BRAKOWAŁO! -->
     <div *ngIf="currentStep === 3" class="form-section">
       <div class="step-header">
         <h2>{{ getStepTitle(3) }}</h2>
@@ -384,20 +348,18 @@
       </div>
 
       <div class="order-summary">
-        <h3>Podsumowanie zamówienia transportu</h3>
+        <h3>{{ t('transport_order.summary.page_title') }}</h3>
         
         <!-- Lista rowerów -->
         <div class="summary-section" *ngIf="getBicyclesData().length > 0">
-          <h4>Lista rowerów ({{ getSelectedBicyclesCount() }}):</h4>
+          <h4>{{ t('transport_order.summary.bicycles_list') }} ({{ getSelectedBicyclesCount() }}):</h4>
           <div class="summary-bikes">
             <div *ngFor="let bicycleData of getBicyclesData(); let i = index" class="summary-bike">
               <span class="bike-index">{{ i + 1 }}.</span>
               <span class="bike-name">
                 {{ bicycleData.brand }}
                 <span *ngIf="bicycleData.model"> {{ bicycleData.model }}</span>
-                <span *ngIf="bicycleData.type"> ({{ bicycleData.type }})</span>
               </span>
-              <div *ngIf="bicycleData.frameMaterial" class="bike-detail">Rama: {{ bicycleData.frameMaterial }}</div>
               <div *ngIf="bicycleData.description" class="bike-description">{{ bicycleData.description }}</div>
             </div>
           </div>
@@ -405,14 +367,14 @@
         
         <!-- Dane kontaktowe -->
         <div class="summary-section">
-          <h4>Dane kontaktowe:</h4>
+          <h4>{{ t('transport_order.summary.contact_data') }}</h4>
           <div class="summary-details">
             <div class="summary-row">
-              <span class="label">Email:</span>
+              <span class="label">{{ t('transport_order.summary.email') }}</span>
               <span class="value">{{ contactAndTransportForm.get('clientEmail')?.value }}</span>
             </div>
             <div class="summary-row">
-              <span class="label">Telefon:</span>
+              <span class="label">{{ t('transport_order.summary.phone') }}</span>
               <span class="value">{{ contactAndTransportForm.get('clientPhone')?.value }}</span>
             </div>
           </div>
@@ -420,26 +382,26 @@
         
         <!-- Szczegóły transportu -->
         <div class="summary-section">
-          <h4>Szczegóły transportu:</h4>
+          <h4>{{ t('transport_order.summary.transport_details') }}</h4>
           <div class="summary-details">
             <div class="summary-row">
-              <span class="label">Data odbioru:</span>
+              <span class="label">{{ t('transport_order.summary.pickup_date') }}</span>
               <span class="value">{{ contactAndTransportForm.get('pickupDate')?.value | date:'dd.MM.yyyy' }}</span>
             </div>
             <div class="summary-row">
-              <span class="label">Adres odbioru:</span>
+              <span class="label">{{ t('transport_order.summary.pickup_address') }}</span>
               <span class="value">{{ getFullPickupAddress() }}</span>
             </div>
             <div class="summary-row">
-              <span class="label">Serwis docelowy:</span>
+              <span class="label">{{ t('transport_order.summary.target_service') }}</span>
               <span class="value">{{ selectedServiceInfo.name }}</span>
             </div>
             <div class="summary-row">
-              <span class="label">Adres serwisu:</span>
+              <span class="label">{{ t('transport_order.summary.service_address') }}</span>
               <span class="value">{{ selectedServiceInfo.address }}</span>
             </div>
             <div class="summary-row" *ngIf="contactAndTransportForm.get('additionalNotes')?.value">
-              <span class="label">Dodatkowe informacje:</span>
+              <span class="label">{{ t('transport_order.summary.additional_info') }}</span>
               <span class="value">{{ contactAndTransportForm.get('additionalNotes')?.value }}</span>
             </div>
           </div>
@@ -448,7 +410,7 @@
         <!-- Koszt -->
         <div class="summary-total">
           <div class="total-row">
-            <span class="total-label">Koszt transportu:</span>
+            <span class="total-label">{{ t('transport_order.summary.transport_cost') }}</span>
             <div>
               <span class="total-price" [class.original-price]="finalTransportPrice !== null">
                 {{ getEstimatedTransportCost() }} zł
@@ -459,19 +421,22 @@
             </div>
           </div>
           <div class="total-details">
-            <span *ngIf="getEstimatedTransportCost() > 0">Transport w obie strony dla {{ getSelectedBicyclesCount() }} rower{{ getSelectedBicyclesCount() > 1 ? 'ów' : 'a' }}</span>
-            <span *ngIf="getEstimatedTransportCost() === 0">Skontaktujemy się w sprawie szczegółów</span>
+            <span *ngIf="getEstimatedTransportCost() > 0">
+              {{ t('transport_order.summary.transport_cost_details') }} {{ getSelectedBicyclesCount() }} {{ getSelectedBicyclesCount() === 1 ? t('transport_order.summary.bikes_suffix_1') : t('transport_order.summary.bikes_suffix_2_4') }}
+            </span>
+            <span *ngIf="getEstimatedTransportCost() === 0">{{ t('transport_order.summary.will_contact_details') }}</span>
           </div>
         </div>
 
+        <!-- Sekcja rabatu -->
         <div class="discount-section">
-          <h4>Masz kupon rabatowy?</h4>
+          <h4>{{ t('transport_order.discount.section_title') }}</h4>
           <div class="discount-form">
             <div class="form-group">
               <input 
                 type="text" 
                 [formControl]="discountCouponControl"
-                placeholder="Wpisz kod kuponu"
+                [placeholder]="t('transport_order.discount.coupon_placeholder')"
                 [attr.aria-invalid]="isCouponInvalid"
               >
             </div>
@@ -481,7 +446,7 @@
               (click)="applyDiscountCoupon()"
               [disabled]="isApplyingCoupon || !discountCouponControl.value"
             >
-              <span *ngIf="!isApplyingCoupon">Zastosuj</span>
+              <span *ngIf="!isApplyingCoupon">{{ t('transport_order.discount.apply_button') }}</span>
               <span *ngIf="isApplyingCoupon" class="loading-spinner-small"></span>
             </button>
           </div>
@@ -490,41 +455,41 @@
           </div>
         </div>
 
+        <!-- Informacja o płatności -->
         <div class="payment-info">
           <div class="payment-icon">💳</div>
           <div class="payment-text">
-            <h4>Metody płatności</h4>
-            <p>Płatność za transport jest możliwa <strong>gotówką lub BLIKIEM</strong> przy odbiorze rowerów przez kuriera.</p>
+            <h4>{{ t('transport_order.payment_info.title') }}</h4>
+            <p [innerHTML]="t('transport_order.payment_info.description')"></p>
           </div>
+        </div>
+      </div>
+
+      <!-- Akceptacja regulaminu -->
+      <div class="terms-container">
+        <div class="form-check">
+          <input 
+            type="checkbox" 
+            id="termsAccepted" 
+            [formControl]="termsAcceptedControl"
+            class="form-check-input"
+            [class.is-invalid]="termsAcceptedControl.invalid && termsAcceptedControl.touched"
+          >
+          <label for="termsAccepted" class="form-check-label">
+            {{ t('transport_order.terms.accept_label') }} 
+            <a [href]="links.termsOfService" target="_blank" class="terms-link">{{ t('transport_order.terms.terms_link') }}</a> 
+            {{ t('transport_order.terms.and') }} 
+            <a [href]="links.privacyPolicy" target="_blank" class="terms-link">{{ t('transport_order.terms.privacy_link') }}</a>
+          </label>
+        </div>
+        <div *ngIf="termsAcceptedControl.invalid && termsAcceptedControl.touched" class="error-message">
+          {{ t('transport_order.terms.required') }}
         </div>
       </div>
     </div>
 
-    <div class="terms-container">
-          <div class="form-check">
-            <input 
-              type="checkbox" 
-              id="termsAccepted" 
-              [formControl]="termsAcceptedControl"
-              class="form-check-input"
-              [class.is-invalid]="termsAcceptedControl.invalid && termsAcceptedControl.touched"
-            >
-            <label for="termsAccepted" class="form-check-label">
-              Akceptuję 
-              <a href="/terms-of-service" target="_blank" class="terms-link">regulamin serwisu</a> 
-              oraz 
-              <a href="/privacy-policy" target="_blank" class="terms-link">politykę prywatności</a>
-            </label>
-          </div>
-          <div *ngIf="termsAcceptedControl.invalid && termsAcceptedControl.touched" class="error-message">
-            Musisz zaakceptować regulamin, aby złożyć zamówienie
-          </div>
-        </div>
-      </div>
-
     <!-- Step Navigation -->
     <div class="step-actions">
-      <!-- Back button -->
       <button 
         type="button" 
         class="back-btn" 
@@ -533,10 +498,9 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="m15 18-6-6 6-6"/>
         </svg>
-        {{ currentStep === 1 ? 'Wróć do mapy' : 'Poprzedni krok' }}
+        {{ currentStep === 1 ? t('transport_order.navigation.back_to_map') : t('transport_order.navigation.previous_step') }}
       </button>
       
-      <!-- Next/Submit button -->
       <button 
         type="button" 
         class="next-btn" 
@@ -544,7 +508,7 @@
         (click)="nextStep()"
         [disabled]="!isCurrentStepValid()"
       >
-        Następny krok
+        {{ t('transport_order.navigation.next_step') }}
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="m9 18 6-6-6-6"/>
         </svg>
@@ -562,7 +526,8 @@
           <path d="m12 5 7 7-7 7"/>
         </svg>
         <span *ngIf="submitting" class="loading-spinner"></span>
-        {{ submitting ? 'Przetwarzanie...' : 'Zamów transport' }}
+        {{ submitting ? t('transport_order.navigation.processing') : t('transport_order.navigation.submit_order') }}
       </button>
     </div>
   </div>
+</div>

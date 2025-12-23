@@ -55,7 +55,7 @@
 }
 
 .navbar-menu a:hover, .navbar-menu a.active {
-  background-color: var(--color-primary-dark);
+  background-color: var(--color-primary-darker);
   color: var(--color-white);
 }
 
@@ -74,7 +74,7 @@
 }
 
 .auth-links a:hover, .auth-links a.active {
-  background-color: var(--color-primary-dark);
+  background-color: var(--color-primary-darker);
   color: var(--color-white);
 }
 

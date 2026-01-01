@@ -316,16 +316,18 @@ export class TransportOrderFormComponent implements OnInit {
     }
   }
 
-  // Cost and price methods
   getEstimatedTransportCost(): number {
-    if (this.actualTransportCost !== null) {
-      return this.actualTransportCost * this.getSelectedBicyclesCount();
-    }
     const selectedCount = this.getSelectedBicyclesCount();
     if (selectedCount === 0) return 0;
-    const baseCost = 50;
-    const perBikeCost = 20;
-    return baseCost + (selectedCount - 1) * perBikeCost;
+    if (this.actualTransportCost !== null && this.actualTransportCost === 0) {
+      return 0;
+    }
+    const baseCost = this.actualTransportCost !== null ? this.actualTransportCost : 50;
+    if (selectedCount === 1) {
+      return baseCost;
+    }
+    const perAdditionalBikeCost = 20;
+    return baseCost + (selectedCount - 1) * perAdditionalBikeCost;
   }
 
   getFinalPriceToSend(): number {

@@ -9,7 +9,7 @@ import {
   TransportOrderSummaryDto,
   TransportOrderCreateResponse 
 } from '../shared/models/transport-order.model';
-import { BikeService } from '../shared/models/bike-service.model';
+import { BikeService } from '../shared/models/bike-service.models';
 
 @Injectable({
   providedIn: 'root'
@@ -158,25 +158,6 @@ export class TransportOrderService {
     return this.http.get<any[]>(`${this.apiUrl}/statuses`).pipe(
       catchError(error => {
         console.error('Error fetching transport statuses:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
-   * Oblicza koszt transportu dla konkretnej liczby rowerów
-   */
-  calculateTransportCostForBikes(bikesCount: number, serviceId?: number): Observable<any> {
-    const request = {
-      bicycleCount: bikesCount,
-      targetServiceId: serviceId
-    };
-    
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.calculateTransportCost}`;
-    
-    return this.http.post<any>(url, request).pipe(
-      catchError(error => {
-        console.error('Error calculating transport cost:', error);
         return throwError(() => error);
       })
     );

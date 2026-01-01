@@ -1,50 +1,23 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { I18nService } from '../../core/i18n.service';
 import { BikeServiceVerificationService } from '../../auth/bike-service-verification.service';
 import { ServiceAdminBasicInfoComponent } from './service-admin-basic-info/service-admin-basic-info.component';
 import { ServiceAdminCoveragesComponent } from './service-admin-coverages/service-admin-coverages.component';
-import { ServiceAdminPricelistComponent } from './service-admin-pricelist/service-admin-pricelist.component';
+import { ServiceAdminPricelistWrapperComponent } from './service-admin-pricelist/service-admin-pricelist-wrapper.component';
 import { ServiceAdminOpeningHoursComponent } from './service-admin-opening-hours/service-admin-opening-hours.component';
 import { ServiceAdminImagesComponent } from './service-admin-images/service-admin-images.component';
-
-
-interface BikeServiceNameIdDto {
-  id: number;
-  name: string;
-}
-
-interface BikeServiceRegisteredDto {
-  id: number;
-  name: string;
-  email?: string;
-  street?: string;
-  building?: string;
-  flat?: string;
-  postalCode?: string;
-  city?: string;
-  latitude?: number;
-  longitude?: number;
-  phoneNumber?: string;
-  transportCost?: number;
-  transportAvailable: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  suffix?: string;
-  contactPerson?: string;
-  website?: string;
-  facebook?: string;
-  instagram?: string;
-  tiktok?: string;
-  youtube?: string;
-  description?: string;
-  isRegistered: boolean;
-  openingHours?: any;
-  openingHoursInfo?: string;
-  openingHoursNote?: string;
-  pricelistInfo?: string;
-  pricelistNote?: string;
-}
+import {
+  BikeServiceNameIdDto,
+  BikeServiceRegisteredDto,
+  AdminPanelTab,
+  AdminPanelLoadingState,
+  DEFAULT_LOADING_STATE,
+  ADMIN_PANEL_TABS,
+  getDefaultTab,
+  formatErrorMessage
+} from '../../shared/models/service-admin.models';
 
 @Component({
   selector: 'app-service-admin-panel',
@@ -53,7 +26,7 @@ interface BikeServiceRegisteredDto {
     CommonModule,
     ServiceAdminBasicInfoComponent,
     ServiceAdminCoveragesComponent,
-    ServiceAdminPricelistComponent,
+    ServiceAdminPricelistWrapperComponent,
     ServiceAdminOpeningHoursComponent,
     ServiceAdminImagesComponent
   ],
@@ -64,31 +37,61 @@ export class ServiceAdminPanelComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private verificationService = inject(BikeServiceVerificationService);
+  private i18nService = inject(I18nService);
 
+  // Data
   myServices: BikeServiceNameIdDto[] = [];
   selectedServiceId: number | null = null;
   serviceDetails: BikeServiceRegisteredDto | null = null;
   
-  isLoadingServices: boolean = true;
-  isLoadingDetails: boolean = false;
-  servicesError: string = '';
-  detailsError: string = '';
+  // Loading state
+  loadingState: AdminPanelLoadingState = { ...DEFAULT_LOADING_STATE };
   
   // Active tab
-  activeTab: 'basic' | 'services' | 'pricelist' | 'hours' | 'images' = 'basic';
+  activeTab: AdminPanelTab = getDefaultTab();
+  
+  // Tabs configuration (accessible in template)
+  tabs = ADMIN_PANEL_TABS;
+
+  // Getters for template convenience
+  get isLoadingServices(): boolean {
+    return this.loadingState.isLoadingServices;
+  }
+
+  get isLoadingDetails(): boolean {
+    return this.loadingState.isLoadingDetails;
+  }
+
+  get servicesError(): string {
+    return this.loadingState.servicesError;
+  }
+
+  get detailsError(): string {
+    return this.loadingState.detailsError;
+  }
+
+  /**
+   * Metoda tłumaczenia dla template
+   */
+  t(key: string, params?: Record<string, any>): string {
+    return this.i18nService.translate(key, params);
+  }
 
   ngOnInit(): void {
     this.loadMyServices();
   }
 
+  /**
+   * Ładuje listę serwisów użytkownika
+   */
   loadMyServices(): void {
-    this.isLoadingServices = true;
-    this.servicesError = '';
+    this.loadingState.isLoadingServices = true;
+    this.loadingState.servicesError = '';
 
     this.verificationService.getMyServices().subscribe({
       next: (services: BikeServiceNameIdDto[]) => {
         this.myServices = services;
-        this.isLoadingServices = false;
+        this.loadingState.isLoadingServices = false;
         
         if (services.length > 0) {
           this.selectedServiceId = services[0].id;
@@ -96,39 +99,55 @@ export class ServiceAdminPanelComponent implements OnInit {
         }
       },
       error: (err: any) => {
-        this.servicesError = 'Nie udało się załadować listy serwisów. Spróbuj ponownie.';
-        this.isLoadingServices = false;
+        this.loadingState.servicesError = formatErrorMessage(err) || this.t('service_admin.errors.load_services_failed');
+        this.loadingState.isLoadingServices = false;
         console.error('Error loading services:', err);
       }
     });
   }
 
+  /**
+   * Obsługuje zmianę wybranego serwisu
+   */
   onServiceChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.selectedServiceId = Number(select.value);
     this.loadServiceDetails();
   }
 
+  /**
+   * Ładuje szczegóły wybranego serwisu
+   */
   loadServiceDetails(): void {
     if (!this.selectedServiceId) return;
 
-    this.isLoadingDetails = true;
-    this.detailsError = '';
+    this.loadingState.isLoadingDetails = true;
+    this.loadingState.detailsError = '';
 
     this.verificationService.getMyServiceDetails(this.selectedServiceId).subscribe({
       next: (response: BikeServiceRegisteredDto) => {
         this.serviceDetails = response;
-        this.isLoadingDetails = false;
+        this.loadingState.isLoadingDetails = false;
       },
       error: (err: any) => {
-        this.detailsError = 'Nie udało się załadować danych serwisu. Spróbuj ponownie.';
-        this.isLoadingDetails = false;
+        this.loadingState.detailsError = formatErrorMessage(err) || this.t('service_admin.errors.load_details_failed');
+        this.loadingState.isLoadingDetails = false;
         console.error('Error loading service details:', err);
       }
     });
   }
 
-  setActiveTab(tab: 'basic' | 'services' | 'pricelist' | 'hours' | 'images'): void {
+  /**
+   * Ustawia aktywną zakładkę
+   */
+  setActiveTab(tab: AdminPanelTab): void {
     this.activeTab = tab;
+  }
+
+  /**
+   * Sprawdza czy zakładka jest aktywna
+   */
+  isTabActive(tab: AdminPanelTab): boolean {
+    return this.activeTab === tab;
   }
 }

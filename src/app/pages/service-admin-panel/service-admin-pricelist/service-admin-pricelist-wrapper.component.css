@@ -1,0 +1,96 @@
+
+
+/* ===== WRAPPER ===== */
+.pricelist-wrapper {
+    min-height: 100vh;
+    background: var(--color-white);
+}
+
+/* ===== TABS CONTAINER ===== */
+.tabs-container {
+    background: var(--color-white);
+    border-bottom: 2px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-index-sticky);
+    box-shadow: var(--shadow-sm);
+}
+
+.tabs-nav {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-6);
+}
+
+/* ===== TAB BUTTONS ===== */
+.tab-button {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-4) var(--spacing-6);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: var(--transition-all);
+    position: relative;
+}
+
+.tab-button:hover {
+    color: var(--color-primary);
+    background: var(--color-primary-alpha-08);
+}
+
+.tab-button.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    background: var(--color-primary-alpha-10);
+}
+
+.tab-button svg {
+    flex-shrink: 0;
+}
+
+/* ===== TAB CONTENT ===== */
+.tabs-content {
+    background: var(--color-slate-50);
+    min-height: calc(100vh - 60px);
+}
+
+.tab-panel {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .tabs-nav {
+        padding: 0 var(--spacing-4);
+    }
+
+    .tab-button {
+        flex: 1;
+        justify-content: center;
+        padding: var(--spacing-3) var(--spacing-4);
+        font-size: var(--font-size-sm);
+    }
+
+    .tab-button svg {
+        width: 18px;
+        height: 18px;
+    }
+}

@@ -1,24 +1,30 @@
 <div class="admin-panel-container">
+  <!-- Loading Services State -->
   <div *ngIf="isLoadingServices" class="loading-state">
     <div class="spinner"></div>
-    <p>Ładowanie listy serwisów...</p>
+    <p>{{ t('service_admin.loading_services') }}</p>
   </div>
 
+  <!-- Services Error State -->
   <div *ngIf="servicesError" class="error-state">
     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <circle cx="12" cy="12" r="10"></circle>
       <line x1="15" y1="9" x2="9" y2="15"></line>
       <line x1="9" y1="9" x2="15" y2="15"></line>
     </svg>
-    <h2>Błąd ładowania</h2>
+    <h2>{{ t('service_admin.error_title') }}</h2>
     <p>{{ servicesError }}</p>
-    <button (click)="loadMyServices()" class="retry-btn">Spróbuj ponownie</button>
+    <button (click)="loadMyServices()" class="retry-btn">
+      {{ t('service_admin.retry') }}
+    </button>
   </div>
 
+  <!-- Main Content -->
   <div *ngIf="!isLoadingServices && !servicesError && myServices.length > 0">
-    <!-- Service Selector -->
+    
+    <!-- Service Selector (only if multiple services) -->
     <div class="service-selector" *ngIf="myServices.length > 1">
-      <label for="service-select">Wybierz serwis:</label>
+      <label for="service-select">{{ t('service_admin.select_service') }}</label>
       <select
         id="service-select"
         [value]="selectedServiceId"
@@ -30,65 +36,49 @@
       </select>
     </div>
 
-    <!-- Service Details -->
+    <!-- Loading Details State -->
     <div *ngIf="isLoadingDetails" class="loading-state">
       <div class="spinner"></div>
-      <p>Ładowanie danych serwisu...</p>
+      <p>{{ t('service_admin.loading_details') }}</p>
     </div>
 
+    <!-- Details Error State -->
     <div *ngIf="detailsError" class="error-state">
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="15" y1="9" x2="9" y2="15"></line>
         <line x1="9" y1="9" x2="15" y2="15"></line>
       </svg>
-      <h2>Błąd ładowania</h2>
+      <h2>{{ t('service_admin.error_title') }}</h2>
       <p>{{ detailsError }}</p>
-      <button (click)="loadServiceDetails()" class="retry-btn">Spróbuj ponownie</button>
+      <button (click)="loadServiceDetails()" class="retry-btn">
+        {{ t('service_admin.retry') }}
+      </button>
     </div>
 
+    <!-- Panel Content -->
     <div *ngIf="!isLoadingDetails && !detailsError && serviceDetails" class="panel-content">
+      
+      <!-- Header -->
       <header class="panel-header">
-        <h1>Panel Administracyjny Serwisu</h1>
+        <h1>{{ t('service_admin.panel_title') }}</h1>
         <p class="service-name">{{ serviceDetails.name }}</p>
       </header>
 
       <!-- Tabs Navigation -->
       <div class="tabs-container">
         <button
-          [class.active]="activeTab === 'basic'"
-          (click)="setActiveTab('basic')"
+          *ngFor="let tab of tabs"
+          [class.active]="isTabActive(tab.id)"
+          (click)="setActiveTab(tab.id)"
           class="tab-btn">
-          podstawowe informacje
-        </button>
-        <button
-          [class.active]="activeTab === 'services'"
-          (click)="setActiveTab('services')"
-          class="tab-btn">
-          dostępne usługi
-        </button>
-        <button
-          [class.active]="activeTab === 'pricelist'"
-          (click)="setActiveTab('pricelist')"
-          class="tab-btn">
-          zarządzaj cennikiem
-        </button>
-        <button
-          [class.active]="activeTab === 'hours'"
-          (click)="setActiveTab('hours')"
-          class="tab-btn">
-          godziny otwarcia
-        </button>
-        <button
-          [class.active]="activeTab === 'images'"
-          (click)="setActiveTab('images')"
-          class="tab-btn">
-          zarządzaj zdjęciami
+          {{ t(tab.labelKey) }}
         </button>
       </div>
 
       <!-- Tab Content -->
       <div class="tab-content">
+        
         <!-- Basic Info Tab -->
         <app-service-admin-basic-info
           *ngIf="activeTab === 'basic'"
@@ -102,11 +92,11 @@
           [serviceId]="selectedServiceId!">
         </app-service-admin-coverages>
 
-        <!-- Pricelist Tab -->
-        <app-service-admin-pricelist
+        <!-- Pricelist Tab (ZMIANA: używamy wrapper component) -->
+        <app-service-admin-pricelist-wrapper
           *ngIf="activeTab === 'pricelist'"
           [serviceId]="selectedServiceId!">
-        </app-service-admin-pricelist>
+        </app-service-admin-pricelist-wrapper>
 
         <!-- Opening Hours Tab -->
         <app-service-admin-opening-hours
@@ -119,6 +109,7 @@
           *ngIf="activeTab === 'images'"
           [serviceId]="selectedServiceId!">
         </app-service-admin-images>
+        
       </div>
     </div>
   </div>

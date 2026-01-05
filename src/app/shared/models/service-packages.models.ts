@@ -61,7 +61,9 @@ export interface ServicePackageDto {
 export interface ServicePackagesConfigDto {
   id: number;
   generalDescription: string | null;
+  comment: string | null;
   active: boolean;
+  defaultBikeType: string | null;
   packages: ServicePackageDto[];
   createdAt: string;
   updatedAt: string;
@@ -72,6 +74,8 @@ export interface ServicePackagesConfigDto {
  */
 export interface PackagesConfigSettingsDto {
   generalDescription: string | null;
+  comment: string | null;
+  defaultBikeType: string | null;
   active: boolean;
 }
 

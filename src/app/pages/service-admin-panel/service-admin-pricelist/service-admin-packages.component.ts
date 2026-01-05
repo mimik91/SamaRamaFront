@@ -41,6 +41,8 @@ export class ServiceAdminPackagesComponent implements OnInit {
 
   // Ustawienia globalne
   generalDescription: string = '';
+  comment: string = '';
+  defaultBikeType: string | null = null;
   configActive: boolean = false;
   originalSettings: PackagesConfigSettingsDto | null = null;
 
@@ -72,11 +74,13 @@ export class ServiceAdminPackagesComponent implements OnInit {
           
           // Ustaw globalne ustawienia
           this.generalDescription = config.generalDescription || '';
+          this.comment = config.comment || '';
+          this.defaultBikeType = config.defaultBikeType;
           this.configActive = config.active;
 
-          // Automatycznie wybierz pierwszy typ roweru jeśli są dostępne
+          // Automatycznie wybierz domyślny typ roweru lub pierwszy z listy
           if (this.allBikeTypes.length > 0 && !this.selectedBikeType) {
-            this.selectedBikeType = this.allBikeTypes[0];
+            this.selectedBikeType = this.defaultBikeType || this.allBikeTypes[0];
           }
 
           this.isLoading = false;
@@ -94,6 +98,8 @@ export class ServiceAdminPackagesComponent implements OnInit {
   startEditingSettings(): void {
     this.originalSettings = {
       generalDescription: this.generalDescription,
+      comment: this.comment,
+      defaultBikeType: this.defaultBikeType,
       active: this.configActive
     };
     this.isEditingSettings = true;
@@ -104,6 +110,8 @@ export class ServiceAdminPackagesComponent implements OnInit {
   cancelEditingSettings(): void {
     if (this.originalSettings) {
       this.generalDescription = this.originalSettings.generalDescription || '';
+      this.comment = this.originalSettings.comment || '';
+      this.defaultBikeType = this.originalSettings.defaultBikeType;
       this.configActive = this.originalSettings.active;
       this.originalSettings = null;
     }
@@ -118,6 +126,8 @@ export class ServiceAdminPackagesComponent implements OnInit {
 
     const settings: PackagesConfigSettingsDto = {
       generalDescription: this.generalDescription || null,
+      comment: this.comment || null,
+      defaultBikeType: this.defaultBikeType,
       active: this.configActive
     };
 

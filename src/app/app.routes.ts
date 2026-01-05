@@ -33,6 +33,8 @@ import { TermsOfServiceComponent } from './core/terms-of-service.component'
 import { TermsOfServiceWorkshopsComponent } from './core/terms-of-service-workshops.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
 import { suffixValidationGuard } from './auth/suffix-validation.guard';
+import { ServiceProfileTitleResolver} from './environments/service-profile-title.resolver';
+
 
 // REFACTORED COMPONENTS - NEW STRUCTURE
 import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
@@ -322,7 +324,7 @@ export const routes: Routes = [
     { 
       path: ':suffix', 
       component: ServiceProfilePageComponent,
-      title: 'Profil Serwisu'
+      title: ServiceProfileTitleResolver
     },
     
     // === FALLBACK ===

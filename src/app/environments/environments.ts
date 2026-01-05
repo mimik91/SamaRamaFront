@@ -2,7 +2,8 @@ export const environment = {
   production: false,
   
   // API Configuration
-  apiUrl: 'http://localhost:8080/api',
+  siteUrl: 'https://www.cyclopick.pl',
+  apiUrl: 'https://www.cyclopick.pl/api',
   
   // External Links
   links: {
@@ -88,5 +89,6 @@ export const environment = {
 export const environmentProduction = {
   ...environment,
   production: true,
-  apiUrl: 'https://api.yourdomain.com/api'
+  siteUrl: 'https://cyclopick.pl',
+  apiUrl: 'https://cyclopick.pl/api'
 };

@@ -18,68 +18,114 @@
       "images": "Zarządzaj zdjęciami"
     }
   },
-  "pricelist": {
+  "service_profile": {
+    "loading": "Ładowanie profilu serwisu...",
+    "home_button": "Strona główna",
     "tabs": {
-      "services": "Cennik usług",
-      "packages": "Pakiety serwisowe"
+      "about_us": "O nas",
+      "pricelist": "Cennik usług",
+      "packages": "Pakiety serwisowe",
+      "opening_hours": "Godziny otwarcia"
+    },
+    "transport": {
+      "subtitle": "Zamów transport do tego serwisu",
+      "button": "Zamów transport"
+    },
+    "hours": {
+      "closed": "Zamknięte"
     },
     "packages": {
-      "title": "Zarządzanie pakietami serwisowymi",
-      "loading": "Ładowanie pakietów...",
-      "error_title": "Błąd ładowania",
-      "retry": "Spróbuj ponownie",
-      "total_packages": "Łączna liczba pakietów",
-      "global_settings": "Ustawienia globalne",
-      "edit_settings": "Edytuj ustawienia",
-      "config_active": "Pakiety aktywne (widoczne publicznie)",
-      "general_description": "Ogólny opis pakietów",
-      "general_description_placeholder": "np. Oferujemy kompleksowe pakiety serwisowe dostosowane do potrzeb Twojego roweru...",
-      "characters": "znaków",
-      "select_bike_type": "Wybierz typ roweru",
-      "select_bike_type_placeholder": "-- Wybierz typ roweru --",
-      "select_bike_type_first": "Wybierz typ roweru z listy powyżej, aby zobaczyć dostępne pakiety",
-      "package_level": {
-        "basic": "Podstawowy",
-        "advanced": "Rozszerzony",
-        "full": "Pełny"
-      },
-      "no_package": "Brak pakietu dla tego poziomu",
-      "add_package": "Dodaj pakiet",
-      "custom_name": "Nazwa własna (opcjonalnie)",
-      "custom_name_placeholder": "np. Pakiet Letni, Serwis Miejski...",
-      "custom_name_help": "Jeśli pozostawisz puste, użyta zostanie standardowa nazwa poziomu",
-      "bike_types": "Typy rowerów",
-      "price": "Cena",
-      "price_placeholder": "0.00",
-      "currency": "zł",
-      "description": "Opis",
-      "description_placeholder": "Opisz co zawiera pakiet, jakie usługi są w nim dostępne...",
-      "package_active": "Pakiet aktywny",
-      "active": "Aktywny",
-      "inactive": "Nieaktywny",
-      "messages": {
-        "settings_saved": "Ustawienia zostały zapisane pomyślnie!",
-        "package_created": "Pakiet został utworzony pomyślnie!",
-        "package_updated": "Pakiet został zaktualizowany pomyślnie!",
-        "package_deleted": "Pakiet został usunięty pomyślnie!"
-      },
-      "errors": {
-        "no_service_id": "Brak ID serwisu",
-        "load_failed": "Nie udało się załadować pakietów. Spróbuj ponownie.",
-        "save_settings_failed": "Nie udało się zapisać ustawień. Spróbuj ponownie.",
-        "create_failed": "Nie udało się utworzyć pakietu. Spróbuj ponownie.",
-        "update_failed": "Nie udało się zaktualizować pakietu. Spróbuj ponownie.",
-        "delete_failed": "Nie udało się usunąć pakietu. Spróbuj ponownie."
-      },
-      "validation": {
-        "bike_types_required": "Musisz wybrać przynajmniej jeden typ roweru",
-        "price_required": "Cena jest wymagana i musi być większa od 0"
-      },
-      "confirm": {
-        "delete_package": "Czy na pewno chcesz usunąć ten pakiet? Tej operacji nie można cofnąć."
-      }
+      "select_bike_type": "Wybierz typ roweru"
+    },
+    "contact": {
+      "website": "STRONA INTERNETOWA"
+    },
+    "images": {
+      "about_us": "Serwis rowerowy",
+      "opening_hours": "Godziny otwarcia"
+    },
+    "errors": {
+      "invalid_url": "Nieprawidłowy adres URL",
+      "service_not_found": "Serwis nie został znaleziony",
+      "load_failed": "Nie udało się załadować danych serwisu",
+      "check_url": "Sprawdź adres URL lub wróć na stronę główną"
     }
   },
+  "pricelist": {
+  "tabs": {
+    "services": "Cennik usług",
+    "packages": "Pakiety serwisowe"
+  },
+  "packages": {
+    "title": "Zarządzanie pakietami serwisowymi",
+    "loading": "Ładowanie pakietów...",
+    "error_title": "Błąd ładowania",
+    "retry": "Spróbuj ponownie",
+    "total_packages": "Łączna liczba pakietów",
+    "global_settings": "Ustawienia globalne",
+    "edit_settings": "Edytuj ustawienia",
+    "config_active": "Pakiety aktywne (widoczne publicznie)",
+    "general_description": "Ogólny opis pakietów",
+    "general_description_placeholder": "np. Oferujemy kompleksowe pakiety serwisowe dostosowane do potrzeb Twojego roweru...",
+    "comment": "Komentarz",
+    "comment_placeholder": "Dodaj komentarz widoczny tylko dla administratorów...",
+    "comment_hint": "Ten komentarz jest widoczny tylko dla administratorów serwisu (maks. 1000 znaków)",
+    "default_bike_type": "Domyślny typ roweru",
+    "no_default_bike_type": "Brak domyślnego typu (pierwszy z listy)",
+    "default_bike_type_hint": "Typ roweru wyświetlany domyślnie w panelu administratora i profilu serwisu",
+    "characters": "znaków",
+    "select_bike_type": "Wybierz typ roweru",
+    "select_bike_type_placeholder": "-- Wybierz typ roweru --",
+    "select_bike_type_first": "Wybierz typ roweru z listy powyżej, aby zobaczyć dostępne pakiety",
+    "package_level": {
+      "basic": "Podstawowy",
+      "advanced": "Rozszerzony",
+      "full": "Pełny"
+    },
+    "no_package": "Brak pakietu dla tego poziomu",
+    "add_package": "Dodaj pakiet",
+    "custom_name": "Nazwa własna (opcjonalnie)",
+    "custom_name_placeholder": "np. Pakiet Letni, Serwis Miejski...",
+    "custom_name_help": "Jeśli pozostawisz puste, użyta zostanie standardowa nazwa poziomu",
+    "bike_types": "Typy rowerów",
+    "price": "Cena",
+    "price_placeholder": "0.00",
+    "currency": "zł",
+    "description": "Opis",
+    "description_placeholder": "Opisz co zawiera pakiet, jakie usługi są w nim dostępne...",
+    "package_active": "Pakiet aktywny",
+    "active": "Aktywny",
+    "inactive": "Nieaktywny",
+    "bike_type_selector": {
+      "default": "domyślny"
+    },
+    "messages": {
+      "settings_saved": "Ustawienia zostały zapisane pomyślnie!",
+      "package_created": "Pakiet został utworzony pomyślnie!",
+      "package_updated": "Pakiet został zaktualizowany pomyślnie!",
+      "package_deleted": "Pakiet został usunięty pomyślnie!"
+    },
+    "errors": {
+      "no_service_id": "Brak ID serwisu",
+      "load_failed": "Nie udało się załadować pakietów. Spróbuj ponownie.",
+      "save_settings_failed": "Nie udało się zapisać ustawień. Spróbuj ponownie.",
+      "create_failed": "Nie udało się utworzyć pakietu. Spróbuj ponownie.",
+      "update_failed": "Nie udało się zaktualizować pakietu. Spróbuj ponownie.",
+      "delete_failed": "Nie udało się usunąć pakietu. Spróbuj ponownie."
+    },
+    "validation": {
+      "bike_types_required": "Musisz wybrać przynajmniej jeden typ roweru",
+      "price_required": "Cena jest wymagana i musi być większa od 0"
+    },
+    "confirm": {
+      "delete_package": "Czy na pewno chcesz usunąć ten pakiet? Tej operacji nie można cofnąć."
+    },
+    "hints":{
+      "price": "Cena pakietu serwisowego",
+      "description": "Opis"
+    }
+  }
+},
   "transport_order": {
     "page_title": "Zamówienie transportu roweru",
     "loading": "Ładowanie danych...",
@@ -210,6 +256,7 @@
       "submit_order": "Zamów transport",
       "processing": "Przetwarzanie..."
     },
+    
     "validation": {
       "fill_required_fields": "Wypełnij poprawnie wszystkie wymagane pola w tym kroku",
       "fill_all_and_accept": "Wypełnij poprawnie wszystkie wymagane pola i zaakceptuj regulamin",
@@ -274,6 +321,11 @@
     "close": "Zamknij",
     "save": "Zapisz",
     "delete": "Usuń",
-    "edit": "Edytuj"
+    "edit": "Edytuj",
+    "create": "Utwórz",
+    "active": "Aktywny",
+    "inactive": "Nieaktywny",
+    "currency": "zł",
+    "note": "Uwaga"
   }
 }

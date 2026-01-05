@@ -1,14 +1,16 @@
 <div class="profile-container">
   <div *ngIf="isLoading" class="loading-container">
     <div class="spinner"></div>
-    <p>Ładowanie profilu serwisu...</p>
+    <p>{{ t('service_profile.loading') }}</p>
   </div>
 
   <div *ngIf="error && !isLoading" class="error-container">
     <div class="error-icon">⚠️</div>
     <h2>{{ error }}</h2>
-    <p>Sprawdź adres URL lub wróć na stronę główną</p>
-    <button class="btn-primary" routerLink="/">Strona główna</button>
+    <p>{{ t('service_profile.errors.check_url') }}</p>
+    <button class="btn-primary" [routerLink]="['/']">
+      {{ t('service_profile.home_button') }}
+    </button>
   </div>
 
   <div *ngIf="!isLoading && !error && publicInfo" class="profile-content">
@@ -19,7 +21,7 @@
           <a href="javascript:void(0)" 
              [class.active]="activeTab === 'info'" 
              (click)="setActiveTab('info')">
-            O nas
+            {{ t('service_profile.tabs.about_us') }}
           </a>
         </li>
 
@@ -27,7 +29,7 @@
           <a href="javascript:void(0)" 
              [class.active]="activeTab === 'pricelist'" 
              (click)="setActiveTab('pricelist')">
-            Cennik
+            {{ t('service_profile.tabs.pricelist') }}
           </a>
         </li>
 
@@ -35,15 +37,16 @@
           <a href="javascript:void(0)" 
              [class.active]="activeTab === 'hours'" 
              (click)="setActiveTab('hours')">
-            Godziny otwarcia
+            {{ t('service_profile.tabs.opening_hours') }}
           </a>
         </li>
       </ul>
     </nav>
 
+    <!-- ABOUT US TAB -->
     <section class="main-content" id="info" *ngIf="activeTab === 'info'">
       <div class="content-left">
-        <img [src]="logoUrl" alt="Logo" class="service-logo">
+        <img [src]="logoUrl" [alt]="publicInfo.name" class="service-logo">
         <h2>{{ publicInfo.name }}</h2>
         <h3>{{ publicInfo.city }}</h3>
         <p *ngIf="publicInfo.description">{{ publicInfo.description }}</p>
@@ -54,12 +57,14 @@
           [style.background-image]="'url(assets/images/pictures/picture1.jpg)'">
           <div class="transport-overlay"></div>
           <div class="transport-content">
-            <p class="transport-subtitle">Zamów transport do tego serwisu</p>
+            <p class="transport-subtitle">
+              {{ t('service_profile.transport.subtitle') }}
+            </p>
             <button 
               class="btn-transport" 
               [routerLink]="['/order-transport']"
               [queryParams]="{serviceId: serviceId}">
-              Zamów transport
+              {{ t('service_profile.transport.button') }}
             </button>
           </div>
         </div>
@@ -68,31 +73,109 @@
       <div class="content-right">
         <img 
           [src]="aboutUsImageUrl" 
-          alt="Serwis rowerowy" 
+          [alt]="t('service_profile.images.about_us')" 
           class="content-image">
       </div>
     </section>
 
-    <section class="pricelist-section" *ngIf="activeTab === 'pricelist'">
-      <div *ngIf="activeTab === 'pricelist' && pricelist" class="pricelist-tab">
-        <div *ngIf="pricelist.pricelistInfo" class="info-banner">
-          <p>{{ pricelist.pricelistInfo }}</p>
-        </div>
-        <div *ngFor="let categoryGroup of getPricelistByCategories()" class="category-group">
-          <h3 class="category-title">{{ categoryGroup.category }}</h3>
-          <div class="pricelist-items">
-            <div *ngFor="let item of categoryGroup.items" class="price-item">
-              <span class="item-name">{{ item.name }}</span>
-              <span class="item-price">{{ item.price }} zł</span>
+    <!-- PRICELIST TAB (z pakietami na górze) -->
+<section class="pricelist-section" *ngIf="activeTab === 'pricelist'">
+  <div class="pricelist-tab">
+    
+    <!-- ============================================ -->
+    <!-- PAKIETY SERWISOWE - NA GÓRZE CENNIKA -->
+    <!-- ============================================ -->
+    <div *ngIf="packagesConfig && packages && packages.length > 0" class="packages-section-in-pricelist">
+      
+      <!-- Nagłówek sekcji pakietów -->
+      <h2 class="section-title">Pakiety serwisowe</h2>
+      
+      <!-- General Description -->
+      <div *ngIf="packagesConfig.generalDescription" class="info-banner">
+        <p>{{ packagesConfig.generalDescription }}</p>
+      </div>
+
+      <!-- Bike Type Selector -->
+      <div class="bike-type-selector" *ngIf="bikeTypes && bikeTypes.length > 0">
+        <label for="bikeTypeSelect">Wybierz typ roweru:</label>
+        <select 
+          id="bikeTypeSelect" 
+          class="bike-type-dropdown"
+          [ngModel]="selectedBikeType" 
+          (ngModelChange)="onBikeTypeChange($event)">
+          <option *ngFor="let type of bikeTypes" [value]="type">
+            {{ type }}
+            <span *ngIf="type === packagesConfig.defaultBikeType"> (domyślny)</span>
+          </option>
+        </select>
+      </div>
+
+      <!-- Packages Display -->
+      <div class="packages-container" *ngIf="selectedBikeType">
+        <div 
+          *ngFor="let level of packageLevels" 
+          class="package-card"
+          [class.no-package]="!getPackageForLevel(level)">
+          
+          <div *ngIf="getPackageForLevel(level); let pkg" class="package-content">
+            <div class="package-header">
+              <h3 class="package-title">{{ getPackageDisplayName(pkg) }}</h3>
+            </div>
+            
+            <div class="package-description" *ngIf="pkg.description">
+              <p>{{ pkg.description }}</p>
+            </div>
+            
+            <div class="package-price">
+              <span class="price-amount">{{ pkg.price }}</span>
+              <span class="price-currency">zł</span>
             </div>
           </div>
-        </div>
-        <div *ngIf="pricelist.pricelistNote" class="note-banner">
-          <p><strong>Uwaga:</strong> {{ pricelist.pricelistNote }}</p>
+
+          <div *ngIf="!getPackageForLevel(level)" class="no-package-content">
+            <p>Brak pakietu dla tego typu roweru</p>
+          </div>
         </div>
       </div>
-    </section>
 
+      <!-- Comment -->
+      <div *ngIf="packagesConfig.comment" class="note-banner">
+        <p><strong>Uwaga:</strong> {{ packagesConfig.comment }}</p>
+      </div>
+
+      <!-- Separator między pakietami a cennikiem -->
+      <div class="section-separator"></div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CENNIK USŁUG - PONIŻEJ PAKIETÓW -->
+    <!-- ============================================ -->
+    <div *ngIf="pricelist">
+      <!-- Nagłówek sekcji cennika -->
+      <h2 class="section-title" *ngIf="packages && packages.length > 0">Cennik usług</h2>
+      
+      <div *ngIf="pricelist.pricelistInfo" class="info-banner">
+        <p>{{ pricelist.pricelistInfo }}</p>
+      </div>
+      
+      <div *ngFor="let categoryGroup of getPricelistByCategories()" class="category-group">
+        <h3 class="category-title">{{ categoryGroup.category }}</h3>
+        <div class="pricelist-items">
+          <div *ngFor="let item of categoryGroup.items" class="price-item">
+            <span class="item-name">{{ item.name }}</span>
+            <span class="item-price">{{ item.price }} zł</span>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="pricelist.pricelistNote" class="note-banner">
+        <p><strong>Uwaga:</strong> {{ pricelist.pricelistNote }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <!-- OPENING HOURS TAB -->
     <section class="main-content" *ngIf="activeTab === 'hours'">
       <div class="content-left">
         <div *ngIf="openingHours?.openingHoursInfo" class="info-banner">
@@ -106,24 +189,25 @@
               {{ getDayInterval(day.key)!.openTime }} - {{ getDayInterval(day.key)!.closeTime }}
             </span>
             <span class="day-hours closed" *ngIf="!getDayInterval(day.key)">
-              Zamknięte
+              {{ t('service_profile.hours.closed') }}
             </span>
           </div>
         </div>
         
         <div *ngIf="openingHours?.openingHoursNote" class="note-banner">
-          <p><strong>Uwaga:</strong> {{ openingHours?.openingHoursNote }}</p>
+          <p><strong>{{ t('common.note') }}:</strong> {{ openingHours?.openingHoursNote }}</p>
         </div>
       </div>
       
       <div class="content-right">
         <img 
           [src]="openingHoursImageUrl" 
-          alt="Godziny otwarcia" 
+          [alt]="t('service_profile.images.opening_hours')" 
           class="content-image">
       </div>
     </section>
 
+    <!-- CONTACT SECTION -->
     <section class="contact-section" id="contact">
       <div class="contact-wrapper">
         <div class="left-col">
@@ -167,26 +251,26 @@
           <div class="icons-row" *ngIf="hasSocialMedia()">
             <a *ngIf="publicInfo.website" [href]="getWebsiteUrl(publicInfo.website)" target="_blank" rel="noopener noreferrer">
               <svg width="28" height="28" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                 <circle cx="60" cy="60" r="50" stroke="#1B5E20" stroke-width="3"/>
-                 <path d="M60 10 C40 10 30 35 30 60 C30 85 40 110 60 110" stroke="#1B5E20" stroke-width="3" fill="none"/>
-                 <path d="M60 10 C80 10 90 35 90 60 C90 85 80 110 60 110" stroke="#1B5E20" stroke-width="3" fill="none"/>
-                 <line x1="60" y1="10" x2="60" y2="110" stroke="#1B5E20" stroke-width="3"/>
-                 <line x1="17" y1="35" x2="103" y2="35" stroke="#1B5E20" stroke-width="3"/>
-                 <line x1="10" y1="60" x2="110" y2="60" stroke="#1B5E20" stroke-width="3"/>
-                 <line x1="17" y1="85" x2="103" y2="85" stroke="#1B5E20" stroke-width="3"/>
+                 <circle cx="60" cy="60" r="50" stroke="currentColor" stroke-width="3"/>
+                 <path d="M60 10 C40 10 30 35 30 60 C30 85 40 110 60 110" stroke="currentColor" stroke-width="3" fill="none"/>
+                 <path d="M60 10 C80 10 90 35 90 60 C90 85 80 110 60 110" stroke="currentColor" stroke-width="3" fill="none"/>
+                 <line x1="60" y1="10" x2="60" y2="110" stroke="currentColor" stroke-width="3"/>
+                 <line x1="17" y1="35" x2="103" y2="35" stroke="currentColor" stroke-width="3"/>
+                 <line x1="10" y1="60" x2="110" y2="60" stroke="currentColor" stroke-width="3"/>
+                 <line x1="17" y1="85" x2="103" y2="85" stroke="currentColor" stroke-width="3"/>
               </svg>
-              <span>STRONA INTERNETOWA</span>
+              <span>{{ t('service_profile.contact.website') }}</span>
             </a>
             
             <a *ngIf="publicInfo.facebook" [href]="publicInfo.facebook" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 500 500" width="28" height="28">
-                <path d="m500,250C500,111.93,388.07,0,250,0S0,111.93,0,250c0,117.24,80.72,215.62,189.61,242.64v-166.24h-51.55v-76.4h51.55v-32.92c0-85.09,38.51-124.53,122.05-124.53,15.84,0,43.17,3.11,54.35,6.21v69.25c-5.9-.62-16.15-.93-28.88-.93-40.99,0-56.83,15.53-56.83,55.9v27.02h81.66l-14.03,76.4h-67.63v171.77c123.77-14.95,219.7-120.35,219.7-248.17Z" fill="#1B5E20"/>
+                <path d="m500,250C500,111.93,388.07,0,250,0S0,111.93,0,250c0,117.24,80.72,215.62,189.61,242.64v-166.24h-51.55v-76.4h51.55v-32.92c0-85.09,38.51-124.53,122.05-124.53,15.84,0,43.17,3.11,54.35,6.21v69.25c-5.9-.62-16.15-.93-28.88-.93-40.99,0-56.83,15.53-56.83,55.9v27.02h81.66l-14.03,76.4h-67.63v171.77c123.77-14.95,219.7-120.35,219.7-248.17Z" fill="currentColor"/>
               </svg>
               <span>FACEBOOK</span>
             </a>
             
             <a *ngIf="publicInfo.instagram" [href]="publicInfo.instagram" target="_blank" rel="noopener noreferrer">
-              <svg fill="#1B5E20" viewBox="0 0 169.063 169.063" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+              <svg fill="currentColor" viewBox="0 0 169.063 169.063" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
                 <path d="M122.406,0H46.654C20.929,0,0,20.93,0,46.655v75.752c0,25.726,20.929,46.655,46.654,46.655h75.752c25.727,0,46.656-20.93,46.656-46.655V46.655C169.063,20.93,148.133,0,122.406,0z M154.063,122.407c0,17.455-14.201,31.655-31.656,31.655H46.654C29.2,154.063,15,139.862,15,122.407V46.655C15,29.201,29.2,15,46.654,15h75.752c17.455,0,31.656,14.201,31.656,31.655V122.407z"/>
                 <path d="M84.531,40.97c-24.021,0-43.563,19.542-43.563,43.563c0,24.02,19.542,43.561,43.563,43.561s43.563-19.541,43.563-43.561C128.094,60.512,108.552,40.97,84.531,40.97z M84.531,113.093c-15.749,0-28.563-12.812-28.563-28.561c0-15.75,12.813-28.563,28.563-28.563s28.563,12.813,28.563,28.563C113.094,100.281,100.28,113.093,84.531,113.093z"/>
                 <path d="M129.921,28.251c-2.89,0-5.729,1.17-7.77,3.22c-2.051,2.04-3.23,4.88-3.23,7.78c0,2.891,1.18,5.73,3.23,7.78c2.04,2.04,4.88,3.22,7.77,3.22c2.9,0,5.73-1.18,7.78-3.22c2.05-2.05,3.22-4.89,3.22-7.78c0-2.9-1.17-5.74-3.22-7.78C135.661,29.421,132.821,28.251,129.921,28.251z"/>
@@ -195,7 +279,7 @@
             </a>
             
             <a *ngIf="publicInfo.tiktok" [href]="publicInfo.tiktok" target="_blank" rel="noopener noreferrer">
-               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" fill="#1B5E20">
+               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" fill="currentColor">
                 <path d="M16.656 1.029c1.637-0.025 3.262-0.012 4.886-0.025 0.054 2.031 0.878 3.859 2.189 5.213c1.411 1.271 3.247 2.095 5.271 2.235v5.036c-1.912-0.048-3.71-0.489-5.331-1.247c-0.784-0.377-1.447-0.764-2.077-1.196c-0.012 3.649 0.012 7.298-0.025 10.934c-0.103 1.853-0.719 3.543-1.707 4.954c-1.652 2.366-4.328 3.919-7.371 4.011c-0.123 0.006-0.268 0.009-0.414 0.009-1.73 0-3.347-0.482-4.725-1.319c-2.508-1.509-4.238-4.091-4.558-7.094c-0.025-0.625-0.037-1.25-0.012-1.862 0.49-4.779 4.494-8.476 9.361-8.476 0.547 0 1.083 0.047 1.604 0.136c0.025 1.849-0.050 3.699-0.050 5.548-0.423-0.153-0.911-0.242-1.42-0.242-1.868 0-3.457 1.194-4.045 2.861c-0.133 0.427-0.21 0.918-0.21 1.426 0 0.206 0.013 0.41 0.037 0.61c0.332 2.046 2.086 3.59 4.201 3.59 0.061 0 0.121-0.001 0.181-0.004c1.463-0.044 2.733-0.831 3.451-1.994c0.267-0.372 0.45-0.822 0.511-1.311c0.125-2.237 0.075-4.461 0.087-6.698 0.012-5.036-0.012-10.060 0.025-15.083z"/>
               </svg>
               <span>TIKTOK</span>
@@ -209,7 +293,7 @@
                     <path d="M11.4 14.3 L18.85 10 L11.4 5.7 Z" fill="black"/>
                   </mask>
                 </defs>
-                <path d="M27.97 3.12C27.64 1.89 26.68 0.93 25.45 0.6C23.22 0 14.28 0 14.28 0C14.28 0 5.35 0 3.12 0.6C1.89 0.93 0.93 1.89 0.6 3.12C0 5.35 0 10 0 10C0 10 0 14.65 0.6 16.88C0.93 18.11 1.89 19.07 3.12 19.4C5.35 20 14.28 20 14.28 20C14.28 20 23.22 20 25.45 19.4C26.68 19.07 27.64 18.11 27.97 16.88C28.57 14.65 28.57 10 28.57 10C28.57 10 28.57 5.35 27.97 3.12Z" fill="#1B5E20" mask="url(#cutout)"/>
+                <path d="M27.97 3.12C27.64 1.89 26.68 0.93 25.45 0.6C23.22 0 14.28 0 14.28 0C14.28 0 5.35 0 3.12 0.6C1.89 0.93 0.93 1.89 0.6 3.12C0 5.35 0 10 0 10C0 10 0 14.65 0.6 16.88C0.93 18.11 1.89 19.07 3.12 19.4C5.35 20 14.28 20 14.28 20C14.28 20 23.22 20 25.45 19.4C26.68 19.07 27.64 18.11 27.97 16.88C28.57 14.65 28.57 10 28.57 10C28.57 10 28.57 5.35 27.97 3.12Z" fill="currentColor" mask="url(#cutout)"/>
               </svg>
               <span>YOUTUBE</span>
             </a>

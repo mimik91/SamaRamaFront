@@ -3,8 +3,8 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { NotificationsComponent } from './core/notifications.component';
 import { NavigationComponent } from './core/navigation/navigation.component';
+import { SeoService } from './core/seo.service';
 
-// 🔹 Dodajemy deklarację funkcji gtag
 declare let gtag: Function;
 
 @Component({
@@ -28,18 +28,23 @@ export class AppComponent implements OnInit {
   title = 'CycloPick';
   @ViewChild('navigation') navigationComponent!: NavigationComponent;
 
-  constructor(private router: Router) {}
+  // 🔹 2. Wstrzyknięcie SeoService w konstruktorze
+  constructor(private router: Router, private seoService: SeoService) {}
 
   ngOnInit() {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
-      // 🔹 Zamykamy menu mobilne po każdej nawigacji
+      
+      // 🔹 3. Aktualizacja linku kanonicznego po każdej nawigacji
+      this.seoService.updateSeoTags(event.urlAfterRedirects);
+
+      // Zamykamy menu mobilne
       if (this.navigationComponent) {
         this.navigationComponent.closeMobileMenu();
       }
 
-      // 🔹 Wysyłamy informację do Google Analytics o zmianie trasy
+      // Google Analytics
       gtag('config', 'G-9ZYH1T3NCJ', {
         page_path: event.urlAfterRedirects
       });

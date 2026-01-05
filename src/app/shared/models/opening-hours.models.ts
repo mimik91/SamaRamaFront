@@ -12,6 +12,14 @@ export interface DayHours {
 }
 
 /**
+ * Interwał czasu dla dnia (alternatywny format)
+ */
+export interface DayInterval {
+  openTime: string;
+  closeTime: string;
+}
+
+/**
  * DTO godzin otwarcia serwisu
  */
 export interface OpeningHoursDto {
@@ -32,6 +40,10 @@ export interface OpeningHoursWithInfoDto extends OpeningHoursDto {
   info?: string;
   note?: string;
   active?: boolean;
+  intervals?: { [key: string]: DayInterval };
+  openingHoursInfo?: string;
+  openingHoursNote?: string;
+  openingHoursActive?: boolean;
 }
 
 /**

@@ -2,8 +2,8 @@ export const environment = {
   production: false,
   
   // API Configuration
-  siteUrl: 'https://localhost:8080',
-  apiUrl: 'http://localhost:8080/api',
+  siteUrl: 'https://www.cyclopick.pl',
+  apiUrl: 'https://samarama-a5cba73df1da.herokuapp.com/api',
   
   // External Links
   links: {
@@ -131,5 +131,6 @@ export const environment = {
 export const environmentProduction = {
   ...environment,
   production: true,
-  apiUrl: 'https://api.yourdomain.com/api'
+  siteUrl: 'https://cyclopick.pl',
+  apiUrl: 'https://cyclopick.pl/api'
 };

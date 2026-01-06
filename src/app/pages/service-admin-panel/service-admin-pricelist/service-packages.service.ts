@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../core/api-config';
+import { environment } from '../../../environments/environments';
 import {
   PackageLevel,
   ServicePackageDto,
@@ -21,7 +21,7 @@ import {
 })
 export class ServicePackagesService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/bike-services-registered`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}`;
 
   /**
    * Pobiera konfigurację pakietów wraz z listą pakietów

@@ -3,14 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { ServicePackage } from './service-package.model';
-import { environment } from '../core/api-config';
+import { environment } from '../environments/environments';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class ServicePackageService {
-  private apiUrl = `${environment.apiUrl}/service-packages`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.servicePackages}`;
   private http = inject(HttpClient);
   
   constructor() {}

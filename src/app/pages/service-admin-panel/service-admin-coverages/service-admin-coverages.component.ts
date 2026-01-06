@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../../core/notification.service';
-import { environment } from '../../../core/api-config';
+import { environment } from '../../../environments/environments';
 import { firstValueFrom } from 'rxjs';
 
 interface BikeRepairCoverageCategory {

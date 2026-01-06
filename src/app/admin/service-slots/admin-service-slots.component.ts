@@ -5,7 +5,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NotificationService } from '../../core/notification.service';
-import { environment } from '../../core/api-config';
+import { environment } from '../../environments/environments';
 import { ServiceSlotService } from '../../service-slots/service-slot.service';
 import { AuthService } from '../../auth/auth.service'; // DODANO
 

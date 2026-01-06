@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { NotificationService } from '../../core/notification.service';
-import { AdminService, DashboardStats } from '../admin-service';
+import { AdminService } from '../admin-service';
+import { DashboardStats } from '../../shared/models/admin.models';
 
 @Component({
   selector: 'app-admin-dashboard',

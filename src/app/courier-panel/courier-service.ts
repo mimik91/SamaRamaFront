@@ -2,34 +2,22 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
-import { environment } from '../core/api-config';
+import { environment } from '../environments/environments';
+import { CourierOrder } from '../shared/models/courier.models';
 
-export interface CourierOrder {
-  id: number;
-  status: 'CONFIRMED' | 'ON_THE_WAY_BACK';
-  orderDate: string;
-  pickupDate: string;
-  pickupTimeWindow?: string;
-  pickupAddress: string;
-  deliveryAddress: string;
-  bikeBrand?: string;
-  bikeModel?: string;
-  clientEmail: string;
-  clientPhone?: string;
-}
 
 @Injectable({
   providedIn: 'root'
 })
 export class CourierService {
-  private apiUrl = `${environment.apiUrl}`;
   private http = inject(HttpClient);
 
   /**
    * Pobiera zamówienia dla kuriera (status CONFIRMED z dzisiejszą datą odbioru + ON_THE_WAY_BACK)
    */
   getCourierOrders(): Observable<CourierOrder[]> {
-    return this.http.get<CourierOrder[]>(`${this.apiUrl}/orders/courier/orders`).pipe(
+    const url = `${environment.apiUrl}${environment.endpoints.orders.courier}`;
+    return this.http.get<CourierOrder[]>(url).pipe(
       catchError(error => {
         console.error('Error fetching courier orders:', error);
         return throwError(() => error);
@@ -41,7 +29,8 @@ export class CourierService {
    * Oznacza zamówienie jako odebrane (zmienia status z CONFIRMED na PICKED_UP)
    */
   markOrderAsPickedUp(orderId: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/admin/orders/${orderId}`, {
+    const url = `${environment.apiUrl}${environment.endpoints.admin.orderById.replace(':id', orderId.toString())}`;
+    return this.http.patch(url, {
       status: 'PICKED_UP'
     }).pipe(
       catchError(error => {

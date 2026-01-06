@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../core/api-config';
+import { environment } from '../../../environments/environments';
 
 interface BikeServiceRegisteredDto {
   id: number;

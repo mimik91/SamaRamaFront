@@ -3,14 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { ServiceRecord } from './service-record.model';
-import { environment } from '../core/api-config';
+import { environment } from '../environments/environments';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class ServiceRecordService {
-  private apiUrl = `${environment.apiUrl}/service-records`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.serviceRecords}`;
   private http = inject(HttpClient);
   
   constructor() {}

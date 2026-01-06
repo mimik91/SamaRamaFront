@@ -1,45 +1,36 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from 'src/app/environments/environments';
-import { 
-  BikeServicePublicInfo, 
-  ServiceActiveStatus 
+import { environment } from '../../environments/environments';
+import {
+  BikeServicePublicInfo,
+  ServiceActiveStatus
 } from '../../shared/models/bike-service-common.models';
 import { OpeningHoursDto, OpeningHoursWithInfoDto } from '../../shared/models/opening-hours.models';
-import { 
+import {
   ServicePricelistDto,
-  CategoryWithItemsDto 
+  CategoryWithItemsDto
 } from '../../shared/models/service-pricelist.models';
 import {
   ServicePackagesConfigDto,
   ServicePackageDto
 } from '../../shared/models/service-packages.models';
-
-// ===== POMOCNICZE INTERFACES =====
-
-export interface ServiceIdResponse {
-  id: number;
-}
-
-export interface ServiceImageResponse {
-  url: string;
-}
+import {
+  ServiceIdResponse,
+  ServiceImageResponse
+} from '../../shared/models/api.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ServiceProfileService {
   private http = inject(HttpClient);
-  
-  // Stała konfiguracja endpointów
-  public readonly API_BASE = environment.apiUrl;
 
   /**
    * Pobiera ID serwisu na podstawie suffixu
    */
   getServiceIdBySuffix(suffix: string): Observable<ServiceIdResponse> {
-    const url = `${this.API_BASE}/bike-services/by-suffix/${suffix}`;
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.bySuffix}/${suffix}`;
     return this.http.get<ServiceIdResponse>(url);
   }
 
@@ -47,7 +38,7 @@ export class ServiceProfileService {
    * Pobiera publiczne informacje o serwisie
    */
   getPublicInfo(serviceId: number): Observable<BikeServicePublicInfo> {
-    const url = `${this.API_BASE}/bike-services/${serviceId}/public-info`;
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.publicInfo.replace(':id', serviceId.toString())}`;
     return this.http.get<BikeServicePublicInfo>(url);
   }
 
@@ -55,7 +46,7 @@ export class ServiceProfileService {
    * Pobiera status aktywności cennika, godzin otwarcia i pakietów
    */
   getActiveStatus(serviceId: number): Observable<ServiceActiveStatus> {
-    const url = `${this.API_BASE}/bike-services/${serviceId}/active-status`;
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.activeStatus.replace(':id', serviceId.toString())}`;
     return this.http.get<ServiceActiveStatus>(url);
   }
 
@@ -63,7 +54,7 @@ export class ServiceProfileService {
    * Pobiera godziny otwarcia (jeśli aktywne)
    */
   getOpeningHours(serviceId: number): Observable<OpeningHoursWithInfoDto> {
-    const url = `${this.API_BASE}/bike-services/${serviceId}/opening-hours`;
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.openingHours.replace(':id', serviceId.toString())}`;
     return this.http.get<OpeningHoursWithInfoDto>(url);
   }
 
@@ -71,7 +62,7 @@ export class ServiceProfileService {
    * Pobiera cennik (jeśli aktywny)
    */
   getPricelist(serviceId: number): Observable<ServicePricelistDto> {
-    const url = `${this.API_BASE}/bike-services/${serviceId}/pricelist`;
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.pricelist.replace(':id', serviceId.toString())}`;
     return this.http.get<ServicePricelistDto>(url);
   }
 
@@ -79,7 +70,7 @@ export class ServiceProfileService {
    * Pobiera wszystkie dostępne kategorie i itemy cennika
    */
   getAllAvailableItems(): Observable<CategoryWithItemsDto[]> {
-    const url = `${this.API_BASE}/bike-services/pricelist/available-items`;
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.pricelistAvailableItems}`;
     return this.http.get<CategoryWithItemsDto[]>(url);
   }
 
@@ -87,7 +78,7 @@ export class ServiceProfileService {
    * Pobiera konfigurację pakietów serwisowych
    */
   getPackagesConfig(serviceId: number): Observable<ServicePackagesConfigDto> {
-    const url = `${this.API_BASE}/bike-services/service-packages-config?serviceId=${serviceId}`;
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.packagesConfig}?serviceId=${serviceId}`;
     return this.http.get<ServicePackagesConfigDto>(url);
   }
 
@@ -95,7 +86,7 @@ export class ServiceProfileService {
    * Pobiera wszystkie typy rowerów, które serwis obsługuje
    */
   getBikeTypes(serviceId: number): Observable<string[]> {
-    const url = `${this.API_BASE}/bike-services/coverages/bikeTypes/${serviceId}`;
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.bikeTypes}/${serviceId}`;
     return this.http.get<string[]>(url);
   }
 
@@ -103,7 +94,7 @@ export class ServiceProfileService {
    * Pobiera obraz serwisu (LOGO, ABOUT_US, OPENING_HOURS)
    */
   getServiceImage(serviceId: number, imageType: 'LOGO' | 'ABOUT_US' | 'OPENING_HOURS'): Observable<ServiceImageResponse> {
-    const url = `${this.API_BASE}/services/${serviceId}/images/${imageType}`;
+    const url = `${environment.apiUrl}${environment.endpoints.services.images.replace(':id', serviceId.toString()).replace(':type', imageType)}`;
     return this.http.get<ServiceImageResponse>(url);
   }
 }

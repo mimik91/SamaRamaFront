@@ -2,13 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import { OrderStatus } from '../service-orders/service-order.model';
-import { environment } from './api-config';
+import { environment } from '../environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EnumerationService {
-  private apiUrl = `${environment.apiUrl}/enumerations`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.enumerations.base}`;
   private http = inject(HttpClient);
   
   // Cache for all enumerations

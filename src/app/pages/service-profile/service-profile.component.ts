@@ -3,10 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { I18nService } from '../../core/i18n.service';  // ✅ Twój serwis
-import {
-  ServiceProfileService,
-  ServiceImageResponse
-} from './service-profile.service';
+import { ServiceProfileService } from './service-profile.service';
+import { ServiceImageResponse } from '../../shared/models/api.models';
 import {
   BikeServicePublicInfo,
   ServiceActiveStatus

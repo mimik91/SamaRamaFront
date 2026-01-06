@@ -2,28 +2,18 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
-import { environment } from '../core/api-config';
-
-export interface PasswordResetRequestDto {
-  email: string;
-}
-
-export interface PasswordResetDto {
-  token: string;
-  newPassword: string;
-}
-
-export interface PasswordResetResponse {
-  message: string;
-  requiresVerification?: boolean;
-  isGuestUser?: boolean;
-}
+import { environment } from '../environments/environments';
+import {
+  PasswordResetRequestDto,
+  PasswordResetDto,
+  PasswordResetResponse
+} from '../shared/models/auth.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PasswordResetService {
-  private apiUrl = `${environment.apiUrl}/password`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.password}`;
   private http = inject(HttpClient);
 
   /**

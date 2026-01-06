@@ -19,7 +19,7 @@ import {
   MapServicesRequestDto,
   ServiceDetails,
   BikeRepairCoverageCategoryDto
-} from './services/map.models';
+} from '../../shared/models/map.models';
 
 // Components
 import { MapComponent } from './components/map/map.component';

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of, shareReplay, throwError } from 'rxjs';
-import { environment } from '../core/api-config';
+import { environment } from '../environments/environments';
 
 export interface ServiceSlotAvailability {
   date: string;
@@ -25,7 +25,7 @@ export interface SlotAvailabilityCheck {
   providedIn: 'root'
 })
 export class ServiceSlotService {
-  private apiUrl = `${environment.apiUrl}/service-slots`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.serviceSlots.base}`;
   private http = inject(HttpClient);
   
   // Cache dla dostępności na następne dni

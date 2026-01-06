@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MapService } from '../../services/map.service';
 import { LogoCacheService } from '../../services/logo-cache.service';
 import { Router } from '@angular/router';
-import { MapPin } from '../../services/map.models';
+import { MapPin } from '../../../../shared/models/map.models';
 import { Inject } from '@angular/core';
 
 @Component({

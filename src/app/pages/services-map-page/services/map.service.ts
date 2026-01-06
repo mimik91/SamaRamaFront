@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of, tap } from 'rxjs';
-import { environment } from '../../../core/api-config';
+import { environment } from '../../../environments/environments';
 import {
   MapPin,
   ServiceDetails,
@@ -12,14 +12,14 @@ import {
   BikeRepairCoverageMapDto,
   MapServicesRequestDto,
   MapServicesResponseDto
-} from './map.models';
+} from '../../../shared/models/map.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MapService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/map`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.map}`;
 
   getServices(request: MapServicesRequestDto): Observable<MapServicesResponseDto> {
     console.log('MapService: Fetching services from:', `${this.apiUrl}/services`);

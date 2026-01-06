@@ -2,32 +2,18 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
-import { environment } from '../core/api-config';
-
-export interface UserProfile {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-}
-
-export interface UserUpdateData {
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string | null;
-}
-
-export interface PasswordChangeData {
-  currentPassword: string;
-  newPassword: string;
-}
+import { environment } from '../environments/environments';
+import {
+  UserProfile,
+  UserUpdateData,
+  PasswordChangeData
+} from '../shared/models/user.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AccountService {
-  private apiUrl = `${environment.apiUrl}/account`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.account}`;
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 

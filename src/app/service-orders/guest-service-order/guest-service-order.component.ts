@@ -25,7 +25,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { CustomDatePickerFilter, CUSTOM_DATE_FORMATS } from '../custom-date-picker-filter';
 import { CustomDateAdapter } from '../custom-date-adapter';
-import { environment } from '../../core/api-config';
+import { environment } from '../../environments/environments';
 import { ServiceSlotAvailability } from '../../service-slots/service-slot.service';
 
 @Component({

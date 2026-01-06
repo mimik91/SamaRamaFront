@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../core/api-config';
+import { environment } from '../../../environments/environments';
 
 interface UploadUrlResponse {
   imageId: string;
@@ -35,7 +35,6 @@ export class ServiceAdminImagesComponent implements OnInit {
   @Input() serviceId!: number;
 
   private http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl;
   private readonly MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
 
   readonly imageTypes: ImageType[] = ['LOGO', 'ABOUT_US', 'OPENING_HOURS'];
@@ -94,7 +93,8 @@ export class ServiceAdminImagesComponent implements OnInit {
     this.images[type].isLoading = true;
     this.errorMessage = '';
 
-    this.http.get<ImageUrlResponse>(`${this.apiUrl}/services/${this.serviceId}/images/${type}`)
+    const url = `${environment.apiUrl}${environment.endpoints.services.images.replace(':id', this.serviceId.toString()).replace(':type', type)}`;
+    this.http.get<ImageUrlResponse>(url)
       .subscribe({
         next: (response) => {
           this.images[type].url = response.url;
@@ -284,8 +284,9 @@ export class ServiceAdminImagesComponent implements OnInit {
       const dimensions = await this.getImageDimensions(compressedFile);
       this.uploadProgress = 30;
       
+      const url = `${environment.apiUrl}${environment.endpoints.services.imagesBase.replace(':id', this.serviceId.toString())}`;
       const uploadResponse = await this.http.post<UploadUrlResponse>(
-        `${this.apiUrl}/services/${this.serviceId}/images`,
+        url,
         {
           type: type,
           fileName: `${this.serviceId}_${type}`,
@@ -343,9 +344,10 @@ export class ServiceAdminImagesComponent implements OnInit {
 
     try {
       this.uploadProgress = 30;
-      
+
+      const url = `${environment.apiUrl}${environment.endpoints.services.imagesBase.replace(':id', this.serviceId.toString())}`;
       const uploadResponse = await this.http.post<UploadUrlResponse>(
-        `${this.apiUrl}/services/${this.serviceId}/images`,
+        url,
         {
           type: type,
           fileName: assetName,
@@ -382,7 +384,8 @@ export class ServiceAdminImagesComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.http.delete(`${this.apiUrl}/services/${this.serviceId}/images/${type}`)
+    const url = `${environment.apiUrl}${environment.endpoints.services.images.replace(':id', this.serviceId.toString()).replace(':type', type)}`;
+    this.http.delete(url)
       .subscribe({
         next: () => {
           this.successMessage = `Obraz ${type} został usunięty`;

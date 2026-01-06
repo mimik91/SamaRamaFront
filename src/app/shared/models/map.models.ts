@@ -1,5 +1,15 @@
 // src/app/pages/services-map-page/services/map.models.ts
 
+/**
+ * Koordynaty serwisu (używane przez stare wersje map.service.ts)
+ */
+export interface Coordinate {
+  serviceId: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
 export interface MapPin {
   id: number;
   name: string;

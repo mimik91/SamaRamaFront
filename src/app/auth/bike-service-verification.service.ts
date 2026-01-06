@@ -1,60 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
-import { environment } from '../core/api-config';
-
-// Interfejsy
-export interface ServiceVerificationStatus {
-  hasService: boolean;
-  serviceId?: number;
-  serviceName?: string;
-  verified?: boolean;
-  suffix?: string;
-}
-
-export interface BikeServiceNameIdDto {
-  id: number;
-  name: string;
-}
-
-export interface BikeServiceRegisteredDto {
-  id: number;
-  name: string;
-  email?: string;
-  street?: string;
-  building?: string;
-  flat?: string;
-  postalCode?: string;
-  city?: string;
-  latitude?: number;
-  longitude?: number;
-  phoneNumber?: string;
-  transportCost?: number;
-  transportAvailable: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  suffix?: string;
-  contactPerson?: string;
-  website?: string;
-  description?: string;
-  isRegistered: boolean;
-  openingHours?: {
-    [key: string]: {
-      open: string;
-      close: string;
-    }
-  };
-  openingHoursInfo?: string;
-  openingHoursNote?: string;
-  pricelistInfo?: string;
-  pricelistNote?: string;
-}
+import { environment } from '../environments/environments';
+import { ServiceVerificationStatus } from '../shared/models/auth.models';
+import {
+  BikeServiceNameIdDto,
+  BikeServiceRegisteredDto
+} from '../shared/models/bike-service.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BikeServiceVerificationService {
-  private apiUrl = `${environment.apiUrl}/bike-services-registered`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}`;
 
   constructor(private http: HttpClient) {}
 

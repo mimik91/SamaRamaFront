@@ -35,7 +35,6 @@ import { PrivacyPolicyComponent } from './core/privacy-policy.component';
 import { suffixValidationGuard } from './auth/suffix-validation.guard';
 import { ServiceProfileTitleResolver} from './environments/service-profile-title.resolver';
 
-
 // REFACTORED COMPONENTS - NEW STRUCTURE
 import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
 import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-page.component';

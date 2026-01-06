@@ -1,13 +1,13 @@
 import { Component, OnInit, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PricelistService } from './pricelist.service';
 import {
-  PricelistService,
   CategoryWithPrices,
   PricelistItemWithPrice,
   ServicePricelistDto,
   ServicePricelistUpdateDto
-} from './pricelist.service';
+} from '../../../shared/models/service-pricelist.models';
 
 @Component({
   selector: 'app-service-admin-pricelist',

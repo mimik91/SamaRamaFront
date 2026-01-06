@@ -2,7 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AdminService, AdminUser } from '../admin-service';
+import { AdminService } from '../admin-service';
+import { AdminUser } from '../../shared/models/admin.models';
 import { NotificationService } from '../../core/notification.service';
 
 @Component({

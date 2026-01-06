@@ -2,7 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminService, BikeServiceRegisteredDto } from '../admin-service';
+import { AdminService } from '../admin-service';
+import { BikeServiceRegisteredDto } from '../../shared/models/bike-service.models';
 import { NotificationService } from '../../core/notification.service';
 
 @Component({

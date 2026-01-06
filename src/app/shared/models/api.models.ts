@@ -3,6 +3,20 @@
 // ============================================
 
 /**
+ * Odpowiedź z ID serwisu
+ */
+export interface ServiceIdResponse {
+  id: number;
+}
+
+/**
+ * Odpowiedź z URL obrazu serwisu
+ */
+export interface ServiceImageResponse {
+  url: string;
+}
+
+/**
  * Błąd API
  */
 export interface ApiError {

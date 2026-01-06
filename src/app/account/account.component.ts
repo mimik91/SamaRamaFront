@@ -4,7 +4,12 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractContro
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { NotificationService } from '../core/notification.service';
-import { AccountService, UserProfile, UserUpdateData, PasswordChangeData } from './account.service';
+import { AccountService } from './account.service';
+import {
+  UserProfile,
+  UserUpdateData,
+  PasswordChangeData
+} from '../shared/models/user.models';
 
 @Component({
   selector: 'app-account',

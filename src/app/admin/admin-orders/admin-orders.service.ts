@@ -15,7 +15,7 @@ import {
   providedIn: 'root'
 })
 export class AdminOrdersService {
-  private readonly apiUrl = `${environment.apiUrl}/admin/orders`;
+  private readonly apiUrl = `${environment.apiUrl}${environment.endpoints.admin.orders}`;
   private http = inject(HttpClient);
 
   constructor() { }

@@ -2,13 +2,17 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { environment } from '../environments/environments';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   // Lista endpointów, które nie powinny wymuszać przekierowania do logowania przy 401
   // (np. zamówienia gościa, rejestracja, cennik)
-  const publicEndpoints = ['/api/guest-orders/transport', '/api/auth/login'];
+  const publicEndpoints = [
+    environment.endpoints.guestOrders.transport,
+    '/auth/login'
+  ];
   const isPublicEndpoint = publicEndpoints.some(url => req.url.includes(url));
 
   return next(req).pipe(

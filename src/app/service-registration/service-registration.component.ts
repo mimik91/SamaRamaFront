@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../core/notification.service';
-import { environment } from '../core/api-config';
+import { environment } from '../environments/environments';
 import { firstValueFrom, Observable, of, timer, Subscription } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
 

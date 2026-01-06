@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CourierService, CourierOrder } from './courier-service';
+import { CourierService } from './courier-service';
+import { CourierOrder } from '../shared/models/courier.models';
 import { NotificationService } from '../core/notification.service';
 import { AuthService } from '../auth/auth.service';
 import { Router } from '@angular/router';

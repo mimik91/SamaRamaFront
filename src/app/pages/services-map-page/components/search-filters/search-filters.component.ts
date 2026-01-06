@@ -4,12 +4,12 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnInit, 
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  CitySuggestion, 
-  MapPin, 
-  CoverageCategory, 
-  SearchFiltersState 
-} from '../../services/map.models';
+import {
+  CitySuggestion,
+  MapPin,
+  CoverageCategory,
+  SearchFiltersState
+} from '../../../../shared/models/map.models';
 
 @Component({
   selector: 'app-search-filters',

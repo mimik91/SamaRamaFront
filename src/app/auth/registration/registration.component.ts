@@ -2,7 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AuthService, UserRegistrationData } from '../auth.service';
+import { AuthService } from '../auth.service';
+import { UserRegistrationData } from '../../shared/models/auth.models';
 
 @Component({
   selector: 'app-registration',

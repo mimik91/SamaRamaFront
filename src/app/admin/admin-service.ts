@@ -2,64 +2,20 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, catchError, throwError, map } from 'rxjs';
 import { ServiceOrder } from '../service-orders/service-order.model';
-import { environment } from '../core/api-config';
+import { environment } from '../environments/environments';
+import {
+  DashboardStats,
+  AdminUser,
+  PaginatedResponse
+} from '../shared/models/admin.models';
+import { BikeServiceRegisteredDto } from '../shared/models/bike-service.models';
 
-export interface DashboardStats {
-  totalUsers: number;
-  totalBicycles: number;
-  totalServices: number;
-  pendingOrders: number;
-  user?: any;
-  authorities?: string[];
-}
-
-export interface AdminUser {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  roles: string[];
-  verified: boolean;
-  createdAt: string;
-}
-
-export interface PaginatedResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  currentPage: number;
-  pageSize: number;
-}
-
-export interface BikeServiceRegisteredDto {
-  id: number;
-  name: string;
-  email: string;
-  street?: string;
-  building?: string;
-  flat?: string;
-  postalCode?: string;
-  city?: string;
-  latitude?: number;
-  longitude?: number;
-  phoneNumber?: string;
-  transportCost?: number;
-  transportAvailable: boolean;
-  createdAt: string;
-  updatedAt?: string;
-  suffix?: string;
-  contactPerson?: string;
-  website?: string;
-  description?: string;
-  isRegistered: boolean;
-}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminService {
-  private apiUrl = `${environment.apiUrl}/admin`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.admin.base}`;
   private serviceOrdersUrl = `${environment.apiUrl}/service-orders`;
   private enumerationsUrl = `${environment.apiUrl}/enumerations`;
   private http = inject(HttpClient);

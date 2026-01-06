@@ -1,63 +1,23 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../core/api-config';
-
-// ===== INTERFACES =====
-
-export interface PricelistCategoryDto {
-  id: number;
-  name: string;
-  displayOrder: number;
-  createdAt: string;
-}
-
-export interface PricelistItemDto {
-  id: number;
-  name: string;
-  categoryId: number;
-  categoryName: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CategoryWithItemsDto {
-  category: PricelistCategoryDto;
-  items: PricelistItemDto[];
-}
-
-export interface ServicePricelistDto {
-  items: { [itemId: number]: number }; // itemId -> price
-  pricelistInfo: string | null;
-  pricelistNote: string | null;
-  pricelistActive: boolean;
-}
-
-export interface ServicePricelistUpdateDto {
-  items: { [itemId: number]: number }; // itemId -> price
-  pricelistInfo: string | null;
-  pricelistNote: string | null;
-  pricelistActive: boolean;
-}
-
-// ===== POMOCNICZE INTERFEJSY DLA WIDOKU =====
-
-export interface PricelistItemWithPrice extends PricelistItemDto {
-  price: number | null;
-  isAssigned: boolean;
-}
-
-export interface CategoryWithPrices {
-  category: PricelistCategoryDto;
-  items: PricelistItemWithPrice[];
-}
+import { environment } from '../../../environments/environments';
+import {
+  PricelistCategoryDto,
+  PricelistItemDto,
+  CategoryWithItemsDto,
+  ServicePricelistDto,
+  ServicePricelistUpdateDto,
+  PricelistItemWithPrice,
+  CategoryWithPrices
+} from '../../../shared/models/service-pricelist.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PricelistService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/bike-services-registered`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}`;
 
   /**
    * Pobiera wszystkie dostępne kategorie i itemy cennika

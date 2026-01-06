@@ -3,12 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { environment } from '../../../core/api-config';
-
-interface DayInterval {
-  openTime: string;
-  closeTime: string;
-}
+import { environment } from '../../../environments/environments';
+import { DayInterval } from '../../../shared/models/opening-hours.models';
 
 interface OpeningHoursData {
   intervals: { [key: string]: DayInterval };
@@ -27,7 +23,7 @@ interface OpeningHoursData {
 export class ServiceAdminOpeningHoursComponent implements OnInit {
   @Input() serviceId!: number;
 
-  private apiUrl = `${environment.apiUrl}/bike-services-registered`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}`;
 
   openingHoursForm!: FormGroup;
   isEditMode = false;

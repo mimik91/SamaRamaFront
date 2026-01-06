@@ -8,8 +8,11 @@ import { ServiceAdminCoveragesComponent } from './service-admin-coverages/servic
 import { ServiceAdminPricelistWrapperComponent } from './service-admin-pricelist/service-admin-pricelist-wrapper.component';
 import { ServiceAdminOpeningHoursComponent } from './service-admin-opening-hours/service-admin-opening-hours.component';
 import { ServiceAdminImagesComponent } from './service-admin-images/service-admin-images.component';
-import { BikeServiceNameIdDto, BikeServiceRegisteredDto } from '../../shared/models/bike-service-common.models';
-import {  
+import {
+  BikeServiceNameIdDto,
+  BikeServiceRegisteredDto,
+  } from '../../shared/models/bike-service-common.models';
+import {
   AdminPanelTab,
   AdminPanelLoadingState,
   DEFAULT_LOADING_STATE,

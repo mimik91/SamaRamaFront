@@ -1,7 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AdminService, BikeServiceRegisteredDto } from '../admin-service';
+
+import { AdminService } from '../admin-service';
+import { BikeServiceRegisteredDto } from '../../shared/models/bike-service.models';
 import { NotificationService } from '../../core/notification.service';
 
 @Component({
@@ -41,12 +43,12 @@ export class AdminServicesVerificationComponent implements OnInit {
         this.recentlyVerifiedServices = services
           .filter(s => s.isRegistered)
           .filter(s => {
-            const updatedAt = s.updatedAt ? new Date(s.updatedAt) : new Date(s.createdAt);
+            const updatedAt = s.updatedAt ? new Date(s.updatedAt) : (s.createdAt ? new Date(s.createdAt) : new Date());
             return updatedAt >= oneWeekAgo;
           })
           .sort((a, b) => {
-            const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(a.createdAt);
-            const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(b.createdAt);
+            const dateA = a.updatedAt ? new Date(a.updatedAt) : (a.createdAt ? new Date(a.createdAt) : new Date());
+            const dateB = b.updatedAt ? new Date(b.updatedAt) : (b.createdAt ? new Date(b.createdAt) : new Date());
             return dateB.getTime() - dateA.getTime();
           });
         
@@ -134,7 +136,10 @@ export class AdminServicesVerificationComponent implements OnInit {
     return parts.join(' ') || 'Brak adresu';
   }
 
-  formatDate(dateString: string): string {
+  formatDate(dateString: string | undefined): string {
+    if (!dateString) {
+      return 'Brak daty';
+    }
     const date = new Date(dateString);
     return date.toLocaleDateString('pl-PL', {
       year: 'numeric',

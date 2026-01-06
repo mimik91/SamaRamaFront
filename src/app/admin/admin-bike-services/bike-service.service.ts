@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
-import { environment } from '../../core/api-config';
+import { environment } from '../../environments/environments';
 
 export interface BikeService {
   id: number;
@@ -48,7 +48,7 @@ export interface ImportResponse {
   providedIn: 'root'
 })
 export class BikeServiceService {
-  private apiUrl = `${environment.apiUrl}/admin/bike-services`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.admin.bikeServices}`;
   private http = inject(HttpClient);
 
   constructor() { }

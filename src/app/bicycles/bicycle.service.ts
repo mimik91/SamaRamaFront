@@ -4,14 +4,14 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { Bicycle, BicycleForm } from './bicycle.model';
 import { AuthService } from '../auth/auth.service';
-import { environment } from '../core/api-config';
+import { environment } from '../environments/environments';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class BicycleService {
-  private apiUrl = `${environment.apiUrl}/bicycles`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.bicycles}`;
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 

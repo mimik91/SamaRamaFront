@@ -1,55 +1,20 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, catchError, throwError, of } from 'rxjs';
-import { environment } from '../core/api-config';
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface UserRegistrationData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-}
-
-export interface AuthResponse {
-  token: string;
-  id: number;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  name?: string;
-  role: 'CLIENT' | 'SERVICE' | 'ADMIN' | 'MODERATOR';
-  redirectUrl?: string;
-  // Dla SERVICE users - tablice
-  bikeServiceIds?: number[];
-  suffixes?: string[];
-}
-
-interface UserSession {
-  token: string;
-  role: 'CLIENT' | 'SERVICE' | 'ADMIN' | 'MODERATOR';
-  userId: number;
-  email: string;
-  name?: string;
-  expiresAt: number;
-}
-
-// Nowy interface dla danych serwisu
-interface ServiceData {
-  serviceId: number;
-  suffix: string;
-}
+import { environment } from '../environments/environments';
+import {
+  LoginCredentials,
+  UserRegistrationData,
+  AuthResponse,
+  UserSession,
+  ServiceData
+} from '../shared/models/auth.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/auth`;
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.auth}`;
   private http = inject(HttpClient);
   
   // Use BehaviorSubject to track authentication state

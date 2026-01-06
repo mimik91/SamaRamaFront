@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import { LogoCacheService } from '../../services/logo-cache.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { MapPin, ServiceDetails, MapViewState, MapBounds } from '../../services/map.models';
+import { MapPin, ServiceDetails, MapViewState, MapBounds } from '../../../../shared/models/map.models';
 import { MapService } from '../../services/map.service';
 import { Router } from '@angular/router';
 

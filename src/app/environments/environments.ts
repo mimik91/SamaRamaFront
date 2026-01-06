@@ -2,8 +2,8 @@ export const environment = {
   production: false,
   
   // API Configuration
-  siteUrl: 'https://www.cyclopick.pl',
-  apiUrl: 'https://samarama-a5cba73df1da.herokuapp.com/api',
+  siteUrl: 'https://localhost:8080',
+  apiUrl: 'http://localhost:8080/api',
   
   // External Links
   links: {
@@ -16,22 +16,57 @@ export const environment = {
   
   // API Endpoints
   endpoints: {
+    account: '/account',
+    auth: '/auth',
+    bicycles: '/bicycles',
+    password: '/password',
+    verification: '/verification',
+    map: '/map',
+
+    admin: {
+      base: '/admin',
+      bikeServices: '/admin/bike-services',
+      orders: '/admin/orders',
+      orderById: '/admin/orders/:id'
+    },
+
+    orders: {
+      service: '/orders/service',
+      courier: '/orders/courier/orders'
+    },
+
     guestOrders: {
       transport: '/guest-orders/transport',
       discounts: '/guest-orders/discounts',
     },
+
     serviceSlots: {
+      base: '/service-slots',
       checkAvailability: '/service-slots/check-availability'
     },
+
+    servicePackages: '/service-packages',
+    serviceRecords: '/service-records',
+
     enumerations: {
       base: '/enumerations',
       cities: '/cities'
     },
+
     bikeServices: {
       base: '/bike-services',
       coverages: '/bike-services/coverages',
-      bikeTypes: '/bike-services/coverages/bikeTypes'
+      bikeTypes: '/bike-services/coverages/bikeTypes',
+      bySuffix: '/bike-services/by-suffix',
+      publicInfo: '/bike-services/:id/public-info',
+      activeStatus: '/bike-services/:id/active-status',
+      openingHours: '/bike-services/:id/opening-hours',
+      pricelist: '/bike-services/:id/pricelist',
+      pricelistAvailableItems: '/bike-services/pricelist/available-items',
+      packagesConfig: '/bike-services/service-packages-config',
+      packages: '/bike-services/service-packages'
     },
+
     bikeServicesRegistered: {
       base: '/bike-services-registered',
       myService: '/bike-services-registered/my-service',
@@ -40,7 +75,14 @@ export const environment = {
       pricelistAvailableItems: '/bike-services-registered/pricelist/available-items',
       packages: '/bike-services-registered/my-service/packages',
       packagesConfig: '/bike-services-registered/my-service/packages-config'
-    }
+    },
+
+    services: {
+      images: '/services/:id/images/:type',
+      imagesBase: '/services/:id/images'
+    },
+
+    mapPins: '/map/service-pins'
   },
   
   // Application Settings
@@ -89,6 +131,5 @@ export const environment = {
 export const environmentProduction = {
   ...environment,
   production: true,
-  siteUrl: 'https://cyclopick.pl',
-  apiUrl: 'https://cyclopick.pl/api'
+  apiUrl: 'https://api.yourdomain.com/api'
 };

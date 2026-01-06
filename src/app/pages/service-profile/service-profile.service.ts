@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from 'src/app/environments/environments';
 import { 
   BikeServicePublicInfo, 
   ServiceActiveStatus 
@@ -32,7 +33,7 @@ export class ServiceProfileService {
   private http = inject(HttpClient);
   
   // Stała konfiguracja endpointów
-  public readonly API_BASE = 'http://localhost:8080/api';
+  public readonly API_BASE = environment.apiUrl;
 
   /**
    * Pobiera ID serwisu na podstawie suffixu

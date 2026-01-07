@@ -1,0 +1,36 @@
+# robots.txt dla CycloPick.pl
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-*
+Disallow: /account
+Disallow: /bicycles
+Disallow: /service-appointments
+Disallow: /order-service
+Disallow: /order-transport
+Disallow: /guest-order
+Disallow: /login
+Disallow: /register
+Disallow: /verify-account
+Disallow: /password-reset
+Disallow: /password-reset-request
+Disallow: /mistrzauta
+Disallow: /*panel-administratora
+Disallow: /client-dashboard
+
+# Dozwolone publiczne strony
+Allow: /
+Allow: /jak-dzialamy
+Allow: /cooperation
+Allow: /for-services
+Allow: /register-service
+Allow: /terms-of-service
+Allow: /terms-of-service-workshops
+Allow: /privacy-policy
+
+# Sitemap
+Sitemap: https://cyclopick.pl/sitemap.xml
+
+# Crawl-delay (opcjonalnie, jeśli serwer słaby)
+# Crawl-delay: 1

@@ -1,8 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { I18nService } from '../../core/i18n.service';  // ✅ Twój serwis
+import { SeoService } from '../../core/seo.service';  // ✅ SEO Service
+import { SchemaOrgHelper, LocalBusinessData } from '../../core/schema-org.helper';  // ✅ Schema.org
 import { ServiceProfileService } from './service-profile.service';
 import { ServiceImageResponse } from '../../shared/models/api.models';
 import {
@@ -28,11 +30,12 @@ type TabType = 'info' | 'hours' | 'pricelist' | 'packages';
   templateUrl: './service-profile.component.html',
   styleUrls: ['./service-profile.component.css']
 })
-export class ServiceProfilePageComponent implements OnInit {
+export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private profileService = inject(ServiceProfileService);
   private i18n = inject(I18nService);  // ✅ Używamy I18nService
+  private seoService = inject(SeoService);  // ✅ SEO Service
 
   // Stan ładowania
   isLoading = true;
@@ -194,6 +197,9 @@ export class ServiceProfilePageComponent implements OnInit {
       console.log('  - bikeTypes:', this.bikeTypes);
       console.log('  - selectedBikeType:', this.selectedBikeType);
       console.log('  - filteredPackages:', this.filteredPackages);
+
+      // ✅ Aktualizuj SEO po załadowaniu wszystkich danych
+      this.updateSeoTags();
     })
     .catch(err => {
       console.error('❌ Error loading service data:', err);
@@ -396,5 +402,84 @@ export class ServiceProfilePageComponent implements OnInit {
   // Metoda pomocnicza do tłumaczeń (dla template)
   t(key: string): string {
     return this.i18n.instant(key);
+  }
+
+  // ✅ SEO: Aktualizacja meta tagów dla profilu serwisu
+  private updateSeoTags(): void {
+    if (!this.publicInfo) return;
+
+    const serviceName = this.publicInfo.name;
+    const city = this.publicInfo.city || 'Polska';
+    const address = this.getFullAddress();
+    const description = this.publicInfo.description || undefined;
+
+    // 1. Aktualizuj podstawowe SEO (title, description, OG tags)
+    this.seoService.updateServiceProfileSeo(
+      serviceName,
+      city,
+      address,
+      description,
+      this.logoUrl
+    );
+
+    // 2. Dodaj Schema.org LocalBusiness structured data
+    const localBusinessData: LocalBusinessData = {
+      name: serviceName,
+      description: description || `Profesjonalny serwis rowerowy ${serviceName} w ${city}`,
+      image: this.logoUrl,
+      address: {
+        street: `${this.publicInfo.street} ${this.publicInfo.building}${this.publicInfo.flat ? '/' + this.publicInfo.flat : ''}`,
+        city: this.publicInfo.city || 'Polska',
+        postalCode: this.publicInfo.postalCode || '00-000',
+        country: 'PL'
+      },
+      url: `https://cyclopick.pl/${this.suffix}`,
+      telephone: this.publicInfo.phoneNumber || undefined,
+      email: this.publicInfo.email || undefined
+    };
+
+    // Dodaj godziny otwarcia jeśli dostępne
+    if (this.openingHours && this.activeStatus?.openingHoursActive) {
+      localBusinessData.openingHours = this.formatOpeningHoursForSchema();
+    }
+
+    // Dodaj cenę (jeśli dostępna)
+    if (this.pricelist && this.activeStatus?.pricelistActive) {
+      localBusinessData.priceRange = '$$'; // Możesz to dostosować na podstawie rzeczywistych cen
+    }
+
+    const schema = SchemaOrgHelper.generateLocalBusiness(localBusinessData);
+    this.seoService.addStructuredData(schema);
+  }
+
+  // ✅ Formatowanie godzin otwarcia dla Schema.org
+  private formatOpeningHoursForSchema(): string[] {
+    if (!this.openingHours) return [];
+
+    const hours: string[] = [];
+    const dayMap: { [key: string]: string } = {
+      monday: 'Mo',
+      tuesday: 'Tu',
+      wednesday: 'We',
+      thursday: 'Th',
+      friday: 'Fr',
+      saturday: 'Sa',
+      sunday: 'Su'
+    };
+
+    this.daysOfWeek.forEach(({ key }) => {
+      const interval = this.getDayInterval(key);
+      if (interval) {
+        const shortDay = dayMap[key];
+        hours.push(`${shortDay} ${interval.openTime}-${interval.closeTime}`);
+      }
+    });
+
+    return hours;
+  }
+
+  // ✅ Cleanup SEO przy niszczeniu komponentu
+  ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
   }
 }

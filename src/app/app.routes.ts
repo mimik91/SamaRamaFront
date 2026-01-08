@@ -317,13 +317,32 @@ export const routes: Routes = [
     },
     
     // === PROFIL PUBLICZNY SERWISU ===
-    // WAŻNE: Trasa :suffix MUSI być przed wildcard, ale PO wszystkich innych trasach
+    // WAŻNE: Trasy :suffix MUSZĄ być przed wildcard, ale PO wszystkich innych trasach
     // Angular dopasowuje trasy w kolejności, więc bardziej szczegółowe (:suffix/panel-administratora)
     // zostaną dopasowane przed mniej szczegółowymi (:suffix)
-    { 
-      path: ':suffix', 
+
+    // Service profile - cennik section (must be before base :suffix route)
+    {
+      path: ':suffix/cennik',
       component: ServiceProfilePageComponent,
-      title: ServiceProfileTitleResolver
+      title: ServiceProfileTitleResolver,
+      data: { section: 'pricelist' }
+    },
+
+    // Service profile - godziny otwarcia section (must be before base :suffix route)
+    {
+      path: ':suffix/godziny-otwarcia',
+      component: ServiceProfilePageComponent,
+      title: ServiceProfileTitleResolver,
+      data: { section: 'hours' }
+    },
+
+    // Service profile - base route (default - "O nas" section)
+    {
+      path: ':suffix',
+      component: ServiceProfilePageComponent,
+      title: ServiceProfileTitleResolver,
+      data: { section: 'info' }
     },
     
     // === FALLBACK ===

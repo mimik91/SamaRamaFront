@@ -18,25 +18,25 @@
     <nav class="navigation">
       <ul class="nav-links">
         <li>
-          <a href="javascript:void(0)" 
-             [class.active]="activeTab === 'info'" 
-             (click)="setActiveTab('info')">
+          <a [routerLink]="['/', suffix]"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{exact: true}">
             {{ t('service_profile.tabs.about_us') }}
           </a>
         </li>
 
         <li *ngIf="activeStatus?.pricelistActive">
-          <a href="javascript:void(0)" 
-             [class.active]="activeTab === 'pricelist'" 
-             (click)="setActiveTab('pricelist')">
+          <a [routerLink]="['/', suffix, 'cennik']"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{exact: true}">
             {{ t('service_profile.tabs.pricelist') }}
           </a>
         </li>
 
         <li *ngIf="activeStatus?.openingHoursActive">
-          <a href="javascript:void(0)" 
-             [class.active]="activeTab === 'hours'" 
-             (click)="setActiveTab('hours')">
+          <a [routerLink]="['/', suffix, 'godziny-otwarcia']"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{exact: true}">
             {{ t('service_profile.tabs.opening_hours') }}
           </a>
         </li>

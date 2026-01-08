@@ -1,23 +1,20 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { I18nService } from '../../core/i18n.service';  // ✅ Twój serwis
-import { SeoService } from '../../core/seo.service';  // ✅ SEO Service
-import { SchemaOrgHelper, LocalBusinessData } from '../../core/schema-org.helper';  // ✅ Schema.org
+import { I18nService } from '../../core/i18n.service';
 import { ServiceProfileService } from './service-profile.service';
-import { ServiceImageResponse } from '../../shared/models/api.models';
+import { SeoService } from '../../core/seo.service';
 import {
   BikeServicePublicInfo,
   ServiceActiveStatus
 } from '../../shared/models/bike-service-common.models';
-import { OpeningHoursDto, OpeningHoursWithInfoDto, DAY_NAMES_PL, DayOfWeek, DayInterval } from '../../shared/models/opening-hours.models';
+import { OpeningHoursWithInfoDto, DAY_NAMES_PL, DayOfWeek, DayInterval } from '../../shared/models/opening-hours.models';
 import { ServicePricelistDto, CategoryWithItemsDto } from '../../shared/models/service-pricelist.models';
 import {
   ServicePackagesConfigDto,
   ServicePackageDto,
   PackageLevel,
-  getPackageLevelDisplayName,
   filterPackagesByBikeType
 } from '../../shared/models/service-packages.models';
 
@@ -26,16 +23,16 @@ type TabType = 'info' | 'hours' | 'pricelist' | 'packages';
 @Component({
   selector: 'app-service-profile-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],  // Bez TranslateModule
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './service-profile.component.html',
   styleUrls: ['./service-profile.component.css']
 })
-export class ServiceProfilePageComponent implements OnInit, OnDestroy {
+export class ServiceProfilePageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private profileService = inject(ServiceProfileService);
-  private i18n = inject(I18nService);  // ✅ Używamy I18nService
-  private seoService = inject(SeoService);  // ✅ SEO Service
+  private i18n = inject(I18nService);
+  private seoService = inject(SeoService);
 
   // Stan ładowania
   isLoading = true;
@@ -88,14 +85,72 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Pobierz suffix z URL
     this.suffix = this.route.snapshot.paramMap.get('suffix') || '';
-    
+
     if (!this.suffix) {
       this.error = this.i18n.instant('service_profile.errors.invalid_url');
       this.isLoading = false;
       return;
     }
-    
+
+    // Subscribe to route data changes to detect section changes
+    this.route.data.subscribe(data => {
+      const section = data['section'] as TabType | undefined;
+      if (section) {
+        this.activeTab = section;
+        this.updateSeoForSection();
+      }
+    });
+
     this.loadServiceProfile();
+  }
+
+  private updateSeoForSection(): void {
+    if (!this.publicInfo || !this.suffix) return;
+
+    const serviceName = this.publicInfo.name;
+    const city = this.publicInfo.city;
+    const address = this.getFullAddress();
+    let path = `/${this.suffix}`;
+    let title = `${serviceName} | CycloPick`;
+    let description = this.publicInfo.description || `Profesjonalny serwis rowerowy ${serviceName} w ${city}.`;
+    let keywords: string[] = [
+      'serwis rowerowy',
+      `serwis rowerowy ${city}`,
+      'naprawa rowerów',
+      `naprawa rowerów ${city}`,
+      serviceName,
+      'warsztat rowerowy',
+      'mechanik rowerowy'
+    ];
+
+    // Dostosuj SEO dla konkretnej sekcji
+    if (this.activeTab === 'pricelist') {
+      path += '/cennik';
+      title = `${serviceName} - Cennik | CycloPick`;
+      description = `Sprawdź cennik serwisu rowerowego ${serviceName} w ${city}. Pakiety serwisowe i ceny poszczególnych usług naprawy rowerów.`;
+      keywords.push('cennik serwisu rowerowego', `cennik ${serviceName}`, 'ceny naprawy rowerów');
+    } else if (this.activeTab === 'hours') {
+      path += '/godziny-otwarcia';
+      title = `${serviceName} - Godziny otwarcia | CycloPick`;
+      description = `Sprawdź godziny otwarcia serwisu rowerowego ${serviceName} w ${city}. Zaplanuj wizytę w dogodnym dla Ciebie terminie.`;
+      keywords.push('godziny otwarcia', `godziny otwarcia ${serviceName}`, 'kiedy otwarty');
+    } else {
+      // Default "O nas" section
+      description += ` Sprawdź informacje o serwisie, dane kontaktowe i lokalizację.`;
+      keywords.push('o nas', 'kontakt', 'adres serwisu');
+    }
+
+    // Użyj rozszerzonej metody SEO z Open Graph i Twitter Cards
+    this.seoService.updateFullSeoTags(
+      {
+        title,
+        description,
+        image: this.logoUrl,
+        type: 'profile',
+        keywords
+      },
+      path
+    );
   }
 
   loadServiceProfile(): void {
@@ -190,16 +245,8 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     })
     .then(() => {
       this.isLoading = false;
-      console.log('✅ All data loaded successfully'); // DEBUG
-      console.log('📦 Final state:'); // DEBUG
-      console.log('  - packagesConfig:', this.packagesConfig);
-      console.log('  - packages:', this.packages);
-      console.log('  - bikeTypes:', this.bikeTypes);
-      console.log('  - selectedBikeType:', this.selectedBikeType);
-      console.log('  - filteredPackages:', this.filteredPackages);
-
-      // ✅ Aktualizuj SEO po załadowaniu wszystkich danych
-      this.updateSeoTags();
+      this.updateSeoForSection();
+      console.log('✅ All data loaded successfully');
     })
     .catch(err => {
       console.error('❌ Error loading service data:', err);
@@ -297,7 +344,18 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
 
   // Metody pomocnicze dla zakładek
   setActiveTab(tab: TabType): void {
-    this.activeTab = tab;
+    // Navigate to appropriate URL instead of changing local state
+    const urlMap: Record<TabType, string> = {
+      'info': `/${this.suffix}`,
+      'hours': `/${this.suffix}/godziny-otwarcia`,
+      'pricelist': `/${this.suffix}/cennik`,
+      'packages': `/${this.suffix}/cennik` // Packages are part of pricelist
+    };
+
+    const targetUrl = urlMap[tab];
+    if (targetUrl) {
+      this.router.navigateByUrl(targetUrl);
+    }
   }
 
   // Metoda do zmiany typu roweru w pakietach
@@ -402,84 +460,5 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   // Metoda pomocnicza do tłumaczeń (dla template)
   t(key: string): string {
     return this.i18n.instant(key);
-  }
-
-  // ✅ SEO: Aktualizacja meta tagów dla profilu serwisu
-  private updateSeoTags(): void {
-    if (!this.publicInfo) return;
-
-    const serviceName = this.publicInfo.name;
-    const city = this.publicInfo.city || 'Polska';
-    const address = this.getFullAddress();
-    const description = this.publicInfo.description || undefined;
-
-    // 1. Aktualizuj podstawowe SEO (title, description, OG tags)
-    this.seoService.updateServiceProfileSeo(
-      serviceName,
-      city,
-      address,
-      description,
-      this.logoUrl
-    );
-
-    // 2. Dodaj Schema.org LocalBusiness structured data
-    const localBusinessData: LocalBusinessData = {
-      name: serviceName,
-      description: description || `Profesjonalny serwis rowerowy ${serviceName} w ${city}`,
-      image: this.logoUrl,
-      address: {
-        street: `${this.publicInfo.street} ${this.publicInfo.building}${this.publicInfo.flat ? '/' + this.publicInfo.flat : ''}`,
-        city: this.publicInfo.city || 'Polska',
-        postalCode: this.publicInfo.postalCode || '00-000',
-        country: 'PL'
-      },
-      url: `https://cyclopick.pl/${this.suffix}`,
-      telephone: this.publicInfo.phoneNumber || undefined,
-      email: this.publicInfo.email || undefined
-    };
-
-    // Dodaj godziny otwarcia jeśli dostępne
-    if (this.openingHours && this.activeStatus?.openingHoursActive) {
-      localBusinessData.openingHours = this.formatOpeningHoursForSchema();
-    }
-
-    // Dodaj cenę (jeśli dostępna)
-    if (this.pricelist && this.activeStatus?.pricelistActive) {
-      localBusinessData.priceRange = '$$'; // Możesz to dostosować na podstawie rzeczywistych cen
-    }
-
-    const schema = SchemaOrgHelper.generateLocalBusiness(localBusinessData);
-    this.seoService.addStructuredData(schema);
-  }
-
-  // ✅ Formatowanie godzin otwarcia dla Schema.org
-  private formatOpeningHoursForSchema(): string[] {
-    if (!this.openingHours) return [];
-
-    const hours: string[] = [];
-    const dayMap: { [key: string]: string } = {
-      monday: 'Mo',
-      tuesday: 'Tu',
-      wednesday: 'We',
-      thursday: 'Th',
-      friday: 'Fr',
-      saturday: 'Sa',
-      sunday: 'Su'
-    };
-
-    this.daysOfWeek.forEach(({ key }) => {
-      const interval = this.getDayInterval(key);
-      if (interval) {
-        const shortDay = dayMap[key];
-        hours.push(`${shortDay} ${interval.openTime}-${interval.closeTime}`);
-      }
-    });
-
-    return hours;
-  }
-
-  // ✅ Cleanup SEO przy niszczeniu komponentu
-  ngOnDestroy(): void {
-    this.seoService.removeStructuredData();
   }
 }

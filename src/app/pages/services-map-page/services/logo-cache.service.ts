@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
 export interface LogoCacheEntry {
   url: string;
@@ -20,25 +20,36 @@ export interface CacheStats {
 @Injectable({
   providedIn: 'root'
 })
-export class LogoCacheService {
+export class LogoCacheService implements OnDestroy {
   private readonly DEFAULT_LOGO = 'assets/images/cyclopick-logo.svg';
   private readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minut
   private readonly MAX_CACHE_SIZE = 500; // Maksymalnie 500 logo w cache
   private readonly CLEANUP_THRESHOLD = 450; // Kiedy zacząć czyszczenie
-  
+
   private cache = new Map<number, LogoCacheEntry>();
   private loadingUrls = new Set<string>();
-  
+
   // Statystyki
   private cacheHits = 0;
   private cacheMisses = 0;
 
+  // Store interval ID for cleanup
+  private cleanupIntervalId?: number;
+
   constructor() {
-    // Periodyczne czyszczenie co godzinę
-    setInterval(() => this.cleanupExpiredEntries(), 60 * 60 * 1000);
-    
+    // Periodyczne czyszczenie co godzinę - zachowaj ID do późniejszego wyczyszczenia
+    this.cleanupIntervalId = window.setInterval(() => this.cleanupExpiredEntries(), 60 * 60 * 1000);
+
     // Preload default logo
     this.preloadDefaultLogo();
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup interval when service is destroyed
+    if (this.cleanupIntervalId !== undefined) {
+      clearInterval(this.cleanupIntervalId);
+      this.cleanupIntervalId = undefined;
+    }
   }
 
   /**
@@ -94,9 +105,16 @@ export class LogoCacheService {
   }
 
   /**
-   * Pre-loading obrazu w tle
+   * Pre-loading obrazu w tle z error handling
    */
-  private preloadImage(serviceId: number, url: string): void {
+  private preloadImage(serviceId: number, url: string, retryCount = 0): void {
+    // Walidacja URL
+    if (!url || url.trim() === '') {
+      console.warn(`LogoCacheService: Invalid URL for service ${serviceId}`);
+      this.markAsInvalid(serviceId);
+      return;
+    }
+
     // Jeśli już ładujemy ten URL, nie rób tego ponownie
     if (this.loadingUrls.has(url)) {
       return;
@@ -105,8 +123,21 @@ export class LogoCacheService {
     this.loadingUrls.add(url);
 
     const img = new Image();
-    
+    const maxRetries = 2;
+    const retryDelay = 1000; // 1 second
+
+    // Timeout dla długo wczytujących się obrazów
+    const timeout = setTimeout(() => {
+      if (this.loadingUrls.has(url)) {
+        img.src = ''; // Cancel loading
+        this.loadingUrls.delete(url);
+        console.warn(`LogoCacheService: Timeout loading logo for service ${serviceId}: ${url}`);
+        this.markAsInvalid(serviceId);
+      }
+    }, 10000); // 10 second timeout
+
     img.onload = () => {
+      clearTimeout(timeout);
       const cached = this.cache.get(serviceId);
       if (cached) {
         cached.valid = true;
@@ -115,17 +146,38 @@ export class LogoCacheService {
       this.loadingUrls.delete(url);
     };
 
-    img.onerror = () => {
-      const cached = this.cache.get(serviceId);
-      if (cached) {
-        cached.valid = false;
-        cached.url = this.DEFAULT_LOGO;
-      }
+    img.onerror = (event) => {
+      clearTimeout(timeout);
       this.loadingUrls.delete(url);
-      console.warn(`Failed to preload logo for service ${serviceId}: ${url}`);
+
+      const cached = this.cache.get(serviceId);
+
+      // Retry logic
+      if (retryCount < maxRetries) {
+        console.warn(`LogoCacheService: Failed to load logo for service ${serviceId}, retrying (${retryCount + 1}/${maxRetries}): ${url}`);
+
+        setTimeout(() => {
+          this.preloadImage(serviceId, url, retryCount + 1);
+        }, retryDelay * (retryCount + 1)); // Exponential backoff
+      } else {
+        // Max retries exceeded - mark as invalid
+        console.error(`LogoCacheService: Failed to load logo for service ${serviceId} after ${maxRetries} retries: ${url}`, event);
+
+        if (cached) {
+          cached.valid = false;
+          cached.url = this.DEFAULT_LOGO;
+        }
+      }
     };
 
-    img.src = url;
+    try {
+      img.src = url;
+    } catch (error) {
+      clearTimeout(timeout);
+      this.loadingUrls.delete(url);
+      console.error(`LogoCacheService: Exception loading logo for service ${serviceId}:`, error);
+      this.markAsInvalid(serviceId);
+    }
   }
 
   /**

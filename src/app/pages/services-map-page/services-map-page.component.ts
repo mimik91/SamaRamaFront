@@ -1,6 +1,6 @@
 // src/app/pages/services-map-page/services-map-page.component.ts
 
-import { Component, OnInit, OnDestroy, ViewChild, Inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, Inject, PLATFORM_ID, HostListener, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
@@ -18,13 +18,28 @@ import {
   CoverageCategory,
   MapServicesRequestDto,
   ServiceDetails,
-  BikeRepairCoverageCategoryDto
+  BikeRepairCoverageCategoryDto,
+  BikeRepairCoverageDto
 } from '../../shared/models/map.models';
 
 // Components
 import { MapComponent } from './components/map/map.component';
 import { ServicesListComponent } from './components/services-list/services-list.component';
 import { SearchFiltersComponent } from './components/search-filters/search-filters.component';
+
+// Interface for pending popup state
+interface PendingPopup {
+  serviceId: number;
+  timestamp: number; // When it was set
+}
+
+// Interface for map bounds
+interface MapBounds {
+  south: number;
+  west: number;
+  north: number;
+  east: number;
+}
 
 @Component({
   selector: 'app-services-map-page',
@@ -36,7 +51,8 @@ import { SearchFiltersComponent } from './components/search-filters/search-filte
     SearchFiltersComponent
   ],
   templateUrl: './services-map-page.component.html',
-  styleUrls: ['./services-map-page.component.css']
+  styleUrls: ['./services-map-page.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ServicesMapPageComponent implements OnInit, OnDestroy {
   @ViewChild(MapComponent) mapComponent!: MapComponent;
@@ -45,6 +61,8 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   private citySearchSubject = new Subject<string>();
   private serviceSearchSubject = new Subject<string>();
   private mapMoveSubject = new Subject<MapViewState>();
+  private resizeSubject = new Subject<void>();
+  private mapInvalidateTimeoutId?: number;
 
   isBrowser: boolean;
   isMobileView = false;
@@ -64,6 +82,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   services: MapPin[] = []; // Serwisy w liście
   allServices: MapPin[] = [];
   selectedServiceId: number | null = null;
+  pendingPopup: PendingPopup | null = null;
   totalServices = 0;
   currentPage = 0;
   totalPages = 0;
@@ -92,6 +111,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
     private mapService: MapService,
     private notificationService: NotificationService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -100,7 +120,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   @HostListener('window:resize')
   onResize(): void {
     if (this.isBrowser) {
-      this.checkMobileView();
+      this.resizeSubject.next();
     }
   }
 
@@ -117,6 +137,12 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Clear any pending timeouts
+    if (this.mapInvalidateTimeoutId !== undefined) {
+      clearTimeout(this.mapInvalidateTimeoutId);
+      this.mapInvalidateTimeoutId = undefined;
+    }
+
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -139,6 +165,10 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
     this.mapMoveSubject
       .pipe(debounceTime(500), takeUntil(this.destroy$))
       .subscribe(viewState => this.handleMapMove(viewState));
+
+    this.resizeSubject
+      .pipe(debounceTime(150), takeUntil(this.destroy$))
+      .subscribe(() => this.checkMobileView());
   }
 
   private loadInitialData(): void {
@@ -152,14 +182,11 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   // ============ REPAIR COVERAGES ============
 
   private loadRepairCoverages(): void {
-    console.log('Starting to load repair coverages...');
     this.mapService.getAllRepairCoverages()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (coverages) => {
-          console.log('Received coverages from API:', coverages);
           if (coverages?.coveragesByCategory) {
-            console.log('CoveragesByCategory exists, processing...');
             this.processCoverageCategories(coverages.coveragesByCategory);
           } else {
             console.warn('No coveragesByCategory in response');
@@ -172,15 +199,10 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  private processCoverageCategories(coveragesByCategory: any): void {
+  private processCoverageCategories(coveragesByCategory: { [key: string]: BikeRepairCoverageDto[] }): void {
     const categoriesMap = new Map<string, CoverageCategory>();
 
-    console.log('Processing coverage categories:', coveragesByCategory);
-    console.log('Keys:', Object.keys(coveragesByCategory));
-
-    Object.entries(coveragesByCategory).forEach(([key, coverages]: [string, any]) => {
-      console.log('Processing key:', key);
-
+    Object.entries(coveragesByCategory).forEach(([key, coverages]: [string, BikeRepairCoverageDto[]]) => {
       try {
         // Parse the string format: "BikeRepairCoverageCategoryDto(id=1, name=Typ roweru, displayOrder=1)"
         const idMatch = key.match(/id=(\d+)/);
@@ -194,17 +216,12 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
             displayOrder: displayOrderMatch ? parseInt(displayOrderMatch[1]) : 0
           };
 
-          console.log('Parsed category:', categoryData);
-
           // Filter out empty coverage arrays
           if (Array.isArray(coverages) && coverages.length > 0) {
             categoriesMap.set(key, {
               category: categoryData,
               coverages: coverages
             });
-            console.log('Added category with', coverages.length, 'coverages');
-          } else {
-            console.log('Skipping empty category:', categoryData.name);
           }
         } else {
           console.warn('Could not parse category key:', key);
@@ -217,12 +234,11 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
     this.coverageCategories = Array.from(categoriesMap.values())
       .sort((a, b) => (a.category.displayOrder || 0) - (b.category.displayOrder || 0));
 
-    console.log('Final processed coverage categories:', this.coverageCategories);
-    console.log('Total categories:', this.coverageCategories.length);
-
     if (this.coverageCategories.length === 0) {
       console.error('No categories were processed! Check the data format.');
     }
+
+    this.cdr.markForCheck();
   }
 
   // ============ MAP PINS (CLUSTERED) ============
@@ -241,6 +257,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
         next: (response) => {
           if (response?.data) {
             this.mapPins = response.data;
+            this.cdr.markForCheck();
           }
         },
         error: (error) => console.error('Error loading map pins:', error)
@@ -285,15 +302,20 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
             this.currentPage = response.page ?? 0;
             this.totalPages = response.totalPages ?? 0;
             this.hasMoreServices = (response.next ?? 0) > (response.page ?? 0);
+
+            // Check if we need to open a popup for pending service
+            this.checkAndOpenPendingPopup();
           }
           this.loadingServices = false;
           this.loadingMore = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Error loading services:', error);
           this.servicesError = true;
           this.loadingServices = false;
           this.loadingMore = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -302,14 +324,21 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
     return pin.address?.trim() || pin.name || 'Serwis rowerowy';
   }
 
-  private getBoundsString(bounds: any): string | undefined {
+  private getBoundsString(bounds: MapBounds | null | undefined): string | undefined {
     if (!bounds) return undefined;
     return `${bounds.south},${bounds.west},${bounds.north},${bounds.east}`;
   }
 
   onPopupReopenRequested(serviceId: number): void {
+    // Guard against null/undefined serviceId
+    if (serviceId != null && serviceId > 0) {
+      this.loadServiceDetailsAndShowPopup(serviceId);
+    }
+  }
 
-    this.loadServiceDetailsAndShowPopup(serviceId);
+  onPopupClosed(serviceId: number): void {
+    this.selectedServiceId = null;
+    this.pendingPopup = null;
   }
 
   // ============ CITY SEARCH ============
@@ -320,12 +349,14 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
       this.citySearchSubject.next(query);
     } else {
       this.citySuggestions = [];
+      this.cdr.markForCheck();
     }
   }
 
   private performCitySearch(query: string): void {
     if (query.trim().length < 3) {
       this.citySuggestions = [];
+      this.cdr.markForCheck();
       return;
     }
 
@@ -336,11 +367,13 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
         next: (cities) => {
           this.citySuggestions = cities;
           this.citySearchLoading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('City search error:', error);
           this.citySuggestions = [];
           this.citySearchLoading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -350,24 +383,19 @@ onCitySelected(city: CitySuggestion): void {
     const latitude = city.latitude;
     const longitude = city.longitude;
 
-    console.log('City selected:', city);
-    console.log('Coordinates:', { latitude, longitude });
-    console.log('Map component exists:', !!this.mapComponent);
 
     if (this.mapComponent && latitude && longitude) {
       // Centrujemy mapę na współrzędnych miasta z odpowiednim zoomem
       this.mapComponent.centerOn(latitude, longitude, 13);
-
-      console.log(`Map centered on ${city.cityName} at coordinates: ${latitude}, ${longitude}`);
     } else {
       console.error('Missing coordinates or map component for city:', city);
-      console.error('latitude:', latitude, 'longitude:', longitude, 'mapComponent:', !!this.mapComponent);
     }
   }
 
   onCityClearRequested(): void {
     this.filtersState.cityQuery = '';
     this.citySuggestions = [];
+    this.cdr.markForCheck();
     if (this.mapComponent) {
       this.mapComponent.centerOn(52.0100, 19.5111, 7);
     }
@@ -423,18 +451,22 @@ onCitySelected(city: CitySuggestion): void {
     this.applyFilters();
   }
 
-  onServiceSelected(service: MapPin): void {
+  async onServiceSelected(service: MapPin): Promise<void> {
   if (!service.id) return; // Zabezpieczenie
-
-  if (this.mapComponent) {
-    this.mapComponent.centerOn(service.latitude, service.longitude, 15);
-  }
 
   if (this.isMobileView) {
     this.showMapView = true;
   }
 
-  this.loadServiceDetailsAndShowPopup(service.id);
+  // Ustaw pending popup PRZED centrowaniem
+  this.pendingPopup = { serviceId: service.id, timestamp: Date.now() };
+
+  // Wycentruj mapę - pinezki przeładują się automatycznie
+  if (this.mapComponent) {
+    await this.mapComponent.centerOn(service.latitude, service.longitude, 15);
+  }
+
+  // Popup zostanie otwarty automatycznie przez updateMapPins()
 }
 
   onServiceClearRequested(): void {
@@ -484,7 +516,6 @@ onCitySelected(city: CitySuggestion): void {
 
   onMapReady(): void {
     this.mapInitialized = true;
-    console.log('Map initialized');
   }
 
   onMapMoved(viewState: MapViewState): void {
@@ -499,7 +530,23 @@ onCitySelected(city: CitySuggestion): void {
   }
 
   onPinClicked(pin: MapPin): void {
-    this.loadServiceDetailsAndShowPopup(pin.id);
+    // Ensure ID is a valid number (convert if needed)
+    const serviceId = Number(pin.id);
+
+    if (isNaN(serviceId) || serviceId <= 0) {
+      console.error('Invalid service ID in pin:', pin.id);
+      return;
+    }
+
+    this.pendingPopup = { serviceId, timestamp: Date.now() };
+    this.loadServiceDetailsAndShowPopup(serviceId);
+  }
+
+  private checkAndOpenPendingPopup(): void {
+    // If we have a pending popup to show, open it now that services are loaded
+    if (this.pendingPopup !== null && this.pendingPopup.serviceId > 0) {
+      this.loadServiceDetailsAndShowPopup(this.pendingPopup.serviceId);
+    }
   }
 
   private loadServiceDetailsAndShowPopup(serviceId: number): void {
@@ -581,8 +628,16 @@ onCitySelected(city: CitySuggestion): void {
   toggleView(): void {
     this.showMapView = !this.showMapView;
     if (this.showMapView && this.mapComponent) {
-      setTimeout(() => {
-        this.mapComponent.invalidateSize();
+      // Clear any existing timeout before setting a new one
+      if (this.mapInvalidateTimeoutId !== undefined) {
+        clearTimeout(this.mapInvalidateTimeoutId);
+      }
+
+      this.mapInvalidateTimeoutId = window.setTimeout(() => {
+        if (this.mapComponent) {
+          this.mapComponent.invalidateSize();
+        }
+        this.mapInvalidateTimeoutId = undefined;
       }, 100);
     }
   }

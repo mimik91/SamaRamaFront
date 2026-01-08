@@ -2,7 +2,7 @@
 
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, of, tap } from 'rxjs';
+import { Observable, catchError, of, tap, shareReplay, throwError, map } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import {
   MapPin,
@@ -21,9 +21,13 @@ export class MapService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}${environment.endpoints.map}`;
 
+  // Cache for service details to avoid redundant API calls
+  private serviceDetailsCache = new Map<number, Observable<ServiceDetails | null>>();
+  private citySearchCache = new Map<string, Observable<CitySuggestion[]>>();
+
   getServices(request: MapServicesRequestDto): Observable<MapServicesResponseDto> {
     console.log('MapService: Fetching services from:', `${this.apiUrl}/services`);
-    
+
     const finalRequestBody: any = {
       type: request.type || 'event',
       payload: request.payload || this.getDefaultPayload(),
@@ -35,15 +39,43 @@ export class MapService {
   if (request.coverageIds && request.coverageIds.length > 0) {
       finalRequestBody.coverageIds = request.coverageIds;
   }
-    
+
     return this.http.post<MapServicesResponseDto>(`${this.apiUrl}/services`, finalRequestBody).pipe(
-      tap(response => {
-        console.log('MapService: Received services:', response);
-        const validPins = response.data.filter(pin => 
-          pin.latitude && pin.longitude && 
-          !isNaN(pin.latitude) && !isNaN(pin.longitude)
+      map(response => {
+        // Validate response structure
+        if (!response || typeof response !== 'object') {
+          console.error('MapService: Invalid response structure');
+          return { data: [], total: 0 };
+        }
+
+        // Ensure data is an array
+        if (!Array.isArray(response.data)) {
+          console.error('MapService: Response data is not an array');
+          return { data: [], total: 0 };
+        }
+
+        // Filter out invalid pins
+        const validPins = response.data.filter(pin =>
+          pin &&
+          typeof pin === 'object' &&
+          pin.id != null &&
+          pin.latitude != null &&
+          pin.longitude != null &&
+          !isNaN(pin.latitude) &&
+          !isNaN(pin.longitude) &&
+          Math.abs(pin.latitude) <= 90 &&
+          Math.abs(pin.longitude) <= 180
         );
-        console.log(`MapService: Valid pins: ${validPins.length}/${response.data.length}`);
+
+        const invalidCount = response.data.length - validPins.length;
+        if (invalidCount > 0) {
+          console.warn(`MapService: Filtered out ${invalidCount} invalid pins`);
+        }
+
+        return {
+          data: validPins,
+          total: typeof response.total === 'number' ? response.total : validPins.length
+        };
       }),
       catchError(error => {
         console.error('MapService: Error fetching map services:', error);
@@ -53,17 +85,49 @@ export class MapService {
   }
 
   getServiceDetails(id: number): Observable<ServiceDetails | null> {
-    console.log('MapService: Fetching service details for ID:', id);
-    
-    return this.http.get<ServiceDetails>(`${this.apiUrl}/service/${id}`).pipe(
-      tap(details => {
-        console.log('MapService: Received service details:', details);
-      }),
-      catchError(error => {
-        console.error('MapService: Error fetching service details:', error);
-        return of(null);
-      })
-    );
+    // Validate input ID
+    if (id == null || typeof id !== 'number' || id <= 0 || !Number.isInteger(id)) {
+      console.error('MapService: Invalid service ID:', id);
+      return of(null);
+    }
+
+    // Check if we already have this request cached
+    if (!this.serviceDetailsCache.has(id)) {
+      console.log('MapService: Fetching service details for ID:', id);
+
+      // Create the HTTP request with caching
+      const request$ = this.http.get<ServiceDetails>(`${this.apiUrl}/service/${id}`).pipe(
+        map(details => {
+          // Validate response structure
+          if (!details || typeof details !== 'object') {
+            console.error('MapService: Invalid service details structure for ID:', id);
+            return null;
+          }
+
+          // Validate required fields
+          if (details.id == null || typeof details.id !== 'number') {
+            console.error('MapService: Service details missing valid id for ID:', id);
+            return null;
+          }
+
+          return details;
+        }),
+        // Share the result with all subscribers and cache it
+        shareReplay({ bufferSize: 1, refCount: true }),
+        catchError(error => {
+          console.error('MapService: Error fetching service details:', error);
+          // Remove from cache on error so next attempt will retry
+          this.serviceDetailsCache.delete(id);
+          return of(null);
+        })
+      );
+
+      // Store in cache
+      this.serviceDetailsCache.set(id, request$);
+    }
+
+    // Return cached observable
+    return this.serviceDetailsCache.get(id)!;
   }
 
   searchServicesAutocomplete(query: string, limit: number = 10, registeredFirst: boolean = true): Observable<MapServicesResponseDto> {
@@ -95,19 +159,54 @@ export class MapService {
       return of([]);
     }
 
-    console.log('MapService: Searching cities with query:', query);
-    
-    const params = { city: query.trim() };
-    
-    return this.http.get<CitySuggestion[]>(`${this.apiUrl}/cities/coords`, { params }).pipe(
-      tap(cities => {
-        console.log('MapService: Found cities:', cities);
-      }),
-      catchError(error => {
-        console.error('MapService: Error searching cities:', error);
-        return of([]);
-      })
-    );
+    const normalizedQuery = query.trim().toLowerCase();
+
+    // Check cache
+    if (!this.citySearchCache.has(normalizedQuery)) {
+      console.log('MapService: Searching cities with query:', query);
+
+      const params = { city: query.trim() };
+
+      const request$ = this.http.get<CitySuggestion[]>(`${this.apiUrl}/cities/coords`, { params }).pipe(
+        map(cities => {
+          // Validate response is an array
+          if (!Array.isArray(cities)) {
+            console.error('MapService: Cities response is not an array');
+            return [];
+          }
+
+          // Filter valid city suggestions
+          const validCities = cities.filter(city =>
+            city &&
+            typeof city === 'object' &&
+            city.cityName &&
+            typeof city.cityName === 'string' &&
+            city.latitude != null &&
+            city.longitude != null &&
+            !isNaN(city.latitude) &&
+            !isNaN(city.longitude)
+          );
+
+          if (validCities.length < cities.length) {
+            console.warn(`MapService: Filtered out ${cities.length - validCities.length} invalid city suggestions`);
+          }
+
+          return validCities;
+        }),
+        // Cache the results
+        shareReplay({ bufferSize: 1, refCount: true }),
+        catchError(error => {
+          console.error('MapService: Error searching cities:', error);
+          // Remove from cache on error
+          this.citySearchCache.delete(normalizedQuery);
+          return of([]);
+        })
+      );
+
+      this.citySearchCache.set(normalizedQuery, request$);
+    }
+
+    return this.citySearchCache.get(normalizedQuery)!;
   }
 
   getCityBounds(cityName: string): Observable<CityBounds | null> {
@@ -175,14 +274,32 @@ export class MapService {
   }
 
   getServiceSuffix(serviceId: number): Observable<{ suffix: string } | null> {
+    // Validate input serviceId
+    if (serviceId == null || typeof serviceId !== 'number' || serviceId <= 0 || !Number.isInteger(serviceId)) {
+      console.error('MapService: Invalid service ID for suffix request:', serviceId);
+      return of(null);
+    }
+
     console.log('MapService: Fetching suffix for service ID:', serviceId);
-    
+
     // Używamy endpointu zadeklarowanego w backendzie: /get-suffix
     return this.http.get<{ suffix: string }>(`${environment.apiUrl}/bike-services/get-suffix`, {
         params: { serviceId: serviceId.toString() }
     }).pipe(
-        tap(response => {
-            console.log('MapService: Received service suffix:', response.suffix);
+        map(response => {
+          // Validate response structure
+          if (!response || typeof response !== 'object') {
+            console.error('MapService: Invalid suffix response structure for service ID:', serviceId);
+            return null;
+          }
+
+          // Validate suffix field
+          if (!response.suffix || typeof response.suffix !== 'string' || response.suffix.trim() === '') {
+            console.error('MapService: Invalid or empty suffix for service ID:', serviceId);
+            return null;
+          }
+
+          return { suffix: response.suffix };
         }),
         catchError(error => {
             console.error('MapService: Error fetching service suffix:', error);

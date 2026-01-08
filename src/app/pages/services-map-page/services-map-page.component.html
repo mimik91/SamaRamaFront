@@ -94,6 +94,7 @@
       <app-map
         [pins]="mapPins"
         [selectedPinId]="selectedServiceId"
+        [pendingPopupServiceId]="pendingPopup?.serviceId ?? null"
         [initialView]="currentMapView"
         [visible]="mapVisible"
         (mapReady)="onMapReady()"
@@ -104,7 +105,8 @@
         (viewServiceDetails)="onViewServiceDetails($event)"
         (registerService)="onRegisterService($event)"
         (orderTransport)="onOrderTransport($event)"
-        (popupReopenRequested)="onPopupReopenRequested($event)"  
+        (popupReopenRequested)="onPopupReopenRequested($event)"
+        (popupClosed)="onPopupClosed($event)"  
       ></app-map>
     </div>
   </div>

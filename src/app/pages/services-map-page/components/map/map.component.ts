@@ -1,32 +1,49 @@
-import { 
-  Component, 
-  Input, 
-  Output, 
-  EventEmitter, 
-  OnInit, 
-  OnDestroy, 
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnDestroy,
   AfterViewInit,
   ViewChild,
   ElementRef,
   OnChanges,
   SimpleChanges,
   Inject,
-  PLATFORM_ID
+  PLATFORM_ID,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { LogoCacheService } from '../../services/logo-cache.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MapPin, ServiceDetails, MapViewState, MapBounds } from '../../../../shared/models/map.models';
 import { MapService } from '../../services/map.service';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 
 declare var L: any;
+
+// Extend Leaflet Marker type to include hover listeners
+interface LeafletMarkerWithListeners {
+  getElement(): HTMLElement;
+  openPopup(): this;
+  bindPopup(content: string | HTMLElement, options?: any): this;
+  addTo(map: any): this;
+  on(event: string, handler: (e: any) => void): this;
+  off(event: string, handler?: (e: any) => void): this;
+  _hoverListeners?: {
+    mouseenter: EventListener;
+    mouseleave: EventListener;
+  };
+}
 
 @Component({
   selector: 'app-map',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './map.component.html',
-  styleUrls: ['./map.component.css']
+  styleUrls: ['./map.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges {
   @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
@@ -34,6 +51,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   // Inputs
   @Input() pins: MapPin[] = [];
   @Input() selectedPinId: number | null = null;
+  @Input() pendingPopupServiceId: number | null = null;
   @Input() initialView: MapViewState = {
     center: { lat: 50.0647, lng: 19.9450 },
     zoom: 12
@@ -47,20 +65,23 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   @Output() clusterClicked = new EventEmitter<{ lat: number; lng: number; zoom: number }>();
   @Output() mapError = new EventEmitter<string>();
   @Output() serviceDetailsRequested = new EventEmitter<number>();
-  @Output() popupReopenRequested = new EventEmitter<number>(); 
+  @Output() popupReopenRequested = new EventEmitter<number>();
+  @Output() popupClosed = new EventEmitter<number>();
   @Output() viewServiceDetails = new EventEmitter<ServiceDetails>();
   @Output() registerService = new EventEmitter<ServiceDetails>();
   @Output() orderTransport = new EventEmitter<ServiceDetails>();
 
   // Internal state
   private map: any;
-  private markers: Map<number, any> = new Map();
+  private markers: Map<number, LeafletMarkerWithListeners> = new Map();
   private isMapInitialized = false;
   private initializationPromise: Promise<void> | null = null;
-  
+  private popupListeners = new Map<number, Array<{ element: HTMLElement, event: string, handler: EventListener }>>();
+  private destroy$ = new Subject<void>();
+
   // Color cache from CSS variables
   private cssColors: { [key: string]: string } = {};
-  
+
   isBrowser: boolean;
   loading = false;
   error = false;
@@ -113,6 +134,15 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   }
 
   ngOnDestroy(): void {
+    // Cleanup all popup listeners
+    this.popupListeners.forEach((_, serviceId) => {
+      this.cleanupPopupListeners(serviceId);
+    });
+
+    // Complete destroy$ Subject
+    this.destroy$.next();
+    this.destroy$.complete();
+
     this.destroyMap();
   }
 
@@ -157,7 +187,6 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
       this.loading = true;
       
       if (!this.mapContainer?.nativeElement) {
-        console.log('Map container not ready');
         return;
       }
 
@@ -185,16 +214,22 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
 
     return new Promise((resolve, reject) => {
       if (document.querySelector('script[src*="leaflet.js"]')) {
+        let isResolved = false;
+
         const checkInterval = setInterval(() => {
-          if (typeof L !== 'undefined') {
+          if (typeof L !== 'undefined' && !isResolved) {
+            isResolved = true;
             clearInterval(checkInterval);
             resolve();
           }
         }, 100);
-        
+
         setTimeout(() => {
-          clearInterval(checkInterval);
-          reject(new Error('Leaflet loading timeout'));
+          if (!isResolved) {
+            isResolved = true;
+            clearInterval(checkInterval);
+            reject(new Error('Leaflet loading timeout'));
+          }
         }, 10000);
         return;
       }
@@ -275,16 +310,20 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   if (this.map) {
     try {
       // ============ USUŃ WSZYSTKIE EVENT LISTENERY ============
+      // Remove Leaflet map event listeners
+      this.map.off('moveend');
+
+      // Remove marker hover listeners
       this.markers.forEach((marker) => {
         const markerElement = marker.getElement();
-        if (markerElement && (marker as any)._hoverListeners) {
-          const listeners = (marker as any)._hoverListeners;
+        if (markerElement && marker._hoverListeners) {
+          const listeners = marker._hoverListeners;
           markerElement.removeEventListener('mouseenter', listeners.mouseenter);
           markerElement.removeEventListener('mouseleave', listeners.mouseleave);
-          delete (marker as any)._hoverListeners;
+          delete marker._hoverListeners;
         }
       });
-      
+
       this.markers.clear();
       this.map.remove();
       this.map = null;
@@ -321,64 +360,83 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   // ============ PINS MANAGEMENT ============
 
   private updateMapPins(pins: MapPin[]): void {
-  if (!this.map || !this.isMapInitialized) return;
+    if (!this.map || !this.isMapInitialized) return;
 
-  const currentlySelectedPinId = this.selectedPinId;
-  if (this.map.closePopup) {
-    this.map.closePopup(); 
-  }
+    // Validate pins
+    const validPins = pins.filter(pin =>
+      pin.latitude && pin.longitude &&
+      !isNaN(pin.latitude) && !isNaN(pin.longitude) &&
+      pin.latitude >= -90 && pin.latitude <= 90 &&
+      pin.longitude >= -180 && pin.longitude <= 180
+    );
 
-  // ============ KLUCZOWE: Usuń event listenery PRZED usunięciem markerów ============
-  this.markers.forEach((marker, id) => {
-    if (marker && this.map) {
-      try {
-        // Usuń event listenery z DOM
-        const markerElement = marker.getElement();
-        if (markerElement && (marker as any)._hoverListeners) {
-          const listeners = (marker as any)._hoverListeners;
-          markerElement.removeEventListener('mouseenter', listeners.mouseenter);
-          markerElement.removeEventListener('mouseleave', listeners.mouseleave);
-          delete (marker as any)._hoverListeners;
+    // Log invalid pins for debugging
+    const invalidCount = pins.length - validPins.length;
+    if (invalidCount > 0) {
+      console.warn(`MapComponent: ${invalidCount} invalid pins filtered out of ${pins.length} total pins`);
+    }
+
+    // Create sets for efficient comparison
+    const newPinIds = new Set(validPins.map(p => p.id));
+    const existingPinIds = new Set(this.markers.keys());
+
+    // Remove markers that no longer exist
+    existingPinIds.forEach(id => {
+      if (!newPinIds.has(id)) {
+        const marker = this.markers.get(id);
+        if (marker && this.map) {
+          this.removeMarkerWithCleanup(marker, id);
+          this.markers.delete(id);
         }
-        
-        // Usuń marker z mapy
-        this.map.removeLayer(marker);
-      } catch (e) {
-        console.warn('Error removing marker:', id, e);
+      }
+    });
+
+    // Add new pins (existing pins stay as-is, no recreation)
+    validPins.forEach(pin => {
+      if (!existingPinIds.has(pin.id)) {
+        try {
+          this.addPinToMap(pin);
+        } catch (error) {
+          console.error(`Error adding marker for pin ${pin.id}:`, error);
+        }
+      }
+    });
+
+    // Handle pending popup
+    if (this.pendingPopupServiceId !== null) {
+      const serviceIdToOpen = this.pendingPopupServiceId;
+      const pinToOpen = validPins.find(p => p.id === serviceIdToOpen);
+
+      if (pinToOpen) {
+        setTimeout(() => {
+          const marker = this.markers.get(serviceIdToOpen);
+          if (marker) {
+            this.popupReopenRequested.emit(serviceIdToOpen);
+          } else {
+            console.warn('Marker still not found after timeout for service:', serviceIdToOpen);
+          }
+        }, 150);
       }
     }
-  });
-  this.markers.clear();
+  }
 
-  const validPins = pins.filter(pin => 
-    pin.latitude && pin.longitude && 
-    !isNaN(pin.latitude) && !isNaN(pin.longitude) &&
-    pin.latitude >= -90 && pin.latitude <= 90 &&
-    pin.longitude >= -180 && pin.longitude <= 180
-  );
-  
-  validPins.forEach(pin => {
+  // Helper method to cleanly remove marker with event listeners
+  private removeMarkerWithCleanup(marker: any, id: number): void {
     try {
-      this.addPinToMap(pin);
-    } catch (error) {
-      console.error(`Error adding marker for pin ${pin.id}:`, error);
-    }
-  });
-  
-  if (currentlySelectedPinId !== null) {
-    const pinToReopen = pins.find(p => p.id === currentlySelectedPinId);
-    
-    if (pinToReopen) {
-      setTimeout(() => {
-        this.popupReopenRequested.emit(currentlySelectedPinId);
-      }, 50);
+      const markerElement = marker.getElement();
+      if (markerElement && marker._hoverListeners) {
+        const listeners = marker._hoverListeners;
+        markerElement.removeEventListener('mouseenter', listeners.mouseenter);
+        markerElement.removeEventListener('mouseleave', listeners.mouseleave);
+        delete marker._hoverListeners;
+      }
+      this.map?.removeLayer(marker);
+    } catch (e) {
+      console.warn('Error removing marker:', id, e);
     }
   }
-}
 
-// W addPinToMap() ZAMIEŃ sekcję event listenerów na:
-
-private addPinToMap(pin: MapPin): void {
+  private addPinToMap(pin: MapPin): void {
   const isCluster = pin.category === 'cluster';
   
   let markerIcon;
@@ -484,9 +542,9 @@ if (markerElement) {
   // Dodaj listenery
   markerElement.addEventListener('mouseenter', handleMouseEnter);
   markerElement.addEventListener('mouseleave', handleMouseLeave);
-  
+
   // KLUCZOWE: Zapisz referencje do listenerów
-  (marker as any)._hoverListeners = {
+  marker._hoverListeners = {
     mouseenter: handleMouseEnter,
     mouseleave: handleMouseLeave
   };
@@ -518,11 +576,14 @@ if (markerElement) {
   public showServicePopup(serviceDetails: ServiceDetails, marker?: any): void {
   // 1. Znajdź marker po ID serwisu
   if (!marker) {
-    marker = this.markers.get(serviceDetails.id);
+    // Parse ID to ensure consistent lookup (markers are stored with parseInt'd IDs)
+    const markerId = parseInt(serviceDetails.id.toString());
+    marker = this.markers.get(markerId);
   }
 
   if (!marker) {
     console.error('Marker not found for service:', serviceDetails.id);
+    console.log('Available marker IDs:', Array.from(this.markers.keys()));
     return;
   }
   
@@ -537,10 +598,18 @@ if (markerElement) {
   } else {
       marker.getPopup().setContent(popupContent);
   }
-  
-  marker.openPopup(); 
 
-  
+  marker.openPopup();
+
+  // Nasłuchuj zamknięcia popupu przez użytkownika
+  marker.off('popupclose');
+  marker.on('popupclose', () => {
+    this.popupClosed.emit(serviceDetails.id);
+  });
+
+  // Cleanup old listeners if popup was reopened
+  this.cleanupPopupListeners(serviceDetails.id);
+
   setTimeout(() => {
     this.attachPopupEventListeners(serviceDetails);
   }, 100);
@@ -675,47 +744,68 @@ if (markerElement) {
   }
 
   private attachPopupEventListeners(serviceDetails: ServiceDetails): void {
-  if (serviceDetails.registered) {
-    const viewDetailsBtn = document.getElementById(`view-details-btn-${serviceDetails.id}`);
-    if (viewDetailsBtn) {
-      viewDetailsBtn.addEventListener('click', () => {
-        console.log('View Details button clicked. Requesting suffix...');
-        
-        this.mapService.getServiceSuffix(serviceDetails.id).subscribe({
-          next: (response) => {
-            if (response && response.suffix) {
-              const suffix = response.suffix;
-              this.router.navigate([suffix]); 
-            } else {
-              console.error('Could not retrieve suffix for service:', serviceDetails.id);
-              alert('Nie udało się pobrać linku do serwisu. Spróbuj ponownie.');
-            }
-          },
-          error: (err) => {
-            console.error('Error during suffix fetch:', err);
-            alert('Wystąpił błąd podczas pobierania szczegółów serwisu.');
-          }
-        });
-      });
+    const listeners: Array<{ element: HTMLElement, event: string, handler: EventListener }> = [];
+
+    if (serviceDetails.registered) {
+      const viewDetailsBtn = document.getElementById(`view-details-btn-${serviceDetails.id}`);
+      if (viewDetailsBtn) {
+        const handler = () => {
+          this.mapService.getServiceSuffix(serviceDetails.id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (response) => {
+                if (response && response.suffix) {
+                  const suffix = response.suffix;
+                  this.router.navigate([suffix]);
+                } else {
+                  console.error('Could not retrieve suffix for service:', serviceDetails.id);
+                  alert('Nie udało się pobrać linku do serwisu. Spróbuj ponownie.');
+                }
+              },
+              error: (err) => {
+                console.error('Error during suffix fetch:', err);
+                alert('Wystąpił błąd podczas pobierania szczegółów serwisu.');
+              }
+            });
+        };
+        viewDetailsBtn.addEventListener('click', handler);
+        listeners.push({ element: viewDetailsBtn, event: 'click', handler });
+      }
+    } else {
+      const registerBtn = document.getElementById(`register-service-btn-${serviceDetails.id}`);
+      if (registerBtn) {
+        const handler = () => {
+          this.registerService.emit(serviceDetails);
+        };
+        registerBtn.addEventListener('click', handler);
+        listeners.push({ element: registerBtn, event: 'click', handler });
+      }
     }
-  } else {
-    const registerBtn = document.getElementById(`register-service-btn-${serviceDetails.id}`);
-    if (registerBtn) {
-      registerBtn.addEventListener('click', () => {
-        this.registerService.emit(serviceDetails);
-      });
+
+    if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+      const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
+      if (transportBtn) {
+        const handler = () => {
+          this.orderTransport.emit(serviceDetails);
+        };
+        transportBtn.addEventListener('click', handler);
+        listeners.push({ element: transportBtn, event: 'click', handler });
+      }
     }
+
+    // Store all listeners for cleanup
+    this.popupListeners.set(serviceDetails.id, listeners);
   }
 
-  if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
-    const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
-    if (transportBtn) {
-      transportBtn.addEventListener('click', () => {
-        this.orderTransport.emit(serviceDetails);
+  private cleanupPopupListeners(serviceId: number): void {
+    const listeners = this.popupListeners.get(serviceId);
+    if (listeners) {
+      listeners.forEach(({ element, event, handler }) => {
+        element.removeEventListener(event, handler);
       });
+      this.popupListeners.delete(serviceId);
     }
   }
-}
 
   private createClusterIcon(count: number): any {
     let colorKey, size, fontSize;
@@ -825,14 +915,26 @@ if (markerElement) {
 
   // ============ PUBLIC METHODS ============
 
-  public centerOn(lat: number, lng: number, zoom?: number): void {
-    if (this.map && this.isMapInitialized) {
-      if (zoom !== undefined) {
-        this.map.setView([lat, lng], zoom);
+  public centerOn(lat: number, lng: number, zoom?: number): Promise<void> {
+    return new Promise<void>((resolve) => {
+      if (this.map && this.isMapInitialized) {
+        if (zoom !== undefined) {
+          // setView is instantaneous, but we wait a bit for rendering
+          this.map.setView([lat, lng], zoom);
+          setTimeout(() => resolve(), 300);
+        } else {
+          // panTo is animated - wait for moveend event
+          const onMoveEnd = () => {
+            this.map.off('moveend', onMoveEnd);
+            resolve();
+          };
+          this.map.once('moveend', onMoveEnd);
+          this.map.panTo([lat, lng]);
+        }
       } else {
-        this.map.panTo([lat, lng]);
+        resolve();
       }
-    }
+    });
   }
 
   public fitBounds(sw: { lat: number; lng: number }, ne: { lat: number; lng: number }): void {

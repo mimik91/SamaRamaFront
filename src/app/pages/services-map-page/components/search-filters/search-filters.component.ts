@@ -1,9 +1,10 @@
 // src/app/pages/services-map-page/components/search-filters/search-filters.component.ts
 
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnInit, HostListener, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, PLATFORM_ID, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 import {
   CitySuggestion,
   MapPin,
@@ -16,9 +17,12 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './search-filters.component.html',
-  styleUrls: ['./search-filters.component.css']
+  styleUrls: ['./search-filters.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchFiltersComponent {
+export class SearchFiltersComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  private resizeSubject = new Subject<void>();
   // Inputs - dane z rodzica (Smart Container)
   @Input() isMobileView = false;
   @Input() citySuggestions: CitySuggestion[] = [];
@@ -68,6 +72,11 @@ export class SearchFiltersComponent {
   // Wyszukiwarka filtrów
   filterSearchQuery = '';
 
+  // Cache for filtered categories to avoid recomputation
+  private _cachedFilteredCategories: CoverageCategory[] | null = null;
+  private _lastFilterQuery = '';
+  private _lastCoverageCategories: CoverageCategory[] = [];
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
@@ -98,16 +107,35 @@ export class SearchFiltersComponent {
   }
 
   ngOnInit(): void {
-    if (this.isBrowser && window.innerWidth <= 768) {
-      this.filtersExpanded = false;
+    if (this.isBrowser) {
+      if (window.innerWidth <= 768) {
+        this.filtersExpanded = false;
+      }
+
+      // Setup debounced resize handler
+      this.resizeSubject
+        .pipe(
+          debounceTime(150),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(() => {
+          // Auto-expand filters on desktop view
+          if (window.innerWidth > 768 && !this.filtersExpanded) {
+            this.filtersExpanded = true;
+          }
+        });
     }
-  
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   @HostListener('window:resize')
   onWindowResize(): void {
-    if (!this.isBrowser) return;
-        if (window.innerWidth > 768 && !this.filtersExpanded) {
+    if (this.isBrowser) {
+      this.resizeSubject.next();
     }
   }
 
@@ -177,21 +205,37 @@ export class SearchFiltersComponent {
     this.calculateServiceDropdownPosition(inputElement);
   }
 
-  // Filter search (frontend only)
+  // Filter search (frontend only) - with memoization
   get filteredCoverageCategories(): CoverageCategory[] {
+    // Check if cache is still valid
+    const queryUnchanged = this._lastFilterQuery === this.filterSearchQuery;
+    const categoriesUnchanged = this._lastCoverageCategories === this.coverageCategories;
+
+    if (queryUnchanged && categoriesUnchanged && this._cachedFilteredCategories) {
+      return this._cachedFilteredCategories;
+    }
+
+    // Update cache keys
+    this._lastFilterQuery = this.filterSearchQuery;
+    this._lastCoverageCategories = this.coverageCategories;
+
+    // Compute filtered categories
     if (!this.filterSearchQuery || this.filterSearchQuery.length < 2) {
+      this._cachedFilteredCategories = this.coverageCategories;
       return this.coverageCategories;
     }
 
     const query = this.filterSearchQuery.toLowerCase();
-    return this.coverageCategories
+    this._cachedFilteredCategories = this.coverageCategories
       .map(category => ({
         ...category,
-        coverages: category.coverages.filter(coverage => 
+        coverages: category.coverages.filter(coverage =>
           coverage.name.toLowerCase().includes(query)
         )
       }))
       .filter(category => category.coverages.length > 0);
+
+    return this._cachedFilteredCategories;
   }
 
   clearFilterSearch(): void {
@@ -229,6 +273,23 @@ export class SearchFiltersComponent {
 
   clearAdvancedFilters(): void {
     this.advancedFiltersCleared.emit();
+  }
+
+  // TrackBy functions for performance
+  trackByCityName(index: number, city: CitySuggestion): string {
+    return city.cityName;
+  }
+
+  trackByServiceId(index: number, service: MapPin): number {
+    return service.id;
+  }
+
+  trackByCategoryId(index: number, category: CoverageCategory): number {
+    return category.category.id;
+  }
+
+  trackByCoverageId(index: number, coverage: any): number {
+    return coverage.id;
   }
 
   get hasActiveFilters(): boolean {

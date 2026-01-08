@@ -8,8 +8,12 @@
     </p>
   </div>
 
-  <!-- Services list with scroll -->
-  <div class="services-list" (scroll)="onScroll($event)">
+  <!-- Services list with virtual scroll -->
+  <cdk-virtual-scroll-viewport
+    [itemSize]="itemSize"
+    class="services-list"
+    (scrolledIndexChange)="onScrollIndexChange($event)"
+  >
     <!-- Initial loading state -->
     <div *ngIf="loading && services.length === 0" class="service-item">
       <div class="loading-container">
@@ -27,17 +31,17 @@
       </div>
     </div>
 
-    <!-- Service items -->
-    <div 
-      *ngFor="let service of services; trackBy: trackByServiceId"
+    <!-- Service items with virtual scrolling -->
+    <div
+      *cdkVirtualFor="let service of services; trackBy: trackByServiceId"
       class="service-item"
       [class.selected]="selectedServiceId === service.id"
       (click)="onServiceClick(service)"
     >
       <!-- Service Logo -->
       <div class="service-logo-container">
-        <img 
-          [src]="getServiceLogo(service)" 
+        <img
+          [src]="getServiceLogo(service)"
           [alt]="service.name + ' logo'"
           [attr.data-service-id]="service.id"
           class="service-logo"
@@ -84,5 +88,5 @@
       <div class="loading-spinner"></div>
       <p>Ładowanie kolejnych serwisów...</p>
     </div>
-  </div>
+  </cdk-virtual-scroll-viewport>
 </div>

@@ -55,9 +55,9 @@
             Szukam miast...
           </div>
           
-          <div 
+          <div
             class="autocomplete-item"
-            *ngFor="let city of citySuggestions"
+            *ngFor="let city of citySuggestions; trackBy: trackByCityName"
             (click)="onCitySelect(city)"
           >
             <div class="autocomplete-item-title">{{ city.cityName }}</div>
@@ -100,9 +100,9 @@
             Szukam serwisów...
           </div>
           
-          <div 
+          <div
             class="autocomplete-item"
-            *ngFor="let service of serviceSuggestions"
+            *ngFor="let service of serviceSuggestions; trackBy: trackByServiceId"
             (click)="onServiceSelect(service)"
           >
             <div class="autocomplete-item-title">
@@ -204,13 +204,13 @@
         </div>
 
         <!-- Categories list - FILTERED -->
-        <div class="filter-category" *ngFor="let categoryGroup of filteredCoverageCategories">
+        <div class="filter-category" *ngFor="let categoryGroup of filteredCoverageCategories; trackBy: trackByCategoryId">
           <h4 class="category-title">{{ categoryGroup.category.name }}</h4>
           
           <div class="coverage-list">
-            <label 
-              class="coverage-item" 
-              *ngFor="let coverage of categoryGroup.coverages"
+            <label
+              class="coverage-item"
+              *ngFor="let coverage of categoryGroup.coverages; trackBy: trackByCoverageId"
               (click)="$event.stopPropagation()"
             >
               <input 

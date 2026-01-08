@@ -34,9 +34,20 @@
 
 .services-list {
   flex: 1;
-  overflow-y: auto;
+  height: 100%;
   padding: 0;
   background-color: var(--color-white-alt);
+}
+
+/* Virtual scroll viewport styling */
+cdk-virtual-scroll-viewport {
+  height: 100%;
+  width: 100%;
+}
+
+/* CDK viewport content wrapper */
+.cdk-virtual-scroll-content-wrapper {
+  width: 100%;
 }
 
 .service-item {
@@ -255,20 +266,24 @@
 
 /* ============ SCROLLBAR ============ */
 
-.services-list::-webkit-scrollbar {
+.services-list::-webkit-scrollbar,
+cdk-virtual-scroll-viewport::-webkit-scrollbar {
   width: 6px;
 }
 
-.services-list::-webkit-scrollbar-track {
+.services-list::-webkit-scrollbar-track,
+cdk-virtual-scroll-viewport::-webkit-scrollbar-track {
   background: var(--color-slate-50);
 }
 
-.services-list::-webkit-scrollbar-thumb {
+.services-list::-webkit-scrollbar-thumb,
+cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
   background: var(--color-slate-300);
   border-radius: 3px;
 }
 
-.services-list::-webkit-scrollbar-thumb:hover {
+.services-list::-webkit-scrollbar-thumb:hover,
+cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb:hover {
   background: var(--color-slate-400);
 }
 

@@ -1,10 +1,16 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { I18nService } from '../../core/i18n.service';
 import { ServiceProfileService } from './service-profile.service';
 import { SeoService } from '../../core/seo.service';
+import {
+  SchemaOrgHelper,
+  BikeRepairShopData,
+  SchemaDayOfWeek,
+  SchemaOpeningHours
+} from '../../core/schema-org.helper';
 import {
   BikeServicePublicInfo,
   ServiceActiveStatus
@@ -27,7 +33,7 @@ type TabType = 'info' | 'hours' | 'pricelist' | 'packages';
   templateUrl: './service-profile.component.html',
   styleUrls: ['./service-profile.component.css']
 })
-export class ServiceProfilePageComponent implements OnInit {
+export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private profileService = inject(ServiceProfileService);
@@ -246,6 +252,10 @@ export class ServiceProfilePageComponent implements OnInit {
     .then(() => {
       this.isLoading = false;
       this.updateSeoForSection();
+
+      // ✅ Dodaj structured data AFTER SEO tags
+      this.updateStructuredData();
+
       console.log('✅ All data loaded successfully');
     })
     .catch(err => {
@@ -460,5 +470,160 @@ export class ServiceProfilePageComponent implements OnInit {
   // Metoda pomocnicza do tłumaczeń (dla template)
   t(key: string): string {
     return this.i18n.instant(key);
+  }
+
+  /**
+   * ✅ NOWA METODA: Aktualizacja SEO i JSON-LD Structured Data
+   *
+   * Używa zrefaktoryzowanego SchemaOrgHelper z BikeRepairShop
+   */
+  private updateStructuredData(): void {
+    if (!this.publicInfo) {
+      console.warn('[ServiceProfile] Brak publicInfo - pomijam structured data');
+      return;
+    }
+
+    const serviceName = this.publicInfo.name;
+    const city = this.publicInfo.city || 'Polska';
+    const description = this.publicInfo.description;
+
+    // 1. Przygotuj dane dla BikeRepairShop schema
+    const bikeShopData: BikeRepairShopData = {
+      name: serviceName,
+      description: description || `Profesjonalny serwis rowerowy ${serviceName}`,
+      image: this.logoUrl,
+      address: {
+        street: `${this.publicInfo.street} ${this.publicInfo.building}${this.publicInfo.flat ? '/' + this.publicInfo.flat : ''}`,
+        city: this.publicInfo.city || 'Polska',
+        postalCode: this.publicInfo.postalCode || '00-000',
+        country: 'PL'
+      },
+      url: `https://cyclopick.pl/${this.suffix}`,
+      telephone: this.publicInfo.phoneNumber || undefined,
+      email: this.publicInfo.email || undefined
+    };
+
+    // 2. Dodaj współrzędne geograficzne (jeśli dostępne)
+    // TODO: Dodaj geo coordinates z API gdy będą dostępne
+    // if (this.publicInfo.latitude && this.publicInfo.longitude) {
+    //   bikeShopData.geo = {
+    //     latitude: this.publicInfo.latitude,
+    //     longitude: this.publicInfo.longitude
+    //   };
+    // }
+
+    // 3. Dodaj godziny otwarcia (jeśli dostępne)
+    if (this.openingHours && this.activeStatus?.openingHoursActive) {
+      bikeShopData.openingHours = this.convertOpeningHoursToSchema();
+    }
+
+    // 4. Dodaj zakres cenowy (jeśli dostępny)
+    if (this.pricelist && this.activeStatus?.pricelistActive) {
+      bikeShopData.priceRange = this.estimatePriceRange();
+    }
+
+    // 5. Dodaj ocenę (jeśli dostępna)
+    // TODO: Dodaj ratings z API gdy będą dostępne
+    // if (this.publicInfo.rating && this.publicInfo.reviewCount) {
+    //   bikeShopData.aggregateRating = {
+    //     ratingValue: this.publicInfo.rating,
+    //     reviewCount: this.publicInfo.reviewCount
+    //   };
+    // }
+
+    // 6. Generuj schema i dodaj do DOM
+    const bikeShopSchema = SchemaOrgHelper.generateBikeRepairShop(bikeShopData);
+
+    if (bikeShopSchema) {
+      // 7. Opcjonalnie: Dodaj breadcrumb
+      const breadcrumb = SchemaOrgHelper.generateBreadcrumb([
+        { name: 'CycloPick', url: 'https://cyclopick.pl' },
+        { name: city, url: `https://cyclopick.pl?city=${encodeURIComponent(city)}` },
+        { name: serviceName, url: `https://cyclopick.pl/${this.suffix}` }
+      ]);
+
+      // 8. Dodaj oba schematy jednocześnie (BikeRepairShop + Breadcrumb)
+      if (breadcrumb) {
+        this.seoService.addMultipleStructuredData([bikeShopSchema, breadcrumb]);
+      } else {
+        this.seoService.addStructuredData(bikeShopSchema);
+      }
+
+      console.log('[ServiceProfile] ✅ Structured data added:', bikeShopSchema);
+    }
+  }
+
+  /**
+   * Konwertuje godziny otwarcia z API na format Schema.org
+   */
+  private convertOpeningHoursToSchema(): SchemaOpeningHours[] {
+    if (!this.openingHours) return [];
+
+    const schemaHours: SchemaOpeningHours[] = [];
+
+    const dayMapping: { [key: string]: SchemaDayOfWeek } = {
+      'monday': SchemaDayOfWeek.Monday,
+      'tuesday': SchemaDayOfWeek.Tuesday,
+      'wednesday': SchemaDayOfWeek.Wednesday,
+      'thursday': SchemaDayOfWeek.Thursday,
+      'friday': SchemaDayOfWeek.Friday,
+      'saturday': SchemaDayOfWeek.Saturday,
+      'sunday': SchemaDayOfWeek.Sunday
+    };
+
+    this.daysOfWeek.forEach(({ key }) => {
+      const interval = this.getDayInterval(key);
+
+      if (interval && interval.openTime && interval.closeTime) {
+        const schemaDay = dayMapping[key];
+
+        if (schemaDay) {
+          schemaHours.push({
+            dayOfWeek: schemaDay,
+            opens: interval.openTime,
+            closes: interval.closeTime
+          });
+        }
+      }
+    });
+
+    return schemaHours;
+  }
+
+  /**
+   * Estymuje zakres cenowy na podstawie cennika
+   * Zwraca format "PLN min-max" dla najlepszej precyzji
+   *
+   * @returns Zakres cenowy w formacie "PLN 50-300" lub "$$" jako fallback
+   */
+  private estimatePriceRange(): string {
+    if (!this.pricelist || !this.pricelist.items) {
+      return '$$'; // Fallback gdy brak cennika
+    }
+
+    // Pobierz wszystkie ceny z cennika
+    const prices = Object.values(this.pricelist.items)
+      .filter(price => typeof price === 'number' && price > 0);
+
+    if (prices.length === 0) {
+      return '$$'; // Fallback gdy brak cen
+    }
+
+    // Znajdź minimalną i maksymalną cenę
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+
+    // ✅ Zwróć konkretny zakres cenowy z walutą
+    // Format akceptowany przez Schema.org: "PLN 50-300"
+    return `PLN ${Math.round(minPrice)}-${Math.round(maxPrice)}`;
+  }
+
+  /**
+   * Cleanup przy niszczeniu komponentu
+   */
+  ngOnDestroy(): void {
+    // Usuń JSON-LD structured data przy przechodzeniu do innej strony
+    this.seoService.removeStructuredData();
+    console.log('[ServiceProfile] ✅ Component destroyed, structured data removed');
   }
 }

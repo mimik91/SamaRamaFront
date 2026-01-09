@@ -74,7 +74,17 @@ export class MapService {
 
         return {
           data: validPins,
-          total: typeof response.total === 'number' ? response.total : validPins.length
+          total: typeof response.total === 'number' ? response.total : validPins.length,
+          // Preserve pagination fields from backend response
+          page: response.page,
+          next: response.next,
+          previous: response.previous,
+          totalPages: response.totalPages,
+          perPage: response.perPage,
+          sortColumn: response.sortColumn,
+          sortDirection: response.sortDirection,
+          bounds: response.bounds,
+          cache: response.cache
         };
       }),
       catchError(error => {

@@ -1,7 +1,13 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+// src/app/pages/service-admin-panel/service-admin-images/service-admin-images.component.ts
+// REFACTORED VERSION with ImageUtilsService + Per-Image State + Memory Leak Fixes
+
+import { Component, Input, OnInit, OnDestroy, ViewChildren, QueryList, ElementRef, inject, DestroyRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY, timeout, firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environments';
+import { ImageUtilsService } from '../../../core/image-utils.service';
 
 interface UploadUrlResponse {
   imageId: string;
@@ -21,7 +27,13 @@ interface ImageState {
   selectedFile: File | null;
   previewUrl: string | null;
   currentIndex: number;
-  customImageUrl: string | null; // URL załadowanego przez użytkownika obrazu
+  customImageUrl: string | null;
+  // Per-image state (not global) - Fix #1
+  isUploading: boolean;
+  uploadProgress: number;
+  errorMessage: string;
+  successMessage: string;
+  isCompressing: boolean;
 }
 
 @Component({
@@ -31,15 +43,26 @@ interface ImageState {
   templateUrl: './service-admin-images.component.html',
   styleUrls: ['./service-admin-images.component.css']
 })
-export class ServiceAdminImagesComponent implements OnInit {
+export class ServiceAdminImagesComponent implements OnInit, OnDestroy {
   @Input() serviceId!: number;
 
+  // ViewChildren reference for all file inputs
+  @ViewChildren('fileInputRef') fileInputs!: QueryList<ElementRef<HTMLInputElement>>;
+
+  // Injected services
   private http = inject(HttpClient);
+  private imageUtils = inject(ImageUtilsService);
+  private destroyRef = inject(DestroyRef);
+
+  // Configuration constants
   private readonly MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
+  private readonly HTTP_TIMEOUT = 30000; // 30 seconds
+  private readonly UPLOAD_TIMEOUT = 60000; // 60 seconds for large files
+  private readonly MAX_RETRIES = 3;
 
   readonly imageTypes: ImageType[] = ['LOGO', 'ABOUT_US', 'OPENING_HOURS'];
 
-  // Dostępne obrazy z assets
+  // Available asset images
   readonly availableAssets = [
     'vertical1.jpg',
     'vertical2.jpg',
@@ -49,27 +72,41 @@ export class ServiceAdminImagesComponent implements OnInit {
     'vertical6.jpg'
   ];
 
-  // Domyślne obrazy dla każdego typu
+  // Default images for each type
   readonly defaultImages: Record<ImageType, string> = {
     LOGO: '',
     ABOUT_US: 'vertical-1.jpg',
     OPENING_HOURS: 'vertical-2.jpg'
   };
 
+  // Image states (all state is now per-image, not global)
   images: Record<ImageType, ImageState> = {
     LOGO: this.createInitialState(),
     ABOUT_US: this.createInitialState(),
     OPENING_HOURS: this.createInitialState()
   };
 
-  isUploading = false;
-  uploadProgress = 0;
-  errorMessage = '';
-  successMessage = '';
-  isCompressing = false;
-
   ngOnInit(): void {
     this.loadAllImages();
+  }
+
+  ngOnDestroy(): void {
+    // Fix #2: Cleanup all preview URLs to prevent memory leaks
+    this.imageTypes.forEach(type => {
+      if (this.images[type].previewUrl) {
+        URL.revokeObjectURL(this.images[type].previewUrl!);
+      }
+    });
+  }
+
+  // Warn user if they try to leave while uploading (check ANY image uploading)
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    const anyUploading = this.imageTypes.some(type => this.images[type].isUploading);
+    if (anyUploading) {
+      $event.preventDefault();
+      $event.returnValue = 'Upload w trakcie - czy na pewno chcesz opuścić stronę?';
+    }
   }
 
   private createInitialState(): ImageState {
@@ -79,9 +116,16 @@ export class ServiceAdminImagesComponent implements OnInit {
       selectedFile: null,
       previewUrl: null,
       currentIndex: 0,
-      customImageUrl: null
+      customImageUrl: null,
+      isUploading: false,
+      uploadProgress: 0,
+      errorMessage: '',
+      successMessage: '',
+      isCompressing: false
     };
   }
+
+  // ============ IMAGE LOADING ============
 
   loadAllImages(): void {
     this.imageTypes.forEach(type => {
@@ -91,44 +135,52 @@ export class ServiceAdminImagesComponent implements OnInit {
 
   loadImage(type: ImageType): void {
     this.images[type].isLoading = true;
-    this.errorMessage = '';
+    this.images[type].errorMessage = '';
 
-    const url = `${environment.apiUrl}${environment.endpoints.services.images.replace(':id', this.serviceId.toString()).replace(':type', type)}`;
+    const url = `${environment.apiUrl}${environment.endpoints.services.images
+      .replace(':id', this.serviceId.toString())
+      .replace(':type', type)}`;
+
     this.http.get<ImageUrlResponse>(url)
-      .subscribe({
-        next: (response) => {
-          this.images[type].url = response.url;
-          this.images[type].customImageUrl = response.url;
-          
-          // Ustaw currentIndex na podstawie załadowanego obrazu
-          if (type !== 'LOGO') {
-            const fileName = this.getFileNameFromUrl(response.url);
-            const index = this.getAvailableImages(type).findIndex(img => 
-              img.includes(fileName) || fileName.includes(img)
-            );
-            if (index !== -1) {
-              this.images[type].currentIndex = index;
-            } else {
-              // Jeśli to custom image, ustaw na ostatni indeks
-              this.images[type].currentIndex = this.getAvailableImages(type).length - 1;
-            }
-          }
-          
-          this.images[type].isLoading = false;
-        },
-        error: (err) => {
+      .pipe(
+        timeout(this.HTTP_TIMEOUT),
+        takeUntilDestroyed(this.destroyRef),
+        catchError(err => {
           if (err.status === 404) {
             this.images[type].url = null;
             this.images[type].customImageUrl = null;
-            // Ustaw domyślny obraz dla ABOUT_US i OPENING_HOURS
+            // Set default image for ABOUT_US and OPENING_HOURS
             if (type !== 'LOGO' && this.defaultImages[type]) {
               const defaultIndex = this.availableAssets.indexOf(this.defaultImages[type]);
               this.images[type].currentIndex = defaultIndex !== -1 ? defaultIndex : 0;
             }
           } else {
-            this.errorMessage = `Nie udało się załadować obrazu ${type}`;
-            console.error(`Error loading ${type}:`, err);
+            this.images[type].errorMessage = `Nie udało się załadować obrazu ${type}`;
+            console.error(`[ImageComponent] Error loading ${type}:`, err);
           }
+          this.images[type].isLoading = false;
+          return EMPTY;
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.images[type].url = response.url;
+          this.images[type].customImageUrl = response.url;
+
+          // Set currentIndex based on loaded image
+          if (type !== 'LOGO') {
+            const fileName = this.getFileNameFromUrl(response.url);
+            const index = this.getAvailableImages(type).findIndex(img =>
+              img.includes(fileName) || fileName.includes(img)
+            );
+            if (index !== -1) {
+              this.images[type].currentIndex = index;
+            } else {
+              // If custom image, set to last index
+              this.images[type].currentIndex = this.getAvailableImages(type).length - 1;
+            }
+          }
+
           this.images[type].isLoading = false;
         }
       });
@@ -138,18 +190,344 @@ export class ServiceAdminImagesComponent implements OnInit {
     return url.split('/').pop()?.split('?')[0] || '';
   }
 
+  // ============ FILE SELECTION ============
+
+  async onFileSelected(event: Event, type: ImageType): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    this.images[type].errorMessage = '';
+    this.images[type].successMessage = '';
+
+    // Validate image
+    const validation = this.imageUtils.validateImage(file);
+    if (!validation.valid) {
+      this.images[type].errorMessage = validation.error || 'Nieprawidłowy plik';
+      this.clearFileInput(type);
+      return;
+    }
+
+    // Log file info
+    console.log(`[ImageComponent] Selected file for ${type}:`, {
+      name: file.name,
+      type: file.type,
+      size: this.imageUtils.formatFileSize(file.size)
+    });
+
+    // Check if compression needed
+    if (this.imageUtils.needsCompression(file, this.MAX_FILE_SIZE)) {
+      console.log(`[ImageComponent] File needs compression (${this.imageUtils.formatFileSize(file.size)})`);
+    }
+
+    // Fix #2: Revoke old preview URL before creating new one
+    if (this.images[type].previewUrl) {
+      URL.revokeObjectURL(this.images[type].previewUrl!);
+    }
+
+    this.images[type].selectedFile = file;
+
+    // Create preview
+    try {
+      const previewUrl = await this.imageUtils.createPreviewUrl(file);
+      this.images[type].previewUrl = previewUrl;
+    } catch (error) {
+      console.error('[ImageComponent] Failed to create preview:', error);
+      this.images[type].errorMessage = 'Nie udało się utworzyć podglądu obrazu';
+    }
+  }
+
+  // ============ IMAGE UPLOAD ============
+
+  async uploadCustomImage(type: ImageType): Promise<void> {
+    const state = this.images[type];
+
+    if (!state.selectedFile) {
+      state.errorMessage = 'Nie wybrano pliku';
+      return;
+    }
+
+    state.isUploading = true;
+    state.isCompressing = true;
+    state.errorMessage = '';
+    state.successMessage = '';
+    state.uploadProgress = 0;
+
+    try {
+      // Step 1: Compress image with progress feedback
+      state.uploadProgress = 5;
+      const compressedFile = await this.imageUtils.compressImage(
+        state.selectedFile,
+        {
+          maxWidth: 1920,
+          maxHeight: 1920,
+          quality: 0.85,
+          preserveAlpha: type === 'LOGO', // Preserve transparency for logos
+          onProgress: (progress) => {
+            // Map 0-100 from compression to 5-25 in overall progress
+            state.uploadProgress = 5 + (progress * 0.2);
+          }
+        }
+      );
+      state.uploadProgress = 25;
+      state.isCompressing = false;
+
+      // Step 2: Get dimensions
+      const dimensions = await this.imageUtils.getImageDimensions(compressedFile);
+      state.uploadProgress = 30;
+
+      console.log(`[ImageComponent] Uploading ${type}:`, {
+        originalSize: this.imageUtils.formatFileSize(state.selectedFile.size),
+        compressedSize: this.imageUtils.formatFileSize(compressedFile.size),
+        dimensions: `${dimensions.width}x${dimensions.height}`
+      });
+
+      // Step 3: Generate presigned URL
+      const url = `${environment.apiUrl}${environment.endpoints.services.imagesBase
+        .replace(':id', this.serviceId.toString())}`;
+
+      const uploadResponse = await firstValueFrom(
+        this.http.post<UploadUrlResponse>(
+          url,
+          {
+            type: type,
+            fileName: `${this.serviceId}_${type}`,
+            mimeType: compressedFile.type,
+            width: dimensions.width,
+            height: dimensions.height,
+            weight: Math.round(compressedFile.size / 1024),
+            provider: 'R2'
+          }
+        ).pipe(
+          timeout(this.HTTP_TIMEOUT),
+          catchError(err => {
+            console.error('[ImageComponent] Failed to generate upload URL:', err);
+            throw new Error('Nie udało się wygenerować URL do uploadu');
+          })
+        )
+      );
+
+      if (!uploadResponse || !uploadResponse.uploadUrl) {
+        throw new Error('Nie udało się wygenerować URL do uploadu');
+      }
+
+      state.uploadProgress = 50;
+
+      // Step 4: Upload to R2 with retry logic
+      await this.uploadToR2WithRetry(uploadResponse.uploadUrl, compressedFile, type);
+
+      state.uploadProgress = 100;
+      state.successMessage = `Obraz ${type} został przesłany pomyślnie!`;
+
+      setTimeout(() => {
+        this.loadImage(type);
+        this.clearSelection(type);
+      }, 1500);
+
+    } catch (error) {
+      console.error('[ImageComponent] Upload error:', error);
+
+      // User-friendly error messages
+      if (error instanceof Error) {
+        if (error.name === 'TimeoutError') {
+          state.errorMessage = 'Przekroczono czas oczekiwania. Sprawdź połączenie internetowe i spróbuj ponownie.';
+        } else if (error.message.includes('CORS')) {
+          state.errorMessage = 'Błąd CORS. Skontaktuj się z administratorem.';
+        } else if (error.message.includes('Failed to fetch')) {
+          state.errorMessage = 'Brak połączenia z serwerem. Sprawdź swoje połączenie internetowe.';
+        } else {
+          state.errorMessage = error.message;
+        }
+      } else {
+        state.errorMessage = 'Wystąpił nieznany błąd podczas przesyłania pliku';
+      }
+    } finally {
+      state.isUploading = false;
+      state.isCompressing = false;
+    }
+  }
+
+  private async uploadToR2WithRetry(uploadUrl: string, file: File, type: ImageType, retryCount = 0): Promise<void> {
+    const state = this.images[type];
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.UPLOAD_TIMEOUT);
+
+      console.log(`[ImageComponent] Upload attempt ${retryCount + 1} to R2...`);
+
+      const uploadResult = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type,
+          'Cache-Control': 'public, max-age=31536000, immutable'
+        },
+        body: file,
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      console.log('[ImageComponent] Upload status:', uploadResult.status);
+      // Note: Headers may not have entries() in all environments
+      try {
+        const headers: Record<string, string> = {};
+        uploadResult.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
+        console.log('[ImageComponent] Upload headers:', headers);
+      } catch (e) {
+        console.log('[ImageComponent] Upload headers:', uploadResult.headers);
+      }
+
+      if (!uploadResult.ok) {
+        const errorText = await uploadResult.text().catch(() => 'Unknown error');
+        throw new Error(`Upload failed with status ${uploadResult.status}: ${errorText}`);
+      }
+
+      state.uploadProgress = 75 + (retryCount * 5); // Progress feedback
+      console.log('[ImageComponent] Upload successful!');
+
+    } catch (error) {
+      console.error(`[ImageComponent] Upload attempt ${retryCount + 1} failed:`, error);
+
+      // Retry logic with exponential backoff
+      if (retryCount < this.MAX_RETRIES) {
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        console.log(`[ImageComponent] Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.uploadToR2WithRetry(uploadUrl, file, type, retryCount + 1);
+      }
+
+      // Max retries exceeded
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Upload przekroczył limit czasu (60s). Plik może być za duży.');
+      }
+      throw error;
+    }
+  }
+
+  async uploadAssetImage(type: ImageType, assetName: string): Promise<void> {
+    const state = this.images[type];
+
+    state.isUploading = true;
+    state.errorMessage = '';
+    state.successMessage = '';
+    state.uploadProgress = 0;
+
+    try {
+      state.uploadProgress = 30;
+
+      const url = `${environment.apiUrl}${environment.endpoints.services.imagesBase
+        .replace(':id', this.serviceId.toString())}`;
+
+      const uploadResponse = await firstValueFrom(
+        this.http.post<UploadUrlResponse>(
+          url,
+          {
+            type: type,
+            fileName: assetName,
+            mimeType: 'image/jpeg',
+            provider: 'LOCAL_ASSET'
+          }
+        ).pipe(
+          timeout(this.HTTP_TIMEOUT),
+          catchError(err => {
+            console.error('[ImageComponent] Failed to save asset:', err);
+            throw new Error('Nie udało się zapisać informacji o zasobie');
+          })
+        )
+      );
+
+      if (!uploadResponse) {
+        throw new Error('Nie udało się zapisać informacji o zasobie');
+      }
+
+      state.uploadProgress = 100;
+      state.successMessage = `Obraz ${type} został zapisany pomyślnie!`;
+
+      setTimeout(() => {
+        this.loadImage(type);
+      }, 1500);
+
+    } catch (error) {
+      console.error('[ImageComponent] Upload error:', error);
+
+      if (error instanceof Error) {
+        if (error.name === 'TimeoutError') {
+          state.errorMessage = 'Przekroczono czas oczekiwania. Spróbuj ponownie.';
+        } else {
+          state.errorMessage = error.message;
+        }
+      } else {
+        state.errorMessage = 'Wystąpił błąd podczas zapisywania';
+      }
+    } finally {
+      state.isUploading = false;
+    }
+  }
+
+  // ============ IMAGE DELETION ============
+
+  async deleteImage(type: ImageType): Promise<void> {
+    if (!confirm(`Czy na pewno chcesz usunąć obraz ${type}?`)) {
+      return;
+    }
+
+    const state = this.images[type];
+    state.isUploading = true;
+    state.errorMessage = '';
+    state.successMessage = '';
+
+    const url = `${environment.apiUrl}${environment.endpoints.services.images
+      .replace(':id', this.serviceId.toString())
+      .replace(':type', type)}`;
+
+    this.http.delete(url)
+      .pipe(
+        timeout(this.HTTP_TIMEOUT),
+        takeUntilDestroyed(this.destroyRef),
+        catchError(err => {
+          state.errorMessage = `Nie udało się usunąć obrazu ${type}`;
+          console.error(`[ImageComponent] Error deleting ${type}:`, err);
+          state.isUploading = false;
+          return EMPTY;
+        })
+      )
+      .subscribe({
+        next: () => {
+          state.successMessage = `Obraz ${type} został usunięty`;
+          state.url = null;
+          state.customImageUrl = null;
+
+          // Restore default index
+          if (type !== 'LOGO' && this.defaultImages[type]) {
+            const defaultIndex = this.availableAssets.indexOf(this.defaultImages[type]);
+            state.currentIndex = defaultIndex !== -1 ? defaultIndex : 0;
+          }
+
+          state.isUploading = false;
+        }
+      });
+  }
+
+  // ============ CAROUSEL NAVIGATION ============
+
   getAvailableImages(type: ImageType): string[] {
     if (type === 'LOGO') {
       return [];
     }
-    
+
     const images = [...this.availableAssets];
-    
-    // Dodaj custom image na koniec jeśli istnieje
+
+    // Add custom image at the end if exists
     if (this.images[type].customImageUrl && !this.isAssetImage(this.images[type].customImageUrl!)) {
       images.push('custom');
     }
-    
+
     return images;
   }
 
@@ -160,11 +538,11 @@ export class ServiceAdminImagesComponent implements OnInit {
   getImageUrl(type: ImageType, index: number): string {
     const images = this.getAvailableImages(type);
     const imageName = images[index];
-    
+
     if (imageName === 'custom') {
       return this.images[type].customImageUrl || '';
     }
-    
+
     return `assets/images/pictures/vertical/${imageName}`;
   }
 
@@ -186,7 +564,7 @@ export class ServiceAdminImagesComponent implements OnInit {
 
   navigateCarousel(type: ImageType, direction: 'prev' | 'next'): void {
     const images = this.getAvailableImages(type);
-    
+
     if (direction === 'prev') {
       this.images[type].currentIndex = (this.images[type].currentIndex - 1 + images.length) % images.length;
     } else {
@@ -194,254 +572,48 @@ export class ServiceAdminImagesComponent implements OnInit {
     }
   }
 
-  onFileSelected(event: Event, type: ImageType): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    if (!file.type.startsWith('image/')) {
-      this.errorMessage = 'Wybrany plik nie jest obrazem';
-      this.clearFileInput(type);
-      return;
-    }
-
-    if (file.size > this.MAX_FILE_SIZE) {
-      console.log(`Plik ma ${(file.size / 1024 / 1024).toFixed(2)}MB i zostanie skompresowany`);
-    }
-
-    this.images[type].selectedFile = file;
-    this.createPreview(file, type);
-  }
-
-  createPreview(file: File, type: ImageType): void {
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.images[type].previewUrl = reader.result as string;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  async compressImage(file: File): Promise<File> {
-    try {
-      console.log('Oryginalna wielkość:', (file.size / 1024 / 1024).toFixed(2), 'MB');
-      const compressedFile = file;
-      console.log('Skompresowana wielkość:', (compressedFile.size / 1024 / 1024).toFixed(2), 'MB');
-      
-      const compressedFileWithName = new File(
-        [compressedFile], 
-        file.name, 
-        { type: compressedFile.type }
-      );
-      
-      return compressedFileWithName;
-    } catch (error) {
-      console.error('Błąd kompresji:', error);
-      throw new Error('Nie udało się skompresować obrazu');
-    }
-  }
-
   async selectCurrentImage(type: ImageType): Promise<void> {
     const images = this.getAvailableImages(type);
     const currentImage = images[this.images[type].currentIndex];
+    const state = this.images[type];
 
     if (currentImage === 'custom') {
-      // Już wybrany custom image - nie rób nic
-      this.successMessage = 'To zdjęcie jest już wybrane';
-      setTimeout(() => this.successMessage = '', 2000);
+      // Already selected custom image
+      state.successMessage = 'To zdjęcie jest już wybrane';
+      setTimeout(() => state.successMessage = '', 2000);
       return;
     }
 
-    // Wybrano asset z galerii
+    // Selected asset from gallery
     await this.uploadAssetImage(type, currentImage);
   }
 
-  async uploadCustomImage(type: ImageType): Promise<void> {
-    const state = this.images[type];
-    
-    if (!state.selectedFile) {
-      this.errorMessage = 'Nie wybrano pliku';
-      return;
-    }
-
-    this.isUploading = true;
-    this.isCompressing = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.uploadProgress = 0;
-
-    try {
-      this.uploadProgress = 10;
-      const compressedFile = await this.compressImage(state.selectedFile);
-      this.uploadProgress = 20;
-      this.isCompressing = false;
-
-      const dimensions = await this.getImageDimensions(compressedFile);
-      this.uploadProgress = 30;
-      
-      const url = `${environment.apiUrl}${environment.endpoints.services.imagesBase.replace(':id', this.serviceId.toString())}`;
-      const uploadResponse = await this.http.post<UploadUrlResponse>(
-        url,
-        {
-          type: type,
-          fileName: `${this.serviceId}_${type}`,
-          mimeType: compressedFile.type,
-          width: dimensions.width,
-          height: dimensions.height,
-          weight: Math.round(compressedFile.size / 1024),
-          provider: 'R2'
-        }
-      ).toPromise();
-
-      if (!uploadResponse || !uploadResponse.uploadUrl) {
-        throw new Error('Nie udało się wygenerować URL do uploadu');
-      }
-
-      this.uploadProgress = 50;
-
-      const uploadResult = await fetch(uploadResponse.uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': compressedFile.type,
-        },
-        body: compressedFile,
-      });
-
-      console.log('Upload status:', uploadResult.status);
-      console.log('Upload headers:', uploadResult.headers);
-
-      if (!uploadResult.ok) {
-        throw new Error('Nie udało się przesłać pliku do serwera');
-      }
-
-      this.uploadProgress = 100;
-      this.successMessage = `Obraz ${type} został przesłany pomyślnie!`;
-      
-      setTimeout(() => {
-        this.loadImage(type);
-        this.clearSelection(type);
-      }, 1500);
-
-    } catch (error) {
-      console.error('Upload error:', error);
-      this.errorMessage = error instanceof Error ? error.message : 'Wystąpił błąd podczas przesyłania pliku';
-    } finally {
-      this.isUploading = false;
-      this.isCompressing = false;
-    }
-  }
-
-  async uploadAssetImage(type: ImageType, assetName: string): Promise<void> {
-    this.isUploading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.uploadProgress = 0;
-
-    try {
-      this.uploadProgress = 30;
-
-      const url = `${environment.apiUrl}${environment.endpoints.services.imagesBase.replace(':id', this.serviceId.toString())}`;
-      const uploadResponse = await this.http.post<UploadUrlResponse>(
-        url,
-        {
-          type: type,
-          fileName: assetName,
-          mimeType: 'image/jpeg',
-          provider: 'LOCAL_ASSET'
-        }
-      ).toPromise();
-
-      if (!uploadResponse) {
-        throw new Error('Nie udało się zapisać informacji o zasobie');
-      }
-
-      this.uploadProgress = 100;
-      this.successMessage = `Obraz ${type} został zapisany pomyślnie!`;
-      
-      setTimeout(() => {
-        this.loadImage(type);
-      }, 1500);
-
-    } catch (error) {
-      console.error('Upload error:', error);
-      this.errorMessage = error instanceof Error ? error.message : 'Wystąpił błąd podczas zapisywania';
-    } finally {
-      this.isUploading = false;
-    }
-  }
-
-  async deleteImage(type: ImageType): Promise<void> {
-    if (!confirm(`Czy na pewno chcesz usunąć obraz ${type}?`)) {
-      return;
-    }
-
-    this.isUploading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    const url = `${environment.apiUrl}${environment.endpoints.services.images.replace(':id', this.serviceId.toString()).replace(':type', type)}`;
-    this.http.delete(url)
-      .subscribe({
-        next: () => {
-          this.successMessage = `Obraz ${type} został usunięty`;
-          this.images[type].url = null;
-          this.images[type].customImageUrl = null;
-          
-          // Przywróć domyślny indeks
-          if (type !== 'LOGO' && this.defaultImages[type]) {
-            const defaultIndex = this.availableAssets.indexOf(this.defaultImages[type]);
-            this.images[type].currentIndex = defaultIndex !== -1 ? defaultIndex : 0;
-          }
-          
-          this.isUploading = false;
-        },
-        error: (err) => {
-          this.errorMessage = `Nie udało się usunąć obrazu ${type}`;
-          console.error(`Error deleting ${type}:`, err);
-          this.isUploading = false;
-        }
-      });
-  }
+  // ============ UI HELPERS ============
 
   clearSelection(type: ImageType): void {
-    this.images[type].selectedFile = null;
-    this.images[type].previewUrl = null;
+    const state = this.images[type];
+
+    // Fix #2: Revoke object URL before clearing
+    if (state.previewUrl) {
+      URL.revokeObjectURL(state.previewUrl);
+    }
+
+    state.selectedFile = null;
+    state.previewUrl = null;
     this.clearFileInput(type);
   }
 
   private clearFileInput(type: ImageType): void {
-    const input = document.getElementById(`${type.toLowerCase()}-upload`) as HTMLInputElement;
-    if (input) {
-      input.value = '';
+    // Find the input element for this specific image type
+    if (this.fileInputs) {
+      const input = this.fileInputs.find(
+        (el) => el.nativeElement.getAttribute('data-image-type') === type
+      );
+
+      if (input?.nativeElement) {
+        input.nativeElement.value = '';
+      }
     }
-  }
-
-  private getImageDimensions(file: File): Promise<{ width: number; height: number }> {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        resolve({ width: img.width, height: img.height });
-      };
-      
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error('Nie udało się załadować obrazu'));
-      };
-      
-      img.src = url;
-    });
-  }
-
-  formatFileSize(bytes: number): string {
-    return (bytes / 1024 / 1024).toFixed(2) + ' MB';
   }
 
   getImageTitle(type: ImageType): string {
@@ -464,5 +636,9 @@ export class ServiceAdminImagesComponent implements OnInit {
 
   canShowCarousel(type: ImageType): boolean {
     return type === 'ABOUT_US' || type === 'OPENING_HOURS';
+  }
+
+  formatFileSize(bytes: number): string {
+    return this.imageUtils.formatFileSize(bytes);
   }
 }

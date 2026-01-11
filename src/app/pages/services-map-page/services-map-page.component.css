@@ -75,8 +75,8 @@
   flex-direction: column;
   box-shadow: 2px 0 10px var(--color-black-alpha-08);
   height: 100%;
-  overflow-y: auto;
-  overflow-x: visible;
+  min-height: 0;
+  overflow: hidden;
   position: relative;
   z-index: 100; /* Wyżej niż mapa, ale niżej niż navbar */
 }

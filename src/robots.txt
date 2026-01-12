@@ -2,6 +2,11 @@
 
 User-agent: *
 Allow: /
+
+# Blokuj URL-e z parametrami query (np. /?city=Katowice)
+# Zapobiega indeksowaniu wariantów wyszukiwania jako osobnych stron
+Disallow: /*?*
+
 Disallow: /admin
 Disallow: /admin-*
 Disallow: /account
@@ -19,6 +24,9 @@ Disallow: /mistrzauta
 Disallow: /*panel-administratora
 Disallow: /client-dashboard
 Disallow: /about
+Disallow: /cennik
+Disallow: /bike-service-warszawa
+Disallow: /cdn-cgi/l/email-protection
 
 # Dozwolone publiczne strony
 Allow: /

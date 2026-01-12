@@ -18,6 +18,7 @@ Disallow: /password-reset-request
 Disallow: /mistrzauta
 Disallow: /*panel-administratora
 Disallow: /client-dashboard
+Disallow: /about
 
 # Dozwolone publiczne strony
 Allow: /

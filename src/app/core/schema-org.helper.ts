@@ -347,7 +347,7 @@ export class SchemaOrgHelper {
       },
       sameAs: [
 
-        'https://www.facebook.com/cyclopick',
+        'https://www.facebook.com/cyclopick'
         // 'https://www.instagram.com/cyclopick'
       ].filter(Boolean)
     };

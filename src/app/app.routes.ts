@@ -148,6 +148,9 @@ export const routes: Routes = [
       title: 'Zarejestruj Serwis'
     },
     
+    // Przekierowanie z /about na stronę główną
+    { path: 'about', redirectTo: '', pathMatch: 'full' },
+
     // About page
     { 
       path: 'for-services', 

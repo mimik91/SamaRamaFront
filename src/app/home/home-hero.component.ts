@@ -10,7 +10,7 @@ import { RouterModule } from '@angular/router';
     <div class="hero-section">
       <!-- Użycie *ngIf="isBrowser" dla obrazu -->
       <img *ngIf="isBrowser" 
-           src="assets/images/home-image.jpg" 
+           src="assets\images\pictures\rowerem-w-gorach.webp" 
            alt="CycloPick Home Image" 
            class="hero-image" 
            onerror="this.src='https://placehold.co/1600x500/57BCD8/FFFFFF?text=CycloPick+Serwis+Rowerowy'">

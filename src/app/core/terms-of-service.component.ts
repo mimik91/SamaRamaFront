@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   template: `
     <div class="terms-container">
       <div class="terms-header">
-        <h1>Regulamin Serwisu</h1>
+        <h1>Regulamin Transportu</h1>
         <button class="back-btn" (click)="goBack()">← Powrót</button>
       </div>
       <div class="terms-content">

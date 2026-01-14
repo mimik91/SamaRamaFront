@@ -46,6 +46,7 @@
     <!-- ABOUT US TAB -->
     <section class="main-content" id="info" *ngIf="activeTab === 'info'">
       <div class="content-left">
+        <h1> {{ t('service_profile.images.about_us') }} </h1>
         <img [src]="logoUrl" [alt]="publicInfo.name" class="service-logo">
         <h2>{{ publicInfo.name }}</h2>
         <h3>{{ publicInfo.city }}</h3>
@@ -54,7 +55,7 @@
         <div 
           class="transport-card" 
           *ngIf="publicInfo.transportAvailable"
-          [style.background-image]="'url(assets/images/pictures/picture1.jpg)'">
+          [style.background-image]="'url(assets/images/pictures/rowerem-w-gory.webp)'">
           <div class="transport-overlay"></div>
           <div class="transport-content">
             <p class="transport-subtitle">

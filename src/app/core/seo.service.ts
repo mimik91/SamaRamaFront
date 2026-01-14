@@ -27,7 +27,7 @@ export interface SeoData {
 export class SeoService {
   private readonly defaultTitle = 'CycloPick | Znajdź serwis rowerowy w Twojej okolicy';
   private readonly defaultDescription = 'Znajdź najlepszy serwis rowerowy w swojej okolicy dzięki CycloPick. Sprawdź mapę, opinie i umów się na naprawę online.';
-  private readonly defaultImage = 'https://cyclopick.pl/assets/images/pictures/picture1.jpg';
+  private readonly defaultImage = 'https://cyclopick.pl/assets/images/pictures/rower-w-lesie.webp';
 
   private renderer: Renderer2;
   private readonly SCHEMA_SCRIPT_ID = 'app-structured-data';
@@ -68,7 +68,7 @@ export class SeoService {
 
 
 
-    if (path.includes('admin') || path.includes('panel') || path.includes('account')) {
+    if (path.includes('admin') || path.includes('panel') || path.includes('account') || path.includes('login') || path.includes('register')) {
 
       this.metaService.updateTag({ name: 'robots', content: 'noindex, nofollow' });
 
@@ -166,7 +166,7 @@ export class SeoService {
 
     // 7. Robots - KRYTYCZNE: Sprawdź czy to nie strona administracyjna
     // Centralna logika blokowania indeksacji dla paneli admina/konta
-    if (path && (path.includes('admin') || path.includes('panel') || path.includes('account'))) {
+    if (path && (path.includes('admin') || path.includes('panel') || path.includes('account') || path.includes('login') || path.includes('register'))) {
       this.metaService.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     } else {
       this.metaService.updateTag({ name: 'robots', content: 'index, follow' });

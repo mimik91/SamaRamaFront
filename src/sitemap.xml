@@ -273,4 +273,356 @@
     <lastmod>2026-01-12</lastmod>
   </url>
 
+  <!-- STRONY SERWISÓW DLA MIAST -->
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/warszawa</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/krakow</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/wroclaw</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/lodz</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/poznan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/gdansk</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/szczecin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/lublin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/bydgoszcz</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/bialystok</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/katowice</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/rzeszow</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/kielce</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/olsztyn</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/bielsko-biala</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/opole</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/gdynia</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/czestochowa</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/radom</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/torun</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/sosnowiec</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/gliwice</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/zabrze</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/bytom</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/zielona-gora</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/rybnik</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/ruda-slaska</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/tychy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/gorzow-wielkopolski</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/dabrowa-gornicza</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/elblag</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/plock</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/koszalin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/tarnow</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/wloclawek</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/chorzow</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/legnica</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/walbrzych</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/grudziadz</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/slupsk</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/jaworzno</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/jastrzebie-zdroj</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/nowy-sacz</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/jelenia-gora</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/konin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/piotrkow-trybunalski</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/inowroclaw</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/lubin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/ostrowiec-swietokrzyski</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
+  <url>
+    <loc>https://cyclopick.pl/serwisy/suwalki</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-01-14</lastmod>
+  </url>
+
 </urlset>

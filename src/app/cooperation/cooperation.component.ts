@@ -14,32 +14,32 @@ export class CooperationComponent implements OnInit {
   cooperationAreas = [
     {
       title: 'Rozwój aplikacji',
-      image: 'assets/images/cooperation/dev.jpg',
+      image: 'assets/images/cooperation/dev.webp',
       description: 'Pomóż nam rozwijać CycloPick od strony technologicznej. Kod, UX, mobilne innowacje — Twoje pomysły mogą realnie ulepszyć nasz produkt.'
     },
     {
       title: 'Marketing i promocja',
-      image: 'assets/images/cooperation/marketing.jpg',
+      image: 'assets/images/cooperation/marketing.webp',
       description: 'Pomóż nam dotrzeć do tysięcy rowerzystów w całej Polsce. Jeśli potrafisz angażować ludzi, Twoje miejsce jest właśnie tutaj.'
     },
     {
       title: 'Biznes i strategia',
-      image: 'assets/images/cooperation/strategy.jpg',
+      image: 'assets/images/cooperation/strategy.webp',
       description: 'Współtwórz model działania CycloPick, wspieraj nas wiedzą z zakresu logistyki, partnerstw i skalowania biznesu.'
     },
     {
       title: 'Społeczność i eventy',
-      image: 'assets/images/cooperation/events.jpg',
+      image: 'assets/images/cooperation/events.webp',
       description: 'Łącz ludzi, organizuj wydarzenia i buduj społeczność miłośników rowerów. Wspólnie napędzajmy pasję do dwóch kółek.'
     },
     {
       title: 'Serwisy i warsztaty',
-      image: 'assets/images/cooperation/workshop.jpg',
+      image: 'assets/images/cooperation/workshop.webp',
       description: 'Dołącz do naszej sieci partnerów serwisowych. Wspólnie sprawmy, by każdy rower był w najlepszych rękach.'
     },
     {
       title: 'Inne pomysły',
-      image: 'assets/images/cooperation/ideas2.jpg',
+      image: 'assets/images/cooperation/ideas2.webp',
       description: 'Masz coś, co nie pasuje do powyższych kategorii? Świetnie! Napisz do nas – każda świeża perspektywa ma znaczenie.'
     }
   ];

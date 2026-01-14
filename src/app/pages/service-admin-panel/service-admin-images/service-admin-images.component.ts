@@ -64,19 +64,20 @@ export class ServiceAdminImagesComponent implements OnInit, OnDestroy {
 
   // Available asset images
   readonly availableAssets = [
-    'vertical1.jpg',
-    'vertical2.jpg',
-    'vertical3.jpg',
-    'vertical4.jpg',
-    'vertical5.jpg',
-    'vertical6.jpg'
+    'przerzutka-rowerowa.webp',
+    'rower.webp',
+    'serwis-rowerowy-krakow.webp',
+    'serwis-rowerowy-warszawa.webp',
+    'serwis-rowerowy-wroclaw.webp',
+    'transport-roweru-krakow.webp'
+
   ];
 
   // Default images for each type
   readonly defaultImages: Record<ImageType, string> = {
     LOGO: '',
-    ABOUT_US: 'vertical-1.jpg',
-    OPENING_HOURS: 'vertical-2.jpg'
+    ABOUT_US: 'przerzutka-rowerowa.webp',
+    OPENING_HOURS: 'rower.webp'
   };
 
   // Image states (all state is now per-image, not global)
@@ -265,7 +266,7 @@ export class ServiceAdminImagesComponent implements OnInit, OnDestroy {
           maxWidth: 1920,
           maxHeight: 1920,
           quality: 0.85,
-          preserveAlpha: type === 'LOGO', // Preserve transparency for logos
+          outputFormat: type === 'LOGO' ? 'png' : 'webp', // PNG for logos (transparency), WebP for photos
           onProgress: (progress) => {
             // Map 0-100 from compression to 5-25 in overall progress
             state.uploadProgress = 5 + (progress * 0.2);

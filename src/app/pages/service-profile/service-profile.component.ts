@@ -64,8 +64,8 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   
   // Obrazy serwisu
   logoUrl: string = 'assets/images/logo-cyclopick.png';
-  aboutUsImageUrl: string = 'assets/images/pictures/vertical/vertical1.jpg';
-  openingHoursImageUrl: string = 'assets/images/pictures/vertical/vertical2.jpg';
+  aboutUsImageUrl: string = 'assets/images/pictures/vertical/przelrzutka-rowerowa.webp';
+  openingHoursImageUrl: string = 'assets/images/pictures/vertical/rower.webp';
   
   // Aktywna zakładka
   activeTab: TabType = 'info';

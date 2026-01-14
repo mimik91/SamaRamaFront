@@ -327,5 +327,70 @@
     "inactive": "Nieaktywny",
     "currency": "zł",
     "note": "Uwaga"
+  },
+  "registration": {
+    "page_title": "Rejestracja Klienta",
+    "section_title": "Informacje podstawowe",
+    "fields": {
+      "first_name": "Imię",
+      "last_name": "Nazwisko",
+      "email": "Email",
+      "password": "Hasło",
+      "phone": "Telefon kontaktowy",
+      "phone_placeholder": "123456789"
+    },
+    "validation": {
+      "first_name_required": "Imię jest wymagane",
+      "last_name_required": "Nazwisko jest wymagane",
+      "email_invalid": "Wprowadź poprawny adres email",
+      "password_min_length": "Hasło musi mieć co najmniej 6 znaków",
+      "phone_invalid": "Wprowadź poprawny numer telefonu (9 cyfr)",
+      "fill_all_fields": "Wypełnij wszystkie wymagane pola formularza."
+    },
+    "buttons": {
+      "submit": "Zarejestruj się",
+      "submitting": "Rejestracja w toku...",
+      "have_account": "Masz już konto? Zaloguj się"
+    },
+    "messages": {
+      "success": "Rejestracja zakończona sukcesem! Na Twój adres email został wysłany link weryfikacyjny. Sprawdź swoją skrzynkę odbiorczą i potwierdź rejestrację.",
+      "verification_info": "Jeśli nie otrzymasz emaila z linkiem weryfikacyjnym w ciągu kilku minut, sprawdź folder spam lub przejdź do strony logowania, aby ponownie wysłać link weryfikacyjny."
+    }
+  },
+  "navigation": {
+    "map": "Mapa",
+    "for_services": "Dla serwisów",
+    "cooperation": "Współpraca",
+    "login": "Zaloguj się",
+    "register": "Zarejestruj się",
+    "register_service": "Zarejestruj serwis",
+    "service_panel": "Panel Serwisu",
+    "dashboard": "Dashboard",
+    "orders": "Zamówienia"
+  },
+  "city_services": {
+    "page_title": "Serwisy rowerowe {city}",
+    "subtitle": "Lista serwisów rowerowych w mieście {city} i okolicach",
+    "meta_title": "Serwisy rowerowe {city} - lista serwisów | CycloPick",
+    "meta_description": "Znajdź najlepszy serwis rowerowy w mieście {city}. Lista serwisów rowerowych z adresami i numerami telefonów. Sprawdź dostępne warsztaty rowerowe.",
+    "select_city": "Wybierz miasto:",
+    "show_on_map": "Pokaż na mapie",
+    "loading": "Ładowanie serwisów...",
+    "error": "Wystąpił błąd podczas ładowania serwisów. Spróbuj ponownie później.",
+    "services_found": "Znaleziono",
+    "services_count_suffix": "serwisów rowerowych",
+    "no_services": "Nie znaleziono serwisów rowerowych w tym obszarze.",
+    "verified": "Zweryfikowany",
+    "seo_title": "Serwisy rowerowe w mieście {city}",
+    "seo_text_1": "Szukasz serwisu rowerowego w mieście {city}? Na tej stronie znajdziesz listę warsztatów rowerowych działających w {city} i okolicach. Każdy serwis posiada dane kontaktowe, dzięki czemu możesz szybko umówić się na naprawę roweru.",
+    "seo_text_2": "CycloPick to platforma łącząca rowerzystów z serwisami rowerowymi. Dzięki naszej interaktywnej mapie serwisów rowerowych możesz łatwo znaleźć najbliższy warsztat w {city} i innych miastach Polski.",
+    "other_cities": "Serwisy rowerowe w innych miastach"
+  },
+  "seo_footer": {
+    "cities_title": "Serwisy rowerowe w miastach",
+    "documents_title": "Dokumenty",
+    "terms_of_service": "Regulamin serwisu",
+    "terms_of_service_workshops": "Regulamin dla warsztatów",
+    "privacy_policy": "Polityka prywatności"
   }
 }

@@ -2,11 +2,13 @@
 
 import { Injectable } from '@angular/core';
 
+export type OutputFormat = 'webp' | 'jpeg' | 'png';
+
 export interface CompressionOptions {
   maxWidth?: number;
   maxHeight?: number;
   quality?: number;
-  preserveAlpha?: boolean;
+  outputFormat?: OutputFormat;
   onProgress?: (progress: number) => void;
 }
 
@@ -91,9 +93,11 @@ export class ImageUtilsService {
       maxWidth = this.DEFAULT_MAX_DIMENSION,
       maxHeight = this.DEFAULT_MAX_DIMENSION,
       quality = this.DEFAULT_QUALITY,
-      preserveAlpha = file.type === 'image/png',
+      outputFormat = 'webp',
       onProgress
     } = options;
+
+    const needsAlpha = outputFormat === 'png';
 
     onProgress?.(0);
 
@@ -127,13 +131,13 @@ export class ImageUtilsService {
       canvas.width = dimensions.width;
       canvas.height = dimensions.height;
 
-      const ctx = canvas.getContext('2d', { alpha: preserveAlpha });
+      const ctx = canvas.getContext('2d', { alpha: needsAlpha });
       if (!ctx) {
         throw new Error('Nie można utworzyć canvas context');
       }
 
-      // Add white background for JPEG (no transparency)
-      if (!preserveAlpha) {
+      // Add white background for non-transparent formats
+      if (!needsAlpha) {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, dimensions.width, dimensions.height);
       }
@@ -145,7 +149,7 @@ export class ImageUtilsService {
       onProgress?.(60);
 
       // Convert to blob
-      const blob = await this.canvasToBlob(canvas, preserveAlpha, quality);
+      const blob = await this.canvasToBlob(canvas, outputFormat, quality);
       onProgress?.(90);
 
       if (!blob) {
@@ -153,13 +157,25 @@ export class ImageUtilsService {
       }
 
       console.log('[ImageUtils] Compressed file:', {
+        format: outputFormat,
         size: `${(blob.size / 1024 / 1024).toFixed(2)}MB`,
         reduction: `${(((file.size - blob.size) / file.size) * 100).toFixed(1)}%`
       });
 
       // Determine output format
-      const outputType = preserveAlpha ? 'image/png' : 'image/jpeg';
-      const extension = preserveAlpha ? '.png' : '.jpg';
+      const mimeTypes: Record<OutputFormat, string> = {
+        'webp': 'image/webp',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png'
+      };
+      const extensions: Record<OutputFormat, string> = {
+        'webp': '.webp',
+        'jpeg': '.jpg',
+        'png': '.png'
+      };
+
+      const outputType = mimeTypes[outputFormat];
+      const extension = extensions[outputFormat];
       const newFileName = file.name.replace(/\.[^.]+$/, extension);
 
       const compressedFile = new File([blob], newFileName, {
@@ -232,11 +248,16 @@ export class ImageUtilsService {
    */
   private canvasToBlob(
     canvas: HTMLCanvasElement,
-    preserveAlpha: boolean,
+    format: OutputFormat,
     quality: number
   ): Promise<Blob | null> {
     return new Promise((resolve) => {
-      const mimeType = preserveAlpha ? 'image/png' : 'image/jpeg';
+      const mimeTypes: Record<OutputFormat, string> = {
+        'webp': 'image/webp',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png'
+      };
+      const mimeType = mimeTypes[format];
 
       canvas.toBlob(
         (blob) => resolve(blob),

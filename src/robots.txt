@@ -3,10 +3,7 @@
 User-agent: *
 Allow: /
 
-# Blokuj URL-e z parametrami query (np. /?city=Katowice)
-# Zapobiega indeksowaniu wariantów wyszukiwania jako osobnych stron
 Disallow: /*?*
-
 Disallow: /admin
 Disallow: /admin-*
 Disallow: /account
@@ -15,8 +12,6 @@ Disallow: /service-appointments
 Disallow: /order-service
 Disallow: /order-transport
 Disallow: /guest-order
-Disallow: /login
-Disallow: /register
 Disallow: /verify-account
 Disallow: /password-reset
 Disallow: /password-reset-request
@@ -27,6 +22,8 @@ Disallow: /about
 Disallow: /cennik
 Disallow: /bike-service-warszawa
 Disallow: /cdn-cgi/l/email-protection
+Disallow: /register-serviceman
+Disallow: /password-reset-request
 
 # Dozwolone publiczne strony
 Allow: /
@@ -37,6 +34,7 @@ Allow: /register-service
 Allow: /terms-of-service
 Allow: /terms-of-service-workshops
 Allow: /privacy-policy
+Allow: /serwisy/*
 
 # Sitemap
 Sitemap: https://cyclopick.pl/sitemap.xml

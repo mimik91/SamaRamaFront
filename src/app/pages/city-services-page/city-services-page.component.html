@@ -1,0 +1,285 @@
+<article class="city-services-container" itemscope itemtype="https://schema.org/ItemList">
+  <!-- Header section -->
+  <header class="city-header" *ngIf="!cityNotFound">
+    <h1 itemprop="name">
+      <ng-container *ngIf="isKrakow; else defaultTitle">
+        <span class="h1-main">Serwisy rowerowe Kraków</span>
+        <span class="h1-sub">Tu zamówisz transport rowerów</span>
+      </ng-container>
+      <ng-template #defaultTitle>
+        Serwisy rowerowe {{ currentCity?.name }}
+      </ng-template>
+    </h1>
+    <p class="subtitle">
+      <ng-container *ngIf="isKrakow; else defaultSubtitle">
+        Znajd&#378; warsztat rowerowy w Krakowie -> Umów się na serwis -> Zam&#243;w <strong>transport roweru</strong> na wybrany adres -> odbierzemy Tw&#243;j rower -> zawieziemy do serwisu a po naprawie dostarczymy z powrotem! <br> Zmieniamy każdy serwis rowerowy w Krakowie w <strong>serwis door-to-door</strong>. 
+      </ng-container>
+      <ng-template #defaultSubtitle>
+        Lista serwis&#243;w rowerowych w mie&#347;cie {{ currentCity?.name }} i okolicach
+      </ng-template>
+    </p>
+  </header>
+
+  <!-- CTA Banner for service owners -->
+  <aside class="service-cta-banner" *ngIf="!cityNotFound">
+    <div class="service-cta-content">
+      <div class="service-cta-text">
+        <strong>Nie ma tutaj Twojego serwisu?</strong>
+        <span>Sprawd&#378; co mo&#380;esz zyska&#263; i zarejestruj sw&#243;j serwis rowerowy w CycloPick!</span>
+      </div>
+      <a routerLink="/for-services" class="service-cta-button">
+        Zarejestruj serwis
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Transport info banner for Krak&#243;w -->
+  <section *ngIf="isKrakow && !cityNotFound" class="transport-banner">
+    <div class="transport-banner-content">
+      <div class="transport-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+      </div>
+      <div class="transport-text">
+        <h2>Transport rower&#243;w door-to-door w Krakowie</h2>
+        <p>
+          Nie masz czasu na wiezienie roweru do serwisu? Skorzystaj z naszej us&#322;ugi <strong>transportu rower&#243;w w Krakowie</strong>!
+          Kurier odbierze Tw&#243;j rower spod drzwi, dostarczy do wybranego serwisu rowerowego, a po naprawie przywiezie go z powrotem.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- City selector & actions -->
+  <div class="actions-bar" *ngIf="!cityNotFound">
+    <div class="city-selector">
+      <label for="city-select">Wybierz miasto:</label>
+      <select
+        id="city-select"
+        [(ngModel)]="selectedCitySlug"
+        (change)="onCityChange()"
+        class="city-dropdown"
+      >
+        <option *ngFor="let city of cities" [value]="city.slug">
+          {{ city.name }}
+        </option>
+      </select>
+    </div>
+
+    <button class="map-button" (click)="navigateToMap()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
+      </svg>
+      Poka&#380; na mapie serwis&#243;w
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>&#321;adowanie serwis&#243;w rowerowych...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading && !cityNotFound" class="error-state">
+    <p>Wyst&#261;pi&#322; b&#322;&#261;d podczas &#322;adowania serwis&#243;w. Spr&#243;buj ponownie p&#243;&#378;niej.</p>
+  </div>
+
+  <!-- City not found (404) state -->
+  <div *ngIf="cityNotFound && !loading" class="not-found-state">
+    <img
+      src="assets/images/pictures/404.webp"
+      alt="Strona nie znaleziona"
+      class="not-found-image"
+    >
+    <h2>Miasto nie znalezione</h2>
+    <p>Nie znale&#378;li&#347;my miasta o podanej nazwie w naszej bazie. Wybierz miasto z poni&#380;szej listy:</p>
+    <div class="city-selector not-found-selector">
+      <select
+        [(ngModel)]="selectedCitySlug"
+        (change)="onCityChange()"
+        class="city-dropdown"
+      >
+        <option value="" disabled>Wybierz miasto...</option>
+        <option *ngFor="let city of cities" [value]="city.slug">
+          {{ city.name }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Services list -->
+  <main *ngIf="!loading && !error && !cityNotFound" class="services-section">
+    <h2 class="services-count-header">
+      <ng-container *ngIf="isKrakow; else defaultCount">
+        Znaleziono <strong>{{ totalServices }}</strong> serwis&#243;w rowerowych w Krakowie
+      </ng-container>
+      <ng-template #defaultCount>
+        Znaleziono <strong>{{ totalServices }}</strong> serwis&#243;w rowerowych
+      </ng-template>
+    </h2>
+
+    <ul class="services-list" *ngIf="services.length > 0">
+      <li
+        *ngFor="let service of services; let i = index; trackBy: trackByServiceId"
+        class="service-item"
+        itemprop="itemListElement"
+        itemscope
+        itemtype="https://schema.org/ListItem"
+      >
+        <meta itemprop="position" [attr.content]="i + 1">
+        <div class="service-info" itemprop="item" itemscope itemtype="https://schema.org/LocalBusiness">
+          <h3 class="service-name" itemprop="name">{{ service.name }}</h3>
+          <p class="service-address" *ngIf="service.address && service.address !== 'brak ,'" itemprop="address">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            {{ service.address }}
+          </p>
+          <p class="service-phone" *ngIf="service.phoneNumber" itemprop="telephone">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            <a [href]="'tel:' + service.phoneNumber">{{ service.phoneNumber }}</a>
+          </p>
+        </div>
+
+        <div class="service-actions">
+          
+
+          <!-- Przycisk strony serwisu dla zweryfikowanych (zarejestrowanych) -->
+          <button
+            *ngIf="service.verified"
+            (click)="navigateToServicePage(service)"
+            class="service-page-button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            Strona serwisu
+          </button>
+
+          <!-- Przycisk rejestracji dla niezweryfikowanych (niezarejestrowanych) -->
+          <button
+            *ngIf="!service.verified"
+            (click)="registerService(service)"
+            class="register-service-button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            Zarejestruj ten serwis
+          </button>
+
+          <!-- Transport button only for Krak&#243;w -->
+          <a
+            *ngIf="isKrakow"
+            [routerLink]="['/order-transport']"
+            [queryParams]="{ serviceId: service.id }"
+            class="transport-button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="3" width="15" height="13"></rect>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+              <circle cx="5.5" cy="18.5" r="2.5"></circle>
+              <circle cx="18.5" cy="18.5" r="2.5"></circle>
+            </svg>
+            Zam&#243;w transport
+          </a>
+        </div>
+      </li>
+    </ul>
+
+    <div *ngIf="services.length === 0" class="no-services">
+      <p>Nie znaleziono serwis&#243;w rowerowych w tym obszarze.</p>
+    </div>
+  </main>
+
+  <!-- SEO content - different for Krak&#243;w -->
+  <section class="seo-content" *ngIf="isKrakow && !cityNotFound">
+    <h2>Naprawa rower&#243;w w Krakowie z us&#322;ug&#261; transportu door-to-door</h2>
+    <p>
+      Szukasz <strong>serwisu rowerowego w Krakowie</strong>? Trafi&#322;e&#347; we w&#322;a&#347;ciwe miejsce!
+      Na tej stronie znajdziesz pe&#322;n&#261; list&#281; <strong>warsztat&#243;w rowerowych w Krakowie</strong> i okolicach.
+      Ka&#380;dy serwis posiada dane kontaktowe, dzi&#281;ki czemu mo&#380;esz szybko um&#243;wi&#263; si&#281; na <strong>napraw&#281; roweru</strong>.
+    </p>
+
+    <h3>Transport rower&#243;w w Krakowie - jak to dzia&#322;a?</h3>
+    <p>
+      CycloPick oferuje unikaln&#261; us&#322;ug&#281; <strong>transportu rower&#243;w door-to-door w Krakowie</strong>.
+      Nie musisz ju&#380; sam wie&#378;&#263; roweru do serwisu! Nasz kurier:
+    </p>
+    <ul class="transport-steps">
+      <li>Odbierze Tw&#243;j rower spod wskazanego adresu w Krakowie</li>
+      <li>Dostarczy go do wybranego serwisu rowerowego</li>
+      <li>Po zako&#324;czeniu naprawy przywiezie rower z powrotem do Ciebie</li>
+    </ul>
+
+    <h3>Dlaczego warto skorzysta&#263; z transportu roweru?</h3>
+    <p>
+      Us&#322;uga <strong>odbioru i dostawy roweru</strong> to idealne rozwi&#261;zanie dla os&#243;b, kt&#243;re:
+    </p>
+    <ul class="benefits-list">
+      <li>Nie maj&#261; samochodu lub baga&#380;nika rowerowego</li>
+      <li>Nie maj&#261; czasu na wiezienie roweru do warsztatu</li>
+      <li>Posiadaj&#261; rower elektryczny lub ci&#281;&#380;ki rower</li>
+      <li>Chc&#261; wygodnie naprawi&#263; rower bez wychodzenia z domu</li>
+    </ul>
+
+    <p>
+      <strong>Zam&#243;w transport roweru</strong> ju&#380; dzi&#347; i ciesz si&#281; sprawnym jednos&#322;adem bez zb&#281;dnych problem&#243;w!
+      Kliknij przycisk "Zam&#243;w transport" przy wybranym serwisie rowerowym.
+    </p>
+  </section>
+
+  <!-- SEO content - generic for other cities -->
+  <section class="seo-content" *ngIf="!isKrakow && !cityNotFound">
+    <h2>Serwisy rowerowe w mie&#347;cie {{ currentCity?.name }}</h2>
+    <p>
+      Szukasz <strong>serwisu rowerowego w mie&#347;cie {{ currentCity?.name }}</strong>? Na tej stronie znajdziesz list&#281;
+      <strong>warsztat&#243;w rowerowych</strong> dzia&#322;aj&#261;cych w {{ currentCity?.name }} i okolicach.
+      Ka&#380;dy serwis posiada dane kontaktowe, dzi&#281;ki czemu mo&#380;esz szybko um&#243;wi&#263; si&#281; na <strong>napraw&#281; roweru</strong>.
+    </p>
+
+    <h3>Znajd&#378; najlepszy warsztat rowerowy w mie&#347;cie {{ currentCity?.name }}</h3>
+    <p>
+      CycloPick to platforma &#322;&#261;cz&#261;ca rowerzyst&#243;w z serwisami rowerowymi w ca&#322;ej Polsce.
+      Dzi&#281;ki naszej interaktywnej <strong>mapie serwis&#243;w rowerowych</strong> mo&#380;esz &#322;atwo znale&#378;&#263; najbli&#380;szy
+      warsztat w {{ currentCity?.name }} i innych miastach Polski.
+    </p>
+    <p>
+      Przegl&#261;daj list&#281; serwis&#243;w, por&#243;wnuj oferty i wybierz najlepszy <strong>warsztat rowerowy</strong> dla siebie.
+      Zweryfikowane serwisy oznaczone s&#261; specjaln&#261; odznak&#261;.
+    </p>
+  </section>
+
+  <!-- Footer links to other cities -->
+  <footer class="cities-footer">
+    <h3>Serwisy rowerowe w innych miastach Polski</h3>
+    <nav class="cities-nav" aria-label="Lista miast z serwisami rowerowymi">
+      <a
+        *ngFor="let city of footerCities"
+        [routerLink]="['/serwisy', city.slug]"
+        [class.active]="city.slug === currentCity?.slug"
+        [attr.title]="'Serwisy rowerowe ' + city.name"
+      >
+        {{ city.name }}
+      </a>
+    </nav>
+  </footer>
+</article>

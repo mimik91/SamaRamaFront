@@ -40,6 +40,7 @@ import { ServicesMapPageComponent } from './pages/services-map-page/services-map
 import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-page.component';
 import { CooperationComponent } from './cooperation/cooperation.component';
 import { ServiceProfilePageComponent } from './pages/service-profile/service-profile.component';
+import { CityServicesPageComponent } from './pages/city-services-page/city-services-page.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
@@ -55,7 +56,13 @@ export const routes: Routes = [
     { path: 'mapa', redirectTo: '', pathMatch: 'full' },
     { path: 'mapa-serwisow', redirectTo: '', pathMatch: 'full' },
     { path: 'services-map', redirectTo: '', pathMatch: 'full' },
-    
+
+    // SEO - lista serwisów dla miast
+    {
+      path: 'serwisy/:city',
+      component: CityServicesPageComponent
+    },
+
     // Jak działamy
     { 
       path: 'jak-dzialamy', 
@@ -141,12 +148,9 @@ export const routes: Routes = [
       title: 'Zarejestruj Serwis'
     },
     
-    // Przekierowanie z /about na stronę główną
-    { path: 'about', redirectTo: '', pathMatch: 'full' },
-
     // About page
-    {
-      path: 'for-services',
+    { 
+      path: 'for-services', 
       component: ForServicesComponent,
       title: 'Dla Serwisów'
     },

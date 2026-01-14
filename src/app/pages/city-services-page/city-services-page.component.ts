@@ -263,10 +263,6 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
       queryParams: {
         serviceId: service.id,
         serviceName: service.name,
-        street: service.street || '',
-        building: service.building || '',
-        flat: service.flat || '',
-        city: service.city || '',
         phoneNumber: service.phoneNumber || '',
         email: service.email || ''
       }

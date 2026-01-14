@@ -22,7 +22,7 @@ import { Router } from '@angular/router';
             <li>e-mail: <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a></li>
             <li>telefon: 667 757 920</li>
           </ul>
-          <p>1.4. Regulamin dostępny jest nieodpłatnie na stronie <a href="https://cyclopick.pl">cyclopick.pl</a>.</p>
+          <p>1.4. Regulamin dostępny jest nieodpłatnie na stronie <a href="https://www.cyclopick.pl">cyclopick.pl</a>.</p>
 
           <h2>2. Definicje</h2>
           <ul>
@@ -89,7 +89,7 @@ import { Router } from '@angular/router';
           <ul>
             <li>W sprawach nieuregulowanych stosuje się przepisy prawa polskiego.</li>
             <li>Spory rozstrzygane będą przez sąd właściwy dla siedziby Administratora.</li>
-            <li>Regulamin obowiązuje od dnia publikacji na stronie <a href="https://cyclopick.pl">cyclopick.pl</a>.</li>
+            <li>Regulamin obowiązuje od dnia publikacji na stronie <a href="https://www.cyclopick.pl">cyclopick.pl</a>.</li>
           </ul>
         </div>
       </div>

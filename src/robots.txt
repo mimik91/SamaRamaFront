@@ -37,7 +37,7 @@ Allow: /privacy-policy
 Allow: /serwisy/*
 
 # Sitemap
-Sitemap: https://cyclopick.pl/sitemap.xml
+Sitemap: https://www.cyclopick.pl/sitemap.xml
 
 # Crawl-delay (opcjonalnie, jeśli serwer słaby)
 # Crawl-delay: 1

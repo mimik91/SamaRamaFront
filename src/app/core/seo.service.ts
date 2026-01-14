@@ -27,7 +27,7 @@ export interface SeoData {
 export class SeoService {
   private readonly defaultTitle = 'CycloPick | Znajdź serwis rowerowy w Twojej okolicy';
   private readonly defaultDescription = 'Znajdź najlepszy serwis rowerowy w swojej okolicy dzięki CycloPick. Sprawdź mapę, opinie i umów się na naprawę online.';
-  private readonly defaultImage = 'https://cyclopick.pl/assets/images/pictures/rower-w-lesie.webp';
+  private readonly defaultImage = 'https://www.cyclopick.pl/assets/images/pictures/rower-w-lesie.webp';
 
   private renderer: Renderer2;
   private readonly SCHEMA_SCRIPT_ID = 'app-structured-data';

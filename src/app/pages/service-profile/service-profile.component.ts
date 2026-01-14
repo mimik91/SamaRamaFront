@@ -498,7 +498,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
         postalCode: this.publicInfo.postalCode || '00-000',
         country: 'PL'
       },
-      url: `https://cyclopick.pl/${this.suffix}`,
+      url: `https://www.cyclopick.pl/${this.suffix}`,
       telephone: this.publicInfo.phoneNumber || undefined,
       email: this.publicInfo.email || undefined
     };
@@ -537,9 +537,9 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     if (bikeShopSchema) {
       // 7. Opcjonalnie: Dodaj breadcrumb
       const breadcrumb = SchemaOrgHelper.generateBreadcrumb([
-        { name: 'CycloPick', url: 'https://cyclopick.pl' },
-        { name: city, url: `https://cyclopick.pl?city=${encodeURIComponent(city)}` },
-        { name: serviceName, url: `https://cyclopick.pl/${this.suffix}` }
+        { name: 'CycloPick', url: 'https://www.cyclopick.pl' },
+        { name: city, url: `https://www.cyclopick.pl?city=${encodeURIComponent(city)}` },
+        { name: serviceName, url: `https://www.cyclopick.pl/${this.suffix}` }
       ]);
 
       // 8. Dodaj oba schematy jednocześnie (BikeRepairShop + Breadcrumb)

@@ -154,7 +154,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   }
 
   private updateCanonicalTag(citySlug: string): void {
-    const canonicalUrl = `https://cyclopick.pl/serwisy/${citySlug}`;
+    const canonicalUrl = `https://www.cyclopick.pl/serwisy/${citySlug}`;
 
     let link: HTMLLinkElement | null = this.document.querySelector("link[rel='canonical']");
 

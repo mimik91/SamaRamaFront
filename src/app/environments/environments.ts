@@ -195,6 +195,6 @@ export const environment = {
 export const environmentProduction = {
   ...environment,
   production: true,
-  siteUrl: 'https://cyclopick.pl',
-  apiUrl: 'https://cyclopick.pl/api'
+  siteUrl: 'https://www.cyclopick.pl',
+  apiUrl: 'https://www.cyclopick.pl/api'
 };

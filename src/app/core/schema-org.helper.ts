@@ -336,8 +336,8 @@ export class SchemaOrgHelper {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'CycloPick',
-      url: 'https://cyclopick.pl',
-      logo: 'https://cyclopick.pl/assets/images/logo-cyclopick.png',
+      url: 'https://www.cyclopick.pl',
+      logo: 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png',
       description: 'Platforma łącząca rowerzystów z profesjonalnymi serwisami rowerowymi w całej Polsce',
       contactPoint: {
         '@type': 'ContactPoint',
@@ -346,8 +346,8 @@ export class SchemaOrgHelper {
         availableLanguage: ['pl']
       },
       sameAs: [
-        // Dodaj linki do social media jeśli istnieją
-        // 'https://www.facebook.com/cyclopick',
+
+        'https://www.facebook.com/cyclopick',
         // 'https://www.instagram.com/cyclopick'
       ].filter(Boolean)
     };

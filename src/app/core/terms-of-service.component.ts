@@ -21,7 +21,7 @@ import { Router } from '@angular/router';
             <li>e-mail: <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a></li>
             <li>tel.: 667 757 920</li>
           </ul>
-          <p>1.3. Regulamin obowiązuje od 7 lipca 2025 r. i jest dostępny nieodpłatnie na stronie <a href="https://cyclopick.pl">cyclopick.pl</a>.</p>
+          <p>1.3. Regulamin obowiązuje od 7 lipca 2025 r. i jest dostępny nieodpłatnie na stronie <a href="https://www.cyclopick.pl">cyclopick.pl</a>.</p>
 
           <h2>2. Definicje</h2>
           <ul>

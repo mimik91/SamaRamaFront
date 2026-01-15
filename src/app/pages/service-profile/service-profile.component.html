@@ -61,10 +61,9 @@
             <p class="transport-subtitle">
               {{ t('service_profile.transport.subtitle') }}
             </p>
-            <button 
-              class="btn-transport" 
-              [routerLink]="['/order-transport']"
-              [queryParams]="{serviceId: serviceId}">
+            <button
+              class="btn-transport"
+              [routerLink]="['/order-transport', suffix]">
               {{ t('service_profile.transport.button') }}
             </button>
           </div>

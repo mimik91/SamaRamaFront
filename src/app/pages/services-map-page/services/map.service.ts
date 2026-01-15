@@ -106,7 +106,7 @@ export class MapService {
       console.log('MapService: Fetching service details for ID:', id);
 
       // Create the HTTP request with caching
-      const request$ = this.http.get<ServiceDetails>(`${this.apiUrl}/service/${id}`).pipe(
+      const request$ = this.http.get<ServiceDetails>(`${environment.apiUrl}${environment.endpoints.bikeServices.base}/${id}`).pipe(
         map(details => {
           // Validate response structure
           if (!details || typeof details !== 'object') {

@@ -13,8 +13,58 @@
     {{ error }}
   </div>
 
+  <!-- Transport Not Available State (serwis za daleko) -->
+  <div *ngIf="transportNotAvailable && !loading" class="transport-unavailable-container">
+    <div class="unavailable-content">
+      <img
+        src="assets/images/pictures/404.webp"
+        [alt]="t('transport_order.unavailable.too_far_title')"
+        class="unavailable-image"
+      >
+      <div class="unavailable-text">
+        <h2>{{ t('transport_order.unavailable.too_far_title') }}</h2>
+        <p>{{ t('transport_order.unavailable.too_far_message') }}</p>
+        <div class="service-info-mini" *ngIf="selectedServiceInfo.name">
+          <span class="service-name">{{ selectedServiceInfo.name }}</span>
+          <span class="service-address">{{ selectedServiceInfo.address }}</span>
+        </div>
+        <button class="back-to-map-btn" (click)="goBack()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          {{ t('transport_order.unavailable.back_to_map') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transport Coming Soon State (Kraków - wkrótce dostępny) -->
+  <div *ngIf="transportComingSoon && !loading" class="transport-coming-soon-container">
+    <div class="coming-soon-content">
+      <img
+        src="assets/images/pictures/soon.webp"
+        [alt]="t('transport_order.unavailable.coming_soon_title')"
+        class="coming-soon-image"
+      >
+      <div class="coming-soon-text">
+        <h2>{{ t('transport_order.unavailable.coming_soon_title') }}</h2>
+        <p>{{ t('transport_order.unavailable.coming_soon_message') }}</p>
+        <div class="service-info-mini" *ngIf="selectedServiceInfo.name">
+          <span class="service-name">{{ selectedServiceInfo.name }}</span>
+          <span class="service-address">{{ selectedServiceInfo.address }}</span>
+        </div>
+        <button class="back-to-map-btn" (click)="goBack()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          {{ t('transport_order.unavailable.back_to_map') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Steps Progress -->
-  <div class="steps-container" *ngIf="!loading && !error">
+  <div class="steps-container" *ngIf="!loading && !error && !transportNotAvailable && !transportComingSoon">
     <div 
       *ngFor="let step of [1, 2, 3]; let i = index" 
       class="step"
@@ -46,9 +96,22 @@
   </div>
 
   <!-- Service Info Card -->
-  <div class="service-info-card-enhanced" *ngIf="selectedServiceInfo.name && !loading && !error">
+  <div class="service-info-card-enhanced" *ngIf="selectedServiceInfo.name && !loading && !error && !transportNotAvailable && !transportComingSoon">
     <div class="service-header">
-      <div class="service-icon">🏪</div>
+      <div class="service-icon">
+        <img
+          *ngIf="selectedServiceInfo.logoUrl"
+          [src]="selectedServiceInfo.logoUrl"
+          [alt]="selectedServiceInfo.name"
+          class="service-logo-img"
+        >
+        <img
+          *ngIf="!selectedServiceInfo.logoUrl"
+          src="assets/images/logos/cyclopick-logo.svg"
+          alt="CycloPick"
+          class="service-logo-img cyclopick-fallback"
+        >
+      </div>
       <div class="service-main-info">
         <h2 class="service-title">{{ selectedServiceInfo.name }}</h2>
         <p class="service-subtitle">{{ t('transport_order.service_info.subtitle') }}</p>
@@ -57,7 +120,7 @@
   </div>
 
   <!-- Main Form Content -->
-  <div *ngIf="!loading && !error" class="step-content">
+  <div *ngIf="!loading && !error && !transportNotAvailable && !transportComingSoon" class="step-content">
     
     <!-- KROK 1: Dane rowerów -->
     <div *ngIf="currentStep === 1" class="form-section">
@@ -160,7 +223,20 @@
         <div class="selection-summary" *ngIf="getSelectedBicyclesCount() > 0">
           <h4>{{ t('transport_order.selection_summary.title') }}</h4>
           <div class="summary-item service-destination">
-            <span class="service-icon-small">🏪</span>
+            <span class="service-icon-small">
+              <img
+                *ngIf="selectedServiceInfo.logoUrl"
+                [src]="selectedServiceInfo.logoUrl"
+                [alt]="selectedServiceInfo.name"
+                class="service-logo-small"
+              >
+              <img
+                *ngIf="!selectedServiceInfo.logoUrl"
+                src="assets/images/logos/cyclopick-logo.svg"
+                alt="CycloPick"
+                class="service-logo-small"
+              >
+            </span>
             {{ t('transport_order.selection_summary.service_destination') }} <strong>{{ selectedServiceInfo.name }}</strong>
           </div>
           <div class="summary-item">

@@ -128,7 +128,7 @@ export class TransportOrderService {
    * Pobiera szczegóły serwisu
    */
   getServiceDetails(serviceId: number): Observable<BikeService> {
-    return this.http.get<BikeService>(`${this.apiUrl}/service/${serviceId}`).pipe(
+    return this.http.get<BikeService>(`${environment.apiUrl}${environment.endpoints.bikeServices.base}/${serviceId}`).pipe(
       catchError(error => {
         console.error(`Error fetching service ${serviceId} details:`, error);
         return throwError(() => error);
@@ -187,6 +187,32 @@ export class TransportOrderService {
     return this.http.post<TransportOrderSummaryDto[]>(`${this.apiUrl}/summary`, requestBody).pipe(
       catchError(error => {
         console.error('Error fetching order summary:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Pobiera suffix serwisu na podstawie serviceId
+   */
+  getSuffixByServiceId(serviceId: number): Observable<{ suffix: string }> {
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/get-suffix`;
+    return this.http.get<{ suffix: string }>(url, { params: { serviceId: serviceId.toString() } }).pipe(
+      catchError(error => {
+        console.error('Error fetching suffix for service:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Pobiera serviceId na podstawie suffixu
+   */
+  getServiceIdBySuffix(suffix: string): Observable<{ id: number }> {
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/by-suffix/${suffix}`;
+    return this.http.get<{ id: number }>(url).pipe(
+      catchError(error => {
+        console.error('Error fetching service ID by suffix:', error);
         return throwError(() => error);
       })
     );

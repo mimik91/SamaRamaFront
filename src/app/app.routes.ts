@@ -102,8 +102,15 @@ export const routes: Routes = [
     },
     
     // Transport order - dostępna dla wszystkich (bez guarda)
-    { 
-      path: 'order-transport', 
+    // Route z suffix (nowy format URL)
+    {
+      path: 'order-transport/:suffix',
+      component: TransportOrderFormComponent,
+      title: 'Zamów Transport'
+    },
+    // Legacy route - przekierowuje na nowy format z suffixem
+    {
+      path: 'order-transport',
       component: TransportOrderFormComponent,
       title: 'Zamów Transport'
     },

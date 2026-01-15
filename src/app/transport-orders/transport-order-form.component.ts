@@ -65,6 +65,10 @@ export class TransportOrderFormComponent implements OnInit {
   submitting = false;
   error: string | null = null;
 
+  // Transport availability states
+  transportNotAvailable = false;  // serwis za daleko (transportAvailable = false && city != Kraków)
+  transportComingSoon = false;    // serwis w Krakowie ale transport jeszcze niedostępny
+
   // Expose environment links for template
   readonly links = environment.links;
 
@@ -132,13 +136,63 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   private loadServiceInfo(): void {
-    this.route.queryParams.subscribe(params => {
-      const serviceId = params['serviceId'];
-      if (serviceId) {
-        this.loadServiceDetails(serviceId);
-      } else {
-        this.selectedServiceInfo = { id: null, name: '', address: '' };
-        this.notificationService.error(this.i18n.instant('transport_order.service_info.error_no_service'));
+    // Najpierw sprawdź czy mamy suffix w path params (nowy format URL)
+    const suffix = this.route.snapshot.paramMap.get('suffix');
+
+    if (suffix) {
+      // Nowy format: /order-transport/:suffix
+      this.loadServiceBySuffix(suffix);
+    } else {
+      // Sprawdź stary format: /order-transport?serviceId=X
+      this.route.queryParams.subscribe(params => {
+        const serviceId = params['serviceId'];
+        if (serviceId) {
+          // Przekieruj na nowy format URL z suffixem
+          this.redirectToSuffixUrl(+serviceId);
+        } else {
+          this.selectedServiceInfo = { id: null, name: '', address: '' };
+          this.notificationService.error(this.i18n.instant('transport_order.service_info.error_no_service'));
+        }
+      });
+    }
+  }
+
+  private loadServiceBySuffix(suffix: string): void {
+    this.loading = true;
+    this.transportOrderService.getServiceIdBySuffix(suffix).subscribe({
+      next: (response) => {
+        if (response.id) {
+          this.loadServiceDetails(response.id.toString());
+        } else {
+          this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
+          this.router.navigate([environment.links.homepage]);
+          this.loading = false;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading service by suffix:', error);
+        this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
+        this.router.navigate([environment.links.homepage]);
+        this.loading = false;
+      }
+    });
+  }
+
+  private redirectToSuffixUrl(serviceId: number): void {
+    this.transportOrderService.getSuffixByServiceId(serviceId).subscribe({
+      next: (response) => {
+        if (response.suffix) {
+          // Przekieruj na nowy format URL
+          this.router.navigate(['/order-transport', response.suffix], { replaceUrl: true });
+        } else {
+          // Fallback - załaduj po serviceId jeśli suffix niedostępny
+          this.loadServiceDetails(serviceId.toString());
+        }
+      },
+      error: (error) => {
+        console.error('Error getting suffix for redirect:', error);
+        // Fallback - załaduj po serviceId jeśli nie udało się pobrać suffixu
+        this.loadServiceDetails(serviceId.toString());
       }
     });
   }
@@ -148,10 +202,37 @@ export class TransportOrderFormComponent implements OnInit {
     this.mapService.getServiceDetails(+serviceId).subscribe({
       next: (serviceDetails) => {
         if (serviceDetails) {
+          // Sprawdź dostępność transportu
+          if (!serviceDetails.transportAvailable) {
+            const isKrakow = serviceDetails.city?.toLowerCase() === 'kraków';
+            if (isKrakow) {
+              // Serwis w Krakowie - transport będzie dostępny wkrótce
+              this.transportComingSoon = true;
+              this.selectedServiceInfo = {
+                id: serviceDetails.id,
+                name: serviceDetails.name,
+                address: this.formatServiceAddress(serviceDetails),
+                logoUrl: serviceDetails.logoUrl || null
+              };
+            } else {
+              // Serwis za daleko
+              this.transportNotAvailable = true;
+              this.selectedServiceInfo = {
+                id: serviceDetails.id,
+                name: serviceDetails.name,
+                address: this.formatServiceAddress(serviceDetails),
+                logoUrl: serviceDetails.logoUrl || null
+              };
+            }
+            this.loading = false;
+            return;
+          }
+
           this.selectedServiceInfo = {
             id: serviceDetails.id,
             name: serviceDetails.name,
-            address: this.formatServiceAddress(serviceDetails)
+            address: this.formatServiceAddress(serviceDetails),
+            logoUrl: serviceDetails.logoUrl || null
           };
           this.actualTransportCost = serviceDetails.transportCost || null;
           console.log('Service details loaded:', this.selectedServiceInfo);

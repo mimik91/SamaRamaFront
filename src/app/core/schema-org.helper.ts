@@ -70,6 +70,20 @@ export interface SchemaGeoCoordinates {
 }
 
 /**
+ * Dane oferty/usługi (dla OfferCatalog)
+ */
+export interface SchemaOffer {
+  /** Nazwa usługi/pakietu */
+  name: string;
+  /** Opis usługi */
+  description?: string;
+  /** Cena */
+  price: number;
+  /** Waluta (domyślnie PLN) */
+  priceCurrency?: string;
+}
+
+/**
  * Dane dla BikeRepairShop (LocalBusiness)
  */
 export interface BikeRepairShopData {
@@ -95,6 +109,10 @@ export interface BikeRepairShopData {
   priceRange?: string;
   /** Ocena agregowana */
   aggregateRating?: SchemaAggregateRating;
+  /** Linki do social media i strony www (sameAs) */
+  sameAs?: string[];
+  /** Oferty/pakiety serwisowe */
+  offers?: SchemaOffer[];
 }
 
 export class SchemaOrgHelper {
@@ -198,6 +216,30 @@ export class SchemaOrgHelper {
         reviewCount: data.aggregateRating.reviewCount,
         bestRating: data.aggregateRating.bestRating || 5,
         worstRating: data.aggregateRating.worstRating || 1
+      };
+    }
+
+    // ✅ Social media i strona www jako sameAs
+    if (data.sameAs && data.sameAs.length > 0) {
+      schema.sameAs = data.sameAs;
+    }
+
+    // ✅ Pakiety/oferty jako OfferCatalog
+    if (data.offers && data.offers.length > 0) {
+      schema.hasOfferCatalog = {
+        '@type': 'OfferCatalog',
+        name: `Pakiety serwisowe ${data.name}`,
+        itemListElement: data.offers.map(offer => ({
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: offer.name,
+            description: offer.description || `Pakiet serwisowy: ${offer.name}`
+          },
+          price: offer.price,
+          priceCurrency: offer.priceCurrency || 'PLN',
+          availability: 'https://schema.org/InStock'
+        }))
       };
     }
 
@@ -411,5 +453,73 @@ export class SchemaOrgHelper {
     }
 
     return result;
+  }
+
+  /**
+   * Generuje FAQPage schema dla lepszej widoczności w AI/LLM i Google
+   *
+   * @example
+   * const faqSchema = SchemaOrgHelper.generateFAQPage([
+   *   { question: 'Jak znaleźć serwis?', answer: 'Użyj mapy na stronie głównej.' }
+   * ]);
+   */
+  static generateFAQPage(
+    items: Array<{ question: string; answer: string }>
+  ): any {
+    if (!items || items.length === 0) {
+      console.warn('[SchemaOrgHelper] Brak pytań FAQ');
+      return null;
+    }
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: items.map(item => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer
+        }
+      }))
+    };
+  }
+
+  /**
+   * Zwraca domyślne FAQ dla CycloPick (do użycia na stronie głównej)
+   */
+  static getDefaultCycloPickFAQ(): Array<{ question: string; answer: string }> {
+    return [
+      {
+        question: 'Jak znaleźć serwis rowerowy w mojej okolicy?',
+        answer:
+          'Wejdź na stronę główną CycloPick.pl i użyj interaktywnej mapy. Możesz wyszukać po nazwie miasta lub pozwolić na lokalizację, aby zobaczyć najbliższe serwisy rowerowe.'
+      },
+      {
+        question: 'Czy mogę zobaczyć cennik serwisu przed wizytą?',
+        answer:
+          'Tak, większość serwisów na CycloPick ma opublikowane cenniki widoczne na ich profilach. Znajdziesz tam ceny poszczególnych usług naprawczych.'
+      },
+      {
+        question: 'Jak działa usługa transportu roweru door-to-door?',
+        answer:
+          'W obszarze Krakowa możesz zamówić odbiór roweru z domu. Kurier przyjedzie pod wskazany adres, zabierze rower do wybranego serwisu, a po naprawie dostarczy go z powrotem.'
+      },
+      {
+        question: 'Czy godziny otwarcia serwisów są aktualne?',
+        answer:
+          'Godziny otwarcia są podawane przez właścicieli serwisów i regularnie aktualizowane. Zalecamy jednak potwierdzenie telefoniczne przed wizytą.'
+      },
+      {
+        question: 'Czy korzystanie z CycloPick jest płatne?',
+        answer:
+          'Nie, wyszukiwanie i kontaktowanie się z serwisami rowerowymi przez CycloPick jest całkowicie bezpłatne dla rowerzystów.'
+      },
+      {
+        question: 'Jakie usługi oferują serwisy na CycloPick?',
+        answer:
+          'Serwisy oferują szeroki zakres usług: naprawy ogólne, wymiana opon i dętek, regulacja hamulców i przerzutek, centrowanie kół, serwis rowerów elektrycznych, oraz przechowywanie sezonowe.'
+      }
+    ];
   }
 }

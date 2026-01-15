@@ -1,5 +1,37 @@
 # robots.txt dla CycloPick.pl
 
+# === AI/LLM Crawlers ===
+# OpenAI (ChatGPT, GPT-4)
+User-agent: GPTBot
+Allow: /
+
+# Anthropic (Claude)
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+
+# Google AI (Gemini, Bard)
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+
+# Common Crawl (used by many AI models)
+User-agent: CCBot
+Allow: /
+
+# Microsoft Copilot / Bing Chat
+User-agent: bingbot
+Allow: /
+
+# Meta AI
+User-agent: FacebookBot
+Allow: /
+
+# === Standard Crawlers ===
 User-agent: *
 Allow: /
 
@@ -38,6 +70,9 @@ Allow: /serwisy/*
 
 # Sitemap
 Sitemap: https://www.cyclopick.pl/sitemap.xml
+
+# AI/LLM Information
+# For AI crawlers: https://www.cyclopick.pl/llms.txt
 
 # Crawl-delay (opcjonalnie, jeśli serwer słaby)
 # Crawl-delay: 1

@@ -9,7 +9,8 @@ import {
   SchemaOrgHelper,
   BikeRepairShopData,
   SchemaDayOfWeek,
-  SchemaOpeningHours
+  SchemaOpeningHours,
+  SchemaOffer
 } from '../../core/schema-org.helper';
 import {
   BikeServicePublicInfo,
@@ -517,10 +518,8 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
       bikeShopData.openingHours = this.convertOpeningHoursToSchema();
     }
 
-    // 4. Dodaj zakres cenowy (jeśli dostępny)
-    if (this.pricelist && this.activeStatus?.pricelistActive) {
-      bikeShopData.priceRange = this.estimatePriceRange();
-    }
+    // 4. Dodaj zakres cenowy (uwzględnia cennik i pakiety)
+    bikeShopData.priceRange = this.estimatePriceRange();
 
     // 5. Dodaj ocenę (jeśli dostępna)
     // TODO: Dodaj ratings z API gdy będą dostępne
@@ -531,11 +530,43 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     //   };
     // }
 
-    // 6. Generuj schema i dodaj do DOM
+    // 6. Dodaj linki do social media jako sameAs
+    const sameAs: string[] = [];
+    if (this.publicInfo.facebook) {
+      sameAs.push(this.getWebsiteUrl(this.publicInfo.facebook));
+    }
+    if (this.publicInfo.instagram) {
+      sameAs.push(this.getWebsiteUrl(this.publicInfo.instagram));
+    }
+    if (this.publicInfo.tiktok) {
+      sameAs.push(this.getWebsiteUrl(this.publicInfo.tiktok));
+    }
+    if (this.publicInfo.youtube) {
+      sameAs.push(this.getWebsiteUrl(this.publicInfo.youtube));
+    }
+    if (this.publicInfo.website) {
+      sameAs.push(this.getWebsiteUrl(this.publicInfo.website));
+    }
+    if (sameAs.length > 0) {
+      bikeShopData.sameAs = sameAs;
+    }
+
+    // 7. Dodaj pakiety serwisowe jako offers
+    if (this.packages && this.packages.length > 0 && this.activeStatus?.packagesActive) {
+      bikeShopData.offers = this.packages
+        .filter(pkg => pkg.active)
+        .map(pkg => ({
+          name: pkg.customName || pkg.displayName,
+          description: pkg.description || undefined,
+          price: pkg.price
+        }));
+    }
+
+    // 8. Generuj schema i dodaj do DOM
     const bikeShopSchema = SchemaOrgHelper.generateBikeRepairShop(bikeShopData);
 
     if (bikeShopSchema) {
-      // 7. Opcjonalnie: Dodaj breadcrumb
+      // 9. Opcjonalnie: Dodaj breadcrumb
       const breadcrumb = SchemaOrgHelper.generateBreadcrumb([
         { name: 'CycloPick', url: 'https://www.cyclopick.pl' },
         { name: city, url: `https://www.cyclopick.pl?city=${encodeURIComponent(city)}` },
@@ -591,27 +622,36 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Estymuje zakres cenowy na podstawie cennika
+   * Estymuje zakres cenowy na podstawie cennika i pakietów
    * Zwraca format "PLN min-max" dla najlepszej precyzji
    *
    * @returns Zakres cenowy w formacie "PLN 50-300" lub "$$" jako fallback
    */
   private estimatePriceRange(): string {
-    if (!this.pricelist || !this.pricelist.items) {
-      return '$$'; // Fallback gdy brak cennika
+    const allPrices: number[] = [];
+
+    // Ceny z cennika
+    if (this.pricelist?.items) {
+      const pricelistPrices = Object.values(this.pricelist.items)
+        .filter(price => typeof price === 'number' && price > 0);
+      allPrices.push(...pricelistPrices);
     }
 
-    // Pobierz wszystkie ceny z cennika
-    const prices = Object.values(this.pricelist.items)
-      .filter(price => typeof price === 'number' && price > 0);
+    // Ceny z pakietów
+    if (this.packages && this.packages.length > 0) {
+      const packagePrices = this.packages
+        .filter(pkg => pkg.active && pkg.price > 0)
+        .map(pkg => pkg.price);
+      allPrices.push(...packagePrices);
+    }
 
-    if (prices.length === 0) {
+    if (allPrices.length === 0) {
       return '$$'; // Fallback gdy brak cen
     }
 
     // Znajdź minimalną i maksymalną cenę
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...allPrices);
+    const maxPrice = Math.max(...allPrices);
 
     // ✅ Zwróć konkretny zakres cenowy z walutą
     // Format akceptowany przez Schema.org: "PLN 50-300"

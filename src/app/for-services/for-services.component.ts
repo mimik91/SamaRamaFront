@@ -15,7 +15,7 @@ export class ForServicesComponent implements OnInit {
 
   // Powrót do logo CycloPick
   heroImage = {
-    src: '\\assets\\images\\logo-cyclopick.png', 
+    src: '\\assets\\images\\logo-cyclopick.webp', 
     alt: 'Logo CycloPick - Usługi dla serwisów rowerowych'
   };
 

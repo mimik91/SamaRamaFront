@@ -64,7 +64,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   filteredPackages: ServicePackageDto[] = [];
   
   // Obrazy serwisu
-  logoUrl: string = 'assets/images/logo-cyclopick.png';
+  logoUrl: string = 'assets/images/logo-cyclopick.webp';
   aboutUsImageUrl: string = 'assets/images/pictures/vertical/przerzutka-rowerowa.webp';
   openingHoursImageUrl: string = 'assets/images/pictures/vertical/rower.webp';
   

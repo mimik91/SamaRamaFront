@@ -78,6 +78,7 @@ export interface SchemaOffer {
   /** Opis usługi */
   description?: string;
   /** Cena */
+
   price: number;
   /** Waluta (domyślnie PLN) */
   priceCurrency?: string;
@@ -379,7 +380,7 @@ export class SchemaOrgHelper {
       '@type': 'Organization',
       name: 'CycloPick',
       url: 'https://www.cyclopick.pl',
-      logo: 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png',
+      logo: 'https://www.cyclopick.pl/assets/images/logo-cyclopick.webp',
       description: 'Platforma łącząca rowerzystów z profesjonalnymi serwisami rowerowymi w całej Polsce',
       contactPoint: {
         '@type': 'ContactPoint',
@@ -390,7 +391,7 @@ export class SchemaOrgHelper {
       sameAs: [
 
         'https://www.facebook.com/cyclopick'
-        // 'https://www.instagram.com/cyclopick'
+
       ].filter(Boolean)
     };
   }

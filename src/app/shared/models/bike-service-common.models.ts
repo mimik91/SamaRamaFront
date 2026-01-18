@@ -83,6 +83,8 @@ export interface BikeServicePublicInfo {
   instagram: string | null;
   tiktok: string | null;
   youtube: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 /**

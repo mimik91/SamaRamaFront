@@ -399,13 +399,12 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     };
 
     // 2. Dodaj współrzędne geograficzne (jeśli dostępne)
-    // TODO: Dodaj geo coordinates z API gdy będą dostępne
-    // if (this.publicInfo.latitude && this.publicInfo.longitude) {
-    //   bikeShopData.geo = {
-    //     latitude: this.publicInfo.latitude,
-    //     longitude: this.publicInfo.longitude
-    //   };
-    // }
+    if (this.publicInfo.latitude && this.publicInfo.longitude) {
+      bikeShopData.geo = {
+        latitude: this.publicInfo.latitude,
+        longitude: this.publicInfo.longitude
+      };
+    }
 
     // 3. Dodaj godziny otwarcia (jeśli dostępne)
     if (this.openingHours && this.activeStatus?.openingHoursActive) {

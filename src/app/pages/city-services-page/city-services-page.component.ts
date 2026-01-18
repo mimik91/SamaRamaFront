@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, inject, makeStateKey, TransferState } from '@angular/core';
 import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
@@ -6,8 +6,10 @@ import { Subject, takeUntil } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 
 import { MapService } from '../services-map-page/services/map.service';
-import { MapPin, MapServicesRequestDto } from '../../shared/models/map.models';
+import { MapPin, MapServicesRequestDto, MapServicesResponseDto } from '../../shared/models/map.models';
 import { I18nService } from '../../core/i18n.service';
+import { SeoService } from '../../core/seo.service';
+import { SchemaOrgHelper } from '../../core/schema-org.helper';
 import { environment } from '../../environments/environments';
 
 export interface CityConfig {
@@ -26,6 +28,8 @@ export interface CityConfig {
 })
 export class CityServicesPageComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private transferState = inject(TransferState);
+  private seoService = inject(SeoService);
 
   // Wszystkie miasta z environment (dla dropdowna) - posortowane alfabetycznie
   readonly cities: CityConfig[] = [...environment.settings.seoCities].sort((a, b) =>
@@ -86,6 +90,8 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    // Usuń JSON-LD structured data przy przechodzeniu do innej strony
+    this.seoService.removeStructuredData();
   }
 
   // Tłumaczenia z parametrami
@@ -181,6 +187,23 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   private loadServices(): void {
     if (!this.currentCity) return;
 
+    // Klucz dla TransferState - unikalny dla każdego miasta
+    const stateKey = makeStateKey<MapServicesResponseDto>(`city-services-${this.currentCity.slug}`);
+
+    // Sprawdź czy mamy dane z SSR (TransferState)
+    const cachedData = this.transferState.get(stateKey, null);
+
+    if (cachedData) {
+      // Użyj danych z SSR
+      this.services = cachedData.data;
+      this.totalServices = cachedData.total;
+      this.loading = false;
+      this.transferState.remove(stateKey); // Wyczyść po użyciu
+      this.updateStructuredData(); // Dodaj JSON-LD
+      return;
+    }
+
+    // Normalny flow - pobierz z API
     this.loading = true;
     this.error = false;
 
@@ -206,6 +229,14 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
           if (response?.data) {
             this.services = response.data;
             this.totalServices = response.total;
+
+            // Zapisz do TransferState (dla SSR -> klient)
+            if (!this.isBrowser) {
+              this.transferState.set(stateKey, response);
+            }
+
+            // Dodaj JSON-LD structured data
+            this.updateStructuredData();
           }
           this.loading = false;
         },
@@ -267,5 +298,26 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
         email: service.email || ''
       }
     });
+  }
+
+  /**
+   * Generuje i dodaje JSON-LD ItemList schema dla listy serwisów
+   * Dzięki temu AI crawlery (ChatGPT, Gemini) mogą odczytać dane serwisów
+   */
+  private updateStructuredData(): void {
+    if (!this.currentCity || this.services.length === 0) return;
+
+    const itemList = SchemaOrgHelper.generateItemList(
+      this.services.map(service => ({
+        name: service.name,
+        address: service.address || undefined,
+        telephone: service.phoneNumber || undefined
+      })),
+      `Serwisy rowerowe ${this.currentCity.name}`
+    );
+
+    if (itemList) {
+      this.seoService.addStructuredData(itemList);
+    }
   }
 }

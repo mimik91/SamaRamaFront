@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, makeStateKey, TransferState } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { I18nService } from '../../core/i18n.service';
@@ -27,6 +27,17 @@ import {
 
 type TabType = 'info' | 'hours' | 'pricelist' | 'packages';
 
+// Interfejs dla danych cache'owanych w TransferState
+interface ServiceProfileCacheData {
+  publicInfo: BikeServicePublicInfo;
+  activeStatus: ServiceActiveStatus;
+  openingHours?: OpeningHoursWithInfoDto | null;
+  pricelist?: ServicePricelistDto | null;
+  availableItems?: CategoryWithItemsDto[];
+  packagesConfig?: ServicePackagesConfigDto | null;
+  bikeTypes?: string[];
+}
+
 @Component({
   selector: 'app-service-profile-page',
   standalone: true,
@@ -40,6 +51,11 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   private profileService = inject(ServiceProfileService);
   private i18n = inject(I18nService);
   private seoService = inject(SeoService);
+  private transferState = inject(TransferState);
+  private platformId = inject(PLATFORM_ID);
+
+  // Flaga czy jesteśmy w przeglądarce
+  private isBrowser = isPlatformBrowser(this.platformId);
 
   // Stan ładowania
   isLoading = true;
@@ -183,88 +199,144 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   }
 
   loadServiceData(): void {
-  if (!this.serviceId) return;
+    if (!this.serviceId) return;
 
-  // Krok 2: Pobierz podstawowe dane i status
-  Promise.all([
-    this.profileService.getPublicInfo(this.serviceId).toPromise(),
-    this.profileService.getActiveStatus(this.serviceId).toPromise()
-  ])
-    .then(([publicInfo, activeStatus]) => {
-      this.publicInfo = publicInfo || null;
-      this.activeStatus = activeStatus || null;
-      
-      console.log('🔍 Active Status:', activeStatus); // DEBUG
-      
-      // Krok 3: Warunkowo załaduj dodatkowe dane
-      const promises: Promise<any>[] = [];
-      
-      // Załaduj obrazy
-      promises.push(this.loadServiceImages());
-      
-      if (activeStatus?.openingHoursActive) {
-        console.log('⏰ Loading opening hours...'); // DEBUG
-        promises.push(
-          this.profileService.getOpeningHours(this.serviceId!).toPromise()
-            .then(hours => { this.openingHours = hours || null; })
-            .catch(() => { this.openingHours = null; })
-        );
-      }
-      
-      if (activeStatus?.pricelistActive) {
-        console.log('📋 Pricelist is active, loading pricelist data...'); // DEBUG
-        
-        promises.push(
-          this.profileService.getPricelist(this.serviceId!).toPromise()
-            .then(pricelist => { 
-              console.log('✅ Pricelist loaded:', pricelist);
-              this.pricelist = pricelist || null; 
-            })
-            .catch(err => { 
-              console.error('❌ Pricelist error:', err);
-              this.pricelist = null; 
-            })
-        );
-        
-        promises.push(
-          this.profileService.getAllAvailableItems().toPromise()
-            .then(items => { 
-              console.log('✅ Available items loaded:', items);
-              this.availableItems = items || []; 
-            })
-            .catch(err => { 
-              console.error('❌ Available items error:', err);
-              this.availableItems = []; 
-            })
-        );
+    // Klucz dla TransferState - unikalny dla każdego serwisu
+    const stateKey = makeStateKey<ServiceProfileCacheData>(`service-profile-${this.suffix}`);
 
-        // ✅ ZAWSZE ładuj pakiety gdy cennik jest aktywny
-        // (pakiety są częścią cennika, więc ładujemy je razem)
-        console.log('📦 Loading packages data...'); // DEBUG
-        promises.push(
-          this.loadPackagesData()
-            .then(() => console.log('✅ Packages loaded successfully'))
-            .catch(err => console.error('❌ Packages loading failed:', err))
-        );
+    // Sprawdź czy mamy dane z SSR (TransferState)
+    const cachedData = this.transferState.get(stateKey, null);
+
+    if (cachedData) {
+      // Użyj danych z SSR
+      console.log('📦 Using cached data from TransferState for:', this.suffix);
+      this.publicInfo = cachedData.publicInfo;
+      this.activeStatus = cachedData.activeStatus;
+      this.openingHours = cachedData.openingHours || null;
+      this.pricelist = cachedData.pricelist || null;
+      this.availableItems = cachedData.availableItems || [];
+      this.packagesConfig = cachedData.packagesConfig || null;
+      this.bikeTypes = cachedData.bikeTypes || [];
+
+      // Wyciągnij pakiety z config
+      if (this.packagesConfig?.packages) {
+        this.packages = this.packagesConfig.packages;
       }
-      
-      return Promise.all(promises);
-    })
-    .then(() => {
+
+      // Ustaw domyślny typ roweru
+      if (this.packagesConfig?.defaultBikeType && this.bikeTypes.includes(this.packagesConfig.defaultBikeType)) {
+        this.selectedBikeType = this.packagesConfig.defaultBikeType;
+      } else if (this.bikeTypes.length > 0) {
+        this.selectedBikeType = this.bikeTypes[0];
+      }
+      this.updateFilteredPackages();
+
       this.isLoading = false;
+      this.transferState.remove(stateKey); // Wyczyść po użyciu
       this.updateSeoForSection();
-
-      // ✅ Dodaj structured data AFTER SEO tags
       this.updateStructuredData();
 
-      console.log('✅ All data loaded successfully');
-    })
-    .catch(err => {
-      console.error('❌ Error loading service data:', err);
-      this.error = this.i18n.instant('service_profile.errors.load_failed');
-      this.isLoading = false;
-    });
-}
+      // Obrazy ładujemy tylko w przeglądarce (nie są cache'owane w TransferState)
+      if (this.isBrowser) {
+        this.loadServiceImages();
+      }
+      return;
+    }
+
+    // Normalny flow - pobierz z API
+    Promise.all([
+      this.profileService.getPublicInfo(this.serviceId).toPromise(),
+      this.profileService.getActiveStatus(this.serviceId).toPromise()
+    ])
+      .then(([publicInfo, activeStatus]) => {
+        this.publicInfo = publicInfo || null;
+        this.activeStatus = activeStatus || null;
+
+        console.log('🔍 Active Status:', activeStatus);
+
+        // Krok 3: Warunkowo załaduj dodatkowe dane
+        const promises: Promise<any>[] = [];
+
+        // Załaduj obrazy (tylko w przeglądarce)
+        if (this.isBrowser) {
+          promises.push(this.loadServiceImages());
+        }
+
+        if (activeStatus?.openingHoursActive) {
+          console.log('⏰ Loading opening hours...');
+          promises.push(
+            this.profileService.getOpeningHours(this.serviceId!).toPromise()
+              .then(hours => { this.openingHours = hours || null; })
+              .catch(() => { this.openingHours = null; })
+          );
+        }
+
+        if (activeStatus?.pricelistActive) {
+          console.log('📋 Pricelist is active, loading pricelist data...');
+
+          promises.push(
+            this.profileService.getPricelist(this.serviceId!).toPromise()
+              .then(pricelist => {
+                console.log('✅ Pricelist loaded:', pricelist);
+                this.pricelist = pricelist || null;
+              })
+              .catch(err => {
+                console.error('❌ Pricelist error:', err);
+                this.pricelist = null;
+              })
+          );
+
+          promises.push(
+            this.profileService.getAllAvailableItems().toPromise()
+              .then(items => {
+                console.log('✅ Available items loaded:', items);
+                this.availableItems = items || [];
+              })
+              .catch(err => {
+                console.error('❌ Available items error:', err);
+                this.availableItems = [];
+              })
+          );
+
+          // Ładuj pakiety gdy cennik jest aktywny
+          console.log('📦 Loading packages data...');
+          promises.push(
+            this.loadPackagesData()
+              .then(() => console.log('✅ Packages loaded successfully'))
+              .catch(err => console.error('❌ Packages loading failed:', err))
+          );
+        }
+
+        return Promise.all(promises);
+      })
+      .then(() => {
+        this.isLoading = false;
+        this.updateSeoForSection();
+        this.updateStructuredData();
+
+        // Zapisz do TransferState (dla SSR -> klient)
+        if (!this.isBrowser && this.publicInfo && this.activeStatus) {
+          const cacheData: ServiceProfileCacheData = {
+            publicInfo: this.publicInfo,
+            activeStatus: this.activeStatus,
+            openingHours: this.openingHours,
+            pricelist: this.pricelist,
+            availableItems: this.availableItems,
+            packagesConfig: this.packagesConfig,
+            bikeTypes: this.bikeTypes
+          };
+          this.transferState.set(stateKey, cacheData);
+          console.log('💾 Saved data to TransferState for:', this.suffix);
+        }
+
+        console.log('✅ All data loaded successfully');
+      })
+      .catch(err => {
+        console.error('❌ Error loading service data:', err);
+        this.error = this.i18n.instant('service_profile.errors.load_failed');
+        this.isLoading = false;
+      });
+  }
 
   private async loadPackagesData(): Promise<void> {
   console.log('🎯 loadPackagesData() CALLED with serviceId:', this.serviceId);

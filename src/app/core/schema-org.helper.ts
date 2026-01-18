@@ -70,6 +70,20 @@ export interface SchemaGeoCoordinates {
 }
 
 /**
+ * Element listy dla ItemList schema (np. lista serwisów w mieście)
+ */
+export interface SchemaListItem {
+  /** Nazwa elementu */
+  name: string;
+  /** URL do strony elementu */
+  url?: string;
+  /** Adres */
+  address?: string;
+  /** Numer telefonu */
+  telephone?: string;
+}
+
+/**
  * Dane oferty/usługi (dla OfferCatalog)
  */
 export interface SchemaOffer {
@@ -321,6 +335,58 @@ export class SchemaOrgHelper {
           name: item.name,
           item: item.url
         }))
+    };
+  }
+
+  /**
+   * Generuje ItemList schema dla listy lokalnych biznesów (np. serwisy w mieście)
+   *
+   * @param items Tablica elementów listy
+   * @param listName Nazwa listy (np. "Serwisy rowerowe Wrocław")
+   * @returns Obiekt JSON-LD ItemList zgodny z Schema.org
+   *
+   * @example
+   * ```typescript
+   * const itemList = SchemaOrgHelper.generateItemList(
+   *   [{ name: 'Bike Service', address: 'ul. Przykładowa 10', telephone: '+48123456789' }],
+   *   'Serwisy rowerowe Wrocław'
+   * );
+   * ```
+   */
+  static generateItemList(items: SchemaListItem[], listName: string): any {
+    if (!items || items.length === 0) {
+      console.warn('[SchemaOrgHelper] Pusta tablica ItemList');
+      return null;
+    }
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: listName,
+      numberOfItems: items.length,
+      itemListElement: items.map((item, index) => {
+        const listItem: any = {
+          '@type': 'ListItem',
+          position: index + 1,
+          item: {
+            '@type': 'LocalBusiness',
+            name: item.name
+          }
+        };
+
+        // Dodaj opcjonalne pola
+        if (item.url) {
+          listItem.item.url = item.url;
+        }
+        if (item.address) {
+          listItem.item.address = item.address;
+        }
+        if (item.telephone) {
+          listItem.item.telephone = item.telephone;
+        }
+
+        return listItem;
+      })
     };
   }
 

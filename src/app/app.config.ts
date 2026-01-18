@@ -3,6 +3,7 @@ import { ApplicationConfig, APP_INITIALIZER } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors, withFetch, withJsonpSupport } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideClientHydration, withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { routes } from './app.routes';
 import { I18nService } from './core/i18n.service';
 import { authInterceptor } from './auth/auth.interceptor';
@@ -37,7 +38,14 @@ export const appConfig: ApplicationConfig = {
     ),
     
     provideAnimations(),
-    
+
+    // SSR Hydration - pozwala na transfer danych HTTP między serwerem a klientem
+    provideClientHydration(
+      withHttpTransferCacheOptions({
+        includePostRequests: true  // MapService używa POST dla /map/services
+      })
+    ),
+
     // DODANE: APP_INITIALIZER dla i18n
     {
       provide: APP_INITIALIZER,

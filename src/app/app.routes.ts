@@ -34,6 +34,8 @@ import { TermsOfServiceWorkshopsComponent } from './core/terms-of-service-worksh
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
 import { suffixValidationGuard } from './auth/suffix-validation.guard';
 import { ServiceProfileTitleResolver} from './environments/service-profile-title.resolver';
+import { ServiceProfileResolver } from './pages/service-profile/service-profile.resolver';
+import { CityServicesResolver } from './pages/city-services-page/city-services-page.resolver';
 
 // REFACTORED COMPONENTS - NEW STRUCTURE
 import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
@@ -60,7 +62,8 @@ export const routes: Routes = [
     // SEO - lista serwisów dla miast
     {
       path: 'serwisy/:city',
-      component: CityServicesPageComponent
+      component: CityServicesPageComponent,
+      resolve: { cityData: CityServicesResolver }
     },
 
     // Jak działamy
@@ -343,6 +346,7 @@ export const routes: Routes = [
       path: ':suffix/cennik',
       component: ServiceProfilePageComponent,
       title: ServiceProfileTitleResolver,
+      resolve: { profileData: ServiceProfileResolver },
       data: { section: 'pricelist' }
     },
 
@@ -351,6 +355,7 @@ export const routes: Routes = [
       path: ':suffix/godziny-otwarcia',
       component: ServiceProfilePageComponent,
       title: ServiceProfileTitleResolver,
+      resolve: { profileData: ServiceProfileResolver },
       data: { section: 'hours' }
     },
 
@@ -359,6 +364,7 @@ export const routes: Routes = [
       path: ':suffix',
       component: ServiceProfilePageComponent,
       title: ServiceProfileTitleResolver,
+      resolve: { profileData: ServiceProfileResolver },
       data: { section: 'info' }
     },
     

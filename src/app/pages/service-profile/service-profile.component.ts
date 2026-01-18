@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, makeStateKey, TransferState } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ServiceProfileResolvedData } from './service-profile.resolver';
 import { I18nService } from '../../core/i18n.service';
 import { ServiceProfileService } from './service-profile.service';
 import { SeoService } from '../../core/seo.service';
@@ -27,17 +28,6 @@ import {
 
 type TabType = 'info' | 'hours' | 'pricelist' | 'packages';
 
-// Interfejs dla danych cache'owanych w TransferState
-interface ServiceProfileCacheData {
-  publicInfo: BikeServicePublicInfo;
-  activeStatus: ServiceActiveStatus;
-  openingHours?: OpeningHoursWithInfoDto | null;
-  pricelist?: ServicePricelistDto | null;
-  availableItems?: CategoryWithItemsDto[];
-  packagesConfig?: ServicePackagesConfigDto | null;
-  bikeTypes?: string[];
-}
-
 @Component({
   selector: 'app-service-profile-page',
   standalone: true,
@@ -51,7 +41,6 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   private profileService = inject(ServiceProfileService);
   private i18n = inject(I18nService);
   private seoService = inject(SeoService);
-  private transferState = inject(TransferState);
   private platformId = inject(PLATFORM_ID);
 
   // Flaga czy jesteśmy w przeglądarce
@@ -115,16 +104,63 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Subscribe to route data changes to detect section changes
+    // Subscribe to route data changes to detect section changes and get resolved data
     this.route.data.subscribe(data => {
       const section = data['section'] as TabType | undefined;
       if (section) {
         this.activeTab = section;
-        this.updateSeoForSection();
+      }
+
+      // Pobierz dane z resolvera (Angular SSR czeka na resolver przed renderowaniem)
+      const profileData = data['profileData'] as ServiceProfileResolvedData | null;
+      if (profileData) {
+        this.initializeFromResolvedData(profileData);
+      } else {
+        // Fallback - jeśli resolver nie zwrócił danych, przekieruj
+        this.error = this.i18n.instant('service_profile.errors.service_not_found');
+        this.isLoading = false;
+        setTimeout(() => this.router.navigate(['/']), 3000);
       }
     });
+  }
 
-    this.loadServiceProfile();
+  /**
+   * Inicjalizuje komponent danymi z resolvera
+   * Resolver pobiera dane PRZED renderowaniem, więc AI crawlery widzą pełny HTML
+   */
+  private initializeFromResolvedData(data: ServiceProfileResolvedData): void {
+    this.serviceId = data.serviceId;
+    this.publicInfo = data.publicInfo;
+    this.activeStatus = data.activeStatus;
+    this.openingHours = data.openingHours;
+    this.pricelist = data.pricelist;
+    this.availableItems = data.availableItems;
+    this.packagesConfig = data.packagesConfig;
+    this.bikeTypes = data.bikeTypes;
+
+    // Wyciągnij pakiety z config
+    if (this.packagesConfig?.packages) {
+      this.packages = this.packagesConfig.packages;
+    }
+
+    // Ustaw domyślny typ roweru
+    if (this.packagesConfig?.defaultBikeType && this.bikeTypes.includes(this.packagesConfig.defaultBikeType)) {
+      this.selectedBikeType = this.packagesConfig.defaultBikeType;
+    } else if (this.bikeTypes.length > 0) {
+      this.selectedBikeType = this.bikeTypes[0];
+    }
+    this.updateFilteredPackages();
+
+    this.isLoading = false;
+    this.updateSeoForSection();
+    this.updateStructuredData();
+
+    // Obrazy ładujemy tylko w przeglądarce (nie blokują SSR)
+    if (this.isBrowser) {
+      this.loadServiceImages();
+    }
+
+    console.log('✅ Service profile initialized from resolver data');
   }
 
   private updateSeoForSection(): void {
@@ -176,220 +212,6 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     );
   }
 
-  loadServiceProfile(): void {
-    this.isLoading = true;
-    this.error = '';
-
-    // Krok 1: Pobierz ID serwisu na podstawie suffixu
-    this.profileService.getServiceIdBySuffix(this.suffix).subscribe({
-      next: (response) => {
-        this.serviceId = response.id;
-        this.loadServiceData();
-      },
-      error: (err) => {
-        console.error('Service not found:', err);
-        this.error = this.i18n.instant('service_profile.errors.service_not_found');
-        this.isLoading = false;
-        // Opcjonalnie przekieruj na stronę główną
-        setTimeout(() => {
-          this.router.navigate(['/']);
-        }, 3000);
-      }
-    });
-  }
-
-  loadServiceData(): void {
-    if (!this.serviceId) return;
-
-    // Klucz dla TransferState - unikalny dla każdego serwisu
-    const stateKey = makeStateKey<ServiceProfileCacheData>(`service-profile-${this.suffix}`);
-
-    // Sprawdź czy mamy dane z SSR (TransferState)
-    const cachedData = this.transferState.get(stateKey, null);
-
-    if (cachedData) {
-      // Użyj danych z SSR
-      console.log('📦 Using cached data from TransferState for:', this.suffix);
-      this.publicInfo = cachedData.publicInfo;
-      this.activeStatus = cachedData.activeStatus;
-      this.openingHours = cachedData.openingHours || null;
-      this.pricelist = cachedData.pricelist || null;
-      this.availableItems = cachedData.availableItems || [];
-      this.packagesConfig = cachedData.packagesConfig || null;
-      this.bikeTypes = cachedData.bikeTypes || [];
-
-      // Wyciągnij pakiety z config
-      if (this.packagesConfig?.packages) {
-        this.packages = this.packagesConfig.packages;
-      }
-
-      // Ustaw domyślny typ roweru
-      if (this.packagesConfig?.defaultBikeType && this.bikeTypes.includes(this.packagesConfig.defaultBikeType)) {
-        this.selectedBikeType = this.packagesConfig.defaultBikeType;
-      } else if (this.bikeTypes.length > 0) {
-        this.selectedBikeType = this.bikeTypes[0];
-      }
-      this.updateFilteredPackages();
-
-      this.isLoading = false;
-      this.transferState.remove(stateKey); // Wyczyść po użyciu
-      this.updateSeoForSection();
-      this.updateStructuredData();
-
-      // Obrazy ładujemy tylko w przeglądarce (nie są cache'owane w TransferState)
-      if (this.isBrowser) {
-        this.loadServiceImages();
-      }
-      return;
-    }
-
-    // Normalny flow - pobierz z API
-    Promise.all([
-      this.profileService.getPublicInfo(this.serviceId).toPromise(),
-      this.profileService.getActiveStatus(this.serviceId).toPromise()
-    ])
-      .then(([publicInfo, activeStatus]) => {
-        this.publicInfo = publicInfo || null;
-        this.activeStatus = activeStatus || null;
-
-        console.log('🔍 Active Status:', activeStatus);
-
-        // Krok 3: Warunkowo załaduj dodatkowe dane
-        const promises: Promise<any>[] = [];
-
-        // Załaduj obrazy (tylko w przeglądarce)
-        if (this.isBrowser) {
-          promises.push(this.loadServiceImages());
-        }
-
-        if (activeStatus?.openingHoursActive) {
-          console.log('⏰ Loading opening hours...');
-          promises.push(
-            this.profileService.getOpeningHours(this.serviceId!).toPromise()
-              .then(hours => { this.openingHours = hours || null; })
-              .catch(() => { this.openingHours = null; })
-          );
-        }
-
-        if (activeStatus?.pricelistActive) {
-          console.log('📋 Pricelist is active, loading pricelist data...');
-
-          promises.push(
-            this.profileService.getPricelist(this.serviceId!).toPromise()
-              .then(pricelist => {
-                console.log('✅ Pricelist loaded:', pricelist);
-                this.pricelist = pricelist || null;
-              })
-              .catch(err => {
-                console.error('❌ Pricelist error:', err);
-                this.pricelist = null;
-              })
-          );
-
-          promises.push(
-            this.profileService.getAllAvailableItems().toPromise()
-              .then(items => {
-                console.log('✅ Available items loaded:', items);
-                this.availableItems = items || [];
-              })
-              .catch(err => {
-                console.error('❌ Available items error:', err);
-                this.availableItems = [];
-              })
-          );
-
-          // Ładuj pakiety gdy cennik jest aktywny
-          console.log('📦 Loading packages data...');
-          promises.push(
-            this.loadPackagesData()
-              .then(() => console.log('✅ Packages loaded successfully'))
-              .catch(err => console.error('❌ Packages loading failed:', err))
-          );
-        }
-
-        return Promise.all(promises);
-      })
-      .then(() => {
-        this.isLoading = false;
-        this.updateSeoForSection();
-        this.updateStructuredData();
-
-        // Zapisz do TransferState (dla SSR -> klient)
-        if (!this.isBrowser && this.publicInfo && this.activeStatus) {
-          const cacheData: ServiceProfileCacheData = {
-            publicInfo: this.publicInfo,
-            activeStatus: this.activeStatus,
-            openingHours: this.openingHours,
-            pricelist: this.pricelist,
-            availableItems: this.availableItems,
-            packagesConfig: this.packagesConfig,
-            bikeTypes: this.bikeTypes
-          };
-          this.transferState.set(stateKey, cacheData);
-          console.log('💾 Saved data to TransferState for:', this.suffix);
-        }
-
-        console.log('✅ All data loaded successfully');
-      })
-      .catch(err => {
-        console.error('❌ Error loading service data:', err);
-        this.error = this.i18n.instant('service_profile.errors.load_failed');
-        this.isLoading = false;
-      });
-  }
-
-  private async loadPackagesData(): Promise<void> {
-  console.log('🎯 loadPackagesData() CALLED with serviceId:', this.serviceId);
-  
-  if (!this.serviceId) {
-    console.error('❌ No serviceId in loadPackagesData!');
-    return;
-  }
-
-  try {
-    // ✅ TYLKO JEDEN REQUEST - config już zawiera packages!
-    console.log('📦 Fetching packages config (with packages inside)...');
-    this.packagesConfig = await this.profileService.getPackagesConfig(this.serviceId).toPromise() || null;
-    console.log('📦 Packages Config received:', this.packagesConfig);
-    
-    // ✅ Wyciągnij packages z config
-    if (this.packagesConfig && this.packagesConfig.packages) {
-      this.packages = this.packagesConfig.packages;
-      console.log('📦 Extracted packages from config:', this.packages);
-    } else {
-      this.packages = [];
-      console.warn('⚠️ No packages in config!');
-    }
-    
-    // Pobierz typy rowerów
-    console.log('📦 Fetching bike types...');
-    this.bikeTypes = await this.profileService.getBikeTypes(this.serviceId).toPromise() || [];
-    console.log('📦 Bike Types received:', this.bikeTypes);
-    
-    // Ustaw domyślny typ roweru
-    if (this.packagesConfig?.defaultBikeType && this.bikeTypes.includes(this.packagesConfig.defaultBikeType)) {
-      this.selectedBikeType = this.packagesConfig.defaultBikeType;
-      console.log('📦 Selected default bike type:', this.selectedBikeType);
-    } else if (this.bikeTypes.length > 0) {
-      this.selectedBikeType = this.bikeTypes[0];
-      console.log('📦 Selected first bike type:', this.selectedBikeType);
-    } else {
-      console.warn('⚠️ No bike types available!');
-    }
-    
-    // Filtruj pakiety według wybranego typu
-    this.updateFilteredPackages();
-    console.log('📦 Filtered packages:', this.filteredPackages);
-    console.log('📦 Selected bike type:', this.selectedBikeType);
-    
-    console.log('✅ loadPackagesData() COMPLETED');
-  } catch (err) {
-    console.error('❌ Error in loadPackagesData():', err);
-    console.error('❌ Error details:', err);
-    this.packagesConfig = null;
-    this.packages = [];
-  }
-}
 
   private async loadServiceImages(): Promise<void> {
     if (!this.serviceId) return;

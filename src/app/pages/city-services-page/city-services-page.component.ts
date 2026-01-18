@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, inject, makeStateKey, TransferState } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
@@ -6,11 +6,12 @@ import { Subject, takeUntil } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 
 import { MapService } from '../services-map-page/services/map.service';
-import { MapPin, MapServicesRequestDto, MapServicesResponseDto } from '../../shared/models/map.models';
+import { MapPin } from '../../shared/models/map.models';
 import { I18nService } from '../../core/i18n.service';
 import { SeoService } from '../../core/seo.service';
 import { SchemaOrgHelper } from '../../core/schema-org.helper';
 import { environment } from '../../environments/environments';
+import { CityServicesResolvedData } from './city-services-page.resolver';
 
 export interface CityConfig {
   slug: string;
@@ -28,7 +29,6 @@ export interface CityConfig {
 })
 export class CityServicesPageComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  private transferState = inject(TransferState);
   private seoService = inject(SeoService);
 
   // Wszystkie miasta z environment (dla dropdowna) - posortowane alfabetycznie
@@ -70,16 +70,27 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      const citySlug = params['city'];
-      this.selectedCitySlug = citySlug;
-      this.currentCity = this.cities.find(c => c.slug === citySlug) || null;
+    // Pobierz dane z resolvera (Angular SSR czeka na resolver przed renderowaniem)
+    this.route.data.pipe(takeUntil(this.destroy$)).subscribe(data => {
+      const cityData = data['cityData'] as CityServicesResolvedData | null;
 
-      if (this.currentCity) {
+      if (cityData) {
+        // Dane z resolvera - miasto znalezione
+        this.currentCity = cityData.city;
+        this.selectedCitySlug = cityData.city.slug;
+        this.services = cityData.services;
+        this.totalServices = cityData.total;
         this.cityNotFound = false;
+        this.loading = false;
+
         this.updateMetaTags();
-        this.loadServices();
+        this.updateStructuredData();
+
+        console.log('✅ City services initialized from resolver data:', cityData.city.name);
       } else {
+        // Resolver zwrócił null - miasto nie znalezione
+        const citySlug = this.route.snapshot.paramMap.get('city') || '';
+        this.selectedCitySlug = citySlug;
         this.cityNotFound = true;
         this.loading = false;
         this.update404MetaTags(citySlug);
@@ -182,88 +193,6 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     }
 
     return baseKeywords;
-  }
-
-  private loadServices(): void {
-    if (!this.currentCity) return;
-
-    // Klucz dla TransferState - unikalny dla każdego miasta
-    const stateKey = makeStateKey<MapServicesResponseDto>(`city-services-${this.currentCity.slug}`);
-
-    // Sprawdź czy mamy dane z SSR (TransferState)
-    const cachedData = this.transferState.get(stateKey, null);
-
-    if (cachedData) {
-      // Użyj danych z SSR
-      this.services = cachedData.data;
-      this.totalServices = cachedData.total;
-      this.loading = false;
-      this.transferState.remove(stateKey); // Wyczyść po użyciu
-      this.updateStructuredData(); // Dodaj JSON-LD
-      return;
-    }
-
-    // Normalny flow - pobierz z API
-    this.loading = true;
-    this.error = false;
-
-    const bounds = this.calculateBounds(
-      this.currentCity.latitude,
-      this.currentCity.longitude,
-      13,
-      3000,
-      1800
-    );
-
-    const request: MapServicesRequestDto = {
-      type: 'event',
-      bounds: `${bounds.south},${bounds.west},${bounds.north},${bounds.east}`,
-      page: 0,
-      perPage: 1000
-    };
-
-    this.mapService.getServices(request)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          if (response?.data) {
-            this.services = response.data;
-            this.totalServices = response.total;
-
-            // Zapisz do TransferState (dla SSR -> klient)
-            if (!this.isBrowser) {
-              this.transferState.set(stateKey, response);
-            }
-
-            // Dodaj JSON-LD structured data
-            this.updateStructuredData();
-          }
-          this.loading = false;
-        },
-        error: () => {
-          this.error = true;
-          this.loading = false;
-        }
-      });
-  }
-
-  private calculateBounds(
-    lat: number,
-    lng: number,
-    zoom: number,
-    viewportWidth: number,
-    viewportHeight: number
-  ): { south: number; west: number; north: number; east: number } {
-    const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
-    const halfWidthDeg = (viewportWidth * metersPerPixel) / 111320 / 2;
-    const halfHeightDeg = (viewportHeight * metersPerPixel) / 110540 / 2;
-
-    return {
-      south: lat - halfHeightDeg,
-      north: lat + halfHeightDeg,
-      west: lng - halfWidthDeg,
-      east: lng + halfWidthDeg
-    };
   }
 
   trackByServiceId(index: number, service: MapPin): number {

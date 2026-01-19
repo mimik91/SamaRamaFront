@@ -15,6 +15,34 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 /**
+ * Canonical URL redirect (301)
+ * Redirects non-www to www and http to https
+ */
+app.use((req, res, next) => {
+  const host = req.headers.host || '';
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+
+  // Skip in development
+  if (host.includes('localhost') || host.includes('127.0.0.1')) {
+    return next();
+  }
+
+  // Redirect non-www to www (and ensure https)
+  if (host === 'cyclopick.pl') {
+    const newUrl = `https://www.cyclopick.pl${req.originalUrl}`;
+    return res.redirect(301, newUrl);
+  }
+
+  // Redirect http to https (for www domain)
+  if (protocol === 'http' && host === 'www.cyclopick.pl') {
+    const newUrl = `https://www.cyclopick.pl${req.originalUrl}`;
+    return res.redirect(301, newUrl);
+  }
+
+  next();
+});
+
+/**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.
  *

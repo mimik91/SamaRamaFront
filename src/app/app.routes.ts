@@ -161,11 +161,11 @@ export const routes: Routes = [
     // Przekierowanie z /about na stronę główną
     { path: 'about', redirectTo: '', pathMatch: 'full' },
 
-    // About page
-    { 
-      path: 'for-services', 
+    // About page - usługi dla serwisów rowerowych
+    {
+      path: 'for-services',
       component: ForServicesComponent,
-      title: 'Dla Serwisów'
+      title: 'Usługi dla serwisów rowerowych | CycloPick - mapa warsztatów'
     },
 
      // === CHRONIONE TRASY UŻYTKOWNIKÓW SERVICE ===

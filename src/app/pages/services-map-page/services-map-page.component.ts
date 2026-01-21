@@ -2,12 +2,17 @@
 
 import { Component, OnInit, OnDestroy, ViewChild, Inject, PLATFORM_ID, HostListener, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 
 // Services
 import { MapService } from './services/map.service';
 import { NotificationService } from '../../core/notification.service';
+import { SeoService } from '../../core/seo.service';
+
+// Resolver
+import { ServicesMapResolvedData } from './services-map-page.resolver';
 
 // Models
 import {
@@ -111,7 +116,11 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
     private mapService: MapService,
     private notificationService: NotificationService,
     private router: Router,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
+    private meta: Meta,
+    private title: Title,
+    private seoService: SeoService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -125,15 +134,75 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Inicjalizuj dane z resolvera (SSR)
+    this.initializeFromResolver();
+
+    // Nasłuchuj na zmiany query params (dla dynamicznych meta tagów)
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      if (params['city']) {
+        this.filtersState.cityQuery = params['city'];
+      }
+      if (params['coverages']) {
+        this.filtersState.selectedCoverageIds = params['coverages']
+          .split(',')
+          .map(Number)
+          .filter((n: number) => !isNaN(n) && n > 0);
+      }
+      // Aktualizuj meta tagi przy zmianie filtrów
+      this.updateDynamicMetaTags();
+    });
+
+    // Ustaw SEO (schema markup nie zależy od filtrów)
+    this.addSchemaMarkup();
+
     if (!this.isBrowser) return;
 
     this.checkMobileView();
     this.setupDebouncing();
-    this.loadRepairCoverages();
 
-    setTimeout(() => {
-      this.loadInitialData();
-    }, 100);
+    // Jeśli nie mamy danych z resolvera, załaduj ręcznie
+    if (this.services.length === 0) {
+      this.loadRepairCoverages();
+      setTimeout(() => {
+        this.loadInitialData();
+      }, 100);
+    } else {
+      // Dane z resolvera są już załadowane, tylko załaduj piny na mapę
+      setTimeout(() => {
+        this.loadMapPins(this.currentMapView.zoom, this.getBoundsString(this.currentMapView.bounds));
+      }, 100);
+    }
+  }
+
+  /**
+   * Inicjalizuje dane z resolvera (SSR)
+   * Resolver pobiera dane przed renderowaniem HTML
+   */
+  private initializeFromResolver(): void {
+    this.route.data.pipe(takeUntil(this.destroy$)).subscribe(data => {
+      const mapData = data['mapData'] as ServicesMapResolvedData | null;
+
+      if (mapData) {
+        // Dane z resolvera - SSR
+        this.services = mapData.services.map(pin => ({
+          ...pin,
+          address: pin.address || this.buildAddressFromPin(pin)
+        }));
+        this.allServices = [...this.services];
+        this.totalServices = mapData.total;
+        this.coverageCategories = mapData.coverageCategories;
+
+        // Ustaw filtry z resolvera
+        if (mapData.city) {
+          this.filtersState.cityQuery = mapData.city;
+        }
+        if (mapData.coverageIds && mapData.coverageIds.length > 0) {
+          this.filtersState.selectedCoverageIds = mapData.coverageIds;
+        }
+
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -383,6 +452,12 @@ onCitySelected(city: CitySuggestion): void {
     const latitude = city.latitude;
     const longitude = city.longitude;
 
+    // Aktualizuj URL z query param (dla SEO i udostępniania linków)
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { city: city.cityName },
+      queryParamsHandling: 'merge'
+    });
 
     if (this.mapComponent && latitude && longitude) {
       // Centrujemy mapę na współrzędnych miasta z odpowiednim zoomem
@@ -395,6 +470,14 @@ onCitySelected(city: CitySuggestion): void {
   onCityClearRequested(): void {
     this.filtersState.cityQuery = '';
     this.citySuggestions = [];
+
+    // Usuń query param z URL
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { city: null },
+      queryParamsHandling: 'merge'
+    });
+
     this.cdr.markForCheck();
     if (this.mapComponent) {
       this.mapComponent.centerOn(52.0100, 19.5111, 7);
@@ -640,5 +723,188 @@ onCitySelected(city: CitySuggestion): void {
         this.mapInvalidateTimeoutId = undefined;
       }, 100);
     }
+  }
+
+  // ============ SEO ============
+
+  /**
+   * Dynamiczne meta tagi - aktualizowane przy zmianie filtrów (Long-tail SEO)
+   * Przykłady:
+   * - /services-map -> "Mapa serwisów rowerowych w Polsce"
+   * - /services-map?city=Warszawa -> "Serwisy rowerowe Warszawa"
+   */
+  private updateDynamicMetaTags(): void {
+    const city = this.filtersState.cityQuery;
+    const hasCity = city && city.trim().length > 0;
+
+    // Dynamiczny title i description
+    const titleText = hasCity
+      ? `Serwisy rowerowe ${city} | Mapa warsztatów rowerowych | CycloPick`
+      : 'Mapa serwisów rowerowych w Polsce | Znajdź warsztat rowerowy | CycloPick';
+
+    const descriptionText = hasCity
+      ? `Szukasz serwisu rowerowego w lokalizacji: ${city}? Sprawdź opinie, cenniki i umów wizytę online. Najlepsza mapa warsztatów rowerowych.`
+      : 'Interaktywna mapa serwisów rowerowych w Polsce. Znajdź najbliższy warsztat rowerowy, sprawdź opinie i umów wizytę online. Ponad 1000 serwisów rowerowych w całej Polsce.';
+
+    const urlPath = hasCity
+      ? `https://www.cyclopick.pl?city=${encodeURIComponent(city)}`
+      : 'https://www.cyclopick.pl';
+
+    // Title
+    this.title.setTitle(titleText);
+
+    // Meta description
+    this.meta.updateTag({
+      name: 'description',
+      content: descriptionText
+    });
+
+    // Meta keywords - dynamiczne
+    const baseKeywords = 'mapa serwisów rowerowych, warsztat rowerowy, serwis rowerowy, naprawa rowerów';
+    const cityKeywords = hasCity
+      ? `, serwis rowerowy ${city}, warsztat rowerowy ${city}, naprawa rowerów ${city}`
+      : ', mapa warsztatów rowerowych, serwis rowerowy w pobliżu, mechanik rowerowy';
+    this.meta.updateTag({
+      name: 'keywords',
+      content: baseKeywords + cityKeywords
+    });
+
+    // Open Graph - dynamiczne
+    this.meta.updateTag({ property: 'og:title', content: titleText });
+    this.meta.updateTag({ property: 'og:description', content: descriptionText });
+    this.meta.updateTag({ property: 'og:type', content: 'website' });
+    this.meta.updateTag({ property: 'og:url', content: urlPath });
+    this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/for-services/widocznosc-na-mapie-serwisow.webp' });
+    this.meta.updateTag({ property: 'og:locale', content: 'pl_PL' });
+
+    // Twitter Card - dynamiczne
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: titleText });
+    this.meta.updateTag({ name: 'twitter:description', content: descriptionText });
+    this.meta.updateTag({ name: 'twitter:image', content: 'https://www.cyclopick.pl/assets/images/for-services/widocznosc-na-mapie-serwisow.webp' });
+
+    // Robots
+    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+
+    // Geo meta tags dla lokalnego SEO
+    this.meta.updateTag({ name: 'geo.region', content: 'PL' });
+    this.meta.updateTag({ name: 'geo.placename', content: hasCity ? city : 'Polska' });
+  }
+
+  private addSchemaMarkup(): void {
+    const schema = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebPage',
+          '@id': 'https://www.cyclopick.pl/services-map#webpage',
+          'url': 'https://www.cyclopick.pl/services-map',
+          'name': 'Mapa serwisów rowerowych w Polsce',
+          'description': 'Interaktywna mapa serwisów rowerowych w Polsce. Znajdź najbliższy warsztat rowerowy, sprawdź opinie i umów wizytę online.',
+          'isPartOf': {
+            '@id': 'https://www.cyclopick.pl/#website'
+          },
+          'primaryImageOfPage': {
+            '@type': 'ImageObject',
+            'url': 'https://www.cyclopick.pl/assets/images/for-services/widocznosc-na-mapie-serwisow.webp'
+          },
+          'breadcrumb': {
+            '@id': 'https://www.cyclopick.pl/services-map#breadcrumb'
+          }
+        },
+        {
+          '@type': 'BreadcrumbList',
+          '@id': 'https://www.cyclopick.pl/services-map#breadcrumb',
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Strona główna',
+              'item': 'https://www.cyclopick.pl'
+            },
+            {
+              '@type': 'ListItem',
+              'position': 2,
+              'name': 'Mapa serwisów rowerowych',
+              'item': 'https://www.cyclopick.pl/services-map'
+            }
+          ]
+        },
+        {
+          '@type': 'Service',
+          '@id': 'https://www.cyclopick.pl/services-map#service',
+          'name': 'Wyszukiwarka serwisów rowerowych',
+          'description': 'Interaktywna mapa pozwalająca znaleźć serwisy rowerowe w całej Polsce. Filtrowanie po usługach, lokalizacji i ocenach.',
+          'provider': {
+            '@type': 'Organization',
+            'name': 'CycloPick',
+            'url': 'https://www.cyclopick.pl',
+            'logo': 'https://www.cyclopick.pl/assets/images/logo-cyclopick.webp'
+          },
+          'areaServed': {
+            '@type': 'Country',
+            'name': 'Polska'
+          },
+          'serviceType': 'Wyszukiwarka warsztatów rowerowych'
+        },
+        {
+          '@type': 'ItemList',
+          '@id': 'https://www.cyclopick.pl/services-map#servicelist',
+          'name': 'Lista serwisów rowerowych w Polsce',
+          'description': 'Katalog warsztatów rowerowych dostępnych na mapie CycloPick',
+          'numberOfItems': this.totalServices || 1000,
+          'itemListOrder': 'https://schema.org/ItemListOrderDescending'
+        },
+        // FAQPage Schema - dla AIO (ChatGPT, Copilot, Gemini)
+        {
+          '@type': 'FAQPage',
+          '@id': 'https://www.cyclopick.pl/services-map#faq',
+          'mainEntity': [
+            {
+              '@type': 'Question',
+              'name': 'Jak znaleźć najlepszy serwis rowerowy w mojej okolicy?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'Skorzystaj z interaktywnej mapy CycloPick. Wpisz nazwę swojego miasta w wyszukiwarkę, a mapa pokaże wszystkie dostępne serwisy rowerowe w okolicy. Możesz przefiltrować wyniki według oferowanych usług (np. naprawa przerzutek, centrowanie kół) i sprawdzić opinie innych użytkowników.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'Czy mogę umówić się do serwisu rowerowego online?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'Tak, większość serwisów na mapie CycloPick umożliwia rezerwację terminu online. Po wybraniu serwisu możesz sprawdzić dostępne terminy i zarezerwować wizytę bez dzwonienia. Niektóre serwisy oferują również możliwość zamówienia transportu roweru.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'Ile kosztuje naprawa roweru w serwisie?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'Ceny różnią się w zależności od serwisu i rodzaju naprawy. Podstawowy przegląd roweru kosztuje zwykle 50-150 zł. Dzięki CycloPick możesz porównać cenniki różnych serwisów przed wizytą - wiele warsztatów publikuje swoje cenniki na swoich profilach.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'Jak sprawdzić opinie o serwisie rowerowym?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'Na mapie CycloPick każdy serwis rowerowy ma swój profil z opiniami użytkowników. Kliknij na wybrany serwis, aby zobaczyć oceny, komentarze i zdjęcia od innych rowerzystów. Zweryfikowane serwisy są oznaczone specjalną ikoną.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'Czy CycloPick działa w całej Polsce?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'Tak, mapa CycloPick obejmuje serwisy rowerowe w całej Polsce. Aktualnie w bazie znajduje się ponad 1000 warsztatów rowerowych - od dużych miast jak Warszawa, Kraków czy Wrocław, po mniejsze miejscowości. Lista serwisów jest stale aktualizowana.'
+              }
+            }
+          ]
+        }
+      ]
+    };
+
+    this.seoService.addStructuredData(schema, 'services-map-structured-data');
   }
 }

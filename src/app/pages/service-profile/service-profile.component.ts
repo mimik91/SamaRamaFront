@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { ServiceProfileResolvedData } from './service-profile.resolver';
 import { I18nService } from '../../core/i18n.service';
 import { ServiceProfileService } from './service-profile.service';
@@ -42,6 +43,9 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   private i18n = inject(I18nService);
   private seoService = inject(SeoService);
   private platformId = inject(PLATFORM_ID);
+
+  // Subject do unsubscribe przy destroy
+  private destroy$ = new Subject<void>();
 
   // Flaga czy jesteśmy w przeglądarce
   private isBrowser = isPlatformBrowser(this.platformId);
@@ -105,7 +109,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     }
 
     // Subscribe to route data changes to detect section changes and get resolved data
-    this.route.data.subscribe(data => {
+    this.route.data.pipe(takeUntil(this.destroy$)).subscribe(data => {
       const section = data['section'] as TabType | undefined;
       if (section) {
         this.activeTab = section;
@@ -557,6 +561,9 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Usuń JSON-LD structured data przy przechodzeniu do innej strony
     this.seoService.removeStructuredData();
-    console.log('[ServiceProfile] ✅ Component destroyed, structured data removed');
+
+    // Cleanup subskrypcji
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

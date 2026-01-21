@@ -36,6 +36,7 @@ import { suffixValidationGuard } from './auth/suffix-validation.guard';
 import { ServiceProfileTitleResolver} from './environments/service-profile-title.resolver';
 import { ServiceProfileResolver } from './pages/service-profile/service-profile.resolver';
 import { CityServicesResolver } from './pages/city-services-page/city-services-page.resolver';
+import { ServicesMapResolver } from './pages/services-map-page/services-map-page.resolver';
 
 // REFACTORED COMPONENTS - NEW STRUCTURE
 import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
@@ -48,10 +49,13 @@ export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
     
     // Home route - REFACTORED: Nowy komponent z architekturą Smart/Dumb
-    { 
-      path: '', 
+    // SSR: Resolver pobiera dane przed renderowaniem HTML (SEO/AIO)
+    {
+      path: '',
       component: ServicesMapPageComponent,
-      title: 'CycloPick | mapa serwisów rowerowych'
+      title: 'CycloPick | mapa serwisów rowerowych',
+      resolve: { mapData: ServicesMapResolver },
+      runGuardsAndResolvers: 'paramsOrQueryParamsChange'
     },
     
     // Aliasy dla mapy

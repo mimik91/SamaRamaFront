@@ -47,7 +47,15 @@
     <section class="main-content" id="info" *ngIf="activeTab === 'info'">
       <div class="content-left">
         <h1> {{ t('service_profile.images.about_us') }} </h1>
-        <img [src]="logoUrl" [alt]="publicInfo.name" class="service-logo">
+        <!-- Logo z skeleton -->
+        <div class="logo-container">
+          <div *ngIf="!logoUrl" class="skeleton skeleton-logo"></div>
+          <img
+            *ngIf="logoUrl"
+            [src]="logoUrl"
+            [alt]="publicInfo.name"
+            class="service-logo fade-in">
+        </div>
         <h2>{{ publicInfo.name }}</h2>
         <h3>{{ publicInfo.city }}</h3>
         <p *ngIf="publicInfo.description">{{ publicInfo.description }}</p>
@@ -71,10 +79,13 @@
       </div>
       
       <div class="content-right">
-        <img 
-          [src]="aboutUsImageUrl" 
-          [alt]="t('service_profile.images.about_us')" 
-          class="content-image">
+        <!-- About Us image z skeleton -->
+        <div *ngIf="!aboutUsImageUrl" class="skeleton skeleton-content-image"></div>
+        <img
+          *ngIf="aboutUsImageUrl"
+          [src]="aboutUsImageUrl"
+          [alt]="t('service_profile.images.about_us')"
+          class="content-image fade-in">
       </div>
     </section>
 
@@ -200,10 +211,13 @@
       </div>
       
       <div class="content-right">
-        <img 
-          [src]="openingHoursImageUrl" 
-          [alt]="t('service_profile.images.opening_hours')" 
-          class="content-image">
+        <!-- Opening Hours image z skeleton -->
+        <div *ngIf="!openingHoursImageUrl" class="skeleton skeleton-content-image"></div>
+        <img
+          *ngIf="openingHoursImageUrl"
+          [src]="openingHoursImageUrl"
+          [alt]="t('service_profile.images.opening_hours')"
+          class="content-image fade-in">
       </div>
     </section>
 

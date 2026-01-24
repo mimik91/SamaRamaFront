@@ -72,10 +72,18 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   selectedBikeType: string | null = null;
   filteredPackages: ServicePackageDto[] = [];
   
-  // Obrazy serwisu
-  logoUrl: string = 'assets/images/logo-cyclopick.webp';
-  aboutUsImageUrl: string = 'assets/images/pictures/vertical/przerzutka-rowerowa.webp';
-  openingHoursImageUrl: string = 'assets/images/pictures/vertical/rower.webp';
+  // Obrazy serwisu (null = jeszcze nie załadowane, użyj skeleton)
+  logoUrl: string | null = null;
+  aboutUsImageUrl: string | null = null;
+  openingHoursImageUrl: string | null = null;
+
+  // Flagi ładowania obrazów
+  imagesLoading = true;
+
+  // Domyślne obrazy (fallback gdy serwis nie ma własnych)
+  private readonly defaultLogoUrl = 'assets/images/logo-cyclopick.webp';
+  private readonly defaultAboutUsUrl = 'assets/images/pictures/vertical/przerzutka-rowerowa.webp';
+  private readonly defaultOpeningHoursUrl = 'assets/images/pictures/vertical/rower.webp';
   
   // Aktywna zakładka
   activeTab: TabType = 'info';
@@ -208,7 +216,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
       {
         title,
         description,
-        image: this.logoUrl,
+        image: this.logoUrl || this.defaultLogoUrl,
         type: 'profile',
         keywords
       },
@@ -218,37 +226,45 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
 
 
   private async loadServiceImages(): Promise<void> {
-    if (!this.serviceId) return;
-
-    // Załaduj LOGO
-    try {
-      const logoResponse = await this.profileService.getServiceImage(this.serviceId, 'LOGO').toPromise();
-      if (logoResponse?.url) {
-        this.logoUrl = logoResponse.url;
-      }
-    } catch (err) {
-      console.log('No custom logo, using default');
+    if (!this.serviceId) {
+      // Brak serviceId - użyj domyślnych obrazów od razu
+      this.logoUrl = this.defaultLogoUrl;
+      this.aboutUsImageUrl = this.defaultAboutUsUrl;
+      this.openingHoursImageUrl = this.defaultOpeningHoursUrl;
+      this.imagesLoading = false;
+      return;
     }
 
-    // Załaduj ABOUT_US
-    try {
-      const aboutUsResponse = await this.profileService.getServiceImage(this.serviceId, 'ABOUT_US').toPromise();
-      if (aboutUsResponse?.url) {
-        this.aboutUsImageUrl = aboutUsResponse.url;
-      }
-    } catch (err) {
-      console.log('No ABOUT_US image, using default');
+    // Załaduj wszystkie obrazy równolegle
+    const [logoResult, aboutUsResult, openingHoursResult] = await Promise.allSettled([
+      this.profileService.getServiceImage(this.serviceId, 'LOGO').toPromise(),
+      this.profileService.getServiceImage(this.serviceId, 'ABOUT_US').toPromise(),
+      this.profileService.getServiceImage(this.serviceId, 'OPENING_HOURS').toPromise()
+    ]);
+
+    // Ustaw LOGO (lub domyślne)
+    if (logoResult.status === 'fulfilled' && logoResult.value?.url) {
+      this.logoUrl = logoResult.value.url;
+    } else {
+      this.logoUrl = this.defaultLogoUrl;
     }
 
-    // Załaduj OPENING_HOURS
-    try {
-      const openingHoursResponse = await this.profileService.getServiceImage(this.serviceId, 'OPENING_HOURS').toPromise();
-      if (openingHoursResponse?.url) {
-        this.openingHoursImageUrl = openingHoursResponse.url;
-      }
-    } catch (err) {
-      console.log('No OPENING_HOURS image, using default');
+    // Ustaw ABOUT_US (lub domyślne)
+    if (aboutUsResult.status === 'fulfilled' && aboutUsResult.value?.url) {
+      this.aboutUsImageUrl = aboutUsResult.value.url;
+    } else {
+      this.aboutUsImageUrl = this.defaultAboutUsUrl;
     }
+
+    // Ustaw OPENING_HOURS (lub domyślne)
+    if (openingHoursResult.status === 'fulfilled' && openingHoursResult.value?.url) {
+      this.openingHoursImageUrl = openingHoursResult.value.url;
+    } else {
+      this.openingHoursImageUrl = this.defaultOpeningHoursUrl;
+    }
+
+    // Zakończ ładowanie
+    this.imagesLoading = false;
   }
 
   // Metody pomocnicze dla zakładek
@@ -390,7 +406,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     const bikeShopData: BikeRepairShopData = {
       name: serviceName,
       description: description || `Profesjonalny serwis rowerowy ${serviceName}`,
-      image: this.logoUrl,
+      image: this.logoUrl || this.defaultLogoUrl,
       address: {
         street: `${this.publicInfo.street} ${this.publicInfo.building}${this.publicInfo.flat ? '/' + this.publicInfo.flat : ''}`,
         city: this.publicInfo.city || 'Polska',

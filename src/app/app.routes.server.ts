@@ -14,6 +14,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server  // Set this to Server instead of Prerender
   },
   {
+    path: 'serwisy/:city',
+    renderMode: RenderMode.Server  // SSR for city services pages - critical for SEO indexing
+  },
+  {
     path: '**',
     renderMode: RenderMode.Prerender,
   },

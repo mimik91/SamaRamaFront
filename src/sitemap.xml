@@ -4,12 +4,20 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-  <!-- Strona główna - mapa serwisów -->
+  <!-- Strona główna - landing page -->
   <url>
     <loc>https://www.cyclopick.pl/</loc>
-    <changefreq>daily</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <lastmod>2026-01-25</lastmod>
+    <lastmod>2026-01-27</lastmod>
+  </url>
+
+  <!-- Mapa serwisów rowerowych -->
+  <url>
+    <loc>https://www.cyclopick.pl/mapa-serwisow</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+    <lastmod>2026-01-27</lastmod>
   </url>
 
   <!-- Jak działamy -->

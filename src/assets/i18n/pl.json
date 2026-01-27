@@ -365,7 +365,8 @@
     }
   },
   "navigation": {
-    "map": "Mapa",
+    "home": "Strona główna",
+    "map": "Mapa serwisów",
     "for_services": "Dla serwisów",
     "cooperation": "Współpraca",
     "login": "Zaloguj się",
@@ -399,5 +400,66 @@
     "terms_of_service": "Regulamin serwisu",
     "terms_of_service_workshops": "Regulamin dla warsztatów",
     "privacy_policy": "Polityka prywatności"
+  },
+  "landing": {
+    "hero": {
+      "title": "Mapa serwisów rowerowych w Polsce",
+      "subtitle": "Znajdź najlepszy warsztat rowerowy w swojej okolicy",
+      "description": "CycloPick to największa baza serwisów rowerowych w Polsce – ponad 2500 warsztatów na jednej mapie. Znajdź serwis w swojej okolicy, sprawdź oferowane usługi, godziny otwarcia i cenniki – wszystko w jednym miejscu.",
+      "open_map_button": "Otwórz mapę serwisów",
+      "for_services_button": "Dla serwisów rowerowych"
+    },
+    "features": {
+      "title": "Dlaczego warto korzystać z CycloPick?",
+      "map": {
+        "title": "Ponad 2500 serwisów na mapie",
+        "description": "Największa baza warsztatów rowerowych w Polsce. Znajdź serwis w swojej okolicy i sprawdź jego dane kontaktowe."
+      },
+      "filter": {
+        "title": "Filtrowanie po usługach",
+        "description": "Szukasz konkretnej naprawy? Przefiltruj serwisy według oferowanych usług i znajdź specjalistę."
+      },
+      "verified": {
+        "title": "Wyróżnione warsztaty",
+        "description": "Szukaj niebieskich pinezek – to zweryfikowane serwisy z pełnym profilem, cennikiem i godzinami otwarcia."
+      },
+      "info": {
+        "title": "Cenniki i godziny otwarcia",
+        "description": "Wiele serwisów udostępnia cenniki usług i aktualne godziny pracy. Sprawdź przed wizytą."
+      }
+    },
+    "cities": {
+      "title": "Serwisy rowerowe w największych miastach Polski",
+      "description": "Wybierz miasto i znajdź warsztaty rowerowe w swojej okolicy. Nasza baza obejmuje ponad 2500 serwisów w całej Polsce."
+    },
+    "cta": {
+      "title": "Prowadzisz serwis rowerowy?",
+      "description": "Dołącz do CycloPick i zyskaj widoczność w sieci. Twoja wizytówka na mapie, profesjonalny profil i optymalizacja pod wyszukiwarki – wszystko za darmo.",
+      "learn_more_button": "Dowiedz się więcej",
+      "register_button": "Zarejestruj serwis"
+    },
+    "how_it_works": {
+      "title": "Jak znaleźć serwis rowerowy?",
+      "step1": {
+        "title": "Otwórz mapę",
+        "description": "Kliknij \"Otwórz mapę serwisów\" i zobacz wszystkie warsztaty rowerowe w Twojej okolicy."
+      },
+      "step2": {
+        "title": "Przefiltruj wyniki",
+        "description": "Użyj filtrów, aby znaleźć serwis oferujący konkretne usługi, których potrzebujesz."
+      },
+      "step3": {
+        "title": "Sprawdź profil serwisu",
+        "description": "Zobacz godziny otwarcia, cennik, zdjęcia warsztatu i dane kontaktowe."
+      },
+      "step4": {
+        "title": "Umów wizytę",
+        "description": "Skontaktuj się z wybranym serwisem i umów termin naprawy Twojego roweru."
+      },
+      "find_service_button": "Znajdź serwis rowerowy"
+    },
+    "contact": {
+      "title": "Kontakt"
+    }
   }
 }

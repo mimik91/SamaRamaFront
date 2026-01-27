@@ -44,24 +44,30 @@ import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-
 import { CooperationComponent } from './cooperation/cooperation.component';
 import { ServiceProfilePageComponent } from './pages/service-profile/service-profile.component';
 import { CityServicesPageComponent } from './pages/city-services-page/city-services-page.component';
+import { LandingPageComponent } from './pages/landing-page/landing-page.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
-    
-    // Home route - REFACTORED: Nowy komponent z architekturą Smart/Dumb
-    // SSR: Resolver pobiera dane przed renderowaniem HTML (SEO/AIO)
+
+    // Landing page - SEO-optimized home page
     {
       path: '',
+      component: LandingPageComponent,
+      title: 'CycloPick | Mapa serwisów rowerowych w Polsce - znajdź warsztat rowerowy'
+    },
+
+    // Map page - interaktywna mapa serwisów
+    {
+      path: 'mapa-serwisow',
       component: ServicesMapPageComponent,
-      title: 'CycloPick | mapa serwisów rowerowych',
+      title: 'Mapa serwisów rowerowych | CycloPick',
       resolve: { mapData: ServicesMapResolver },
       runGuardsAndResolvers: 'paramsOrQueryParamsChange'
     },
-    
-    // Aliasy dla mapy
-    { path: 'mapa', redirectTo: '', pathMatch: 'full' },
-    { path: 'mapa-serwisow', redirectTo: '', pathMatch: 'full' },
-    { path: 'services-map', redirectTo: '', pathMatch: 'full' },
+
+    // Aliasy dla mapy - przekierowanie na nowy URL
+    { path: 'mapa', redirectTo: 'mapa-serwisow', pathMatch: 'full' },
+    { path: 'services-map', redirectTo: 'mapa-serwisow', pathMatch: 'full' },
 
     // SEO - lista serwisów dla miast
     {

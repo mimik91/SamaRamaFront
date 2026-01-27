@@ -10,7 +10,7 @@ export const environment = {
     termsOfService: '/terms-of-service',
     privacyPolicy: '/privacy-policy',
     homepage: '/',
-    servicesMap: '/services-map',
+    servicesMap: '/mapa-serwisow',
     orderSummary: '/ordersummary'
   },
   

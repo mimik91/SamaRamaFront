@@ -1,0 +1,221 @@
+<div class="landing-container">
+  <!-- Hero Section -->
+  <section class="landing-hero">
+    <div class="hero-content-wrapper">
+      <div class="hero-text">
+        <h1>Mapa serwisów rowerowych w Polsce</h1>
+        <h2>Znajdź najlepszy warsztat rowerowy w swojej okolicy</h2>
+        <p>
+          <strong>CycloPick</strong> to największa baza serwisów rowerowych w Polsce – ponad 2500 warsztatów
+          na jednej mapie. Znajdź serwis w swojej okolicy, sprawdź oferowane usługi, godziny otwarcia
+          i cenniki – wszystko w jednym miejscu.
+        </p>
+        <div class="hero-buttons">
+          <button class="primary-btn" (click)="navigateToMap()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            Otwórz mapę serwisów
+          </button>
+          <button class="secondary-btn" (click)="navigateToForServices()">
+            Dla serwisów rowerowych
+          </button>
+        </div>
+      </div>
+      <div class="hero-image-container">
+        <img src="assets/images/logo-cyclopick.png" alt="CycloPick - mapa serwisów rowerowych w Polsce" class="hero-image">
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section">
+    <h2>Dlaczego warto korzystać z CycloPick?</h2>
+    <div class="features-grid">
+      <article *ngFor="let feature of features" class="feature-card">
+        <div class="feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <ng-container [ngSwitch]="feature.icon">
+              <ng-container *ngSwitchCase="'map-pin'">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </ng-container>
+              <ng-container *ngSwitchCase="'filter'">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </ng-container>
+              <ng-container *ngSwitchCase="'star'">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </ng-container>
+              <ng-container *ngSwitchCase="'clock'">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </ng-container>
+            </ng-container>
+          </svg>
+        </div>
+        <div class="feature-content">
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Popular Cities Section -->
+  <section class="cities-section">
+    <h2>Serwisy rowerowe w największych miastach Polski</h2>
+    <p class="cities-intro">
+      Wybierz miasto i znajdź warsztaty rowerowe w swojej okolicy. Nasza baza obejmuje ponad 2500
+      serwisów w całej Polsce.
+    </p>
+    <div class="cities-grid">
+      <a *ngFor="let city of popularCities"
+         [routerLink]="['/serwisy', city.slug]"
+         class="city-card">
+        <span class="city-name">{{ city.name }}</span>
+        <span class="city-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2>Prowadzisz serwis rowerowy?</h2>
+      <p>
+        Dołącz do CycloPick i zyskaj widoczność w sieci. Twoja wizytówka na mapie, profesjonalny profil
+        i optymalizacja pod wyszukiwarki – wszystko za darmo.
+      </p>
+      <div class="cta-buttons">
+        <button class="primary-btn" (click)="navigateToForServices()">Dowiedz się więcej</button>
+        <a class="secondary-btn" routerLink="/register-service">Zarejestruj serwis</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works-section">
+    <h2>Jak znaleźć serwis rowerowy?</h2>
+    <div class="steps-container">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Otwórz mapę</h3>
+          <p>Kliknij "Otwórz mapę serwisów" i zobacz wszystkie warsztaty rowerowe w Twojej okolicy.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Przefiltruj wyniki</h3>
+          <p>Użyj filtrów, aby znaleźć serwis oferujący konkretne usługi, których potrzebujesz.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Sprawdź profil serwisu</h3>
+          <p>Zobacz godziny otwarcia, cennik, zdjęcia warsztatu i dane kontaktowe.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h3>Umów wizytę</h3>
+          <p>Skontaktuj się z wybranym serwisem i umów termin naprawy Twojego roweru.</p>
+        </div>
+      </div>
+    </div>
+    <div class="steps-cta">
+      <button class="primary-btn" (click)="navigateToMap()">Znajdź serwis rowerowy</button>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contact-section">
+    <h2>Kontakt</h2>
+    <div class="contact-info-container">
+      <div class="contact-info-item">
+        <div class="contact-icon email-icon">
+          <a href="mailto:cyclopick@gmail.com"
+             aria-label="Wyślij email na adres cyclopick@gmail.com"
+             title="Wyślij email: cyclopick@gmail.com">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </a>
+        </div>
+        <div class="contact-text">cyclopick{{'@'}}gmail.com</div>
+      </div>
+
+      <div class="contact-info-item">
+        <div class="contact-icon phone-icon">
+          <a href="tel:+48667757920"
+             aria-label="Zadzwoń pod numer +48 667 757 920"
+             title="Zadzwoń: +48 667 757 920">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+          </a>
+        </div>
+        <div class="contact-text">+48 667 757 920</div>
+      </div>
+
+      <div class="contact-info-item">
+        <div class="contact-icon facebook-icon">
+          <a href="https://www.facebook.com/cyclopick"
+             target="_blank"
+             rel="noopener noreferrer"
+             aria-label="Odwiedź naszą stronę na Facebooku"
+             title="Znajdź nas na Facebooku">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+            </svg>
+          </a>
+        </div>
+        <div class="contact-text">Facebook</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEO Footer -->
+  <footer class="seo-footer">
+    <div class="seo-footer-content">
+      <div class="seo-footer-section seo-footer-cities">
+        <h2>Serwisy rowerowe w miastach</h2>
+        <nav class="seo-footer-links seo-footer-links-grid">
+          <a routerLink="/serwisy/warszawa">Warszawa</a>
+          <a routerLink="/serwisy/krakow">Krak&#243;w</a>
+          <a routerLink="/serwisy/wroclaw">Wroc&#322;aw</a>
+          <a routerLink="/serwisy/lodz">&#321;&#243;d&#378;</a>
+          <a routerLink="/serwisy/poznan">Pozna&#324;</a>
+          <a routerLink="/serwisy/gdansk">Gda&#324;sk</a>
+          <a routerLink="/serwisy/szczecin">Szczecin</a>
+          <a routerLink="/serwisy/lublin">Lublin</a>
+          <a routerLink="/serwisy/bydgoszcz">Bydgoszcz</a>
+          <a routerLink="/serwisy/bialystok">Bia&#322;ystok</a>
+          <a routerLink="/serwisy/katowice">Katowice</a>
+          <a routerLink="/serwisy/rzeszow">Rzesz&#243;w</a>
+          <a routerLink="/serwisy/kielce">Kielce</a>
+          <a routerLink="/serwisy/olsztyn">Olsztyn</a>
+          <a routerLink="/serwisy/bielsko-biala">Bielsko-Bia&#322;a</a>
+          <a routerLink="/serwisy/opole">Opole</a>
+        </nav>
+      </div>
+      <div class="seo-footer-section">
+        <h2>Dokumenty</h2>
+        <nav class="seo-footer-links">
+          <a routerLink="/terms-of-service">Regulamin serwisu</a>
+          <a routerLink="/terms-of-service-workshops">Regulamin dla warsztat&#243;w</a>
+          <a routerLink="/privacy-policy">Polityka prywatno&#347;ci</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+</div>

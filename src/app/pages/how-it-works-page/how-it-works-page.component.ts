@@ -312,7 +312,7 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
   }
 
   goToMap(): void {
-    this.router.navigate(['/']);
+    this.router.navigate(['/mapa-serwisow']);
   }
 
   ngOnDestroy(): void {

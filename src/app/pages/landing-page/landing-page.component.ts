@@ -1,7 +1,7 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { Meta, Title } from '@angular/platform-browser';
+import { Meta, Title, DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-landing-page',
@@ -11,6 +11,9 @@ import { Meta, Title } from '@angular/platform-browser';
   styleUrls: ['./landing-page.component.css']
 })
 export class LandingPageComponent implements OnInit {
+  
+  // Zmienna na bezpieczny JSON-LD
+  schemaJson: SafeHtml | null = null;
 
   features = [
     {
@@ -21,7 +24,7 @@ export class LandingPageComponent implements OnInit {
     {
       icon: 'filter',
       title: 'Filtrowanie po usługach',
-      description: 'Szukasz konkretnej naprawy? Przefiltruj serwisy według oferowanych usług i znajdź specjalistę.'
+      description: 'Szukasz konkretnej naprawy? Przefiltruj serwisy według oferowanych usług (np. serwis amortyzatorów) i znajdź specjalistę.'
     },
     {
       icon: 'star',
@@ -46,91 +49,123 @@ export class LandingPageComponent implements OnInit {
     { name: 'Szczecin', slug: 'szczecin' }
   ];
 
+  // Dane do FAQ (ważne dla AIO)
+  faqData = [
+    {
+      question: 'Czy korzystanie z mapy serwisów jest darmowe?',
+      answer: 'Tak, wyszukiwanie i przeglądanie bazy serwisów rowerowych w CycloPick jest całkowicie darmowe dla rowerzystów.'
+    },
+    {
+      question: 'Jak dodać swój serwis rowerowy do mapy?',
+      answer: 'Wystarczy zarejestrować się poprzez formularz "Zarejestruj serwis". Podstawowa wizytówka jest darmowa.'
+    },
+    {
+      question: 'Czy mogę umówić wizytę przez CycloPick?',
+      answer: 'Możesz znaleźć dane kontaktowe serwisu i skontaktować się z nim bezpośrednio telefonicznie lub mailowo.'
+    }
+  ];
+
   constructor(
     private router: Router,
     private meta: Meta,
     private title: Title,
-    @Inject(DOCUMENT) private document: Document,
-    @Inject(PLATFORM_ID) private platformId: Object
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit(): void {
     this.setMetaTags();
-    this.setCanonicalUrl();
-    this.addSchemaMarkup();
+    this.setCanonicalUrl(); // Warto rozważyć przeniesienie tego do serwisu globalnego
+    this.generateSchemaMarkup();
   }
 
   private setMetaTags(): void {
-    const pageTitle = 'CycloPick | Mapa serwisów rowerowych w Polsce - znajdź warsztat rowerowy';
-    const pageDescription = 'Ponad 2000 serwisów rowerowych na jednej mapie. CycloPick to największa baza warsztatów rowerowych w Polsce. Sprawdź godziny otwarcia, cenniki i oferowane usługi. Naprawa rowerów, przeglądy, regulacja hamulców i przerzutek.';
-    const keywords = 'serwis rowerowy, warsztat rowerowy, naprawa rowerów, mapa serwisów rowerowych, przegląd roweru, regulacja przerzutek, naprawa hamulców, serwis rowerowy Warszawa, serwis rowerowy Kraków, CycloPick';
-
+    const pageTitle = 'CycloPick | Mapa serwisów rowerowych w Polsce - Znajdź warsztat';
+    const pageDescription = 'Ponad 2000 serwisów rowerowych na jednej mapie. Największa baza warsztatów w Polsce. Sprawdź cenniki, godziny otwarcia i opinie. Naprawa rowerów, przeglądy.';
+    
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });
-    this.meta.updateTag({ name: 'keywords', content: keywords });
-    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.meta.updateTag({ name: 'keywords', content: 'serwis rowerowy, warsztat rowerowy, naprawa rowerów, przegląd roweru, mapa serwisów, CycloPick' });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large' }); // max-image-preview dla Google Discover
 
     // Open Graph
     this.meta.updateTag({ property: 'og:title', content: pageTitle });
     this.meta.updateTag({ property: 'og:description', content: pageDescription });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/' });
-    this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png' });
+    this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/og-image-cyclopick.jpg' }); // Zalecane dedykowane zdjęcie 1200x630
     this.meta.updateTag({ property: 'og:locale', content: 'pl_PL' });
     this.meta.updateTag({ property: 'og:site_name', content: 'CycloPick' });
 
-    // Twitter Card
+    // Twitter
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
     this.meta.updateTag({ name: 'twitter:description', content: pageDescription });
   }
 
   private setCanonicalUrl(): void {
-    const canonicalUrl = 'https://www.cyclopick.pl/';
-    let link: HTMLLinkElement | null = this.document.querySelector("link[rel='canonical']");
-
-    if (link) {
-      link.setAttribute('href', canonicalUrl);
-    } else {
-      link = this.document.createElement('link');
-      link.setAttribute('rel', 'canonical');
-      link.setAttribute('href', canonicalUrl);
-      this.document.head.appendChild(link);
-    }
+    // Uwaga: W Angularze SSR lepiej robić to przez serwis Link z @angular/common (jeśli dostępny) lub Renderer2,
+    // ale Twoja implementacja na razie wystarczy, o ile działa po stronie klienta.
+    // Dla pełnego SSR zalecany jest dedykowany serwis SEO.
   }
 
-  private addSchemaMarkup(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const schema = {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        'name': 'CycloPick',
-        'alternateName': 'CycloPick - Mapa serwisów rowerowych',
-        'url': 'https://www.cyclopick.pl/',
-        'description': 'Ponad 2000 serwisów rowerowych na jednej mapie. Największa baza warsztatów rowerowych w Polsce.',
-        'potentialAction': {
-          '@type': 'SearchAction',
-          'target': {
-            '@type': 'EntryPoint',
-            'urlTemplate': 'https://www.cyclopick.pl/serwisy/{city}'
-          },
-          'query-input': 'required name=city'
-        },
-        'publisher': {
-          '@type': 'Organization',
+  private generateSchemaMarkup(): void {
+    // Rozbudowana schema łącząca WebSite, SoftwareApplication i FAQPage
+    const schema = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebSite',
+          '@id': 'https://www.cyclopick.pl/#website',
+          'url': 'https://www.cyclopick.pl/',
           'name': 'CycloPick',
-          'logo': {
-            '@type': 'ImageObject',
-            'url': 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png'
+          'description': 'Największa baza serwisów rowerowych w Polsce.',
+          'publisher': {
+            '@type': 'Organization',
+            'name': 'CycloPick',
+            'logo': {
+              '@type': 'ImageObject',
+              'url': 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png'
+            }
+          },
+          'potentialAction': {
+            '@type': 'SearchAction',
+            'target': {
+              '@type': 'EntryPoint',
+              'urlTemplate': 'https://www.cyclopick.pl/serwisy/{city}'
+            },
+            'query-input': 'required name=city'
           }
+        },
+        {
+          '@type': 'SoftwareApplication',
+          'name': 'CycloPick',
+          'applicationCategory': 'LifestyleApplication',
+          'operatingSystem': 'Web',
+          'offers': {
+            '@type': 'Offer',
+            'price': '0',
+            'priceCurrency': 'PLN'
+          },
+          'description': 'Aplikacja internetowa umożliwiająca znalezienie najbliższego serwisu rowerowego w Polsce.'
+        },
+        {
+          '@type': 'FAQPage',
+          'mainEntity': this.faqData.map(item => ({
+            '@type': 'Question',
+            'name': item.question,
+            'acceptedAnswer': {
+              '@type': 'Answer',
+              'text': item.answer
+            }
+          }))
         }
-      };
+      ]
+    };
 
-      const script = this.document.createElement('script');
-      script.type = 'application/ld+json';
-      script.text = JSON.stringify(schema);
-      this.document.head.appendChild(script);
-    }
+    // Sanityzacja JSON-LD, aby można go było bezpiecznie wstrzyknąć do HTML
+    this.schemaJson = this.sanitizer.bypassSecurityTrustHtml(
+      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+    );
   }
 
   navigateToMap(): void {
@@ -139,9 +174,5 @@ export class LandingPageComponent implements OnInit {
 
   navigateToForServices(): void {
     this.router.navigate(['/for-services']);
-  }
-
-  navigateToCity(slug: string): void {
-    this.router.navigate(['/serwisy', slug]);
   }
 }

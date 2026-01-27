@@ -6,7 +6,9 @@
   font-family: 'Arial', sans-serif;
 }
 
-/* Hero Section */
+/* =========================================
+   Hero Section
+   ========================================= */
 .landing-hero {
   margin-bottom: 60px;
   padding: 40px;
@@ -35,7 +37,7 @@
 
 .hero-image {
   max-width: 280px;
-  height: auto;
+  height: auto; /* Ważne przy atrybutach width/height w HTML */
   border-radius: 8px;
   transition: transform 0.3s ease;
 }
@@ -110,7 +112,9 @@
   box-shadow: 0 5px 15px var(--color-black-alpha-10);
 }
 
-/* Features Section */
+/* =========================================
+   Features Section
+   ========================================= */
 .features-section {
   margin-bottom: 60px;
   text-align: center;
@@ -122,10 +126,14 @@
   margin-bottom: 40px;
 }
 
+/* Zmiana: Reset stylów listy dla UL */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .feature-card {
@@ -172,7 +180,9 @@
   line-height: 1.5;
 }
 
-/* Cities Section */
+/* =========================================
+   Cities Section
+   ========================================= */
 .cities-section {
   margin-bottom: 60px;
   text-align: center;
@@ -193,10 +203,14 @@
   margin-right: auto;
 }
 
+/* Zmiana: Reset stylów listy dla UL */
 .cities-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .city-card {
@@ -230,7 +244,89 @@
   transition: color 0.3s ease;
 }
 
-/* CTA Section */
+/* =========================================
+   NEW: FAQ Section (Dla AIO/SEO)
+   ========================================= */
+.faq-section {
+  margin-bottom: 60px;
+  text-align: center;
+}
+
+.faq-section h2 {
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-bottom: 40px;
+}
+
+.faq-container {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.faq-item {
+  background-color: var(--color-white);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px var(--color-black-alpha-05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid var(--color-gray-200, #e2e8f0);
+}
+
+.faq-item[open] {
+  box-shadow: 0 4px 12px var(--color-black-alpha-10);
+}
+
+.faq-question {
+  padding: 18px 24px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  list-style: none; /* Ukrywa domyślny trójkąt */
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Ukrywanie domyślnego markera w Chrome/Safari */
+.faq-question::-webkit-details-marker {
+  display: none;
+}
+
+/* Własny marker +/- */
+.faq-question::after {
+  content: '+';
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.faq-item[open] .faq-question::after {
+  content: '\2212'; /* Minus sign */
+}
+
+.faq-answer {
+  padding: 0 24px 24px 24px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+  border-top: 1px solid transparent;
+}
+
+.faq-item[open] .faq-answer {
+  /* Opcjonalnie delikatna linia oddzielająca */
+  /* border-top-color: var(--color-gray-100, #f1f5f9); */
+}
+
+/* =========================================
+   CTA Section
+   ========================================= */
 .cta-section {
   margin-bottom: 60px;
   background-color: var(--color-primary);
@@ -281,7 +377,9 @@
   color: var(--color-primary);
 }
 
-/* How It Works Section */
+/* =========================================
+   How It Works Section
+   ========================================= */
 .how-it-works-section {
   margin-bottom: 60px;
   padding: 50px 40px;
@@ -296,11 +394,16 @@
   color: var(--color-primary);
 }
 
+/* Zmiana: Reset stylów listy dla OL */
 .steps-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
   margin-bottom: 40px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 40px 0;
+  counter-reset: step-counter; /* Opcjonalnie, jeśli używamy CSS counters, ale tu mamy .step-number w HTML */
 }
 
 .step-card {
@@ -350,7 +453,9 @@
   text-align: center;
 }
 
-/* Contact Section */
+/* =========================================
+   Contact Section
+   ========================================= */
 .contact-section {
   margin-bottom: 40px;
   padding: 40px;
@@ -366,6 +471,7 @@
   color: var(--color-primary);
 }
 
+/* Zmiana: Usunięcie italików z tagu address */
 .contact-info-container {
   display: flex;
   justify-content: center;
@@ -377,6 +483,7 @@
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 4px 10px var(--color-black-alpha-05);
+  font-style: normal; 
 }
 
 .contact-info-item {
@@ -427,15 +534,15 @@
 }
 
 .email-icon a {
-  background-color: var(--color-danger-crimson);
+  background-color: var(--color-danger-crimson, #dc2626);
 }
 
 .phone-icon a {
-  background-color: var(--color-success-call);
+  background-color: var(--color-success-call, #16a34a);
 }
 
 .facebook-icon a {
-  background-color: var(--color-facebook);
+  background-color: var(--color-facebook, #1877F2);
 }
 
 .contact-text {
@@ -445,7 +552,14 @@
   user-select: all;
 }
 
-/* SEO Footer */
+.contact-text a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* =========================================
+   SEO Footer
+   ========================================= */
 .seo-footer {
   margin-top: 40px;
   padding: 40px 0;
@@ -494,7 +608,9 @@
   text-decoration: underline;
 }
 
-/* Responsive Styles */
+/* =========================================
+   Responsive Styles
+   ========================================= */
 @media (max-width: 1024px) {
   .features-grid {
     grid-template-columns: repeat(2, 1fr);

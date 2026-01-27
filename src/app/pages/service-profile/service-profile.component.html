@@ -46,7 +46,7 @@
     <!-- ABOUT US TAB -->
     <section class="main-content" id="info" *ngIf="activeTab === 'info'">
       <div class="content-left">
-        <h1> {{ t('service_profile.images.about_us') }} </h1>
+        <h1>{{ publicInfo.name }} – serwis rowerowy {{ publicInfo.city }}</h1>
         <!-- Logo z skeleton -->
         <div class="logo-container">
           <div *ngIf="!logoUrl" class="skeleton skeleton-logo"></div>
@@ -56,8 +56,8 @@
             [alt]="publicInfo.name"
             class="service-logo fade-in">
         </div>
-        <h2>{{ publicInfo.name }}</h2>
-        <h3>{{ publicInfo.city }}</h3>
+        <h2>O serwisie</h2>
+        <p class="service-location">{{ publicInfo.city }}</p>
         <p *ngIf="publicInfo.description">{{ publicInfo.description }}</p>
         
         <div 
@@ -189,6 +189,7 @@
     <!-- OPENING HOURS TAB -->
     <section class="main-content" *ngIf="activeTab === 'hours'">
       <div class="content-left">
+        <h2>Godziny otwarcia – {{ publicInfo.name }}</h2>
         <div *ngIf="openingHours?.openingHoursInfo" class="info-banner">
           <p>{{ openingHours?.openingHoursInfo }}</p>
         </div>
@@ -223,6 +224,7 @@
 
     <!-- CONTACT SECTION -->
     <section class="contact-section" id="contact">
+      <h2 class="contact-heading">Kontakt – {{ publicInfo.name }}</h2>
       <div class="contact-wrapper">
         <div class="left-col">
           <div class="row" *ngIf="publicInfo.street">

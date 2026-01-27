@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { EnumerationService } from '../../core/enumeration.service';
 import { BikeFormService, BikeFormData } from '../../home/bike-form.service';
 import { ServiceSlotService } from '../../service-slots/service-slot.service';
@@ -19,7 +20,7 @@ import { NotificationService } from '../../core/notification.service';
   templateUrl: './how-it-works-page.component.html',
   styleUrls: ['./how-it-works-page.component.css']
 })
-export class HowItWorksPageComponent implements OnInit {
+export class HowItWorksPageComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private enumerationService = inject(EnumerationService);
@@ -27,6 +28,8 @@ export class HowItWorksPageComponent implements OnInit {
   private serviceSlotService = inject(ServiceSlotService);
   private notificationService = inject(NotificationService);
   private route = inject(ActivatedRoute);
+  private meta = inject(Meta);
+  private title = inject(Title);
   private isBrowser: boolean;
 
   // Aktywny widok sekcji "Jak działamy"
@@ -110,15 +113,20 @@ export class HowItWorksPageComponent implements OnInit {
     return this.activeHowItWorksView === 'transport' ? this.transportSteps : this.serviceSteps;
   }
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(DOCUMENT) private document: Document
+  ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-    
+
     this.bikeForm = this.fb.group({
       bikes: this.fb.array([this.createBikeFormGroup()])
     });
   }
 
   ngOnInit(): void {
+    this.setMetaTags();
+    this.setCanonicalUrl();
     this.loadBrands();
     this.loadMaxBikesConfiguration();
     
@@ -305,5 +313,40 @@ export class HowItWorksPageComponent implements OnInit {
 
   goToMap(): void {
     this.router.navigate(['/']);
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup if needed
+  }
+
+  private setMetaTags(): void {
+    const pageTitle = 'Transport rowerów w Krakowie | Odbiór i dostawa roweru door-to-door | CycloPick';
+    const pageDescription = 'Zamów transport roweru w Krakowie. Odbieramy rower spod drzwi, dostarczamy do serwisu i przywozimy naprawiony z powrotem. Usługa door-to-door dla rowerów w Krakowie i okolicach. Wygodna naprawa roweru bez wychodzenia z domu.';
+    const keywords = 'transport rowerów Kraków, odbiór roweru Kraków, dostawa roweru, serwis rowerowy door-to-door, naprawa roweru Kraków, kurier rowerowy, przewóz roweru, CycloPick, transport roweru do serwisu';
+
+    this.title.setTitle(pageTitle);
+    this.meta.updateTag({ name: 'description', content: pageDescription });
+    this.meta.updateTag({ name: 'keywords', content: keywords });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+
+    // Open Graph
+    this.meta.updateTag({ property: 'og:title', content: pageTitle });
+    this.meta.updateTag({ property: 'og:description', content: pageDescription });
+    this.meta.updateTag({ property: 'og:type', content: 'website' });
+    this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/jak-dzialamy' });
+  }
+
+  private setCanonicalUrl(): void {
+    const canonicalUrl = 'https://www.cyclopick.pl/jak-dzialamy';
+    let link: HTMLLinkElement | null = this.document.querySelector("link[rel='canonical']");
+
+    if (link) {
+      link.setAttribute('href', canonicalUrl);
+    } else {
+      link = this.document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      link.setAttribute('href', canonicalUrl);
+      this.document.head.appendChild(link);
+    }
   }
 }

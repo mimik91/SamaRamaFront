@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-cooperation',
@@ -9,7 +10,7 @@ import { RouterModule } from '@angular/router';
   templateUrl: './cooperation.component.html',
   styleUrls: ['./cooperation.component.css']
 })
-export class CooperationComponent implements OnInit {
+export class CooperationComponent implements OnInit, OnDestroy {
 
   cooperationAreas = [
     {
@@ -67,9 +68,52 @@ export class CooperationComponent implements OnInit {
     }
   ];
 
-  constructor() { }
+  constructor(
+    private meta: Meta,
+    private title: Title,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(DOCUMENT) private document: Document
+  ) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.setMetaTags();
+    this.setCanonicalUrl();
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup if needed
+  }
+
+  private setMetaTags(): void {
+    const pageTitle = 'Współpraca z CycloPick | Dołącz do zespołu rowerowego startupu';
+    const pageDescription = 'Dołącz do CycloPick - startupu zmieniającego branżę rowerową w Polsce. Szukamy osób do współpracy w obszarach: rozwój aplikacji, marketing, biznes, organizacja eventów rowerowych. Współtwórz przyszłość serwisów rowerowych!';
+    const keywords = 'współpraca CycloPick, praca startup rowerowy, dołącz do CycloPick, kariera rowery, startup Polska, branża rowerowa, marketing rowerowy, aplikacja rowerowa, serwis rowerowy współpraca';
+
+    this.title.setTitle(pageTitle);
+    this.meta.updateTag({ name: 'description', content: pageDescription });
+    this.meta.updateTag({ name: 'keywords', content: keywords });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+
+    // Open Graph
+    this.meta.updateTag({ property: 'og:title', content: pageTitle });
+    this.meta.updateTag({ property: 'og:description', content: pageDescription });
+    this.meta.updateTag({ property: 'og:type', content: 'website' });
+    this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/cooperation' });
+  }
+
+  private setCanonicalUrl(): void {
+    const canonicalUrl = 'https://www.cyclopick.pl/cooperation';
+    let link: HTMLLinkElement | null = this.document.querySelector("link[rel='canonical']");
+
+    if (link) {
+      link.setAttribute('href', canonicalUrl);
+    } else {
+      link = this.document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      link.setAttribute('href', canonicalUrl);
+      this.document.head.appendChild(link);
+    }
+  }
 
   scrollToSection(sectionId: string): void {
     const element = document.getElementById(sectionId);

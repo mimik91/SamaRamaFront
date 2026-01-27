@@ -405,14 +405,14 @@
     "hero": {
       "title": "Mapa serwisów rowerowych w Polsce",
       "subtitle": "Znajdź najlepszy warsztat rowerowy w swojej okolicy",
-      "description": "CycloPick to największa baza serwisów rowerowych w Polsce – ponad 2500 warsztatów na jednej mapie. Znajdź serwis w swojej okolicy, sprawdź oferowane usługi, godziny otwarcia i cenniki – wszystko w jednym miejscu.",
+      "description": "CycloPick to największa baza serwisów rowerowych w Polsce – ponad 2000 warsztatów na jednej mapie. Znajdź serwis w swojej okolicy, sprawdź oferowane usługi, godziny otwarcia i cenniki – wszystko w jednym miejscu.",
       "open_map_button": "Otwórz mapę serwisów",
       "for_services_button": "Dla serwisów rowerowych"
     },
     "features": {
       "title": "Dlaczego warto korzystać z CycloPick?",
       "map": {
-        "title": "Ponad 2500 serwisów na mapie",
+        "title": "Ponad 2000 serwisów na mapie",
         "description": "Największa baza warsztatów rowerowych w Polsce. Znajdź serwis w swojej okolicy i sprawdź jego dane kontaktowe."
       },
       "filter": {
@@ -430,7 +430,7 @@
     },
     "cities": {
       "title": "Serwisy rowerowe w największych miastach Polski",
-      "description": "Wybierz miasto i znajdź warsztaty rowerowe w swojej okolicy. Nasza baza obejmuje ponad 2500 serwisów w całej Polsce."
+      "description": "Wybierz miasto i znajdź warsztaty rowerowe w swojej okolicy. Nasza baza obejmuje ponad 2000 serwisów w całej Polsce."
     },
     "cta": {
       "title": "Prowadzisz serwis rowerowy?",

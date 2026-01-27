@@ -15,7 +15,7 @@ export class LandingPageComponent implements OnInit {
   features = [
     {
       icon: 'map-pin',
-      title: 'Ponad 2500 serwisów na mapie',
+      title: 'Ponad 2000 serwisów na mapie',
       description: 'Największa baza warsztatów rowerowych w Polsce. Znajdź serwis w swojej okolicy i sprawdź jego dane kontaktowe.'
     },
     {
@@ -62,7 +62,7 @@ export class LandingPageComponent implements OnInit {
 
   private setMetaTags(): void {
     const pageTitle = 'CycloPick | Mapa serwisów rowerowych w Polsce - znajdź warsztat rowerowy';
-    const pageDescription = 'Ponad 2500 serwisów rowerowych na jednej mapie. CycloPick to największa baza warsztatów rowerowych w Polsce. Sprawdź godziny otwarcia, cenniki i oferowane usługi. Naprawa rowerów, przeglądy, regulacja hamulców i przerzutek.';
+    const pageDescription = 'Ponad 2000 serwisów rowerowych na jednej mapie. CycloPick to największa baza warsztatów rowerowych w Polsce. Sprawdź godziny otwarcia, cenniki i oferowane usługi. Naprawa rowerów, przeglądy, regulacja hamulców i przerzutek.';
     const keywords = 'serwis rowerowy, warsztat rowerowy, naprawa rowerów, mapa serwisów rowerowych, przegląd roweru, regulacja przerzutek, naprawa hamulców, serwis rowerowy Warszawa, serwis rowerowy Kraków, CycloPick';
 
     this.title.setTitle(pageTitle);
@@ -107,7 +107,7 @@ export class LandingPageComponent implements OnInit {
         'name': 'CycloPick',
         'alternateName': 'CycloPick - Mapa serwisów rowerowych',
         'url': 'https://www.cyclopick.pl/',
-        'description': 'Ponad 2500 serwisów rowerowych na jednej mapie. Największa baza warsztatów rowerowych w Polsce.',
+        'description': 'Ponad 2000 serwisów rowerowych na jednej mapie. Największa baza warsztatów rowerowych w Polsce.',
         'potentialAction': {
           '@type': 'SearchAction',
           'target': {

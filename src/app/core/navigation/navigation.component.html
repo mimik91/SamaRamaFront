@@ -18,7 +18,7 @@
     <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
 
       <ng-container *ngIf="authService.isLoggedIn() && authService.isService() && !authService.hasAdminPrivileges()">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>
+        <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
         <a href="javascript:void(0)" (click)="navigateToServicePanel($event)" class="nav-link">Panel Serwisu</a>
         <!-- <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a> -->
         <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
@@ -29,7 +29,7 @@
 
       <!-- Menu dla zalogowanych klientów (bez uprawnień administratora) -->
       <ng-container *ngIf="authService.isLoggedIn() && authService.isClient() && !authService.hasAdminPrivileges()">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>
+        <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
         <!-- <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a> -->
         <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
         <a routerLink="/register-service" routerLinkActive="active" (click)="closeMobileMenu()">Zarejestruj serwis</a>
@@ -37,7 +37,7 @@
 
       <!-- Menu dla administratorów i moderatorów -->
       <ng-container *ngIf="authService.isLoggedIn() && authService.hasAdminPrivileges()">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>
+        <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
         <!-- <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a> -->
         <a routerLink="/admin-dashboard" routerLinkActive="active" (click)="closeMobileMenu()">Dashboard</a>
         <a routerLink="/admin-orders" routerLinkActive="active" (click)="closeMobileMenu()">Zamówienia</a>
@@ -45,7 +45,7 @@
 
       <!-- Menu dla niezalogowanych -->
       <ng-container *ngIf="!authService.isLoggedIn()">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>
+        <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
         <!-- <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a> -->
         <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
         <a routerLink="/cooperation" routerLinkActive="active" (click)="closeMobileMenu()">Współpraca</a>
@@ -70,7 +70,7 @@
       <!-- Menu dla strony logowania klienta -->
       <ng-container *ngIf="isLoginPage()">
         <!-- <a routerLink="/cennik" routerLinkActive="active">Cennik</a> -->
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>
+        <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
         <!-- <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a> -->
         <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
         <a routerLink="/cooperation" routerLinkActive="active" (click)="closeMobileMenu()">Współpraca</a>
@@ -79,14 +79,16 @@
 
       <!-- Menu dla strony rejestracji klienta -->
       <ng-container *ngIf="isRegisterPage()">
-        <!-- <a routerLink="/cennik" routerLinkActive="active">Cennik</a> -->
-        <!-- <a routerLink="/login">Logowanie klienta</a>
-        <a routerLink="/register-service">Rejestracja serwisu</a> -->
+        <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
+        <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
+        <a routerLink="/cooperation" routerLinkActive="active" (click)="closeMobileMenu()">Współpraca</a>
+        <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Login</a>
+        <a routerLink="/register-service" routerLinkActive="active" (click)="closeMobileMenu()">Zarejestruj serwis</a>
       </ng-container>
 
       <!-- Menu dla strony rejestracji serwisu -->
       <ng-container *ngIf="isServiceRegisterPage()">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Mapa</a>
+        <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
         <!-- <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a> -->
         <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
         <a routerLink="/cooperation" routerLinkActive="active" (click)="closeMobileMenu()">Współpraca</a>

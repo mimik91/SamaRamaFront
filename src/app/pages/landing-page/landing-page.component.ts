@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { Meta, Title, DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -69,7 +69,8 @@ export class LandingPageComponent implements OnInit {
     private router: Router,
     private meta: Meta,
     private title: Title,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    @Inject(DOCUMENT) private document: Document
   ) { }
 
   ngOnInit(): void {
@@ -103,9 +104,19 @@ export class LandingPageComponent implements OnInit {
   }
 
   private setCanonicalUrl(): void {
-    // Uwaga: W Angularze SSR lepiej robić to przez serwis Link z @angular/common (jeśli dostępny) lub Renderer2,
-    // ale Twoja implementacja na razie wystarczy, o ile działa po stronie klienta.
-    // Dla pełnego SSR zalecany jest dedykowany serwis SEO.
+    const canonicalUrl = 'https://www.cyclopick.pl/';
+
+    // Usuń istniejący canonical link jeśli istnieje
+    const existingLink = this.document.querySelector('link[rel="canonical"]');
+    if (existingLink) {
+      existingLink.remove();
+    }
+
+    // Dodaj nowy canonical link
+    const link = this.document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    link.setAttribute('href', canonicalUrl);
+    this.document.head.appendChild(link);
   }
 
   private generateSchemaMarkup(): void {

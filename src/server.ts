@@ -1,28 +1,16 @@
-import {
-  AngularNodeAppEngine,
-  createNodeRequestHandler,
-  isMainModule,
-  writeResponseToNodeResponse,
-} from '@angular/ssr/node';
+import { CommonEngine } from '@angular/ssr/node';
 import express from 'express';
 import compression from 'compression';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import bootstrap from './main.server';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
+const indexHtml = join(browserDistFolder, 'index.html');
 
 const app = express();
-
-// Lazy initialization - engine is created on first request
-// This ensures the manifest is loaded before instantiation
-let angularApp: AngularNodeAppEngine | null = null;
-function getAngularApp(): AngularNodeAppEngine {
-  if (!angularApp) {
-    angularApp = new AngularNodeAppEngine();
-  }
-  return angularApp;
-}
+const commonEngine = new CommonEngine();
 
 // KLUCZOWE DLA HEROKU: Informuje Express, że jest za proxy
 app.set('trust proxy', true);
@@ -54,7 +42,7 @@ app.use((req, res, next) => {
  */
 app.use(
   express.static(browserDistFolder, {
-    maxAge: '1y', // Bardzo ważne dla SEO (Cache Policy)
+    maxAge: '1y',
     index: false,
     redirect: false,
   }),
@@ -64,11 +52,17 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.use('/**', (req, res, next) => {
-  getAngularApp()
-    .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+  const { protocol, originalUrl, headers } = req;
+
+  commonEngine
+    .render({
+      bootstrap,
+      documentFilePath: indexHtml,
+      url: `${protocol}://${headers.host}${originalUrl}`,
+      publicPath: browserDistFolder,
+      providers: [{ provide: 'REQUEST', useValue: req }],
+    })
+    .then((html) => res.send(html))
     .catch((err) => {
       console.error('Angular SSR Error:', err);
       next(err);
@@ -78,11 +72,7 @@ app.use('/**', (req, res, next) => {
 /**
  * Start the server
  */
-if (isMainModule(import.meta.url)) {
-  const port = process.env['PORT'] || 4000;
-  app.listen(port, () => {
-    console.log(`Node Express server listening on http://localhost:${port}`);
-  });
-}
-
-export const reqHandler = createNodeRequestHandler(app);
+const port = process.env['PORT'] || 4000;
+app.listen(port, () => {
+  console.log(`Node Express server listening on http://localhost:${port}`);
+});

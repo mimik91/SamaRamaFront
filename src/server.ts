@@ -5,6 +5,7 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import compression from 'compression'; // Wymaga: npm install compression
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,52 +15,42 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+// KLUCZOWE DLA HEROKU: Informuje Express, że jest za proxy
+app.set('trust proxy', true);
+
+// Dodaj kompresję, aby przyspieszyć ładowanie assetów (AIO/SEO boost)
+app.use(compression());
+
 /**
  * Canonical URL redirect (301)
- * Redirects non-www to www and http to https
  */
 app.use((req, res, next) => {
   const host = req.headers.host || '';
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  // Na Heroku req.protocol z trust proxy będzie już poprawne
+  const protocol = req.protocol; 
 
-  // Skip in development
   if (host.includes('localhost') || host.includes('127.0.0.1')) {
     return next();
   }
 
-  // Redirect non-www to www (and ensure https)
-  if (host === 'cyclopick.pl') {
-    const newUrl = `https://www.cyclopick.pl${req.originalUrl}`;
-    return res.redirect(301, newUrl);
-  }
+  // 1. Przekierowanie z non-www na www LUB z http na https
+  const isNonWww = host === 'cyclopick.pl';
+  const isHttp = protocol === 'http';
 
-  // Redirect http to https (for www domain)
-  if (protocol === 'http' && host === 'www.cyclopick.pl') {
-    const newUrl = `https://www.cyclopick.pl${req.originalUrl}`;
-    return res.redirect(301, newUrl);
+  if (isNonWww || isHttp) {
+    // Zawsze wymuszamy www.cyclopick.pl i https
+    return res.redirect(301, `https://www.cyclopick.pl${req.originalUrl}`);
   }
 
   next();
 });
 
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/**', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
-
-/**
  * Serve static files from /browser
  */
 app.use(
   express.static(browserDistFolder, {
-    maxAge: '1y',
+    maxAge: '1y', // Bardzo ważne dla SEO (Cache Policy)
     index: false,
     redirect: false,
   }),
@@ -74,12 +65,14 @@ app.use('/**', (req, res, next) => {
     .then((response) =>
       response ? writeResponseToNodeResponse(response, res) : next(),
     )
-    .catch(next);
+    .catch((err) => {
+      console.error('Angular SSR Error:', err); // Log błędu dla Heroku logs
+      next(err);
+    });
 });
 
 /**
- * Start the server if this module is the main entry point.
- * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
+ * Start the server
  */
 if (isMainModule(import.meta.url)) {
   const port = process.env['PORT'] || 4000;
@@ -88,7 +81,4 @@ if (isMainModule(import.meta.url)) {
   });
 }
 
-/**
- * The request handler used by the Angular CLI (dev-server and during build).
- */
 export const reqHandler = createNodeRequestHandler(app);

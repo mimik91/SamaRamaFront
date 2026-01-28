@@ -18,23 +18,23 @@ export class LandingPageComponent implements OnInit {
   features = [
     {
       icon: 'map-pin',
-      title: 'Ponad 2000 serwisów na mapie',
-      description: 'Największa baza warsztatów rowerowych w Polsce. Znajdź serwis w swojej okolicy i sprawdź jego dane kontaktowe.'
+      title: 'Ponad 2000 warsztatów na mapie',
+      description: 'Największa baza punktów naprawy rowerów w Polsce. Znajdź miejsce w swojej okolicy i sprawdź dane kontaktowe.'
     },
     {
       icon: 'filter',
       title: 'Filtrowanie po usługach',
-      description: 'Szukasz konkretnej naprawy? Przefiltruj serwisy według oferowanych usług (np. serwis amortyzatorów) i znajdź specjalistę.'
+      description: 'Szukasz konkretnej naprawy? Przefiltruj wyniki według oferowanych usług (np. naprawa amortyzatorów) i znajdź specjalistę.'
     },
     {
       icon: 'star',
       title: 'Wyróżnione warsztaty',
-      description: 'Szukaj niebieskich pinezek – to zweryfikowane serwisy z pełnym profilem, cennikiem i godzinami otwarcia.'
+      description: 'Szukaj niebieskich pinezek – to zweryfikowane miejsca z pełnym profilem, cennikiem i godzinami otwarcia.'
     },
     {
       icon: 'clock',
       title: 'Cenniki i godziny otwarcia',
-      description: 'Wiele serwisów udostępnia cenniki usług i aktualne godziny pracy. Sprawdź przed wizytą.'
+      description: 'Wiele warsztatów udostępnia cenniki usług i aktualne godziny pracy. Sprawdź przed wizytą.'
     }
   ];
 
@@ -80,8 +80,8 @@ export class LandingPageComponent implements OnInit {
   }
 
   private setMetaTags(): void {
-    const pageTitle = 'CycloPick | Mapa serwisów rowerowych w Polsce - Znajdź warsztat';
-    const pageDescription = 'Ponad 2000 serwisów rowerowych na jednej mapie. Największa baza warsztatów w Polsce. Sprawdź cenniki, godziny otwarcia i opinie. Naprawa rowerów, przeglądy.';
+    const pageTitle = 'Serwis rowerowy blisko Ciebie | CycloPick - mapa warsztatów';
+    const pageDescription = 'Znajdź serwis rowerowy w swojej okolicy. Ponad 2000 warsztatów na interaktywnej mapie Polski. Sprawdź cenniki, godziny otwarcia i umów wizytę.';
     
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });
@@ -129,7 +129,7 @@ export class LandingPageComponent implements OnInit {
           '@id': 'https://www.cyclopick.pl/#website',
           'url': 'https://www.cyclopick.pl/',
           'name': 'CycloPick',
-          'description': 'Największa baza serwisów rowerowych w Polsce.',
+          'description': 'Znajdź serwis rowerowy w swojej okolicy. Największa baza warsztatów w Polsce.',
           'publisher': {
             '@type': 'Organization',
             'name': 'CycloPick',
@@ -157,7 +157,7 @@ export class LandingPageComponent implements OnInit {
             'price': '0',
             'priceCurrency': 'PLN'
           },
-          'description': 'Aplikacja internetowa umożliwiająca znalezienie najbliższego serwisu rowerowego w Polsce.'
+          'description': 'Aplikacja internetowa do znajdowania warsztatów rowerowych w Polsce.'
         },
         {
           '@type': 'FAQPage',

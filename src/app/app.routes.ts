@@ -53,7 +53,7 @@ export const routes: Routes = [
     {
       path: '',
       component: LandingPageComponent,
-      title: 'CycloPick | Mapa serwisów rowerowych w Polsce - znajdź warsztat rowerowy'
+      title: 'Serwis rowerowy blisko Ciebie | CycloPick - mapa warsztatów'
     },
 
     // Map page - interaktywna mapa serwisów

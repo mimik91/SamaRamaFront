@@ -5,7 +5,7 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
-import compression from 'compression'; // Wymaga: npm install compression
+import compression from 'compression';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,7 +13,16 @@ const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine();
+
+// Lazy initialization - engine is created on first request
+// This ensures the manifest is loaded before instantiation
+let angularApp: AngularNodeAppEngine | null = null;
+function getAngularApp(): AngularNodeAppEngine {
+  if (!angularApp) {
+    angularApp = new AngularNodeAppEngine();
+  }
+  return angularApp;
+}
 
 // KLUCZOWE DLA HEROKU: Informuje Express, że jest za proxy
 app.set('trust proxy', true);
@@ -60,13 +69,13 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.use('/**', (req, res, next) => {
-  angularApp
+  getAngularApp()
     .handle(req)
     .then((response) =>
       response ? writeResponseToNodeResponse(response, res) : next(),
     )
     .catch((err) => {
-      console.error('Angular SSR Error:', err); // Log błędu dla Heroku logs
+      console.error('Angular SSR Error:', err);
       next(err);
     });
 });

@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(powershell -Command:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(node:*)",
+      "Bash(npx ng build --configuration production)"
     ]
   }
 }

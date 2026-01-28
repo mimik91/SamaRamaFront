@@ -1,7 +1,7 @@
 // for-services.component.ts
 
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
+import { Component, OnInit, Inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml, Meta, Title } from '@angular/platform-browser';
 
@@ -97,13 +97,12 @@ Nie widzisz swojej specjalizacji na liście? Bez obaw! Możesz ją dodać samodz
     private sanitizer: DomSanitizer,
     private meta: Meta,
     private title: Title,
-    @Inject(DOCUMENT) private document: Document,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(DOCUMENT) private document: Document
   ) { }
 
   ngOnInit(): void {
     this.setMetaTags();
-    this.addSchemaMarkup();
+    this.setCanonicalUrl();
   }
 
   private setMetaTags(): void {
@@ -135,81 +134,21 @@ Nie widzisz swojej specjalizacji na liście? Bez obaw! Możesz ją dodać samodz
     this.meta.updateTag({ name: 'twitter:title', content: 'Usługi dla serwisów rowerowych | CycloPick' });
     this.meta.updateTag({ name: 'twitter:description', content: 'Zarejestruj swój serwis rowerowy w CycloPick. Zyskaj widoczność na mapie i nowych klientów.' });
 
-    // Canonical URL
-    this.meta.updateTag({ rel: 'canonical', href: 'https://www.cyclopick.pl/for-services' });
-
     // Robots
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
   }
 
-  private addSchemaMarkup(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const schema = {
-        '@context': 'https://schema.org',
-        '@type': 'WebPage',
-        'name': 'Usługi dla serwisów rowerowych',
-        'description': 'Zarejestruj swój serwis rowerowy w CycloPick. Zyskaj widoczność na mapie, profesjonalną wizytówkę i nowych klientów.',
-        'url': 'https://www.cyclopick.pl/for-services',
-        'mainEntity': {
-          '@type': 'Service',
-          'name': 'CycloPick - platforma dla serwisów rowerowych',
-          'description': 'Platforma łącząca serwisy rowerowe z klientami. Oferujemy mapę serwisów, wizytówki online i narzędzia promocyjne.',
-          'provider': {
-            '@type': 'Organization',
-            'name': 'CycloPick',
-            'url': 'https://www.cyclopick.pl',
-            'logo': 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png'
-          },
-          'areaServed': {
-            '@type': 'Country',
-            'name': 'Polska'
-          },
-          'serviceType': 'Platforma dla serwisów rowerowych',
-          'hasOfferCatalog': {
-            '@type': 'OfferCatalog',
-            'name': 'Usługi dla warsztatów rowerowych',
-            'itemListElement': [
-              {
-                '@type': 'Offer',
-                'itemOffered': {
-                  '@type': 'Service',
-                  'name': 'Interaktywna mapa serwisów rowerowych',
-                  'description': 'Wyróżnij swój warsztat na mapie z unikalną pinezką i wyższą pozycją w wynikach'
-                }
-              },
-              {
-                '@type': 'Offer',
-                'itemOffered': {
-                  '@type': 'Service',
-                  'name': 'Wizytówka SEO dla serwisu rowerowego',
-                  'description': 'Profesjonalna strona-wizytówka z galerią zdjęć i ofertą, zoptymalizowana pod wyszukiwarki'
-                }
-              },
-              {
-                '@type': 'Offer',
-                'itemOffered': {
-                  '@type': 'Service',
-                  'name': 'Optymalizacja pod AI (AIO)',
-                  'description': 'Dane zoptymalizowane dla chatbotów AI jak ChatGPT i Copilot'
-                }
-              },
-              {
-                '@type': 'Offer',
-                'itemOffered': {
-                  '@type': 'Service',
-                  'name': 'Zaawansowane filtry usług',
-                  'description': 'System filtrowania pozwalający klientom znaleźć serwis oferujący konkretne naprawy'
-                }
-              }
-            ]
-          }
-        }
-      };
+  private setCanonicalUrl(): void {
+    const canonicalUrl = 'https://www.cyclopick.pl/for-services';
+    let link: HTMLLinkElement | null = this.document.querySelector("link[rel='canonical']");
 
-      const script = this.document.createElement('script');
-      script.type = 'application/ld+json';
-      script.text = JSON.stringify(schema);
-      this.document.head.appendChild(script);
+    if (link) {
+      link.setAttribute('href', canonicalUrl);
+    } else {
+      link = this.document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      link.setAttribute('href', canonicalUrl);
+      this.document.head.appendChild(link);
     }
   }
 

@@ -4,7 +4,13 @@
       "Bash(powershell -Command:*)",
       "Bash(npm run build:*)",
       "Bash(node:*)",
-      "Bash(npx ng build --configuration production)"
+      "Bash(npx ng build --configuration production)",
+      "Bash(start:*)",
+      "Bash(ping:*)",
+      "Bash(curl:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)"
     ]
   }
 }

@@ -49,6 +49,57 @@ app.use(
 );
 
 /**
+ * JSON-LD structured data for static pages.
+ * Angular SSR does not serialize dynamically added <script> tags,
+ * so we inject them after rendering.
+ */
+const ROUTE_JSONLD: Record<string, object> = {
+  '/for-services': {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    'name': 'Usługi dla serwisów rowerowych',
+    'description': 'Zarejestruj swój serwis rowerowy w CycloPick. Zyskaj widoczność na mapie, profesjonalną wizytówkę i nowych klientów.',
+    'url': 'https://www.cyclopick.pl/for-services',
+    'mainEntity': {
+      '@type': 'Service',
+      'name': 'CycloPick - platforma dla serwisów rowerowych',
+      'description': 'Platforma łącząca serwisy rowerowe z klientami. Oferujemy mapę serwisów, wizytówki online i narzędzia promocyjne.',
+      'provider': {
+        '@type': 'Organization',
+        'name': 'CycloPick',
+        'url': 'https://www.cyclopick.pl',
+        'logo': 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png',
+      },
+      'areaServed': { '@type': 'Country', 'name': 'Polska' },
+      'serviceType': 'Platforma dla serwisów rowerowych',
+      'hasOfferCatalog': {
+        '@type': 'OfferCatalog',
+        'name': 'Usługi dla warsztatów rowerowych',
+        'itemListElement': [
+          { '@type': 'Offer', 'itemOffered': { '@type': 'Service', 'name': 'Interaktywna mapa serwisów rowerowych', 'description': 'Wyróżnij swój warsztat na mapie z unikalną pinezką i wyższą pozycją w wynikach' } },
+          { '@type': 'Offer', 'itemOffered': { '@type': 'Service', 'name': 'Wizytówka SEO dla serwisu rowerowego', 'description': 'Profesjonalna strona-wizytówka z galerią zdjęć i ofertą, zoptymalizowana pod wyszukiwarki' } },
+          { '@type': 'Offer', 'itemOffered': { '@type': 'Service', 'name': 'Optymalizacja pod AI (AIO)', 'description': 'Dane zoptymalizowane dla chatbotów AI jak ChatGPT i Copilot' } },
+          { '@type': 'Offer', 'itemOffered': { '@type': 'Service', 'name': 'Zaawansowane filtry usług', 'description': 'System filtrowania pozwalający klientom znaleźć serwis oferujący konkretne naprawy' } },
+        ],
+      },
+    },
+  },
+  '/cooperation': {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    'name': 'Współpraca z CycloPick',
+    'description': 'Dołącz do CycloPick - startupu zmieniającego branżę rowerową w Polsce. Szukamy osób do współpracy w obszarach: rozwój aplikacji, marketing, biznes, organizacja eventów rowerowych.',
+    'url': 'https://www.cyclopick.pl/cooperation',
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'CycloPick',
+      'url': 'https://www.cyclopick.pl',
+      'logo': 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png',
+    },
+  },
+};
+
+/**
  * Handle all other requests by rendering the Angular application.
  */
 app.use('/**', (req, res, next) => {
@@ -62,7 +113,14 @@ app.use('/**', (req, res, next) => {
       publicPath: browserDistFolder,
       providers: [{ provide: 'REQUEST', useValue: req }],
     })
-    .then((html) => res.send(html))
+    .then((html) => {
+      const path = originalUrl.split('?')[0];
+      const schema = ROUTE_JSONLD[path];
+      if (schema) {
+        html = html.replace('</head>', `<script type="application/ld+json">${JSON.stringify(schema)}</script>\n</head>`);
+      }
+      res.send(html);
+    })
     .catch((err) => {
       console.error('Angular SSR Error:', err);
       next(err);

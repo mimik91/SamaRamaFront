@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
+import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 
@@ -71,7 +71,6 @@ export class CooperationComponent implements OnInit, OnDestroy {
   constructor(
     private meta: Meta,
     private title: Title,
-    @Inject(PLATFORM_ID) private platformId: Object,
     @Inject(DOCUMENT) private document: Document
   ) { }
 
@@ -99,6 +98,13 @@ export class CooperationComponent implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description', content: pageDescription });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/cooperation' });
+    this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png' });
+    this.meta.updateTag({ property: 'og:locale', content: 'pl_PL' });
+
+    // Twitter Card
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
+    this.meta.updateTag({ name: 'twitter:description', content: pageDescription });
   }
 
   private setCanonicalUrl(): void {

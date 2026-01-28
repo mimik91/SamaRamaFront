@@ -31,23 +31,18 @@ app.set('trust proxy', true);
 app.use(compression());
 
 /**
- * Canonical URL redirect (301)
+ * Canonical URL redirect (301) - only non-www to www
+ * Cloudflare handles HTTP->HTTPS redirects
  */
 app.use((req, res, next) => {
   const host = req.headers.host || '';
-  // Na Heroku req.protocol z trust proxy będzie już poprawne
-  const protocol = req.protocol; 
 
   if (host.includes('localhost') || host.includes('127.0.0.1')) {
     return next();
   }
 
-  // 1. Przekierowanie z non-www na www LUB z http na https
-  const isNonWww = host === 'cyclopick.pl';
-  const isHttp = protocol === 'http';
-
-  if (isNonWww || isHttp) {
-    // Zawsze wymuszamy www.cyclopick.pl i https
+  // Only redirect non-www to www (Cloudflare handles HTTPS)
+  if (host === 'cyclopick.pl') {
     return res.redirect(301, `https://www.cyclopick.pl${req.originalUrl}`);
   }
 

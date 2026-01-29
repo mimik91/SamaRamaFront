@@ -23,6 +23,109 @@ export class ForServicesComponent implements OnInit {
   // Nowe kreatywne hasło CTA
   mainCtaText: string = 'Zacznij zyskiwać klientów';
 
+  // FAQ - Często zadawane pytania
+  faqCategories = [
+    {
+      title: 'Widoczność i Marketing',
+      icon: 'visibility',
+      items: [
+        {
+          question: 'Jak CycloPick realnie pomaga zdobywać nowych klientów?',
+          answer: 'CycloPick zwiększa widoczność Twojego serwisu rowerowego w Google, Google Maps i lokalnym wyszukiwaniu. Gdy ktoś w Twojej okolicy szuka „serwis rowerowy" lub „naprawa roweru blisko mnie", Twój profil może pojawić się wyżej i szybciej niż konkurencja.',
+          expanded: false
+        },
+        {
+          question: 'Czy mój serwis będzie widoczny w Google i na mapach?',
+          answer: 'Tak. Twój publiczny profil jest indeksowany przez Google. Dokładne dane lokalne (adres, usługi, godziny) pomagają klientom szybko znaleźć Twój warsztat w Google Maps.',
+          expanded: false
+        },
+        {
+          question: 'Czy to ma sens dla małych, jednoosobowych warsztatów?',
+          answer: 'Tak. Większość serwisów w CycloPick to małe, lokalne punkty. Dzięki naszej platformie mogą konkurować z większymi warsztatami bez płatnych reklam.',
+          expanded: false
+        },
+        {
+          question: 'Czy profil CycloPick może zastąpić stronę internetową?',
+          answer: 'Tak. Twój profil działa jak gotowa wizytówka online: opis usług, cennik, zdjęcia, dane kontaktowe. Jeśli masz własną stronę, możesz ją podlinkować i wzmocnić jej pozycjonowanie.',
+          expanded: false
+        }
+      ]
+    },
+    {
+      title: 'Zarządzanie Profilem',
+      icon: 'settings',
+      items: [
+        {
+          question: 'Jakie informacje mogę dodać do profilu?',
+          answer: 'Możesz dodać: zakres usług i specjalizacje (MTB, szosa, e-bike), cennik i pakiety, godziny pracy, dane kontaktowe, zdjęcia warsztatu oraz linki do strony i social mediów. Im więcej danych, tym lepsza widoczność.',
+          expanded: false
+        },
+        {
+          question: 'Czy mogę samodzielnie edytować dane?',
+          answer: 'Tak. Wszystkie zmiany (ceny, godziny, zdjęcia) wykonasz w prostym panelu. Efekt widać od razu.',
+          expanded: false
+        },
+        {
+          question: 'Czy mogę dodać zdjęcia i cennik usług?',
+          answer: 'Tak. Zdjęcia warsztatu i szczegółowy cennik budują zaufanie klientów i zmniejszają liczbę telefonów z podstawowymi pytaniami.',
+          expanded: false
+        }
+      ]
+    },
+    {
+      title: 'Koszty i Zasady Współpracy',
+      icon: 'payments',
+      items: [
+        {
+          question: 'Ile kosztuje korzystanie z CycloPick?',
+          answer: 'Rejestracja i prowadzenie profilu są całkowicie darmowe. Nie pobieramy prowizji ani ukrytych opłat.',
+          expanded: false
+        },
+        {
+          question: 'Czy muszę podpisywać umowę lub zobowiązywać się na stałe?',
+          answer: 'Nie. Nie ma żadnych umów długoterminowych. Możesz korzystać z CycloPick tak długo, jak chcesz.',
+          expanded: false
+        },
+        {
+          question: 'Jak szybko mój profil stanie się aktywny?',
+          answer: 'Rejestracja zajmuje około 5 minut. Każdy profil jest ręcznie weryfikowany. Zazwyczaj staje się publiczny w ciągu 24 godzin (maksymalnie do 3 dni roboczych).',
+          expanded: false
+        }
+      ]
+    },
+    {
+      title: 'Kontakt i Rozwój',
+      icon: 'rocket',
+      items: [
+        {
+          question: 'W jaki sposób klienci będą się ze mną kontaktować?',
+          answer: 'Bezpośrednio. Klienci dzwonią, piszą e-mail lub korzystają z linków do social mediów. CycloPick nie pobiera prowizji ani nie pośredniczy w płatnościach.',
+          expanded: false
+        },
+        {
+          question: 'Czy mój serwis znajdą osoby korzystające z AI i chatbotów?',
+          answer: 'Tak. Przygotowujemy dane Twojego serwisu rowerowego tak, aby były czytelne dla nowoczesnych wyszukiwarek, chatbotów i asystentów AI. Dzięki temu, gdy ktoś zapyta np. „Gdzie w Krakowie naprawię rower cargo?", CycloPick może wskazać Twój warsztat – bez dodatkowych kosztów.',
+          expanded: false
+        },
+        {
+          question: 'Czy planujecie rezerwacje wizyt online?',
+          answer: 'Tak. W przyszłości wprowadzimy możliwość rezerwacji online, dzięki której klienci będą mogli umawiać wizyty bezpośrednio w Twoim serwisie.',
+          expanded: false
+        },
+        {
+          question: 'Czy mogę usunąć swój profil i dane?',
+          answer: 'Tak. Wystarczy wiadomość e-mail – profil i wszystkie dane zostaną usunięte bez formalności.',
+          expanded: false
+        }
+      ]
+    }
+  ];
+
+  toggleFaq(categoryIndex: number, itemIndex: number): void {
+    this.faqCategories[categoryIndex].items[itemIndex].expanded =
+      !this.faqCategories[categoryIndex].items[itemIndex].expanded;
+  }
+
   // 4 sekcje z obrazkami i rozwijalnym tekstem
   featureSections = [
     {

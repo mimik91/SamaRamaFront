@@ -1,5 +1,4 @@
 import * as Klaro from 'klaro/dist/klaro-no-css';
-import './klaro.css';
 
 const klaroConfig: Klaro.Config = {
   version: 1,

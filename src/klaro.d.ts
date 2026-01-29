@@ -7,5 +7,3 @@ declare module 'klaro/dist/klaro-no-css' {
   export function hide(): void;
   export function getManager(config?: Config): unknown;
 }
-
-declare module 'klaro/dist/klaro.css';

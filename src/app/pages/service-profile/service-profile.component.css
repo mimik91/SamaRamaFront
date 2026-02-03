@@ -194,6 +194,7 @@
   line-height: var(--line-height-relaxed);
   margin-bottom: var(--spacing-6);
   max-width: 500px;
+  white-space: pre-line;
 }
 
 .content-image {
@@ -219,6 +220,7 @@
   font-size: var(--font-size-md);
   line-height: var(--line-height-relaxed);
   margin: 0;
+  white-space: pre-line;
 }
 
 .note-banner {
@@ -235,6 +237,7 @@
   font-size: var(--font-size-sm);
   line-height: var(--line-height-relaxed);
   margin: 0;
+  white-space: pre-line;
 }
 
 /* ===== TRANSPORT CARD (w karcie O nas) ===== */
@@ -500,6 +503,7 @@
   color: var(--text-secondary);
   line-height: var(--line-height-relaxed);
   margin: 0;
+  white-space: pre-line;
 }
 
 .package-price {

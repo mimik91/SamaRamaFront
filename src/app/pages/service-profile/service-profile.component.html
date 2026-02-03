@@ -116,7 +116,6 @@
           (ngModelChange)="onBikeTypeChange($event)">
           <option *ngFor="let type of bikeTypes" [value]="type">
             {{ type }}
-            <span *ngIf="type === packagesConfig.defaultBikeType"> (domyślny)</span>
           </option>
         </select>
       </div>

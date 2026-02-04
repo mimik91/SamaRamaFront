@@ -1,0 +1,161 @@
+.day-view {
+  padding: var(--spacing-4);
+}
+
+/* Capacity header */
+.capacity-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-slate-50);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-4);
+}
+
+.capacity-info {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-2);
+}
+
+.capacity-count {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.capacity-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.capacity-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--color-slate-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.capacity-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+.capacity-fill.low {
+  background: var(--color-success);
+}
+
+.capacity-fill.medium {
+  background: var(--color-warning);
+}
+
+.capacity-fill.high {
+  background: var(--color-warning-orange);
+}
+
+.capacity-fill.full {
+  background: var(--color-danger);
+}
+
+/* Simple mode - orders list */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.orders-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-8);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Advanced mode - technicians grid */
+.technicians-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.technician-column {
+  background: var(--color-slate-50);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.technician-column.unassigned {
+  background: var(--color-slate-100);
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-white);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.column-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.column-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: 50%;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.column-content {
+  flex: 1;
+  padding: var(--spacing-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  min-height: 200px;
+}
+
+.column-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: var(--spacing-4);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .day-view {
+    padding: var(--spacing-2);
+  }
+
+  .capacity-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-2);
+  }
+
+  .technicians-grid {
+    grid-template-columns: 1fr;
+  }
+}

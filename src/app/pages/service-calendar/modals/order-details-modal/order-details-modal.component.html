@@ -1,0 +1,256 @@
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="header-info">
+        <h2>{{ t('service_calendar.order_details.title') }}</h2>
+        <span class="order-id">#{{ fullOrder.id || order.id }}</span>
+      </div>
+      <button class="close-btn" (click)="onClose()">&times;</button>
+    </div>
+
+    <!-- Loading state -->
+    <div class="modal-loading" *ngIf="isLoading">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="modal-body" *ngIf="!isLoading && fullOrder">
+      <!-- Status -->
+      <div class="detail-section status-section">
+        <div class="status-row">
+          <div class="status-display" [style.border-color]="statusColor">
+            <label>{{ t('service_calendar.order_details.status') }}</label>
+            <select
+              [(ngModel)]="selectedStatus"
+              (change)="onStatusChange()"
+              [disabled]="isUpdating"
+              class="status-select"
+            >
+              <option *ngFor="let status of statuses" [value]="status.value">
+                {{ getStatusLabel(status.value) }}
+              </option>
+            </select>
+          </div>
+          <button
+            *ngIf="canAcceptBike"
+            class="btn-accept-bike"
+            (click)="onAcceptBikeClick()"
+            [disabled]="isUpdating"
+          >
+            {{ t('service_calendar.buttons.accept_bike') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Dane klienta -->
+      <div class="detail-section">
+        <h3 class="section-title">{{ t('service_calendar.order_details.customer') }}</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">{{ t('service_calendar.order_details.name') }}</span>
+            <span class="detail-value">{{ fullOrder.clientName }}</span>
+          </div>
+          <div class="detail-item" *ngIf="displayEmail">
+            <span class="detail-label">{{ t('service_calendar.order_details.email') }}</span>
+            <span class="detail-value">{{ displayEmail }}</span>
+          </div>
+          <div class="detail-item" *ngIf="fullOrder.clientPhone">
+            <span class="detail-label">{{ t('service_calendar.order_details.phone') }}</span>
+            <span class="detail-value">{{ fullOrder.clientPhone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dane roweru -->
+      <div class="detail-section">
+        <h3 class="section-title">{{ t('service_calendar.order_details.bike') }}</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">{{ t('service_calendar.order_details.brand_model') }}</span>
+            <span class="detail-value">{{ fullOrder.bicycleBrand }} {{ fullOrder.bicycleModel }}</span>
+          </div>
+          <div class="detail-item" *ngIf="fullOrder.bicycleFrameNumber">
+            <span class="detail-label">{{ t('service_calendar.order_details.frame_number') }}</span>
+            <span class="detail-value">{{ fullOrder.bicycleFrameNumber }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data i serwisant -->
+      <div class="detail-section">
+        <h3 class="section-title">{{ t('service_calendar.order_details.order_info') }}</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">{{ t('service_calendar.order_details.date') }}</span>
+            <input
+              type="date"
+              [(ngModel)]="selectedDate"
+              (change)="onDateChange()"
+              [min]="minDate"
+              [disabled]="isUpdating"
+              class="date-input"
+            />
+          </div>
+          <div class="detail-item" *ngIf="calendarMode === 'ADVANCED'">
+            <span class="detail-label">{{ t('service_calendar.order_details.technician') }}</span>
+            <select
+              [(ngModel)]="selectedTechnicianId"
+              (change)="onTechnicianChange()"
+              [disabled]="isUpdating"
+              class="technician-select"
+            >
+              <option [ngValue]="null">{{ t('service_calendar.order_details.no_technician') }}</option>
+              <option *ngFor="let tech of technicians" [ngValue]="tech.id">
+                {{ tech.nickname }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notatki -->
+      <div class="detail-section">
+        <h3 class="section-title">{{ t('service_calendar.order_details.notes') }}</h3>
+        <div class="notes-container">
+          <textarea
+            [(ngModel)]="notes"
+            [placeholder]="t('service_calendar.order_details.notes_placeholder')"
+            rows="3"
+          ></textarea>
+          <button
+            class="btn-save-notes"
+            (click)="onSaveNotes()"
+            [disabled]="isUpdating || notes === (fullOrder.serviceNotes || '')"
+          >
+            {{ t('common.save') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Zdjecia - tylko od statusu IN_PROGRESS -->
+      <div class="detail-section" *ngIf="canShowImages">
+        <div class="section-header">
+          <h3 class="section-title">{{ t('service_calendar.order_details.images') }}</h3>
+          <span class="images-count" *ngIf="images.length > 0">({{ images.length }})</span>
+        </div>
+
+        <!-- Loading state -->
+        <div class="images-loading" *ngIf="isLoadingImages">
+          <div class="spinner-small"></div>
+        </div>
+
+        <!-- Istniejace zdjecia -->
+        <div class="images-grid" *ngIf="!isLoadingImages && images.length > 0">
+          <div class="image-item" *ngFor="let image of images; let i = index">
+            <img
+              [src]="image.thumbnailUrl || image.url"
+              [alt]="t('service_calendar.order_details.order_image')"
+              (click)="openLightbox(i)"
+              class="image-clickable"
+            >
+            <button
+              class="image-delete-btn"
+              (click)="deleteImage(image)"
+              [title]="t('common.delete')"
+            >
+              &times;
+            </button>
+          </div>
+        </div>
+
+        <!-- Brak zdjec -->
+        <div class="no-images" *ngIf="!isLoadingImages && images.length === 0 && selectedFiles.length === 0">
+          <span>{{ t('service_calendar.order_details.no_images') }}</span>
+        </div>
+
+        <!-- Upload nowego zdjecia -->
+        <div class="image-upload-section">
+          <!-- Podglad wybranych zdjec -->
+          <div class="selected-previews" *ngIf="selectedFiles.length > 0">
+            <div class="preview-item" *ngFor="let preview of selectedPreviews; let i = index">
+              <img [src]="preview" alt="Preview">
+              <button class="preview-remove-btn" (click)="removeSelectedFile(i)">&times;</button>
+            </div>
+          </div>
+
+          <!-- Przycisk wyboru pliku -->
+          <div class="upload-controls" *ngIf="!isUploadingImage">
+            <input
+              #imageInput
+              type="file"
+              accept="image/*"
+              multiple
+              (change)="onImagesSelected($event)"
+              class="file-input"
+              [disabled]="isUploadingImage"
+            >
+            <button
+              class="btn-select-image"
+              (click)="imageInput.click()"
+              [disabled]="isUploadingImage"
+            >
+              <span class="icon">&#128247;</span>
+              {{ t('service_calendar.order_details.select_image') }}
+            </button>
+            <button
+              class="btn-upload-image"
+              *ngIf="selectedFiles.length > 0"
+              (click)="uploadAllImages()"
+              [disabled]="isUploadingImage"
+            >
+              {{ t('service_calendar.order_details.upload_image') }} ({{ selectedFiles.length }})
+            </button>
+          </div>
+
+          <!-- Progress uploadu -->
+          <div class="upload-progress" *ngIf="isUploadingImage">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+            </div>
+            <span class="progress-text">
+              {{ isCompressingImage ? t('service_calendar.order_details.compressing') : t('service_calendar.order_details.uploading') }}
+              {{ uploadCurrentIndex + 1 }}/{{ uploadTotalCount }}
+              ({{ uploadProgress | number:'1.0-0' }}%)
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metadane -->
+      <div class="detail-section metadata">
+        <div class="meta-item">
+          <span class="meta-label">{{ t('service_calendar.order_details.created') }}:</span>
+          <span class="meta-value">{{ fullOrder.createdAt | date:'short' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">{{ t('service_calendar.order_details.updated') }}:</span>
+          <span class="meta-value">{{ fullOrder.updatedAt | date:'short' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-close" (click)="onClose()">
+        {{ t('common.close') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox / Galeria -->
+<div class="lightbox-overlay" *ngIf="lightboxOpen && images.length > 0" (click)="onLightboxOverlayClick($event)">
+  <button class="lightbox-close" (click)="closeLightbox()">&times;</button>
+
+  <button class="lightbox-nav lightbox-prev" (click)="lightboxPrev()" *ngIf="images.length > 1">&#8249;</button>
+
+  <img
+    class="lightbox-image"
+    [src]="images[lightboxIndex].url"
+    [alt]="t('service_calendar.order_details.order_image')"
+  >
+
+  <button class="lightbox-nav lightbox-next" (click)="lightboxNext()" *ngIf="images.length > 1">&#8250;</button>
+
+  <div class="lightbox-counter" *ngIf="images.length > 1">
+    {{ lightboxIndex + 1 }} / {{ images.length }}
+  </div>
+</div>

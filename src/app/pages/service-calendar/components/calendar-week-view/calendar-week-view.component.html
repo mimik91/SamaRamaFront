@@ -1,0 +1,38 @@
+<div class="week-view">
+  <div class="week-grid">
+    <div
+      class="day-column"
+      *ngFor="let day of days"
+      [class.today]="isDayToday(day)"
+      [class.selected]="isDaySelected(day)"
+    >
+      <!-- Day header -->
+      <div class="day-header" (click)="onDayClick(day)">
+        <span class="day-name">{{ getDayName(day) }}</span>
+        <span class="day-number" [class.today]="isDayToday(day)">{{ getDayNumber(day) }}</span>
+      </div>
+
+      <!-- Capacity indicator -->
+      <div class="day-capacity" [class]="getCapacityClass(day)">
+        <span class="capacity-count">{{ day.bikesCount }}</span>
+        <span class="capacity-separator">/</span>
+        <span class="capacity-max">{{ day.maxBikesPerDay }}</span>
+      </div>
+
+      <!-- Orders list -->
+      <div class="day-orders">
+        <app-order-bar
+          *ngFor="let order of day.orders"
+          [order]="order"
+          [compact]="true"
+          [showTechnician]="calendarMode === 'ADVANCED'"
+          (orderClick)="onOrderClick($event)"
+        ></app-order-bar>
+
+        <div class="day-empty" *ngIf="day.orders.length === 0">
+          <span class="empty-icon">+</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,211 @@
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>{{ t('service_calendar.accept_bike_modal.title') }}</h2>
+      <button class="close-btn" (click)="onClose()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Mode toggle (only if there are waiting orders and no preselected order) -->
+      <div class="mode-toggle" *ngIf="waitingOrders.length > 0 && !preselectedOrder">
+        <button
+          class="mode-btn"
+          [class.active]="mode === 'select'"
+          (click)="setMode('select')"
+        >
+          {{ t('service_calendar.accept_bike_modal.select_order') }}
+        </button>
+        <button
+          class="mode-btn"
+          [class.active]="mode === 'new'"
+          (click)="setMode('new')"
+        >
+          {{ t('service_calendar.accept_bike_modal.walk_in') }}
+        </button>
+      </div>
+
+      <!-- Select existing order mode -->
+      <div class="select-mode" *ngIf="mode === 'select'">
+        <div class="orders-list">
+          <div
+            class="order-item"
+            *ngFor="let order of waitingOrders"
+            [class.selected]="selectedOrderId === order.id"
+            (click)="selectedOrderId = order.id"
+          >
+            <div class="order-radio">
+              <input
+                type="radio"
+                [id]="'order-' + order.id"
+                name="selectedOrder"
+                [value]="order.id"
+                [(ngModel)]="selectedOrderId"
+              />
+            </div>
+            <div class="order-info">
+              <div class="order-bike">{{ order.bicycleBrand }} {{ order.bicycleModel }}</div>
+              <div class="order-client">{{ order.clientName }}</div>
+              <div class="order-date">{{ order.plannedDate }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="waitingOrders.length === 0">
+          <p>{{ t('service_calendar.accept_bike_modal.no_waiting_orders') }}</p>
+        </div>
+      </div>
+
+      <!-- New walk-in mode -->
+      <div class="new-mode" *ngIf="mode === 'new'">
+        <p class="mode-description" *ngIf="!preselectedOrder">{{ t('service_calendar.accept_bike_modal.walk_in_description') }}</p>
+        <p class="mode-description preselected-info" *ngIf="preselectedOrder && !isLoadingOrder">{{ t('service_calendar.accept_bike_modal.preselected_description') }}</p>
+
+        <!-- Loading state -->
+        <div class="loading-state" *ngIf="isLoadingOrder">
+          <div class="spinner"></div>
+          <p>{{ t('common.loading') }}</p>
+        </div>
+
+        <form *ngIf="!isLoadingOrder">
+          <!-- Bike data -->
+          <div class="form-section">
+            <h3 class="section-title">{{ t('service_calendar.create_order.bike_section') }}</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bikeBrand">{{ t('service_calendar.create_order.brand') }} *</label>
+                <input
+                  type="text"
+                  id="bikeBrand"
+                  [(ngModel)]="bikeBrand"
+                  name="bikeBrand"
+                  required
+                  [placeholder]="t('service_calendar.create_order.brand_placeholder')"
+                />
+              </div>
+              <div class="form-group">
+                <label for="bikeModel">{{ t('service_calendar.create_order.model') }}</label>
+                <input
+                  type="text"
+                  id="bikeModel"
+                  [(ngModel)]="bikeModel"
+                  name="bikeModel"
+                  [placeholder]="t('service_calendar.create_order.model_placeholder')"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="frameNumber">{{ t('service_calendar.create_order.frame_number') }} *</label>
+              <input
+                type="text"
+                id="frameNumber"
+                [ngModel]="frameNumber"
+                (ngModelChange)="onFrameNumberChange($event)"
+                name="frameNumber"
+                required
+                [placeholder]="t('service_calendar.create_order.frame_number_placeholder_required')"
+              />
+
+              <!-- Stolen check: loading -->
+              <div class="stolen-check checking" *ngIf="isCheckingStolen">
+                <div class="spinner-inline"></div>
+                <span>Sprawdzanie numeru ramy...</span>
+              </div>
+
+              <!-- Stolen check: OK -->
+              <div class="stolen-check ok" *ngIf="stolenCheckResult && !stolenCheckResult.stolen && !isCheckingStolen">
+                <span>Numer ramy zweryfikowany - brak zgloszen.</span>
+              </div>
+
+              <!-- Stolen check: STOLEN -->
+              <div class="stolen-check stolen" *ngIf="stolenCheckResult?.stolen && !isCheckingStolen">
+                <div class="stolen-header">Ten numer ramy zostal zgloszony jako skradziony!</div>
+                <div class="stolen-bike-info" *ngIf="stolenCheckResult!.bikeName">
+                  Zgloszony rower: <strong>{{ stolenCheckResult!.bikeName }}</strong>
+                </div>
+                <div class="stolen-note">
+                  Uwaga: Zgloszenie dotyczy konkretnego roweru. Numery ram nie sa unikalne miedzy producentami,
+                  wiec przyjmowany rower nie musi byc tym zgloszonym.
+                </div>
+                <div class="stolen-instructions">
+                  <p>Zalecane kroki:</p>
+                  <ol>
+                    <li>Przyjmij rower do serwisu w standardowy sposob i upewnij sie, ze posiadasz numer kontaktowy oraz adres e-mail klienta.</li>
+                    <li>Po opuszczeniu serwisu przez klienta niezwlocznie powiadom policje o sytuacji.</li>
+                    <li>Oczekuj na dalsze instrukcje ze strony policji dotyczace postepowania z rowerem.</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact data -->
+          <div class="form-section">
+            <h3 class="section-title">{{ t('service_calendar.accept_bike_modal.contact_section') }}</h3>
+            <p class="section-hint">{{ t('service_calendar.accept_bike_modal.contact_hint') }}</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="clientEmail">{{ t('service_calendar.create_order.email') }}</label>
+                <input
+                  type="email"
+                  id="clientEmail"
+                  [(ngModel)]="clientEmail"
+                  name="clientEmail"
+                  [placeholder]="t('service_calendar.create_order.email_placeholder')"
+                />
+              </div>
+              <div class="form-group">
+                <label for="clientPhone">{{ t('service_calendar.create_order.phone') }}</label>
+                <input
+                  type="tel"
+                  id="clientPhone"
+                  [(ngModel)]="clientPhone"
+                  name="clientPhone"
+                  [placeholder]="t('service_calendar.create_order.phone_placeholder')"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="clientName">{{ t('service_calendar.accept_bike_modal.client_name') }}</label>
+              <input
+                type="text"
+                id="clientName"
+                [(ngModel)]="clientName"
+                name="clientName"
+                [placeholder]="t('service_calendar.accept_bike_modal.client_name_placeholder')"
+              />
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group">
+            <label for="description">{{ t('service_calendar.create_order.notes') }}</label>
+            <textarea
+              id="description"
+              [(ngModel)]="description"
+              name="description"
+              rows="2"
+              [placeholder]="t('service_calendar.create_order.notes_placeholder')"
+            ></textarea>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="onClose()" [disabled]="isSubmitting || isLoadingOrder">
+        {{ t('common.cancel') }}
+      </button>
+      <button
+        class="btn-submit"
+        (click)="onSubmit()"
+        [disabled]="!isFormValid || isSubmitting || isLoadingOrder"
+      >
+        <span *ngIf="isSubmitting">{{ t('common.saving') }}</span>
+        <span *ngIf="!isSubmitting">{{ t('service_calendar.buttons.accept_bike') }}</span>
+      </button>
+    </div>
+  </div>
+</div>

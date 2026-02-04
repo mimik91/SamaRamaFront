@@ -82,7 +82,27 @@ export const environment = {
       imagesBase: '/services/:id/images'
     },
 
-    mapPins: '/map/service-pins'
+    mapPins: '/map/service-pins',
+
+    // Service Calendar endpoints
+    serviceCalendar: {
+      config: '/service-calendar/config',
+      technicians: '/service-calendar/technicians',
+      dayView: '/service-calendar/view/day',
+      weekView: '/service-calendar/view/week',
+      monthView: '/service-calendar/view/month',
+      orders: '/service-calendar/orders',
+      orderStatus: '/service-calendar/orders/:id/status',
+      orderImages: '/service-orders/:id/images'
+    },
+
+    // Service Order Images (separate controller)
+    serviceOrderImages: '/service-orders/:orderId/images',
+
+    // Bicycle status
+    bicycleStatus: {
+      stolenCheck: '/bicycle-status/stolen-check'
+    }
   },
   
   // Application Settings

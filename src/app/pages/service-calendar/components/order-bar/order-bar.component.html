@@ -1,0 +1,89 @@
+<div
+  class="order-bar"
+  [class.compact]="compact"
+  [style.border-left-color]="statusColor"
+  (click)="onClick($event)"
+  [attr.title]="bikeInfo + (customerName ? ' - ' + customerName : '')"
+>
+  <div class="order-status-indicator" [style.background-color]="statusColor"></div>
+
+  <div class="order-content">
+    <!-- Tryb compact: rower + klient w dwóch liniach -->
+    <div class="order-main" *ngIf="compact">
+      <span class="order-bike">{{ bikeInfo }}</span>
+    </div>
+    <div class="order-customer-compact" *ngIf="compact && customerName">
+      {{ customerName }}
+    </div>
+
+    <!-- Tryb normalny: rower i klient w jednej linii -->
+    <div class="order-main" *ngIf="!compact">
+      <span class="order-bike">{{ bikeInfo }}</span>
+      <span class="order-customer" *ngIf="customerName">{{ customerName }}</span>
+    </div>
+
+    <div class="order-meta" *ngIf="!compact">
+      <span class="order-status" [style.color]="statusColor">{{ statusLabel }}</span>
+      <span class="order-technician" *ngIf="showTechnician && order.assignedTechnicianNickname">
+        {{ order.assignedTechnicianNickname }}
+      </span>
+    </div>
+  </div>
+
+  <div class="order-images-indicator" *ngIf="order.images && order.images.length > 0">
+    <span class="images-icon">&#128247;</span>
+    <span class="images-count">{{ order.images.length }}</span>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="order-actions" *ngIf="showActions && availableActions.length > 0 && !compact">
+    <button
+      *ngIf="availableActions.includes('cancel')"
+      class="action-btn action-btn-danger"
+      (click)="onCancelClick($event)"
+      [title]="t('service_calendar.buttons.cancel')"
+    >
+      {{ t('service_calendar.buttons.cancel') }}
+    </button>
+    <button
+      *ngIf="availableActions.includes('confirm')"
+      class="action-btn action-btn-success"
+      (click)="onConfirmClick($event)"
+      [title]="t('service_calendar.buttons.confirm')"
+    >
+      {{ t('service_calendar.buttons.confirm') }}
+    </button>
+    <button
+      *ngIf="availableActions.includes('acceptBike')"
+      class="action-btn action-btn-primary"
+      (click)="onAcceptBikeClick($event)"
+      [title]="t('service_calendar.buttons.accept')"
+    >
+      {{ t('service_calendar.buttons.accept') }}
+    </button>
+    <button
+      *ngIf="availableActions.includes('backToProgress')"
+      class="action-btn action-btn-primary"
+      (click)="onBackToProgressClick($event)"
+      [title]="t('service_calendar.buttons.back_to_progress')"
+    >
+      {{ t('service_calendar.buttons.back_to_progress') }}
+    </button>
+    <button
+      *ngIf="availableActions.includes('readyForPickup')"
+      class="action-btn action-btn-success"
+      (click)="onReadyForPickupClick($event)"
+      [title]="t('service_calendar.buttons.ready_for_pickup')"
+    >
+      {{ t('service_calendar.buttons.ready_for_pickup') }}
+    </button>
+    <button
+      *ngIf="availableActions.includes('completed')"
+      class="action-btn action-btn-success"
+      (click)="onCompletedClick($event)"
+      [title]="t('service_calendar.buttons.completed')"
+    >
+      {{ t('service_calendar.buttons.completed') }}
+    </button>
+  </div>
+</div>

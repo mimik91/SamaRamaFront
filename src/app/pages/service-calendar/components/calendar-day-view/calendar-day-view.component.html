@@ -1,0 +1,107 @@
+<div class="day-view">
+  <!-- Tryb prosty -->
+  <div class="simple-mode" *ngIf="calendarMode === 'SIMPLE'">
+    <!-- Wskaznik pojemnosci -->
+    <div class="capacity-header">
+      <div class="capacity-info">
+        <span class="capacity-count">{{ data.bikesCount }} / {{ data.maxBikesPerDay }}</span>
+        <span class="capacity-label">{{ t('service_calendar.bikes_today') }}</span>
+      </div>
+      <div class="capacity-bar">
+        <div
+          class="capacity-fill"
+          [class]="capacityClass"
+          [style.width.%]="capacityPercent"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Lista zlecen -->
+    <div class="orders-list">
+      <div class="orders-empty" *ngIf="data.orders.length === 0">
+        <p>{{ t('service_calendar.no_orders') }}</p>
+      </div>
+
+      <app-order-bar
+        *ngFor="let order of data.orders"
+        [order]="order"
+        [showTechnician]="false"
+        (orderClick)="onOrderClick($event)"
+        (cancelOrder)="onCancelOrder($event)"
+        (confirmOrder)="onConfirmOrder($event)"
+        (acceptBike)="onAcceptBike($event)"
+        (markReadyForPickup)="onMarkReadyForPickup($event)"
+        (markCompleted)="onMarkCompleted($event)"
+        (backToProgress)="onBackToProgress($event)"
+      ></app-order-bar>
+    </div>
+  </div>
+
+  <!-- Tryb zaawansowany -->
+  <div class="advanced-mode" *ngIf="calendarMode === 'ADVANCED'">
+    <!-- Wskaznik pojemnosci -->
+    <div class="capacity-header">
+      <div class="capacity-info">
+        <span class="capacity-count">{{ data.bikesCount }} / {{ data.maxBikesPerDay }}</span>
+        <span class="capacity-label">{{ t('service_calendar.bikes_today') }}</span>
+      </div>
+    </div>
+
+    <div class="technicians-grid">
+      <!-- Kolumna nieprzypisanych -->
+      <div class="technician-column unassigned">
+        <div class="column-header">
+          <span class="column-title">{{ t('service_calendar.unassigned') }}</span>
+          <span class="column-count">{{ unassignedOrders.length }}</span>
+        </div>
+        <div class="column-content">
+          <app-order-bar
+            *ngFor="let order of unassignedOrders"
+            [order]="order"
+            [showTechnician]="false"
+            (orderClick)="onOrderClick($event)"
+            (cancelOrder)="onCancelOrder($event)"
+            (confirmOrder)="onConfirmOrder($event)"
+            (acceptBike)="onAcceptBike($event)"
+            (markReadyForPickup)="onMarkReadyForPickup($event)"
+            (markCompleted)="onMarkCompleted($event)"
+            (backToProgress)="onBackToProgress($event)"
+          ></app-order-bar>
+
+          <div class="column-empty" *ngIf="unassignedOrders.length === 0">
+            {{ t('service_calendar.no_orders') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Kolumny serwisantow -->
+      <div
+        class="technician-column"
+        *ngFor="let technician of technicians"
+      >
+        <div class="column-header">
+          <span class="column-title">{{ technician.nickname }}</span>
+          <span class="column-count">{{ getOrdersForTechnician(technician.id).length }}</span>
+        </div>
+        <div class="column-content">
+          <app-order-bar
+            *ngFor="let order of getOrdersForTechnician(technician.id)"
+            [order]="order"
+            [showTechnician]="false"
+            (orderClick)="onOrderClick($event)"
+            (cancelOrder)="onCancelOrder($event)"
+            (confirmOrder)="onConfirmOrder($event)"
+            (acceptBike)="onAcceptBike($event)"
+            (markReadyForPickup)="onMarkReadyForPickup($event)"
+            (markCompleted)="onMarkCompleted($event)"
+            (backToProgress)="onBackToProgress($event)"
+          ></app-order-bar>
+
+          <div class="column-empty" *ngIf="getOrdersForTechnician(technician.id).length === 0">
+            {{ t('service_calendar.no_orders') }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

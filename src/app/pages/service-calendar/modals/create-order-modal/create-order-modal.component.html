@@ -1,0 +1,175 @@
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>{{ t('service_calendar.create_order.title') }}</h2>
+      <button class="close-btn" (click)="onClose()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <form (ngSubmit)="onSubmit()">
+        <!-- Sekcja: Dane klienta -->
+        <div class="form-section">
+          <h3 class="section-title">{{ t('service_calendar.create_order.customer_section') }}</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="customerFirstName">{{ t('service_calendar.create_order.first_name') }} *</label>
+              <input
+                type="text"
+                id="customerFirstName"
+                [(ngModel)]="customerFirstName"
+                name="customerFirstName"
+                required
+                [placeholder]="t('service_calendar.create_order.first_name_placeholder')"
+              />
+            </div>
+            <div class="form-group">
+              <label for="customerLastName">{{ t('service_calendar.create_order.last_name') }}</label>
+              <input
+                type="text"
+                id="customerLastName"
+                [(ngModel)]="customerLastName"
+                name="customerLastName"
+                [placeholder]="t('service_calendar.create_order.last_name_placeholder')"
+              />
+            </div>
+          </div>
+
+          <p class="contact-hint">{{ t('service_calendar.create_order.contact_hint') }}</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="customerEmail">{{ t('service_calendar.create_order.email') }}</label>
+              <input
+                type="email"
+                id="customerEmail"
+                [(ngModel)]="customerEmail"
+                name="customerEmail"
+                [placeholder]="t('service_calendar.create_order.email_placeholder')"
+              />
+            </div>
+            <div class="form-group">
+              <label for="customerPhone">{{ t('service_calendar.create_order.phone') }}</label>
+              <input
+                type="tel"
+                id="customerPhone"
+                [(ngModel)]="customerPhone"
+                name="customerPhone"
+                [placeholder]="t('service_calendar.create_order.phone_placeholder')"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Sekcja: Dane roweru -->
+        <div class="form-section">
+          <h3 class="section-title">{{ t('service_calendar.create_order.bike_section') }}</h3>
+
+          <div class="form-row">
+            <div class="form-group brand-autocomplete-wrapper">
+              <label for="bikeBrand">{{ t('service_calendar.create_order.brand') }} *</label>
+              <div class="autocomplete-container">
+                <input
+                  type="text"
+                  id="bikeBrand"
+                  [value]="bikeBrand"
+                  (input)="onBrandInput($event)"
+                  (focus)="onBrandFocus()"
+                  name="bikeBrand"
+                  required
+                  autocomplete="off"
+                  [placeholder]="t('service_calendar.brand_autocomplete.placeholder')"
+                />
+                <button
+                  type="button"
+                  class="expand-btn"
+                  (click)="expandAllBrands()"
+                  [title]="t('service_calendar.brand_autocomplete.show_all')"
+                >
+                  &#9660;
+                </button>
+                <div class="autocomplete-dropdown" *ngIf="showBrandDropdown && filteredBrands.length > 0">
+                  <div
+                    class="autocomplete-item"
+                    *ngFor="let brand of filteredBrands"
+                    (click)="selectBrand(brand)"
+                  >
+                    {{ brand }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="bikeModel">{{ t('service_calendar.create_order.model') }}</label>
+              <input
+                type="text"
+                id="bikeModel"
+                [(ngModel)]="bikeModel"
+                name="bikeModel"
+                [placeholder]="t('service_calendar.create_order.model_placeholder')"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Sekcja: Zlecenie -->
+        <div class="form-section">
+          <h3 class="section-title">{{ t('service_calendar.create_order.order_section') }}</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="orderDate">{{ t('service_calendar.create_order.date') }} *</label>
+              <input
+                type="date"
+                id="orderDate"
+                [(ngModel)]="orderDate"
+                name="orderDate"
+                required
+                [readonly]="mode === 'acceptBike'"
+                [class.readonly]="mode === 'acceptBike'"
+              />
+            </div>
+            <div class="form-group" *ngIf="calendarMode === 'ADVANCED' && technicians.length > 0">
+              <label for="technician">{{ t('service_calendar.create_order.technician') }}</label>
+              <select
+                id="technician"
+                [(ngModel)]="selectedTechnicianId"
+                name="technician"
+              >
+                <option [ngValue]="null">{{ t('service_calendar.create_order.no_technician') }}</option>
+                <option *ngFor="let tech of technicians" [ngValue]="tech.id">
+                  {{ tech.nickname }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="orderNotes">{{ t('service_calendar.create_order.notes') }}</label>
+            <textarea
+              id="orderNotes"
+              [(ngModel)]="orderNotes"
+              name="orderNotes"
+              rows="3"
+              [placeholder]="t('service_calendar.create_order.notes_placeholder')"
+            ></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="onClose()" [disabled]="isSubmitting">
+        {{ t('common.cancel') }}
+      </button>
+      <button
+        class="btn-submit"
+        (click)="onSubmit()"
+        [disabled]="!isFormValid || isSubmitting"
+      >
+        <span *ngIf="isSubmitting">{{ t('common.saving') }}</span>
+        <span *ngIf="!isSubmitting">{{ t('service_calendar.create_order.submit') }}</span>
+      </button>
+    </div>
+  </div>
+</div>

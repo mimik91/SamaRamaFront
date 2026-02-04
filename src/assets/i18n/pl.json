@@ -1,11 +1,12 @@
 {
   "service_admin": {
-    "panel_title": "Panel Administracyjny Serwisu",
+    "panel_title": "Ustawienia Profilu Serwisu",
     "select_service": "Wybierz serwis:",
     "loading_services": "Ładowanie listy serwisów...",
     "loading_details": "Ładowanie danych serwisu...",
     "error_title": "Błąd ładowania",
     "retry": "Spróbuj ponownie",
+    "back_to_calendar": "Powrót do kalendarza",
     "errors": {
       "load_services_failed": "Nie udało się załadować listy serwisów. Spróbuj ponownie.",
       "load_details_failed": "Nie udało się załadować danych serwisu. Spróbuj ponownie."
@@ -16,6 +17,248 @@
       "pricelist": "Zarządzaj cennikiem",
       "hours": "Godziny otwarcia",
       "images": "Zarządzaj zdjęciami"
+    }
+  },
+  "service_calendar": {
+    "title": "Kalendarz Serwisu",
+    "select_service": "Wybierz serwis:",
+    "loading": "Ładowanie kalendarza...",
+    "profile_settings": "Ustawienia profilu",
+    "calendar_settings": "Ustawienia kalendarza",
+    "previous": "Poprzedni",
+    "next": "Następny",
+    "today": "Dzisiaj",
+    "add_order": "Dodaj zlecenie",
+    "bikes_today": "Rowery na dziś",
+    "no_orders": "Brak zleceń na ten dzień",
+    "unassigned": "Nieprzypisane",
+    "drop_here": "Upuść tutaj aby przypisać",
+    "views": {
+      "day": "Dzień",
+      "week": "Tydzień",
+      "month": "Miesiąc"
+    },
+    "modes": {
+      "simple": "Prosty",
+      "advanced": "Zaawansowany"
+    },
+    "statuses": {
+      "pending_confirmation": "Oczekuje na potwierdzenie serwisu",
+      "confirmed": "Potwierdzone",
+      "rejected": "Odrzucone",
+      "cancelled": "Anulowane",
+      "waiting_for_bike": "Oczekuje na rower",
+      "in_progress": "W trakcie",
+      "waiting_for_parts": "Oczekuje na części",
+      "awaiting_client_decision": "Oczekuje na decyzję klienta",
+      "ready_for_pickup": "Gotowe do odbioru",
+      "completed": "Zakończone"
+    },
+    "technicians": {
+      "manage": "Serwisanci",
+      "title": "Zarządzanie serwisantami",
+      "add": "Dodaj serwisanta",
+      "name_placeholder": "Imię i nazwisko serwisanta",
+      "active": "Aktywni serwisanci",
+      "inactive": "Nieaktywni serwisanci",
+      "activate": "Aktywuj",
+      "deactivate": "Dezaktywuj",
+      "empty": "Brak serwisantów"
+    },
+    "create_order": {
+      "title": "Nowe zlecenie",
+      "customer_section": "Dane klienta",
+      "bike_section": "Dane roweru",
+      "order_section": "Szczegóły zlecenia",
+      "first_name": "Imię",
+      "last_name": "Nazwisko",
+      "email": "Email",
+      "phone": "Telefon",
+      "brand": "Marka roweru",
+      "model": "Model roweru",
+      "frame_number": "Numer ramy",
+      "date": "Data zlecenia",
+      "technician": "Serwisant",
+      "notes": "Notatki",
+      "first_name_placeholder": "Jan",
+      "last_name_placeholder": "Kowalski",
+      "email_placeholder": "jan.kowalski@example.com",
+      "phone_placeholder": "123456789",
+      "contact_hint": "Podaj email lub numer telefonu (wymagane jest jedno z dwóch)",
+      "brand_placeholder": "np. Giant, Trek, Kross",
+      "model_placeholder": "np. Talon 3, Marlin 5",
+      "frame_number_placeholder": "Numer ramy (opcjonalnie)",
+      "frame_number_placeholder_required": "Wprowadź numer ramy",
+      "notes_placeholder": "Dodatkowe informacje o zleceniu...",
+      "no_technician": "-- Bez przypisania --",
+      "submit": "Utwórz zlecenie"
+    },
+    "order_details": {
+      "title": "Szczegóły zlecenia",
+      "status": "Status",
+      "customer": "Klient",
+      "bike": "Rower",
+      "name": "Imię i nazwisko",
+      "email": "Email",
+      "phone": "Telefon",
+      "brand_model": "Marka i model",
+      "frame_number": "Numer ramy",
+      "order_info": "Informacje o zleceniu",
+      "date": "Data",
+      "technician": "Serwisant",
+      "no_technician": "Nieprzypisane",
+      "notes": "Notatki",
+      "notes_placeholder": "Dodaj notatki do zlecenia...",
+      "images": "Zdjęcia",
+      "order_image": "Zdjęcie zlecenia",
+      "no_images": "Brak zdjęć. Dodaj pierwsze zdjęcie.",
+      "select_image": "Wybierz zdjęcie",
+      "upload_image": "Prześlij",
+      "compressing": "Kompresja...",
+      "uploading": "Przesyłanie...",
+      "manage_images": "Zarządzaj zdjęciami",
+      "created": "Utworzono",
+      "updated": "Zaktualizowano"
+    },
+    "images": {
+      "title": "Zdjęcia zlecenia",
+      "upload_prompt": "Kliknij lub przeciągnij zdjęcia",
+      "upload_hint": "PNG, JPG do 5MB",
+      "uploading": "Przesyłanie...",
+      "uploaded_by_service": "Serwis",
+      "uploaded_by_client": "Klient",
+      "empty": "Brak zdjęć",
+      "confirm_delete": "Czy na pewno chcesz usunąć to zdjęcie?",
+      "invalid_file_type": "Nieprawidłowy typ pliku. Dozwolone: PNG, JPG",
+      "file_too_large": "Plik jest za duży. Maksymalny rozmiar: 5MB"
+    },
+    "errors": {
+      "load_services_failed": "Nie udało się załadować listy serwisów",
+      "load_failed": "Nie udało się załadować danych kalendarza",
+      "create_order_failed": "Nie udało się utworzyć zlecenia",
+      "update_order_failed": "Nie udało się zaktualizować zlecenia",
+      "update_status_failed": "Nie udało się zaktualizować statusu",
+      "update_date_failed": "Nie udało się zaktualizować daty",
+      "save_notes_failed": "Nie udało się zapisać notatek",
+      "move_order_failed": "Nie udało się przenieść zlecenia",
+      "load_technicians_failed": "Nie udało się załadować serwisantów",
+      "add_technician_failed": "Nie udało się dodać serwisanta",
+      "update_technician_failed": "Nie udało się zaktualizować serwisanta",
+      "upload_image_failed": "Nie udało się przesłać zdjęcia",
+      "delete_image_failed": "Nie udało się usunąć zdjęcia",
+      "invalid_image": "Nieprawidłowy plik obrazu",
+      "preview_failed": "Nie udało się utworzyć podglądu",
+      "upload_url_failed": "Nie udało się wygenerować URL do uploadu",
+      "upload_failed": "Nie udało się przesłać zdjęcia",
+      "upload_timeout": "Przekroczono czas oczekiwania na upload",
+      "cancel_order_failed": "Nie udało się anulować zlecenia",
+      "confirm_order_failed": "Nie udało się potwierdzić zlecenia",
+      "accept_bike_failed": "Nie udało się przyjąć roweru",
+      "ready_for_pickup_failed": "Nie udało się oznaczyć jako gotowe do odbioru",
+      "complete_order_failed": "Nie udało się zakończyć zlecenia",
+      "assign_failed": "Nie udało się przypisać zlecenia do serwisanta",
+      "move_failed": "Nie udało się przenieść zlecenia"
+    },
+    "messages": {
+      "order_created": "Zlecenie zostało utworzone",
+      "order_updated": "Zlecenie zostało zaktualizowane",
+      "status_updated": "Status został zaktualizowany",
+      "date_updated": "Data została zaktualizowana",
+      "notes_saved": "Notatki zostały zapisane",
+      "order_moved": "Zlecenie zostało przeniesione",
+      "technician_added": "Serwisant został dodany",
+      "technician_updated": "Serwisant został zaktualizowany",
+      "technician_activated": "Serwisant został aktywowany",
+      "technician_deactivated": "Serwisant został dezaktywowany",
+      "image_uploaded": "Zdjęcie zostało przesłane",
+      "image_deleted": "Zdjęcie zostało usunięte",
+      "order_cancelled": "Zlecenie zostało anulowane",
+      "order_confirmed": "Zlecenie zostało potwierdzone",
+      "bike_accepted": "Rower został przyjęty do serwisu",
+      "ready_for_pickup": "Zlecenie oznaczone jako gotowe do odbioru",
+      "order_completed": "Zlecenie zostało zakończone"
+    },
+    "months": {
+      "january": "Styczeń",
+      "february": "Luty",
+      "march": "Marzec",
+      "april": "Kwiecień",
+      "may": "Maj",
+      "june": "Czerwiec",
+      "july": "Lipiec",
+      "august": "Sierpień",
+      "september": "Wrzesień",
+      "october": "Październik",
+      "november": "Listopad",
+      "december": "Grudzień"
+    },
+    "months_short": {
+      "january": "sty",
+      "february": "lut",
+      "march": "mar",
+      "april": "kwi",
+      "may": "maj",
+      "june": "cze",
+      "july": "lip",
+      "august": "sie",
+      "september": "wrz",
+      "october": "paź",
+      "november": "lis",
+      "december": "gru"
+    },
+    "days": {
+      "sunday": "Niedziela",
+      "monday": "Poniedziałek",
+      "tuesday": "Wtorek",
+      "wednesday": "Środa",
+      "thursday": "Czwartek",
+      "friday": "Piątek",
+      "saturday": "Sobota"
+    },
+    "days_short": {
+      "sunday": "Nd",
+      "monday": "Pn",
+      "tuesday": "Wt",
+      "wednesday": "Śr",
+      "thursday": "Cz",
+      "friday": "Pt",
+      "saturday": "So"
+    },
+    "buttons": {
+      "accept_reservation": "Przyjmij rezerwację",
+      "accept_bike": "Przyjmij rower",
+      "cancel": "Anuluj",
+      "confirm": "Potwierdź",
+      "accept": "Przyjmij",
+      "ready_for_pickup": "Gotowe",
+      "completed": "Zakończ",
+      "back_to_progress": "Wznów"
+    },
+    "confirm": {
+      "cancel_order": "Czy na pewno chcesz anulować to zlecenie? Zlecenie zostanie usunięte z kalendarza.",
+      "confirm_order": "Czy na pewno chcesz potwierdzić to zlecenie?",
+      "accept_bike": "Czy na pewno chcesz przyjąć rower do serwisu?",
+      "ready_for_pickup": "Czy na pewno chcesz oznaczyć zlecenie jako gotowe do odbioru?",
+      "completed": "Czy na pewno chcesz zakończyć to zlecenie?",
+      "back_to_progress": "Czy na pewno chcesz wznowić prace nad tym zleceniem?",
+      "delete_image": "Czy na pewno chcesz usunąć to zdjęcie?"
+    },
+    "accept_bike_modal": {
+      "title": "Przyjmij rower",
+      "select_order": "Wybierz rezerwację",
+      "walk_in": "Klient z ulicy",
+      "walk_in_description": "Wprowadź dane roweru dla klienta bez rezerwacji. Zlecenie zostanie utworzone od razu w statusie 'W trakcie'.",
+      "preselected_description": "Sprawdź dane rezerwacji i kliknij 'Przyjmij rower' aby potwierdzić przyjęcie roweru do serwisu.",
+      "no_waiting_orders": "Brak zleceń oczekujących na rower",
+      "contact_section": "Dane kontaktowe",
+      "contact_hint": "Wymagany email lub numer telefonu",
+      "client_name": "Imię klienta",
+      "client_name_placeholder": "np. Jan"
+    },
+    "brand_autocomplete": {
+      "placeholder": "Wpisz markę (min. 3 znaki)",
+      "show_all": "Pokaż wszystkie marki",
+      "custom": "Inna marka"
     }
   },
   "service_profile": {
@@ -365,8 +608,7 @@
     }
   },
   "navigation": {
-    "home": "Strona główna",
-    "map": "Mapa serwisów",
+    "map": "Mapa",
     "for_services": "Dla serwisów",
     "cooperation": "Współpraca",
     "login": "Zaloguj się",
@@ -400,66 +642,5 @@
     "terms_of_service": "Regulamin serwisu",
     "terms_of_service_workshops": "Regulamin dla warsztatów",
     "privacy_policy": "Polityka prywatności"
-  },
-  "landing": {
-    "hero": {
-      "title": "Serwis rowerowy w Twojej okolicy – znajdź warsztat na mapie",
-      "subtitle": "Ponad 2000 punktów naprawy rowerów w całej Polsce",
-      "description": "CycloPick to największa baza warsztatów rowerowych w Polsce – ponad 2000 miejsc na jednej mapie. Znajdź punkt naprawy w swojej okolicy, sprawdź oferowane usługi, godziny otwarcia i cenniki.",
-      "open_map_button": "Otwórz mapę",
-      "for_services_button": "Dla warsztatów"
-    },
-    "features": {
-      "title": "Dlaczego warto korzystać z CycloPick?",
-      "map": {
-        "title": "Ponad 2000 warsztatów na mapie",
-        "description": "Największa baza punktów naprawy rowerów w Polsce. Znajdź miejsce w swojej okolicy i sprawdź dane kontaktowe."
-      },
-      "filter": {
-        "title": "Filtrowanie po usługach",
-        "description": "Szukasz konkretnej naprawy? Przefiltruj wyniki według oferowanych usług i znajdź specjalistę."
-      },
-      "verified": {
-        "title": "Wyróżnione warsztaty",
-        "description": "Szukaj niebieskich pinezek – to zweryfikowane miejsca z pełnym profilem, cennikiem i godzinami otwarcia."
-      },
-      "info": {
-        "title": "Cenniki i godziny otwarcia",
-        "description": "Wiele warsztatów udostępnia cenniki usług i aktualne godziny pracy. Sprawdź przed wizytą."
-      }
-    },
-    "cities": {
-      "title": "Warsztaty rowerowe w największych miastach",
-      "description": "Wybierz miasto i znajdź punkt naprawy w swojej okolicy. Nasza baza obejmuje ponad 2000 miejsc w całej Polsce."
-    },
-    "cta": {
-      "title": "Prowadzisz warsztat rowerowy?",
-      "description": "Dołącz do CycloPick i zyskaj widoczność w sieci. Twoja wizytówka na mapie, profesjonalny profil i optymalizacja pod wyszukiwarki – wszystko za darmo.",
-      "learn_more_button": "Dowiedz się więcej",
-      "register_button": "Zarejestruj warsztat"
-    },
-    "how_it_works": {
-      "title": "Jak to działa?",
-      "step1": {
-        "title": "Otwórz mapę",
-        "description": "Kliknij \"Otwórz mapę\" i zobacz wszystkie warsztaty rowerowe w Twojej okolicy."
-      },
-      "step2": {
-        "title": "Przefiltruj wyniki",
-        "description": "Użyj filtrów, aby znaleźć miejsce oferujące konkretne usługi, których potrzebujesz."
-      },
-      "step3": {
-        "title": "Sprawdź profil",
-        "description": "Zobacz godziny otwarcia, cennik, zdjęcia warsztatu i dane kontaktowe."
-      },
-      "step4": {
-        "title": "Umów wizytę",
-        "description": "Skontaktuj się z wybranym warsztatem i umów termin naprawy Twojego roweru."
-      },
-      "find_service_button": "Znajdź warsztat"
-    },
-    "contact": {
-      "title": "Kontakt"
-    }
   }
 }

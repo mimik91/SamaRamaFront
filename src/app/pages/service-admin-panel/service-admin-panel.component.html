@@ -61,6 +61,10 @@
       
       <!-- Header -->
       <header class="panel-header">
+        <button class="back-btn" (click)="goToCalendar()">
+          <span class="back-icon">&#8592;</span>
+          {{ t('service_admin.back_to_calendar') }}
+        </button>
         <h1>{{ t('service_admin.panel_title') }}</h1>
         <p class="service-name">{{ serviceDetails.name }}</p>
       </header>

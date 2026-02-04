@@ -99,6 +99,31 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--color-slate-100, #f1f5f9);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.back-btn:hover {
+  background: var(--color-slate-200, #e2e8f0);
+  color: var(--text-primary, #1e293b);
+}
+
+.back-icon {
+  font-size: 1.1rem;
+}
+
 .panel-header h1 {
   margin: 0 0 8px 0;
   color: #2c3e50;

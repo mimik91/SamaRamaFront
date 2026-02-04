@@ -1,0 +1,52 @@
+<div class="calendar-header">
+  <!-- Lewa strona: nawigacja dat -->
+  <div class="header-left">
+    <div class="date-navigation">
+      <button class="nav-btn" (click)="goToPrevious()" [attr.aria-label]="t('service_calendar.previous')">
+        <span class="arrow">&#8249;</span>
+      </button>
+      <button class="today-btn" (click)="goToToday()">
+        {{ t('service_calendar.today') }}
+      </button>
+      <button class="nav-btn" (click)="goToNext()" [attr.aria-label]="t('service_calendar.next')">
+        <span class="arrow">&#8250;</span>
+      </button>
+    </div>
+    <h2 class="date-label">{{ dateLabel }}</h2>
+  </div>
+
+  <!-- Srodek: przelacznik widokow -->
+  <div class="header-center">
+    <div class="view-toggle">
+      <button
+        class="view-btn"
+        [class.active]="currentView === 'day'"
+        (click)="setView('day')"
+      >
+        {{ t('service_calendar.views.day') }}
+      </button>
+      <button
+        class="view-btn"
+        [class.active]="currentView === 'week'"
+        (click)="setView('week')"
+      >
+        {{ t('service_calendar.views.week') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Prawa strona: akcje -->
+  <div class="header-right">
+    <!-- Przyciski akcji -->
+    <div class="action-buttons">
+      <button class="action-btn reservation-btn" (click)="onAcceptReservation()">
+        <span class="icon">&#128197;</span>
+        {{ t('service_calendar.buttons.accept_reservation') }}
+      </button>
+      <button class="action-btn bike-btn" (click)="onAcceptBike()">
+        <span class="icon">&#128690;</span>
+        {{ t('service_calendar.buttons.accept_bike') }}
+      </button>
+    </div>
+  </div>
+</div>

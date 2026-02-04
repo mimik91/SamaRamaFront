@@ -1,0 +1,128 @@
+<div class="calendar-container">
+  <!-- Naglowek z wyborem serwisu -->
+  <div class="calendar-top-bar">
+    <div class="top-bar-left">
+      <div class="service-selector" *ngIf="myServices.length > 1">
+        <label for="service-select">{{ t('service_calendar.select_service') }}</label>
+        <select
+          id="service-select"
+          [value]="selectedServiceId"
+          (change)="onServiceChange($event)"
+          [disabled]="isLoadingServices"
+        >
+          <option *ngFor="let service of myServices" [value]="service.id">
+            {{ service.name }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="top-bar-actions">
+      <button class="btn-settings" disabled>
+        <span class="icon">&#9881;</span>
+        {{ t('service_calendar.calendar_settings') }}
+      </button>
+      <button class="btn-settings" (click)="goToProfileSettings()">
+        <span class="icon">&#128736;</span>
+        {{ t('service_calendar.profile_settings') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Blad ladowania serwisow -->
+  <div class="error-container" *ngIf="servicesError">
+    <p class="error-message">{{ servicesError }}</p>
+    <button class="btn-retry" (click)="loadMyServices()">
+      {{ t('common.retry') }}
+    </button>
+  </div>
+
+  <!-- Ladowanie -->
+  <div class="loading-container" *ngIf="isLoadingServices && !servicesError">
+    <div class="spinner"></div>
+    <p>{{ t('service_calendar.loading') }}</p>
+  </div>
+
+  <!-- Glowna zawartosc kalendarza -->
+  <div class="calendar-content" *ngIf="!isLoadingServices && !servicesError && selectedServiceId">
+
+    <!-- Header kalendarza -->
+    <app-calendar-header
+      [currentView]="currentView"
+      [calendarMode]="calendarMode"
+      [selectedDate]="selectedDate"
+      [maxBikesPerDay]="calendarConfig?.maxBikesPerDay || 10"
+      (viewChange)="onViewChange($event)"
+      (dateChange)="onDateChange($event)"
+      (acceptReservationClick)="onAcceptReservationClick()"
+      (acceptBikeClick)="onAcceptBikeClick()"
+    ></app-calendar-header>
+
+    <!-- Ladowanie danych -->
+    <div class="loading-overlay" *ngIf="isLoadingData">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Widok dnia -->
+    <app-calendar-day-view
+      *ngIf="currentView === 'day' && dayData && !isLoadingData"
+      [data]="dayData"
+      [calendarMode]="calendarMode"
+      [technicians]="technicians"
+      (orderClick)="onOrderClick($event)"
+      (cancelOrder)="onCancelOrder($event)"
+      (confirmOrder)="onConfirmOrder($event)"
+      (acceptBike)="onAcceptBike($event)"
+      (markReadyForPickup)="onMarkReadyForPickup($event)"
+      (markCompleted)="onMarkCompleted($event)"
+      (backToProgress)="onBackToProgress($event)"
+    ></app-calendar-day-view>
+
+    <!-- Widok tygodnia -->
+    <app-calendar-week-view
+      *ngIf="currentView === 'week' && weekData && !isLoadingData"
+      [data]="weekData"
+      [selectedDate]="selectedDate"
+      [calendarMode]="calendarMode"
+      [technicians]="technicians"
+      [maxBikesPerDay]="calendarConfig?.maxBikesPerDay || 10"
+      (orderClick)="onOrderClick($event)"
+      (dayClick)="onDayClick($event)"
+    ></app-calendar-week-view>
+
+  </div>
+</div>
+
+<!-- Modal tworzenia zlecenia -->
+<app-create-order-modal
+  *ngIf="showCreateOrderModal"
+  [serviceId]="selectedServiceId!"
+  [preselectedDate]="preselectedDate"
+  [technicians]="technicians"
+  [calendarMode]="calendarMode"
+  [mode]="createOrderMode"
+  (close)="onCreateOrderClose()"
+  (orderCreated)="onOrderCreated()"
+></app-create-order-modal>
+
+<!-- Modal szczegolów zlecenia -->
+<app-order-details-modal
+  *ngIf="showOrderDetailsModal && selectedOrder"
+  [order]="selectedOrder"
+  [serviceId]="selectedServiceId!"
+  [technicians]="technicians"
+  [calendarMode]="calendarMode"
+  (close)="onOrderDetailsClose()"
+  (orderUpdated)="onOrderUpdated()"
+  (acceptBike)="onAcceptBikeFromDetails($event)"
+></app-order-details-modal>
+
+<!-- Modal przyjmowania roweru -->
+<app-accept-bike-modal
+  *ngIf="showAcceptBikeModal"
+  [serviceId]="selectedServiceId!"
+  [waitingOrders]="waitingForBikeOrders"
+  [preselectedOrder]="preselectedOrderForAccept"
+  (close)="onAcceptBikeModalClose()"
+  (bikeAccepted)="onBikeAccepted()"
+></app-accept-bike-modal>

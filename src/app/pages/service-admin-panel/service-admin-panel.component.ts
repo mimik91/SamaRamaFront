@@ -41,6 +41,9 @@ export class ServiceAdminPanelComponent implements OnInit {
   private verificationService = inject(BikeServiceVerificationService);
   private i18nService = inject(I18nService);
 
+  // Suffix z URL
+  private currentSuffix: string = '';
+
   // Data
   myServices: BikeServiceNameIdDto[] = [];
   selectedServiceId: number | null = null;
@@ -80,7 +83,17 @@ export class ServiceAdminPanelComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.currentSuffix = this.route.snapshot.paramMap.get('suffix') || '';
     this.loadMyServices();
+  }
+
+  /**
+   * Nawigacja do kalendarza
+   */
+  goToCalendar(): void {
+    if (this.currentSuffix) {
+      this.router.navigate([`/${this.currentSuffix}/panel-administratora`]);
+    }
   }
 
   /**

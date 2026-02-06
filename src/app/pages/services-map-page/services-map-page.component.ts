@@ -190,6 +190,9 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
         }));
         this.allServices = [...this.services];
         this.totalServices = mapData.total;
+        this.currentPage = 0;
+        this.totalPages = Math.ceil(mapData.total / 50);
+        this.hasMoreServices = this.services.length < mapData.total;
         this.coverageCategories = mapData.coverageCategories;
 
         // Ustaw filtry z resolvera

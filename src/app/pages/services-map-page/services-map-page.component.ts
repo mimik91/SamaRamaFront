@@ -368,9 +368,9 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
 
             this.allServices = [...this.services];
             this.totalServices = response.total;
-            this.currentPage = response.page ?? 0;
-            this.totalPages = response.totalPages ?? 0;
-            this.hasMoreServices = response.next != null && response.next !== undefined;
+            this.currentPage = response.page ?? page;
+            this.totalPages = response.totalPages ?? Math.ceil(response.total / (response.perPage || request.perPage || 25));
+            this.hasMoreServices = this.services.length < response.total;
 
             // Check if we need to open a popup for pending service
             this.checkAndOpenPendingPopup();

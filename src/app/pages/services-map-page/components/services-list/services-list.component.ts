@@ -51,11 +51,9 @@ export class ServicesListComponent implements OnDestroy {
     private logoCacheService: LogoCacheService
   ) {}
 
-  // Virtual scroll index changed - trigger load more when near end
   onScrollIndexChange(index: number): void {
-    // Trigger load more when user is within 5 items from the end
+    if (this.services.length === 0) return;
     const nearEnd = index >= this.services.length - 5;
-
     if (nearEnd && this.hasMoreServices && !this.loadingMore) {
       this.scrollEnd.emit();
     }

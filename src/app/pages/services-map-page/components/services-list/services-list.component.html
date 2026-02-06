@@ -8,29 +8,38 @@
     </p>
   </div>
 
+  <!-- Initial loading state -->
+  <div *ngIf="loading && services.length === 0" class="service-item">
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Ładowanie serwisów...</p>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error" class="service-item error-state">
+    <div class="error-container">
+      <div class="error-icon">⚠️</div>
+      <p>Nie udało się załadować serwisów</p>
+      <button class="retry-button" (click)="onRetry()">Spróbuj ponownie</button>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="services.length === 0 && !loading && !error" class="service-item">
+    <div class="empty-container">
+      <div class="empty-icon">🔍</div>
+      <p>Nie znaleziono serwisów dla podanych kryteriów</p>
+    </div>
+  </div>
+
   <!-- Services list with virtual scroll -->
   <cdk-virtual-scroll-viewport
     [itemSize]="itemSize"
     class="services-list"
+    [class.hidden]="services.length === 0"
     (scrolledIndexChange)="onScrollIndexChange($event)"
   >
-    <!-- Initial loading state -->
-    <div *ngIf="loading && services.length === 0" class="service-item">
-      <div class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Ładowanie serwisów...</p>
-      </div>
-    </div>
-
-    <!-- Error state -->
-    <div *ngIf="error" class="service-item error-state">
-      <div class="error-container">
-        <div class="error-icon">⚠️</div>
-        <p>Nie udało się załadować serwisów</p>
-        <button class="retry-button" (click)="onRetry()">Spróbuj ponownie</button>
-      </div>
-    </div>
-
     <!-- Service items with virtual scrolling -->
     <div
       *cdkVirtualFor="let service of services; trackBy: trackByServiceId"
@@ -74,19 +83,11 @@
         </button>
       </div>
     </div>
-
-    <!-- Empty state -->
-    <div *ngIf="services.length === 0 && !loading && !error" class="service-item">
-      <div class="empty-container">
-        <div class="empty-icon">🔍</div>
-        <p>Nie znaleziono serwisów dla podanych kryteriów</p>
-      </div>
-    </div>
-
-    <!-- Loading more indicator -->
-    <div *ngIf="loadingMore && services.length > 0" class="loading-more">
-      <div class="loading-spinner"></div>
-      <p>Ładowanie kolejnych serwisów...</p>
-    </div>
   </cdk-virtual-scroll-viewport>
+
+  <!-- Loading more indicator -->
+  <div *ngIf="loadingMore && services.length > 0" class="loading-more">
+    <div class="loading-spinner"></div>
+    <p>Ładowanie kolejnych serwisów...</p>
+  </div>
 </div>

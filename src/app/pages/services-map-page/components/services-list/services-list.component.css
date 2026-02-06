@@ -48,6 +48,10 @@ cdk-virtual-scroll-viewport {
   min-height: 0;
 }
 
+cdk-virtual-scroll-viewport.hidden {
+  display: none;
+}
+
 /* CDK viewport content wrapper */
 .cdk-virtual-scroll-content-wrapper {
   width: 100%;

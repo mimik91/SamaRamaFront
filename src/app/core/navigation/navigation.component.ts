@@ -107,6 +107,31 @@ export class NavigationComponent implements OnInit {
     }
     console.log('=== navigateToServicePanel END ===');
   }
+
+  navigateToProfileSettings(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    if (!this.serviceSuffix) {
+      this.loadServiceSuffix();
+    }
+
+    if (this.serviceSuffix) {
+      const encodedSuffix = encodeURIComponent(this.serviceSuffix);
+      const path = `/${encodedSuffix}/panel-administratora/profil`;
+      this.router.navigateByUrl(path).then(
+        success => {
+          if (success) {
+            this.closeMobileMenu();
+          }
+        }
+      );
+    } else {
+      this.notification.error('Nie można załadować danych serwisu. Spróbuj się wylogować i zalogować ponownie.');
+    }
+  }
   
   @HostListener('window:resize', ['$event'])
   onResize(event: any): void {

@@ -143,7 +143,11 @@
   text-align: center;
 }
 
-/* Responsive */
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+/* Tablet <= 768px */
 @media (max-width: 768px) {
   .day-view {
     padding: var(--spacing-2);
@@ -153,9 +157,93 @@
     flex-direction: column;
     align-items: stretch;
     gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    margin-bottom: var(--spacing-3);
   }
 
   .technicians-grid {
     grid-template-columns: 1fr;
+    gap: var(--spacing-3);
+  }
+
+  .technician-column {
+    min-height: 200px;
+  }
+
+  .column-content {
+    min-height: 150px;
+  }
+
+  .orders-list {
+    gap: var(--spacing-2);
+  }
+}
+
+/* Mobile <= 480px */
+@media (max-width: 480px) {
+  .day-view {
+    padding: var(--spacing-1);
+  }
+
+  .capacity-header {
+    padding: var(--spacing-2);
+    gap: var(--spacing-1);
+    margin-bottom: var(--spacing-2);
+    border-radius: var(--radius-sm);
+  }
+
+  .capacity-count {
+    font-size: var(--font-size-lg);
+  }
+
+  .capacity-label {
+    font-size: var(--font-size-xs);
+  }
+
+  .capacity-bar {
+    height: 6px;
+  }
+
+  .orders-list {
+    gap: var(--spacing-1);
+  }
+
+  .orders-empty {
+    padding: var(--spacing-4);
+    font-size: var(--font-size-sm);
+  }
+
+  .technicians-grid {
+    gap: var(--spacing-2);
+  }
+
+  .technician-column {
+    min-height: 150px;
+    border-radius: var(--radius-md);
+  }
+
+  .column-header {
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+
+  .column-title {
+    font-size: var(--font-size-sm);
+  }
+
+  .column-count {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .column-content {
+    padding: var(--spacing-2);
+    gap: var(--spacing-1);
+    min-height: 100px;
+  }
+
+  .column-empty {
+    padding: var(--spacing-2);
+    font-size: var(--font-size-xs);
   }
 }

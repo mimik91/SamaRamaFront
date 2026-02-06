@@ -72,8 +72,8 @@
 }
 
 .close-btn {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: none;
   background: var(--color-slate-100);
   border-radius: var(--radius-md);
@@ -725,9 +725,59 @@
     padding-right: var(--spacing-4);
   }
 
+  .modal-header h2 {
+    font-size: var(--font-size-lg);
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .btn-close {
+    width: 100%;
+    min-height: 44px;
+  }
+
   .metadata {
     flex-direction: column;
     gap: var(--spacing-2);
+  }
+
+  .status-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-2);
+  }
+
+  .btn-accept-bike {
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .btn-save-notes {
+    min-height: 44px;
+    align-self: stretch;
+  }
+
+  .btn-manage-images {
+    min-height: 44px;
+  }
+
+  .upload-controls {
+    flex-direction: column;
+  }
+
+  .btn-select-image,
+  .btn-upload-image {
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .image-delete-btn {
+    opacity: 1;
+    width: 28px;
+    height: 28px;
   }
 
   .lightbox-nav {

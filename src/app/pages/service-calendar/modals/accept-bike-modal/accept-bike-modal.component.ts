@@ -199,10 +199,9 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     if (this.mode === 'select') {
       return this.selectedOrderId !== null;
     } else {
-      // Walk-in: brand + frameNumber + (email OR phone)
+      // Walk-in: brand + (email OR phone)
       return !!(
         this.bikeBrand.trim() &&
-        this.frameNumber.trim() &&
         (this.clientEmail.trim() || this.clientPhone.trim())
       );
     }

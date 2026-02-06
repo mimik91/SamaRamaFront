@@ -19,8 +19,8 @@
 
       <ng-container *ngIf="authService.isLoggedIn() && authService.isService() && !authService.hasAdminPrivileges()">
         <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
-        <a href="javascript:void(0)" (click)="navigateToServicePanel($event)" class="nav-link">Panel Serwisu</a>
-        <!-- <a routerLink="/jak-dzialamy" routerLinkActive="active" (click)="closeMobileMenu()">Transport Rowerów</a> -->
+        <a href="javascript:void(0)" (click)="navigateToServicePanel($event)" class="nav-link">Kalendarz</a>
+        <a href="javascript:void(0)" (click)="navigateToProfileSettings($event)" class="nav-link">Ustawienia profilu</a>
         <a routerLink="/for-services" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
       </ng-container>
 

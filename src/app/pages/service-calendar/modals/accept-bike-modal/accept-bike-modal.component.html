@@ -95,15 +95,14 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="frameNumber">{{ t('service_calendar.create_order.frame_number') }} *</label>
+              <label for="frameNumber">{{ t('service_calendar.create_order.frame_number') }}</label>
               <input
                 type="text"
                 id="frameNumber"
                 [ngModel]="frameNumber"
                 (ngModelChange)="onFrameNumberChange($event)"
                 name="frameNumber"
-                required
-                [placeholder]="t('service_calendar.create_order.frame_number_placeholder_required')"
+                [placeholder]="t('service_calendar.create_order.frame_number_placeholder')"
               />
 
               <!-- Stolen check: loading -->

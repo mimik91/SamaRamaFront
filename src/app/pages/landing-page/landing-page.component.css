@@ -85,6 +85,7 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
+  box-sizing: border-box;
 }
 
 .primary-btn {
@@ -334,6 +335,7 @@
   padding: 60px 40px;
   border-radius: 10px;
   text-align: center;
+  overflow: hidden;
 }
 
 .cta-content {

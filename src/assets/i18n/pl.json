@@ -646,25 +646,25 @@
   },
   "landing": {
     "hero": {
-      "title": "Serwis rowerowy w Twojej okolicy – znajdź warsztat na mapie",
-      "subtitle": "Ponad 2000 punktów naprawy rowerów w całej Polsce",
-      "description": "CycloPick to największa baza warsztatów rowerowych w Polsce – ponad 2000 miejsc na jednej mapie. Znajdź punkt naprawy w swojej okolicy, sprawdź oferowane usługi, godziny otwarcia i cenniki.",
-      "open_map_button": "Otwórz mapę",
-      "for_services_button": "Dla warsztatów"
+      "title": "Interaktywna Mapa Serwisów Rowerowych – Znajdź i Napraw Swój Rower",
+      "subtitle": "Największa baza punktów serwisowych w Polsce",
+      "description": "CycloPick to największa w Polsce baza punktów serwisowych. Nasz lokalizator pomoże Ci błyskawicznie znaleźć sprawdzony warsztat, niezależnie od tego, czy potrzebujesz szybkiej regulacji w trasie, czy kompleksowego przeglądu w swoim mieście.",
+      "open_map_button": "Otwórz mapę serwisów",
+      "for_services_button": "Dla serwisów rowerowych"
     },
     "features": {
-      "title": "Dlaczego warto korzystać z CycloPick?",
+      "title": "Dlaczego warto korzystać z naszej wyszukiwarki serwisów?",
       "map": {
-        "title": "Ponad 2000 warsztatów na mapie",
-        "description": "Największa baza punktów naprawy rowerów w Polsce. Znajdź miejsce w swojej okolicy i sprawdź dane kontaktowe."
+        "title": "Największa baza warsztatów w Polsce",
+        "description": "Ponad 2000 punktów na jednej mapie. Od autoryzowanych serwisów dużych marek, po lokalne warsztaty rowerowe pasjonatów."
       },
       "filter": {
-        "title": "Filtrowanie po usługach",
-        "description": "Szukasz konkretnej naprawy? Przefiltruj wyniki według oferowanych usług i znajdź specjalistę."
+        "title": "Znajdź konkretną usługę naprawy",
+        "description": "Twój rower wymaga serwisu amortyzatora lub naprawy ramy karbonowej? Użyj filtrów, aby znaleźć specjalistę od konkretnych usterek."
       },
       "verified": {
-        "title": "Wyróżnione warsztaty",
-        "description": "Szukaj niebieskich pinezek – to zweryfikowane miejsca z pełnym profilem, cennikiem i godzinami otwarcia."
+        "title": "Sprawdzone serwisy rowerowe",
+        "description": "Wybieraj miejsca zweryfikowane. Niebieskie pinezki na mapie oznaczają serwisy z aktualnym cennikiem, godzinami otwarcia i pełnym profilem."
       },
       "info": {
         "title": "Cenniki i godziny otwarcia",
@@ -672,24 +672,24 @@
       }
     },
     "cities": {
-      "title": "Warsztaty rowerowe w największych miastach",
-      "description": "Wybierz miasto i znajdź punkt naprawy w swojej okolicy. Nasza baza obejmuje ponad 2000 miejsc w całej Polsce."
+      "title": "Serwisy rowerowe w Twoim mieście",
+      "description": "Wybierz miasto poniżej, aby zobaczyć lokalną mapę serwisów rowerowych i punktów naprawy."
     },
     "cta": {
-      "title": "Prowadzisz warsztat rowerowy?",
-      "description": "Dołącz do CycloPick i zyskaj widoczność w sieci. Twoja wizytówka na mapie, profesjonalny profil i optymalizacja pod wyszukiwarki – wszystko za darmo.",
-      "learn_more_button": "Dowiedz się więcej",
+      "title": "Prowadzisz serwis rowerowy?",
+      "description": "Dołącz do CycloPick i zyskaj widoczność w Google. Twoja wizytówka na mapie, profesjonalny profil i optymalizacja SEO – wszystko za darmo.",
+      "learn_more_button": "Oferta dla serwisów",
       "register_button": "Zarejestruj warsztat"
     },
     "how_it_works": {
       "title": "Jak to działa?",
       "step1": {
         "title": "Otwórz mapę",
-        "description": "Kliknij \"Otwórz mapę\" i zobacz wszystkie warsztaty rowerowe w Twojej okolicy."
+        "description": "Kliknij \"Otwórz mapę serwisów\" i zobacz wszystkie warsztaty rowerowe w Twojej okolicy."
       },
       "step2": {
         "title": "Przefiltruj wyniki",
-        "description": "Użyj filtrów, aby znaleźć miejsce oferujące konkretne usługi, których potrzebujesz."
+        "description": "Użyj filtrów, aby znaleźć serwis oferujący konkretne usługi (np. serwis e-bike)."
       },
       "step3": {
         "title": "Sprawdź profil",
@@ -697,7 +697,7 @@
       },
       "step4": {
         "title": "Umów wizytę",
-        "description": "Skontaktuj się z wybranym warsztatem i umów termin naprawy Twojego roweru."
+        "description": "Skontaktuj się z wybranym serwisem i umów termin naprawy Twojego roweru."
       },
       "find_service_button": "Znajdź warsztat"
     },

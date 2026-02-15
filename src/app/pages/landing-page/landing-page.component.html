@@ -4,12 +4,12 @@
   <section class="landing-hero" aria-label="Sekcja powitalna">
     <div class="hero-content-wrapper">
       <div class="hero-text">
-        <h1>Serwis rowerowy w Twojej okolicy – znajdź warsztat na mapie</h1>
-        <h2>Ponad 2000 punktów naprawy rowerów w całej Polsce</h2>
+        <h1>Interaktywna Mapa Serwisów Rowerowych – Znajdź i Napraw Swój Rower</h1>
+        <h2>Największa baza punktów serwisowych w Polsce</h2>
         <p>
-          <strong>CycloPick</strong> to największa baza serwisów rowerowych w Polsce – ponad 2000 warsztatów
-          na jednej mapie. Znajdź serwis w swojej okolicy, sprawdź oferowane usługi, godziny otwarcia
-          i cenniki – wszystko w jednym miejscu.
+          <strong>CycloPick</strong> to największa w Polsce baza punktów serwisowych. Nasz lokalizator pomoże Ci
+          błyskawicznie znaleźć sprawdzony warsztat, niezależnie od tego, czy potrzebujesz szybkiej regulacji
+          w trasie, czy kompleksowego przeglądu w swoim mieście.
         </p>
         <div class="hero-buttons">
           <button class="primary-btn" (click)="navigateToMap()" aria-label="Otwórz mapę serwisów rowerowych">
@@ -37,7 +37,7 @@
   </section>
 
   <section class="features-section" aria-labelledby="features-heading">
-    <h2 id="features-heading">Dlaczego warto korzystać z CycloPick?</h2>
+    <h2 id="features-heading">Dlaczego warto korzystać z naszej wyszukiwarki serwisów?</h2>
     <ul class="features-grid">
       <li *ngFor="let feature of features" class="feature-card">
         <div class="feature-icon" aria-hidden="true">
@@ -59,9 +59,9 @@
   </section>
 
   <section class="cities-section" aria-labelledby="cities-heading">
-    <h2 id="cities-heading">Warsztaty rowerowe w największych miastach</h2>
+    <h2 id="cities-heading">Serwisy rowerowe w Twoim mieście</h2>
     <p class="cities-intro">
-      Wybierz miasto i znajdź warsztaty rowerowe w swojej okolicy. Nasza baza obejmuje ponad 2000 punktów naprawy.
+      Wybierz miasto poniżej, aby zobaczyć lokalną mapę serwisów rowerowych i punktów naprawy.
     </p>
     <ul class="cities-grid">
       <li *ngFor="let city of popularCities">

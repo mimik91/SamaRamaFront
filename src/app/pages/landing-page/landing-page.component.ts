@@ -18,18 +18,18 @@ export class LandingPageComponent implements OnInit {
   features = [
     {
       icon: 'map-pin',
-      title: 'Ponad 2000 warsztatów na mapie',
-      description: 'Największa baza punktów naprawy rowerów w Polsce. Znajdź miejsce w swojej okolicy i sprawdź dane kontaktowe.'
+      title: 'Największa baza warsztatów w Polsce',
+      description: 'Ponad 2000 punktów na jednej mapie. Od autoryzowanych serwisów dużych marek, po lokalne warsztaty rowerowe pasjonatów.'
     },
     {
       icon: 'filter',
-      title: 'Filtrowanie po usługach',
-      description: 'Szukasz konkretnej naprawy? Przefiltruj wyniki według oferowanych usług (np. naprawa amortyzatorów) i znajdź specjalistę.'
+      title: 'Znajdź konkretną usługę naprawy',
+      description: 'Twój rower wymaga serwisu amortyzatora lub naprawy ramy karbonowej? Użyj filtrów, aby znaleźć specjalistę od konkretnych usterek.'
     },
     {
       icon: 'star',
-      title: 'Wyróżnione warsztaty',
-      description: 'Szukaj niebieskich pinezek – to zweryfikowane miejsca z pełnym profilem, cennikiem i godzinami otwarcia.'
+      title: 'Sprawdzone serwisy rowerowe',
+      description: 'Wybieraj miejsca zweryfikowane. Niebieskie pinezki na mapie oznaczają serwisy z aktualnym cennikiem, godzinami otwarcia i pełnym profilem.'
     },
     {
       icon: 'clock',
@@ -39,21 +39,25 @@ export class LandingPageComponent implements OnInit {
   ];
 
   popularCities = [
-    { name: 'Warszawa', slug: 'warszawa' },
-    { name: 'Kraków', slug: 'krakow' },
-    { name: 'Wrocław', slug: 'wroclaw' },
-    { name: 'Poznań', slug: 'poznan' },
-    { name: 'Gdańsk', slug: 'gdansk' },
-    { name: 'Łódź', slug: 'lodz' },
-    { name: 'Katowice', slug: 'katowice' },
-    { name: 'Szczecin', slug: 'szczecin' }
+    { name: 'Serwis rowerowy Warszawa', slug: 'warszawa' },
+    { name: 'Naprawa rowerów Kraków', slug: 'krakow' },
+    { name: 'Warsztat rowerowy Wrocław', slug: 'wroclaw' },
+    { name: 'Serwis rowerowy Poznań', slug: 'poznan' },
+    { name: 'Naprawa rowerów Gdańsk', slug: 'gdansk' },
+    { name: 'Warsztat rowerowy Łódź', slug: 'lodz' },
+    { name: 'Serwis rowerowy Katowice', slug: 'katowice' },
+    { name: 'Naprawa rowerów Szczecin', slug: 'szczecin' }
   ];
 
   // Dane do FAQ (ważne dla AIO)
   faqData = [
     {
       question: 'Czy korzystanie z mapy serwisów jest darmowe?',
-      answer: 'Tak, wyszukiwanie i przeglądanie bazy serwisów rowerowych w CycloPick jest całkowicie darmowe dla rowerzystów.'
+      answer: 'Tak, przeglądanie bazy i korzystanie z mapy serwisów rowerowych CycloPick jest całkowicie bezpłatne dla każdego rowerzysty.'
+    },
+    {
+      question: 'Jak znaleźć serwis rowerowy blisko mnie?',
+      answer: 'Wystarczy kliknąć „Otwórz mapę" i udostępnić lokalizację w przeglądarce. Nasz system automatycznie pokaże najbliższe warsztaty i punkty naprawy w Twojej okolicy.'
     },
     {
       question: 'Jak dodać swój serwis rowerowy do mapy?',
@@ -80,8 +84,8 @@ export class LandingPageComponent implements OnInit {
   }
 
   private setMetaTags(): void {
-    const pageTitle = 'Serwis rowerowy blisko Ciebie | CycloPick - mapa warsztatów';
-    const pageDescription = 'Znajdź serwis rowerowy w swojej okolicy. Ponad 2000 warsztatów na interaktywnej mapie Polski. Sprawdź cenniki, godziny otwarcia i umów wizytę.';
+    const pageTitle = 'Mapa Serwisów Rowerowych w Polsce – Znajdź Warsztat Blisko Ciebie | CycloPick';
+    const pageDescription = 'Interaktywna mapa serwisów rowerowych i baza ponad 2000 punktów naprawy. Sprawdź opinie, cenniki i znajdź najbliższy profesjonalny warsztat rowerowy w Twojej okolicy.';
     
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });

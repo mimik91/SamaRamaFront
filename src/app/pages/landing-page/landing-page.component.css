@@ -321,8 +321,7 @@
 }
 
 .faq-item[open] .faq-answer {
-  /* Opcjonalnie delikatna linia oddzielająca */
-  /* border-top-color: var(--color-gray-100, #f1f5f9); */
+  border-top-color: var(--color-gray-100, #f1f5f9);
 }
 
 /* =========================================

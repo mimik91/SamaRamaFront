@@ -3,8 +3,7 @@
   <header class="city-header" *ngIf="!cityNotFound">
     <h1 itemprop="name">
       <ng-container *ngIf="isKrakow; else defaultTitle">
-        <span class="h1-main">Serwisy rowerowe Kraków</span>
-        <span class="h1-sub">Tu zamówisz transport rowerów</span>
+        Serwisy Rowerowe w Krakowie – Lista
       </ng-container>
       <ng-template #defaultTitle>
         Serwisy rowerowe {{ currentCity?.name }}
@@ -12,7 +11,7 @@
     </h1>
     <p class="subtitle">
       <ng-container *ngIf="isKrakow; else defaultSubtitle">
-        Znajd&#378; warsztat rowerowy w Krakowie -> Umów się na serwis -> Zam&#243;w <strong>transport roweru</strong> na wybrany adres -> odbierzemy Tw&#243;j rower -> zawieziemy do serwisu a po naprawie dostarczymy z powrotem! <br> Zmieniamy każdy serwis rowerowy w Krakowie w <strong>serwis door-to-door</strong>. 
+        Szukasz dobrego mechanika w Krakowie? Poniżej znajdziesz aktualną listę ponad 90 warsztatów rowerowych z podziałem na dzielnice. Niezależnie czy mieszkasz na Starym Mieście, potrzebujesz szybkiej naprawy na Krowodrzy, czy szukasz sprawdzonego mechanika w Nowej Hucie lub na Podgórzu – CycloPick pomoże Ci zlokalizować najbliższy punkt. Nasza baza obejmuje również rejony takie jak Prądnik Biały i Czerwony, Grzegórzki, Zwierzyniec oraz Ruczaj. Nie masz czasu na dojazd? Skorzystaj z usługi door-to-door – wybierz serwis z listy, a my odbierzemy od Ciebie rower i odwieziemy go po naprawie.
       </ng-container>
       <ng-template #defaultSubtitle>
         Lista serwis&#243;w rowerowych w mie&#347;cie {{ currentCity?.name }} i okolicach
@@ -168,7 +167,7 @@
               <polyline points="15 3 21 3 21 9"></polyline>
               <line x1="10" y1="14" x2="21" y2="3"></line>
             </svg>
-            Strona serwisu
+            Profil serwisu {{ service.name }}
           </button>
 
           <!-- Przycisk rejestracji dla niezweryfikowanych (niezarejestrowanych) -->
@@ -199,7 +198,7 @@
               <circle cx="5.5" cy="18.5" r="2.5"></circle>
               <circle cx="18.5" cy="18.5" r="2.5"></circle>
             </svg>
-            Zam&#243;w transport
+            Zamów transport do serwisu {{ service.name }}
           </a>
         </div>
       </li>

@@ -18,6 +18,8 @@ export interface BikeService {
   flat?: string;
   postalCode?: string;
   transportCost?: number;
+  transportAvailable?: boolean;
+  logoUrl?: string;
 }
 
 /**

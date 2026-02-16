@@ -167,18 +167,45 @@
             </div>
 
             <div class="form-row">
-              <div class="form-group">
+              <div class="form-group brand-autocomplete-group">
                 <label [for]="'brand-' + i">{{ t('transport_order.bicycle_form.brand_label') }} *</label>
-                <select 
-                  [id]="'brand-' + i"
-                  formControlName="brand"
-                  [class.is-invalid]="isBicycleFieldInvalid(i, 'brand')"
-                  [attr.disabled]="loadingBrands ? '' : null"
-                >
-                  <option value="" disabled>{{ t('transport_order.bicycle_form.brand_placeholder') }}</option>
-                  <option *ngIf="loadingBrands" value="" disabled>{{ t('common.loading') }}</option>
-                  <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
-                </select>
+                <div class="brand-autocomplete-wrapper">
+                  <input
+                    type="text"
+                    [id]="'brand-' + i"
+                    formControlName="brand"
+                    [class.is-invalid]="isBicycleFieldInvalid(i, 'brand')"
+                    [attr.disabled]="loadingBrands ? '' : null"
+                    [placeholder]="t('transport_order.bicycle_form.brand_placeholder')"
+                    (input)="onBrandInput(i)"
+                    (focus)="onBrandFocus(i)"
+                    (blur)="onBrandBlur(i)"
+                    autocomplete="off"
+                  >
+                  <button
+                    type="button"
+                    class="brand-dropdown-toggle"
+                    (mousedown)="toggleBrandDropdown(i, $event)"
+                    [attr.disabled]="loadingBrands ? '' : null"
+                    tabindex="-1"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  <ul
+                    *ngIf="activeBrandDropdown === i && filteredBrands.length > 0"
+                    class="brand-suggestions-list"
+                  >
+                    <li
+                      *ngFor="let brand of filteredBrands"
+                      (mousedown)="selectBrand(i, brand)"
+                      class="brand-suggestion-item"
+                    >
+                      {{ brand }}
+                    </li>
+                  </ul>
+                </div>
                 <div *ngIf="isBicycleFieldInvalid(i, 'brand')" class="error-message">
                   {{ t('transport_order.bicycle_form.brand_required') }}
                 </div>
@@ -492,7 +519,7 @@
                 {{ getEstimatedTransportCost() }} zł
               </span>
               <span *ngIf="finalTransportPrice !== null" class="total-price discounted-price">
-                → {{ finalTransportPrice }} zł
+                → {{ finalTransportPrice + getAdditionalBikesCost() }} zł
               </span>
             </div>
           </div>

@@ -5,7 +5,6 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Va
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../core/notification.service';
 import { TransportOrderService } from './transport-order.service';
-import { MapService } from '../pages/services-map-page/services/map.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { I18nService } from '../core/i18n.service';
 import { environment } from '../environments/environments';
@@ -25,7 +24,6 @@ export class TransportOrderFormComponent implements OnInit {
   private router = inject(Router);
   private notificationService = inject(NotificationService);
   private transportOrderService = inject(TransportOrderService);
-  private mapService = inject(MapService);
   private enumerationService = inject(EnumerationService);
   private i18n = inject(I18nService);
 
@@ -59,6 +57,11 @@ export class TransportOrderFormComponent implements OnInit {
   couponMessage: string | null = null;
   isCouponInvalid = false;
   finalTransportPrice: number | null = null;
+
+  // Brand autocomplete
+  activeBrandDropdown: number | null = null;
+  filteredBrands: string[] = [];
+  showAllBrands = false;
 
   // State
   loading = false;
@@ -199,7 +202,7 @@ export class TransportOrderFormComponent implements OnInit {
 
   private loadServiceDetails(serviceId: string): void {
     this.loading = true;
-    this.mapService.getServiceDetails(+serviceId).subscribe({
+    this.transportOrderService.getServiceDetails(+serviceId).subscribe({
       next: (serviceDetails) => {
         if (serviceDetails) {
           // Sprawdź dostępność transportu
@@ -397,6 +400,61 @@ export class TransportOrderFormComponent implements OnInit {
     }
   }
 
+  // Brand autocomplete methods
+  onBrandInput(index: number): void {
+    const value = this.bicyclesArray.at(index)?.get('brand')?.value || '';
+    this.showAllBrands = false;
+    if (value.length >= 3) {
+      this.filteredBrands = this.brands.filter(b =>
+        b.toLowerCase().includes(value.toLowerCase())
+      );
+      this.activeBrandDropdown = index;
+    } else {
+      this.filteredBrands = [];
+      this.activeBrandDropdown = null;
+    }
+  }
+
+  onBrandFocus(index: number): void {
+    const value = this.bicyclesArray.at(index)?.get('brand')?.value || '';
+    if (value.length >= 3) {
+      this.filteredBrands = this.brands.filter(b =>
+        b.toLowerCase().includes(value.toLowerCase())
+      );
+      this.activeBrandDropdown = index;
+    }
+  }
+
+  onBrandBlur(index: number): void {
+    setTimeout(() => {
+      if (this.activeBrandDropdown === index) {
+        this.activeBrandDropdown = null;
+        this.filteredBrands = [];
+        this.showAllBrands = false;
+      }
+    }, 200);
+  }
+
+  toggleBrandDropdown(index: number, event: Event): void {
+    event.preventDefault();
+    if (this.activeBrandDropdown === index && this.showAllBrands) {
+      this.activeBrandDropdown = null;
+      this.filteredBrands = [];
+      this.showAllBrands = false;
+    } else {
+      this.showAllBrands = true;
+      this.filteredBrands = [...this.brands];
+      this.activeBrandDropdown = index;
+    }
+  }
+
+  selectBrand(index: number, brand: string): void {
+    this.bicyclesArray.at(index)?.get('brand')?.setValue(brand);
+    this.activeBrandDropdown = null;
+    this.filteredBrands = [];
+    this.showAllBrands = false;
+  }
+
   getEstimatedTransportCost(): number {
     const selectedCount = this.getSelectedBicyclesCount();
     if (selectedCount === 0) return 0;
@@ -411,8 +469,24 @@ export class TransportOrderFormComponent implements OnInit {
     return baseCost + (selectedCount - 1) * perAdditionalBikeCost;
   }
 
+  getBaseTransportCost(): number {
+    if (this.actualTransportCost !== null && this.actualTransportCost === 0) {
+      return 0;
+    }
+    return this.actualTransportCost !== null ? this.actualTransportCost : 50;
+  }
+
+  getAdditionalBikesCost(): number {
+    const selectedCount = this.getSelectedBicyclesCount();
+    if (selectedCount <= 1) return 0;
+    return (selectedCount - 1) * 20;
+  }
+
   getFinalPriceToSend(): number {
-    return this.finalTransportPrice !== null ? this.finalTransportPrice : this.getEstimatedTransportCost();
+    if (this.finalTransportPrice !== null) {
+      return this.finalTransportPrice + this.getAdditionalBikesCost();
+    }
+    return this.getEstimatedTransportCost();
   }
 
   applyDiscountCoupon(): void {
@@ -430,16 +504,18 @@ export class TransportOrderFormComponent implements OnInit {
       return;
     }
 
+    const baseCost = this.getBaseTransportCost();
+
     const discountRequest = {
       coupon: couponCode,
-      currentTransportPrice: this.getEstimatedTransportCost(),
+      currentTransportPrice: baseCost,
       orderDate: orderDate
     };
 
     this.transportOrderService.checkDiscount(discountRequest).subscribe({
       next: (response) => {
         const newPrice = response.newPrice;
-        if (newPrice < this.getEstimatedTransportCost()) {
+        if (newPrice < baseCost) {
           this.finalTransportPrice = newPrice;
           this.couponMessage = this.i18n.instant('transport_order.discount.coupon_applied', { coupon: couponCode });
           this.isCouponInvalid = false;

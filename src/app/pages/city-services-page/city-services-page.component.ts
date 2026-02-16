@@ -53,7 +53,10 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
   // Flaga czy to Kraków (dla transportu)
   get isKrakow(): boolean {
-    return this.currentCity?.slug === 'krakow';
+    const slug = this.currentCity?.slug?.trim().toLowerCase();
+    const name = this.currentCity?.name?.trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return slug === 'krakow' || name === 'krakow';
   }
 
   constructor(
@@ -141,7 +144,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     let description: string;
 
     if (this.isKrakow) {
-      titleText = `Serwisy rowerowe Kraków - naprawa rowerów z transportem door-to-door | CycloPick`;
+      titleText = `Serwis Rowerowy Kraków – Baza 90+ Warsztatów i Cenniki | CycloPick`;
       description = `Znajdź serwis rowerowy w Krakowie z usługą transportu roweru door-to-door. Lista warsztatów rowerowych w Krakowie z adresami, telefonami i możliwością zamówienia transportu. Naprawa rowerów Kraków.`;
     } else {
       titleText = this.t('city_services.meta_title', { city: cityName });

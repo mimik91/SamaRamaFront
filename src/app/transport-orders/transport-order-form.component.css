@@ -361,6 +361,67 @@ h1 { text-align: center; margin-bottom: var(--spacing-8); }
 
 .add-bicycle-btn:hover { background-color: var(--color-primary); color: var(--color-white); transform: translateY(-2px); box-shadow: var(--shadow-primary); }
 
+/* Brand Autocomplete */
+.brand-autocomplete-wrapper {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.brand-autocomplete-wrapper input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  flex: 1;
+}
+
+.brand-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  background-color: var(--color-gray-50);
+  border: 2px solid var(--border-color);
+  border-left: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition-all);
+  flex-shrink: 0;
+}
+
+.brand-dropdown-toggle:hover { background-color: var(--color-gray-300); color: var(--text-primary); }
+
+.brand-suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--color-white);
+  border: 2px solid var(--color-primary);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+
+.brand-suggestion-item {
+  padding: var(--spacing-3) var(--spacing-4);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  color: var(--text-slate);
+  transition: background-color 0.15s ease;
+}
+
+.brand-suggestion-item:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
 /* Terms Container */
 .terms-container {
   margin-top: var(--spacing-8);
@@ -585,19 +646,23 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--c
 .apply-coupon-btn {
   padding: var(--spacing-3) var(--spacing-5);
   background-color: var(--color-primary);
-  color: var(--color-white);
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
   transition: var(--transition-base);
   height: 53px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 120px;
+  letter-spacing: 0.02em;
 }
 
+.apply-coupon-btn span { color: #ffffff; }
 .apply-coupon-btn:hover:not(:disabled) { background-color: var(--color-primary-dark); }
 .apply-coupon-btn:disabled { background-color: var(--color-slate-400); cursor: not-allowed; }
 

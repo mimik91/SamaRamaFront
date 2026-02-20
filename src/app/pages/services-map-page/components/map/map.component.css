@@ -345,6 +345,20 @@
   border-right-color: var(--color-primary-alpha-95) !important;
 }
 
+/* ============ MOBILE POPUP ============ */
+
+@media (max-width: 767px) {
+  :global(.detailed-service-popup .leaflet-popup-content-wrapper) {
+    max-width: 290px !important;
+    border-radius: 12px !important;
+  }
+
+  :global(.detailed-service-popup .leaflet-popup-content) {
+    width: auto !important;
+    min-width: 260px !important;
+  }
+}
+
 /* ============ POPUP BUTTONS ============ */
 
 :global(.popup-action-btn) {

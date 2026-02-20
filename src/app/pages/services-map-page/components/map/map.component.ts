@@ -586,14 +586,17 @@ if (markerElement) {
     console.log('Available marker IDs:', Array.from(this.markers.keys()));
     return;
   }
-  
-  const popupContent = this.buildPopupContent(serviceDetails);
-  
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const popupContent = this.buildPopupContent(serviceDetails, isMobile);
+  const popupMaxWidth = isMobile ? 280 : 400;
+
   if (!marker.getPopup()) {
       marker.bindPopup(popupContent, {
-          maxWidth: 400,
+          maxWidth: popupMaxWidth,
           className: 'detailed-service-popup',
-          closeButton: true
+          closeButton: true,
+          autoPan: false
       });
   } else {
       marker.getPopup().setContent(popupContent);
@@ -617,29 +620,38 @@ if (markerElement) {
   this.highlightSelectedPin(serviceDetails.id);
 }
 
-  private buildPopupContent(serviceDetails: ServiceDetails): string {
+  private buildPopupContent(serviceDetails: ServiceDetails, isMobile: boolean = false): string {
     const addressParts = [];
     if (serviceDetails.street) addressParts.push(serviceDetails.street);
     if (serviceDetails.building) addressParts.push(serviceDetails.building);
     if (serviceDetails.flat) addressParts.push(`/${serviceDetails.flat}`);
-    
+
     let fullAddress = addressParts.join(' ');
     if (serviceDetails.city) {
       fullAddress += fullAddress ? `, ${serviceDetails.city}` : serviceDetails.city;
     }
 
     const logoUrl = this.logoCacheService.getLogoUrl(
-    serviceDetails.id, 
+    serviceDetails.id,
     serviceDetails.logoUrl
   );
-    
+
+    const isVerified = Boolean(serviceDetails.registered);
+    const hasTransport = serviceDetails.transportAvailable &&
+      serviceDetails.transportCost !== undefined &&
+      serviceDetails.transportCost !== null;
+
+    if (isMobile) {
+      return this.buildMobilePopupContent(serviceDetails, logoUrl, fullAddress, isVerified, hasTransport);
+    }
+
     let popupContent = `
       <div style="font-family: inherit; min-width: 300px; max-width: 380px;">
         <div style="background: linear-gradient(135deg, #1B5E20 0%, #2e7d32 100%); color: white; padding: 18px; margin: -12px -18px 18px -18px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
           <h4 style="margin: 0; font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.1); flex: 1;">${serviceDetails.name}</h4>
           <div style="background: white; padding: 6px 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; min-width: 50px; max-width: 80px; height: 50px;">
-            <img 
-              src="${logoUrl}" 
+            <img
+              src="${logoUrl}"
               alt="${serviceDetails.name} logo"
               id="popup-logo-${serviceDetails.id}"
               style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;"
@@ -648,7 +660,7 @@ if (markerElement) {
           </div>
         </div>
     `;
-    
+
     if (fullAddress) {
       popupContent += `
         <div style="display: flex; align-items: flex-start; gap: 10px; margin: 0 0 14px 0; padding: 12px; background-color: #f8fafc; border-radius: 8px; border-left: 3px solid #e2e8f0;">
@@ -657,7 +669,7 @@ if (markerElement) {
         </div>
       `;
     }
-    
+
     if (serviceDetails.phoneNumber) {
       popupContent += `
         <div style="display: flex; align-items: center; gap: 10px; margin: 0 0 14px 0; padding: 12px; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 8px; border-left: 3px solid #22c55e;">
@@ -667,7 +679,7 @@ if (markerElement) {
       `;
     }
 
-    if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+    if (hasTransport) {
       popupContent += `
         <div style="margin: 14px 0; padding: 14px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-radius: 8px; border-left: 3px solid #3b82f6;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
@@ -679,7 +691,7 @@ if (markerElement) {
         </div>
       `;
     }
-    
+
     if (serviceDetails.description && serviceDetails.description.trim()) {
       popupContent += `
         <div style="margin: 18px 0; padding: 14px; background-color: #f8fafc; border-radius: 8px; border-left: 3px solid #1B5E20;">
@@ -687,7 +699,7 @@ if (markerElement) {
         </div>
       `;
     }
-    
+
     if (serviceDetails.verified) {
       popupContent += `
         <div style="display: flex; align-items: center; gap: 8px; margin: 14px 0; color: #059669; font-weight: 600; font-size: 0.9rem;">
@@ -701,13 +713,10 @@ if (markerElement) {
       <div style="margin: 20px 0 0 0; padding: 16px 0 0 0; border-top: 2px solid #f1f5f9; display: flex; gap: 10px; flex-wrap: wrap;">
     `;
 
-    const isVerified = Boolean(serviceDetails.registered);
-  
-
     if (isVerified) {
       popupContent += `
-        <button 
-          id="view-details-btn-${serviceDetails.id}" 
+        <button
+          id="view-details-btn-${serviceDetails.id}"
           class="popup-action-btn primary"
           style="flex: 1; min-width: 120px; padding: 12px 18px; background: linear-gradient(135deg, #1B5E20 0%, #2e7d32 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(43, 130, 173, 0.3);"
         >
@@ -716,8 +725,8 @@ if (markerElement) {
       `;
     } else {
       popupContent += `
-        <button 
-          id="register-service-btn-${serviceDetails.id}" 
+        <button
+          id="register-service-btn-${serviceDetails.id}"
           class="popup-action-btn warning"
           style="flex: 1; min-width: 120px; padding: 12px 18px; background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);"
         >
@@ -726,10 +735,10 @@ if (markerElement) {
       `;
     }
 
-    if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+    if (hasTransport) {
       popupContent += `
-        <button 
-          id="order-transport-btn-${serviceDetails.id}" 
+        <button
+          id="order-transport-btn-${serviceDetails.id}"
           class="popup-action-btn success"
           style="flex: 1; min-width: 120px; padding: 12px 18px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);"
         >
@@ -741,6 +750,106 @@ if (markerElement) {
     popupContent += `</div></div>`;
 
     return popupContent;
+  }
+
+  private buildMobilePopupContent(
+    serviceDetails: ServiceDetails,
+    logoUrl: string,
+    fullAddress: string,
+    isVerified: boolean,
+    hasTransport: boolean
+  ): string {
+    // Logo box: 44px height + 10px padding total in header = 54px header height
+    const logoSize = 44;
+    const headerPadding = 5; // 5px top + 5px bottom = 10px total => header = logoSize + 10px
+
+    let content = `
+      <div style="font-family: inherit; width: 260px;">
+        <div style="background: linear-gradient(135deg, #1B5E20 0%, #2e7d32 100%); color: white; padding: ${headerPadding}px 10px; margin: -12px -18px 12px -18px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: ${logoSize + headerPadding * 2}px;">
+          <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; flex: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25;">${serviceDetails.name}</h4>
+          <div style="background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; width: ${logoSize}px; height: ${logoSize}px; flex-shrink: 0; padding: 3px;">
+            <img
+              src="${logoUrl}"
+              alt="${serviceDetails.name} logo"
+              id="popup-logo-${serviceDetails.id}"
+              style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;"
+              onerror="this.src='assets/images/cyclopick-logo.svg'; this.onerror=null;"
+            />
+          </div>
+        </div>
+        <div style="background-color: #f8fafc; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;">
+    `;
+
+    if (fullAddress) {
+      content += `
+          <div style="display: flex; align-items: flex-start; gap: 8px;">
+            <span style="color: #64748b; font-size: 0.95rem; flex-shrink: 0; line-height: 1.4;">📍</span>
+            <span style="color: #1e293b; font-size: 0.82rem; line-height: 1.4;">${fullAddress}</span>
+          </div>
+      `;
+    }
+
+    if (serviceDetails.phoneNumber) {
+      content += `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="color: #15803d; font-size: 0.95rem; flex-shrink: 0;">📞</span>
+            <a href="tel:${serviceDetails.phoneNumber}" style="color: #15803d; text-decoration: none; font-weight: 600; font-size: 0.88rem;">${serviceDetails.phoneNumber}</a>
+          </div>
+      `;
+    }
+
+    if (hasTransport) {
+      content += `
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-size: 0.95rem; flex-shrink: 0;">🚚</span>
+            <span style="color: #1e40af; font-weight: 700; font-size: 0.88rem;">${serviceDetails.transportCost} PLN</span>
+            <span style="color: #64748b; font-size: 0.78rem;">- transport w obie strony</span>
+          </div>
+      `;
+    }
+
+    content += `</div>`;
+
+    // Buttons
+    content += `<div style="display: flex; gap: 6px;">`;
+
+    if (isVerified) {
+      content += `
+        <button
+          id="view-details-btn-${serviceDetails.id}"
+          class="popup-action-btn primary"
+          style="flex: 1; padding: 9px 10px; background: linear-gradient(135deg, #1B5E20 0%, #2e7d32 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.3s ease;"
+        >
+          Zobacz szczegóły
+        </button>
+      `;
+    } else {
+      content += `
+        <button
+          id="register-service-btn-${serviceDetails.id}"
+          class="popup-action-btn warning"
+          style="flex: 1; padding: 9px 10px; background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.3s ease;"
+        >
+          Zarejestruj serwis
+        </button>
+      `;
+    }
+
+    if (hasTransport) {
+      content += `
+        <button
+          id="order-transport-btn-${serviceDetails.id}"
+          class="popup-action-btn success"
+          style="flex: 1; padding: 9px 10px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.3s ease;"
+        >
+          Zamów transport
+        </button>
+      `;
+    }
+
+    content += `</div></div>`;
+
+    return content;
   }
 
   private attachPopupEventListeners(serviceDetails: ServiceDetails): void {

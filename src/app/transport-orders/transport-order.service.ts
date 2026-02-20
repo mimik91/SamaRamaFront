@@ -1,7 +1,7 @@
 // src/app/transport-orders/transport-order.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, throwError, map } from 'rxjs';
 import { environment } from '../environments/environments';
 import { 
   TransportOrderRequest, 
@@ -184,7 +184,8 @@ export class TransportOrderService {
    */
   getOrdersSummary(orderIds: number[]): Observable<TransportOrderSummaryDto[]> {
     const requestBody = { orderIds };
-    return this.http.post<TransportOrderSummaryDto[]>(`${this.apiUrl}/summary`, requestBody).pipe(
+    return this.http.post<TransportOrderSummaryDto[] | TransportOrderSummaryDto>(`${this.apiUrl}/summary`, requestBody).pipe(
+      map(response => Array.isArray(response) ? response : [response]),
       catchError(error => {
         console.error('Error fetching order summary:', error);
         return throwError(() => error);

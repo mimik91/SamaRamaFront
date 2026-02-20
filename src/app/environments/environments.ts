@@ -18,7 +18,7 @@ export const environment = {
   endpoints: {
     account: '/account',
     auth: '/auth',
-    bicycles: '/bicycles',
+    bicycles: '/user/bicycles',
     password: '/password',
     verification: '/verification',
     map: '/map',
@@ -93,7 +93,9 @@ export const environment = {
       monthView: '/service-calendar/view/month',
       orders: '/service-calendar/orders',
       orderStatus: '/service-calendar/orders/:id/status',
-      orderImages: '/service-orders/:id/images'
+      orderImages: '/service-orders/:id/images',
+      clientLookup: '/service-calendar/clients/lookup',
+      clientBikes: '/service-calendar/clients/:clientId/bikes'
     },
 
     // Service Order Images (separate controller)

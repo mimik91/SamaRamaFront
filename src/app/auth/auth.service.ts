@@ -94,7 +94,7 @@ export class AuthService {
           // Determine the redirect URL based on role - BEZPIECZNE TRASY
           let redirectUrl = '/client-dashboard';
           
-          if (response.role === 'ADMIN' || response.role === 'MODERATOR') {
+          if (response.role === 'ADMIN') {
             redirectUrl = '/admin-dashboard';
           }
           

@@ -1,6 +1,8 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit, HostListener, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { I18nService } from '../../../../core/i18n.service';
 import { NotificationService } from '../../../../core/notification.service';
 import { EnumerationService } from '../../../../core/enumeration.service';
@@ -8,7 +10,9 @@ import { ServiceCalendarService } from '../../services/service-calendar.service'
 import {
   CreateCalendarOrderDto,
   CalendarMode,
-  Technician
+  Technician,
+  ClientLookupResult,
+  ClientBike
 } from '../../../../shared/models/service-calendar.models';
 
 export type CreateOrderMode = 'reservation' | 'acceptBike';
@@ -20,7 +24,7 @@ export type CreateOrderMode = 'reservation' | 'acceptBike';
   templateUrl: './create-order-modal.component.html',
   styleUrls: ['./create-order-modal.component.css']
 })
-export class CreateOrderModalComponent implements OnInit {
+export class CreateOrderModalComponent implements OnInit, OnDestroy {
   private i18nService = inject(I18nService);
   private notificationService = inject(NotificationService);
   private calendarService = inject(ServiceCalendarService);
@@ -58,6 +62,13 @@ export class CreateOrderModalComponent implements OnInit {
   showBrandDropdown: boolean = false;
   loadingBrands: boolean = false;
 
+  // Client lookup
+  foundClient: ClientLookupResult | null = null;
+  clientBikes: ClientBike[] = [];
+  isLookingUpClient: boolean = false;
+  selectedBikeId: number | null = null;
+  private destroy$ = new Subject<void>();
+
   t(key: string, params?: Record<string, any>): string {
     return this.i18nService.translate(key, params);
   }
@@ -66,7 +77,6 @@ export class CreateOrderModalComponent implements OnInit {
     const today = new Date();
     const todayFormatted = this.formatDate(today);
 
-    // W trybie "przyjmij rower" zawsze dzisiejsza data
     if (this.mode === 'acceptBike') {
       this.orderDate = todayFormatted;
     } else if (this.preselectedDate) {
@@ -77,6 +87,11 @@ export class CreateOrderModalComponent implements OnInit {
 
     // Load brands for autocomplete
     this.loadBrands();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // ============================================
@@ -112,7 +127,6 @@ export class CreateOrderModalComponent implements OnInit {
   }
 
   onBrandFocus(): void {
-    // Show dropdown if we have input >= 3 chars
     if (this.bikeBrand.length >= 3 && this.filteredBrands.length > 0) {
       this.showBrandDropdown = true;
     }
@@ -130,11 +144,87 @@ export class CreateOrderModalComponent implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
-    // Close dropdown when clicking outside
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.showBrandDropdown = false;
     }
   }
+
+  // ============================================
+  // CLIENT LOOKUP
+  // ============================================
+
+  onEmailBlur(): void {
+    if (!this.customerEmail) {
+      this.resetClientLookup();
+      return;
+    }
+    if (this.customerEmail.length >= 5 && this.customerEmail.includes('@') && this.customerEmail.includes('.')) {
+      this.performClientLookup(this.customerEmail, undefined);
+    }
+  }
+
+  onPhoneBlur(): void {
+    if (!this.customerPhone) {
+      this.resetClientLookup();
+      return;
+    }
+    const digits = this.customerPhone.replace(/\D/g, '');
+    if (digits.length >= 9) {
+      this.performClientLookup(undefined, this.customerPhone);
+    }
+  }
+
+  private performClientLookup(email?: string, phone?: string): void {
+    this.isLookingUpClient = true;
+    this.calendarService.lookupClient(email, phone).subscribe({
+      next: (client) => {
+        this.foundClient = client;
+        this.customerFirstName = client.firstName;
+        this.customerLastName = client.lastName || '';
+        if (email && client.phone) this.customerPhone = client.phone;
+        if (phone && client.email) this.customerEmail = client.email;
+        this.isLookingUpClient = false;
+        this.loadClientBikes(client.id);
+      },
+      error: () => {
+        this.foundClient = null;
+        this.clientBikes = [];
+        this.isLookingUpClient = false;
+      }
+    });
+  }
+
+  private loadClientBikes(clientId: number): void {
+    this.calendarService.getClientBikes(clientId).subscribe({
+      next: (bikes) => { this.clientBikes = bikes; },
+      error: () => { this.clientBikes = []; }
+    });
+  }
+
+  onBikeSelected(bikeId: number | null): void {
+    if (bikeId === null) {
+      this.bikeBrand = '';
+      this.bikeModel = '';
+      return;
+    }
+    const bike = this.clientBikes.find(b => b.id === bikeId);
+    if (bike) {
+      this.bikeBrand = bike.brand;
+      this.bikeModel = bike.model;
+    }
+  }
+
+  resetClientLookup(): void {
+    this.foundClient = null;
+    this.clientBikes = [];
+    this.selectedBikeId = null;
+    this.bikeBrand = '';
+    this.bikeModel = '';
+  }
+
+  // ============================================
+  // FORM
+  // ============================================
 
   private formatDate(date: Date): string {
     const year = date.getFullYear();
@@ -154,14 +244,12 @@ export class CreateOrderModalComponent implements OnInit {
   }
 
   get isFormValid(): boolean {
-    // Wymagane: imię, (email LUB telefon), marka roweru, data
-    const hasContact = !!(this.customerEmail.trim() || this.customerPhone.trim());
-    return !!(
-      this.customerFirstName.trim() &&
-      hasContact &&
-      this.bikeBrand.trim() &&
-      this.orderDate
+    const hasClient = !!(
+      this.foundClient ||
+      (this.customerFirstName.trim() && (this.customerEmail.trim() || this.customerPhone.trim()))
     );
+    const hasBike = !!(this.selectedBikeId || this.bikeBrand.trim());
+    return !!(hasClient && hasBike && this.orderDate);
   }
 
   onSubmit(): void {
@@ -169,24 +257,28 @@ export class CreateOrderModalComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    // Plaska struktura zgodna z backendem (CreateServiceOrderRequest)
     const orderData: CreateCalendarOrderDto = {
-      // Dane klienta (wymagane: imię, email lub telefon)
-      email: this.customerEmail.trim() || undefined,
-      phone: this.customerPhone.trim() || undefined,
-      firstName: this.customerFirstName.trim(),
-      lastName: this.customerLastName.trim() || undefined,
-
-      // Dane roweru (wymagane: marka)
-      brand: this.bikeBrand.trim(),
-      model: this.bikeModel.trim() || undefined,
-
-      // Dane zlecenia (wymagane: data)
+      // Dane klienta
+      ...(this.foundClient
+        ? { clientId: this.foundClient.id }
+        : {
+            email: this.customerEmail.trim() || undefined,
+            phone: this.customerPhone.trim() || undefined,
+            firstName: this.customerFirstName.trim(),
+            lastName: this.customerLastName.trim() || undefined
+          }
+      ),
+      // Dane roweru
+      ...(this.selectedBikeId
+        ? { existingBicycleId: this.selectedBikeId }
+        : {
+            brand: this.bikeBrand.trim(),
+            model: this.bikeModel.trim() || undefined
+          }
+      ),
       plannedDate: this.orderDate,
       description: this.orderNotes.trim() || undefined,
       assignedTechnicianId: this.selectedTechnicianId || undefined,
-
-      // Status początkowy zależy od trybu
       initialStatus: this.mode === 'acceptBike' ? 'IN_PROGRESS' : undefined
     };
 

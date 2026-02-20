@@ -58,7 +58,7 @@ export class BicyclesListComponent implements OnInit {
   }
   
   handleImageError(event: Event, bicycle: Bicycle): void {
-    bicycle.hasPhoto = false;
+    bicycle.mainPhotoUrl = null;
   }
   
   viewBicycleDetails(bicycleId: number): void {

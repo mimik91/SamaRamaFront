@@ -11,30 +11,6 @@
         <div class="form-section">
           <h3 class="section-title">{{ t('service_calendar.create_order.customer_section') }}</h3>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="customerFirstName">{{ t('service_calendar.create_order.first_name') }} *</label>
-              <input
-                type="text"
-                id="customerFirstName"
-                [(ngModel)]="customerFirstName"
-                name="customerFirstName"
-                required
-                [placeholder]="t('service_calendar.create_order.first_name_placeholder')"
-              />
-            </div>
-            <div class="form-group">
-              <label for="customerLastName">{{ t('service_calendar.create_order.last_name') }}</label>
-              <input
-                type="text"
-                id="customerLastName"
-                [(ngModel)]="customerLastName"
-                name="customerLastName"
-                [placeholder]="t('service_calendar.create_order.last_name_placeholder')"
-              />
-            </div>
-          </div>
-
           <p class="contact-hint">{{ t('service_calendar.create_order.contact_hint') }}</p>
 
           <div class="form-row">
@@ -44,6 +20,7 @@
                 type="email"
                 id="customerEmail"
                 [(ngModel)]="customerEmail"
+                (blur)="onEmailBlur()"
                 name="customerEmail"
                 [placeholder]="t('service_calendar.create_order.email_placeholder')"
               />
@@ -54,8 +31,48 @@
                 type="tel"
                 id="customerPhone"
                 [(ngModel)]="customerPhone"
+                (blur)="onPhoneBlur()"
                 name="customerPhone"
                 [placeholder]="t('service_calendar.create_order.phone_placeholder')"
+              />
+            </div>
+          </div>
+
+          <!-- Client lookup status -->
+          <div class="client-lookup-status" *ngIf="isLookingUpClient || foundClient">
+            <div class="lookup-loading" *ngIf="isLookingUpClient">
+              <div class="spinner-inline"></div>
+              <span>Sprawdzanie klienta...</span>
+            </div>
+            <div class="lookup-found" *ngIf="foundClient && !isLookingUpClient">
+              <span class="found-icon">✓</span>
+              <span>Znaleziono: <strong>{{ foundClient.firstName }} {{ foundClient.lastName }}</strong></span>
+              <span class="registered-badge" *ngIf="foundClient.isRegistered">zarejestrowany</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="customerFirstName">{{ t('service_calendar.create_order.first_name') }} *</label>
+              <input
+                type="text"
+                id="customerFirstName"
+                [(ngModel)]="customerFirstName"
+                name="customerFirstName"
+                required
+                [placeholder]="t('service_calendar.create_order.first_name_placeholder')"
+                [disabled]="!!foundClient"
+              />
+            </div>
+            <div class="form-group">
+              <label for="customerLastName">{{ t('service_calendar.create_order.last_name') }}</label>
+              <input
+                type="text"
+                id="customerLastName"
+                [(ngModel)]="customerLastName"
+                name="customerLastName"
+                [placeholder]="t('service_calendar.create_order.last_name_placeholder')"
+                [disabled]="!!foundClient"
               />
             </div>
           </div>
@@ -64,6 +81,21 @@
         <!-- Sekcja: Dane roweru -->
         <div class="form-section">
           <h3 class="section-title">{{ t('service_calendar.create_order.bike_section') }}</h3>
+
+          <!-- Rowery klienta (gdy klient znaleziony) -->
+          <div class="form-group client-bikes-select" *ngIf="clientBikes.length > 0">
+            <label>Rowery klienta</label>
+            <select
+              [(ngModel)]="selectedBikeId"
+              name="clientBike"
+              (ngModelChange)="onBikeSelected($event)"
+            >
+              <option [ngValue]="null">-- Nowy rower / Wpisz ręcznie --</option>
+              <option *ngFor="let bike of clientBikes" [ngValue]="bike.id">
+                {{ bike.brand }} {{ bike.model }}
+              </option>
+            </select>
+          </div>
 
           <div class="form-row">
             <div class="form-group brand-autocomplete-wrapper">
@@ -79,12 +111,14 @@
                   required
                   autocomplete="off"
                   [placeholder]="t('service_calendar.brand_autocomplete.placeholder')"
+                  [disabled]="selectedBikeId !== null"
                 />
                 <button
                   type="button"
                   class="expand-btn"
                   (click)="expandAllBrands()"
                   [title]="t('service_calendar.brand_autocomplete.show_all')"
+                  [disabled]="selectedBikeId !== null"
                 >
                   &#9660;
                 </button>
@@ -107,6 +141,7 @@
                 [(ngModel)]="bikeModel"
                 name="bikeModel"
                 [placeholder]="t('service_calendar.create_order.model_placeholder')"
+                [disabled]="selectedBikeId !== null"
               />
             </div>
           </div>

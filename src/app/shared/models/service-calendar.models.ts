@@ -254,21 +254,43 @@ export interface CalendarOrder {
   updatedAt?: string;
 }
 
+// ============================================
+// WYSZUKIWANIE KLIENTA
+// ============================================
+
+export interface ClientLookupResult {
+  id: number;
+  firstName: string;
+  lastName?: string;
+  isRegistered: boolean;
+  email?: string;
+  phone?: string;
+}
+
+export interface ClientBike {
+  id: number;
+  brand: string;
+  model: string;
+}
+
 /**
  * DTO do tworzenia zlecenia - plaska struktura zgodna z backendem
  */
 export interface CreateCalendarOrderDto {
-  // Dane klienta (wymagane: firstName, email lub phone)
+  // Dane klienta - istniejący (zarejestrowany lub z historii)
+  clientId?: number;
+
+  // Dane klienta - nowy
   email?: string;
   phone?: string;
-  firstName: string;
+  firstName?: string;
   lastName?: string;
 
   // Dane roweru - istniejący
   existingBicycleId?: number;
 
   // Dane roweru - nowy
-  brand: string;
+  brand?: string;
   model?: string;
   type?: string;
   frameNumber?: string;
@@ -285,6 +307,10 @@ export interface UpdateCalendarOrderDto {
   description?: string;
   serviceNotes?: string;
   assignedTechnicianId?: number | null;
+  // Dane klienta - istniejący
+  clientId?: number;
+  // Dane roweru - istniejący
+  existingBicycleId?: number;
   // Dane roweru
   brand?: string;
   model?: string;

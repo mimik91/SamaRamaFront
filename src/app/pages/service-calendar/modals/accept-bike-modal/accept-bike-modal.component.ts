@@ -1,16 +1,20 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+// (debounceTime/distinctUntilChanged used for frameNumber stolen check only)
 import { I18nService } from '../../../../core/i18n.service';
 import { NotificationService } from '../../../../core/notification.service';
+import { EnumerationService } from '../../../../core/enumeration.service';
 import { ServiceCalendarService, StolenCheckResponse } from '../../services/service-calendar.service';
 import {
   CalendarOrder,
   CreateCalendarOrderDto,
   UpdateCalendarOrderDto,
-  formatCalendarDate
+  formatCalendarDate,
+  ClientLookupResult,
+  ClientBike
 } from '../../../../shared/models/service-calendar.models';
 
 type ModalMode = 'select' | 'new';
@@ -26,6 +30,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   private i18nService = inject(I18nService);
   private notificationService = inject(NotificationService);
   private calendarService = inject(ServiceCalendarService);
+  private enumerationService = inject(EnumerationService);
+  private elementRef = inject(ElementRef);
 
   @Input() serviceId!: number;
   @Input() waitingOrders: CalendarOrder[] = [];
@@ -53,6 +59,17 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   isSubmitting: boolean = false;
   isLoadingOrder: boolean = false;
 
+  // Brand autocomplete
+  allBrands: string[] = [];
+  filteredBrands: string[] = [];
+  showBrandDropdown: boolean = false;
+
+  // Client lookup
+  foundClient: ClientLookupResult | null = null;
+  clientBikes: ClientBike[] = [];
+  isLookingUpClient: boolean = false;
+  selectedBikeId: number | null = null;
+
   // Stolen check
   stolenCheckResult: StolenCheckResponse | null = null;
   isCheckingStolen: boolean = false;
@@ -67,6 +84,12 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Load brands for autocomplete
+    this.enumerationService.getEnumeration('BRAND').subscribe({
+      next: (brands) => { this.allBrands = brands; },
+      error: (err) => { console.error('Error loading brands:', err); }
+    });
+
     // Setup stolen check debounce
     this.frameNumber$.pipe(
       debounceTime(600),
@@ -92,6 +115,120 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // ============================================
+  // BRAND AUTOCOMPLETE
+  // ============================================
+
+  onBrandInput(event: Event): void {
+    const query = (event.target as HTMLInputElement).value;
+    this.bikeBrand = query;
+    if (query.length >= 3) {
+      this.filteredBrands = this.allBrands.filter(b => b.toLowerCase().includes(query.toLowerCase()));
+      this.showBrandDropdown = this.filteredBrands.length > 0;
+    } else {
+      this.showBrandDropdown = false;
+    }
+  }
+
+  onBrandFocus(): void {
+    if (this.bikeBrand.length >= 3 && this.filteredBrands.length > 0) {
+      this.showBrandDropdown = true;
+    }
+  }
+
+  selectBrand(brand: string): void {
+    this.bikeBrand = brand;
+    this.showBrandDropdown = false;
+  }
+
+  expandAllBrands(): void {
+    this.filteredBrands = [...this.allBrands];
+    this.showBrandDropdown = true;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.showBrandDropdown = false;
+    }
+  }
+
+  // ============================================
+  // CLIENT LOOKUP
+  // ============================================
+
+  onEmailBlur(): void {
+    if (!this.clientEmail) {
+      this.resetClientLookup();
+      return;
+    }
+    if (this.clientEmail.length >= 5 && this.clientEmail.includes('@') && this.clientEmail.includes('.')) {
+      this.performClientLookup(this.clientEmail, undefined);
+    }
+  }
+
+  onPhoneBlur(): void {
+    if (!this.clientPhone) {
+      this.resetClientLookup();
+      return;
+    }
+    const digits = this.clientPhone.replace(/\D/g, '');
+    if (digits.length >= 9) {
+      this.performClientLookup(undefined, this.clientPhone);
+    }
+  }
+
+  private performClientLookup(email?: string, phone?: string): void {
+    this.isLookingUpClient = true;
+    this.calendarService.lookupClient(email, phone).subscribe({
+      next: (client) => {
+        this.foundClient = client;
+        this.clientName = `${client.firstName} ${client.lastName || ''}`.trim();
+        if (email && client.phone) this.clientPhone = client.phone;
+        if (phone && client.email) this.clientEmail = client.email;
+        this.isLookingUpClient = false;
+        this.loadClientBikes(client.id);
+      },
+      error: () => {
+        this.foundClient = null;
+        this.clientBikes = [];
+        this.isLookingUpClient = false;
+      }
+    });
+  }
+
+  private loadClientBikes(clientId: number): void {
+    this.calendarService.getClientBikes(clientId).subscribe({
+      next: (bikes) => { this.clientBikes = bikes; },
+      error: () => { this.clientBikes = []; }
+    });
+  }
+
+  onBikeSelected(bikeId: number | null): void {
+    if (bikeId === null) {
+      this.bikeBrand = '';
+      this.bikeModel = '';
+      return;
+    }
+    const bike = this.clientBikes.find(b => b.id === bikeId);
+    if (bike) {
+      this.bikeBrand = bike.brand;
+      this.bikeModel = bike.model;
+    }
+  }
+
+  resetClientLookup(): void {
+    this.foundClient = null;
+    this.clientBikes = [];
+    this.selectedBikeId = null;
+    this.bikeBrand = '';
+    this.bikeModel = '';
+  }
+
+  // ============================================
+  // STOLEN CHECK
+  // ============================================
+
   onFrameNumberChange(value: string): void {
     this.frameNumber = value;
     if (value.trim().length >= 3) {
@@ -111,16 +248,16 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
         this.isCheckingStolen = false;
       },
       error: () => {
-        // W razie bledu API nie blokujemy - po prostu nie pokazujemy wyniku
         this.stolenCheckResult = null;
         this.isCheckingStolen = false;
       }
     });
   }
 
-  /**
-   * Pobiera pełne dane zlecenia z API i wypełnia formularz
-   */
+  // ============================================
+  // ORDER LOADING (preselected)
+  // ============================================
+
   private loadFullOrderDetails(orderId: number): void {
     this.isLoadingOrder = true;
 
@@ -131,7 +268,6 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
         this.isLoadingOrder = false;
       },
       error: (err: any) => {
-        // W razie błędu użyj danych z preselectedOrder (mogą być niekompletne)
         console.error('Error loading full order details:', err);
         if (this.preselectedOrder) {
           this.prefillFromOrder(this.preselectedOrder);
@@ -141,17 +277,11 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Wypełnia formularz danymi z istniejącego zlecenia
-   * Obsługuje zarówno nową strukturę zagnieżdżoną (bicycle.*, client.*) jak i starą płaską
-   */
   private prefillFromOrder(order: any): void {
-    // Dane roweru - z obiektu bicycle lub płaskiej struktury
     this.bikeBrand = order.bicycle?.brand || order.bicycleBrand || '';
     this.bikeModel = order.bicycle?.model || order.bicycleModel || '';
     this.frameNumber = order.bicycle?.frameNumber || order.bicycleFrameNumber || '';
 
-    // Dane klienta - z obiektu client lub płaskiej struktury
     if (order.client) {
       const firstName = order.client.firstName || '';
       const lastName = order.client.lastName || '';
@@ -165,15 +295,16 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Filtruje syntetyczne emaile backendowe (kończące się na @local.cyclopick.pl)
-   */
   private filterSyntheticEmail(email: string): string {
     if (email.endsWith('@local.cyclopick.pl')) {
       return '';
     }
     return email;
   }
+
+  // ============================================
+  // FORM
+  // ============================================
 
   onOverlayClick(event: Event): void {
     if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
@@ -187,7 +318,6 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
 
   setMode(mode: ModalMode): void {
     this.mode = mode;
-    // Reset selection when switching modes
     this.selectedOrderId = null;
   }
 
@@ -199,11 +329,12 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     if (this.mode === 'select') {
       return this.selectedOrderId !== null;
     } else {
-      // Walk-in: brand + (email OR phone)
-      return !!(
-        this.bikeBrand.trim() &&
+      const hasClient = !!(
+        this.foundClient ||
         (this.clientEmail.trim() || this.clientPhone.trim())
       );
+      const hasBike = !!(this.selectedBikeId || this.bikeBrand.trim());
+      return !!(hasClient && hasBike);
     }
   }
 
@@ -213,41 +344,42 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
 
     if (this.mode === 'select' && this.selectedOrderId) {
-      // Accept existing order from list - only change status to IN_PROGRESS
       this.changeStatusToInProgress(this.selectedOrderId);
     } else if (this.mode === 'new' && this.preselectedOrder) {
-      // Accept preselected order - first update data from form, then change status
       this.acceptPreselectedOrder(this.preselectedOrder.id);
     } else {
-      // Create new walk-in order directly in IN_PROGRESS status
       this.createWalkInOrder();
     }
   }
 
-  /**
-   * Przyjmuje preselektowane zlecenie - najpierw aktualizuje dane, potem zmienia status
-   */
   private acceptPreselectedOrder(orderId: number): void {
-    // Przygotuj dane do aktualizacji z formularza
     const nameParts = this.clientName.trim().split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
     const updateData: UpdateCalendarOrderDto = {
-      brand: this.bikeBrand.trim(),
-      model: this.bikeModel.trim() || undefined,
-      frameNumber: this.frameNumber.trim(),
-      firstName: firstName || undefined,
-      lastName: lastName || undefined,
-      email: this.clientEmail.trim() || undefined,
-      phone: this.clientPhone.trim() || undefined,
+      ...(this.foundClient
+        ? { clientId: this.foundClient.id }
+        : {
+            firstName: firstName || undefined,
+            lastName: lastName || undefined,
+            email: this.clientEmail.trim() || undefined,
+            phone: this.clientPhone.trim() || undefined
+          }
+      ),
+      ...(this.selectedBikeId
+        ? { existingBicycleId: this.selectedBikeId }
+        : {
+            brand: this.bikeBrand.trim(),
+            model: this.bikeModel.trim() || undefined,
+            frameNumber: this.frameNumber.trim() || undefined
+          }
+      ),
       description: this.description.trim() || undefined
     };
 
-    // Najpierw aktualizuj dane zlecenia
     this.calendarService.updateOrder(this.serviceId, orderId, updateData).subscribe({
       next: () => {
-        // Po udanej aktualizacji danych, zmień status na IN_PROGRESS
         this.changeStatusToInProgress(orderId);
       },
       error: (err: any) => {
@@ -258,9 +390,6 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Zmienia status zlecenia na IN_PROGRESS
-   */
   private changeStatusToInProgress(orderId: number): void {
     this.calendarService.updateOrderStatus(this.serviceId, orderId, 'IN_PROGRESS').subscribe({
       next: () => {
@@ -276,25 +405,33 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Tworzy nowe zlecenie walk-in i zmienia status na IN_PROGRESS
-   */
   private createWalkInOrder(): void {
     const orderData: CreateCalendarOrderDto = {
-      email: this.clientEmail.trim() || 'walkin@service.local',
-      phone: this.clientPhone.trim() || '',
-      firstName: this.clientName.trim() || 'Klient',
-      lastName: 'z ulicy',
-      brand: this.bikeBrand.trim(),
-      model: this.bikeModel.trim() || undefined,
-      frameNumber: this.frameNumber.trim(),
+      // Dane klienta
+      ...(this.foundClient
+        ? { clientId: this.foundClient.id }
+        : {
+            email: this.clientEmail.trim() || undefined,
+            phone: this.clientPhone.trim() || undefined,
+            firstName: this.clientName.trim() || 'Klient',
+            lastName: undefined
+          }
+      ),
+      // Dane roweru
+      ...(this.selectedBikeId
+        ? { existingBicycleId: this.selectedBikeId }
+        : {
+            brand: this.bikeBrand.trim(),
+            model: this.bikeModel.trim() || undefined,
+            frameNumber: this.frameNumber.trim() || undefined
+          }
+      ),
       plannedDate: formatCalendarDate(new Date()),
       description: this.description.trim() || undefined
     };
 
     this.calendarService.createOrder(this.serviceId, orderData).subscribe({
       next: (createdOrder) => {
-        // Now update status to IN_PROGRESS
         this.calendarService.updateOrderStatus(this.serviceId, createdOrder.id, 'IN_PROGRESS').subscribe({
           next: () => {
             this.notificationService.success(this.t('service_calendar.messages.bike_accepted'));
@@ -302,7 +439,6 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
             this.bikeAccepted.emit();
           },
           error: (err: any) => {
-            // Order created but status update failed - still notify success
             this.notificationService.success(this.t('service_calendar.messages.order_created'));
             this.isSubmitting = false;
             this.bikeAccepted.emit();

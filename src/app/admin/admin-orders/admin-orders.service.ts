@@ -2,12 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environments';
-import { 
-  TransportOrder, 
+import {
+  TransportOrder,
   TransportOrderRequestDto,
-  OrderFilter, 
+  OrderFilter,
   PagedResponse,
   getTransportOrderStatuses,
+  getStatusClass,
   TRANSPORT_ORDER_STATUS_LABELS
 } from '../../core/models/transport-order.models';
 
@@ -187,5 +188,9 @@ export class AdminOrdersService {
    */
   getTransportOrderStatuses(): Array<{value: string, label: string}> {
     return getTransportOrderStatuses();
+  }
+
+  getStatusClass(status: string): string {
+    return getStatusClass(status);
   }
 }

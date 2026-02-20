@@ -1,336 +1,346 @@
 .bicycles-container {
-  max-width: 1000px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 30px 20px;
+  padding: var(--spacing-8) var(--spacing-5);
 }
 
-h1 {
-  margin-bottom: 30px;
-  color: #2c3e50;
+.bicycles-container h1 {
+  margin-bottom: var(--spacing-8);
+  color: var(--text-dark);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
   text-align: center;
 }
 
+/* ── Action bar ── */
 .action-bar {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 20px;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
 }
 
-.add-btn, .delete-btn, .view-btn {
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.add-btn {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.add-btn:hover {
-  background-color: #2980b9;
-}
-
-.view-btn {
-  background-color: #2ecc71;
-  color: white;
-  border: none;
-  margin-right: 8px;
-}
-
-.view-btn:hover {
-  background-color: #27ae60;
-}
-
+/* ── Shared button base ── */
+.add-btn,
+.add-btn-large,
+.multi-select-btn,
+.service-multi-btn,
+.cancel-multi-btn,
+.view-btn,
 .delete-btn {
-  background-color: #e74c3c;
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--padding-sm);
   border: none;
+  border-radius: var(--radius-button);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: var(--transition-all);
+  white-space: nowrap;
 }
 
-.delete-btn:hover {
-  background-color: #c0392b;
+.add-btn,
+.add-btn-large {
+  background: var(--gradient-primary);
+  color: var(--color-white);
+  box-shadow: var(--shadow-primary);
 }
 
-.loading-message, .error-message {
+.add-btn:hover,
+.add-btn-large:hover {
+  box-shadow: var(--shadow-primary-hover);
+  transform: translateY(-1px);
+}
+
+.add-btn-large {
+  padding: var(--padding-md);
+  font-size: var(--font-size-md);
+}
+
+.multi-select-btn {
+  background: var(--gradient-slate-alt);
+  color: var(--text-slate);
+  border: 1px solid var(--border-color);
+}
+
+.multi-select-btn:hover {
+  background: var(--color-slate-200);
+  color: var(--text-dark);
+}
+
+.service-multi-btn {
+  background: var(--gradient-success);
+  color: var(--color-white);
+  box-shadow: var(--shadow-success);
+}
+
+.service-multi-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.service-multi-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancel-multi-btn {
+  background: var(--gradient-slate);
+  color: var(--text-slate);
+  border: 1px solid var(--border-color);
+}
+
+.cancel-multi-btn:hover {
+  background: var(--color-slate-200);
+}
+
+/* ── Status messages ── */
+.loading-message,
+.error-message {
+  padding: var(--spacing-6);
+  border-radius: var(--radius-card);
   text-align: center;
-  padding: 20px;
-  border-radius: 4px;
+  font-size: var(--font-size-md);
 }
 
 .loading-message {
-  background-color: #f8f9fa;
-  color: #6c757d;
+  background: var(--color-gray-50);
+  color: var(--text-secondary);
 }
 
 .error-message {
-  background-color: #f8d7da;
-  color: #721c24;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
 }
 
+/* ── Bicycle list ── */
 .bicycles-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--spacing-4);
 }
 
+/* ── Bicycle card ── */
 .bicycle-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: var(--spacing-5);
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: var(--transition-all);
 }
 
 .bicycle-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-light);
 }
 
+.bicycle-card.selected {
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-15), var(--shadow-md);
+  background: var(--color-success-green-bg);
+}
+
+/* ── Card content ── */
 .bicycle-content {
   display: flex;
+  align-items: center;
   flex: 1;
+  min-width: 0;
 }
 
+/* ── Bicycle image ── */
 .bicycle-image {
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
   overflow: hidden;
-  border-radius: 4px;
-  margin-right: 20px;
+  border-radius: var(--radius-md);
+  margin-right: var(--spacing-5);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f8f9fa;
+  background: var(--color-gray-50);
+  border: 1px solid var(--border-color);
 }
 
 .bicycle-image.has-photo img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .bicycle-image.no-image {
-  background-color: #e9ecef;
-  color: #6c757d;
-  font-size: 0.9rem;
-  text-align: center;
+  background: var(--gradient-slate);
+  color: var(--text-muted);
 }
 
 .bicycle-image .placeholder-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
   width: 100%;
+  height: 100%;
 }
 
 .bicycle-image .placeholder-content span {
-  padding: 8px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  background: var(--color-black-alpha-05);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-2) var(--spacing-3);
+  text-align: center;
 }
 
+/* ── Bicycle info ── */
 .bicycle-details {
-  flex-grow: 1;
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: var(--spacing-1);
 }
 
 .bicycle-details h3 {
-  margin: 0 0 10px 0;
-  color: #2c3e50;
+  margin: 0 0 var(--spacing-2) 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .frame-number {
-  font-weight: 500;
-  color: #7f8c8d;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
 }
 
 .bicycle-details p {
-  margin: 5px 0;
-  color: #34495e;
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 
+/* ── Card actions ── */
 .bicycle-actions {
   display: flex;
+  gap: var(--spacing-2);
+  margin-left: var(--spacing-4);
+  flex-shrink: 0;
 }
 
+.view-btn {
+  background: var(--gradient-primary);
+  color: var(--color-white);
+  box-shadow: var(--shadow-primary);
+}
+
+.view-btn:hover {
+  box-shadow: var(--shadow-primary-hover);
+  transform: translateY(-1px);
+}
+
+.delete-btn {
+  background: var(--gradient-danger);
+  color: var(--color-white);
+  box-shadow: var(--shadow-danger);
+}
+
+.delete-btn:hover {
+  box-shadow: var(--shadow-danger-hover);
+  transform: translateY(-1px);
+}
+
+/* ── Selection checkbox ── */
+.selection-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--spacing-4);
+  flex-shrink: 0;
+}
+
+.selection-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+/* ── Empty state ── */
 .no-bicycles {
+  padding: var(--spacing-12) var(--spacing-6);
+  background: var(--gradient-slate);
+  border-radius: var(--radius-card);
+  border: 1px dashed var(--border-color);
   text-align: center;
-  padding: 40px 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
 }
 
 .no-bicycles p {
-  font-size: 1.2rem;
-  color: #6c757d;
-  margin-bottom: 20px;
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-6);
 }
 
-.add-btn-large {
-  padding: 12px 24px;
-  font-size: 1.1rem;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.add-btn-large:hover {
-  background-color: #2980b9;
-}
-
-/* Media queries dla urządzeń mobilnych */
+/* ── Mobile ── */
 @media screen and (max-width: 767px) {
-  /* Dostosowanie kontenera głównego */
   .bicycles-container {
-    padding: 15px 10px;
+    padding: var(--spacing-4) var(--spacing-3);
   }
-  
-  /* Zmniejszenie nagłówka */
-  h1 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
+
+  .bicycles-container h1 {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-5);
   }
-  
-  /* Dostosowanie przycisku dodawania */
-  .action-bar .add-btn {
-    padding: 10px 16px;
+
+  .action-bar {
+    justify-content: stretch;
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .add-btn,
+  .multi-select-btn,
+  .service-multi-btn,
+  .cancel-multi-btn {
     width: 100%;
-    font-size: 1rem;
+    justify-content: center;
   }
-  
-  /* Dostosowanie kart rowerowych */
+
   .bicycle-card {
     flex-direction: column;
-    align-items: flex-start;
-    padding: 15px;
+    align-items: stretch;
+    padding: var(--spacing-4);
   }
-  
-  /* Zmiana układu zawartości karty */
+
   .bicycle-content {
     width: 100%;
-    flex-direction: row;
-    margin-bottom: 10px;
+    margin-bottom: var(--spacing-3);
   }
-  
-  /* Zmniejszenie zdjęcia */
+
   .bicycle-image {
     width: 80px;
     height: 80px;
-    margin-right: 15px;
+    margin-right: var(--spacing-4);
   }
-  
-  /* Ukrywanie przycisków akcji na urządzeniach mobilnych */
+
+  .bicycle-details h3 {
+    font-size: var(--font-size-md);
+  }
+
   .bicycle-actions {
     display: none !important;
-  }
-
-  
-  .action-bar {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-
-  .multi-select-btn {
-    padding: 8px 16px;
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .multi-select-btn:hover {
-    background-color: #5a6268;
-  }
-
-  .service-multi-btn {
-    padding: 8px 16px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .service-multi-btn:hover:not(:disabled) {
-    background-color: #218838;
-  }
-
-  .service-multi-btn:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-  }
-
-  .cancel-multi-btn {
-    padding: 8px 16px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .cancel-multi-btn:hover {
-    background-color: #c82333;
-  }
-
-  /* Selection checkbox styling */
-  .selection-checkbox {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    margin-left: 5px;
-  }
-
-  .selection-checkbox input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-  }
-
-  /* Selected bicycle card styling */
-  .bicycle-card.selected {
-    border: 2px solid #007bff;
-    box-shadow: 0 0 0 1px #007bff, 0 4px 8px rgba(0, 123, 255, 0.25);
-    background-color: rgba(0, 123, 255, 0.05);
-  }
-
-  /* Adjust the bicycle content when in multi-select mode */
-  .bicycle-card {
-    display: flex;
-    align-items: center;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .action-bar {
-      flex-direction: column;
-    }
-    
-    .add-btn, .multi-select-btn, .service-multi-btn, .cancel-multi-btn {
-      width: 100%;
-    }
   }
 }

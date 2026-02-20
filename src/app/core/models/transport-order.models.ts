@@ -155,6 +155,7 @@ export enum TransportOrderStatus {
   PICKED_UP = 'PICKED_UP',
   ON_THE_WAY = 'ON_THE_WAY',
   DELIVERED = 'DELIVERED',
+  READY_FOR_RETURN = 'READY_FOR_RETURN',
   RETURNING = 'RETURNING',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED'
@@ -170,6 +171,7 @@ export const TRANSPORT_ORDER_STATUS_LABELS: Record<TransportOrderStatus, string>
   [TransportOrderStatus.PICKED_UP]: 'Odebrane',
   [TransportOrderStatus.ON_THE_WAY]: 'W drodze do serwisu',
   [TransportOrderStatus.DELIVERED]: 'Dostarczone do serwisu',
+  [TransportOrderStatus.READY_FOR_RETURN]: 'Gotowe do zwrotu',
   [TransportOrderStatus.RETURNING]: 'W drodze powrotnej',
   [TransportOrderStatus.COMPLETED]: 'Zakończone',
   [TransportOrderStatus.CANCELLED]: 'Anulowane'
@@ -183,6 +185,25 @@ export function getTransportOrderStatuses(): Array<{value: string, label: string
     value,
     label
   }));
+}
+
+/**
+ * Mapowanie statusów na klasy CSS
+ */
+export function getStatusClass(status: string): string {
+  const statusClasses: Record<string, string> = {
+    'PENDING': 'status-pending',
+    'CONFIRMED': 'status-confirmed',
+    'TO_PICK_UP': 'status-to-pick-up',
+    'PICKED_UP': 'status-picked-up',
+    'ON_THE_WAY': 'status-on-the-way',
+    'DELIVERED': 'status-delivered',
+    'READY_FOR_RETURN': 'status-ready-for-return',
+    'RETURNING': 'status-returning',
+    'COMPLETED': 'status-completed',
+    'CANCELLED': 'status-cancelled'
+  };
+  return statusClasses[status] || '';
 }
 
 // === VALIDATION ===

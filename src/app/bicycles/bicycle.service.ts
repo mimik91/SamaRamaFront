@@ -1,19 +1,57 @@
 
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { Bicycle, BicycleForm } from './bicycle.model';
-import { AuthService } from '../auth/auth.service';
 import { environment } from '../environments/environments';
 
+export interface BicycleImageUploadRequest {
+  type: string;
+  fileName: string;
+  mimeType: string;
+  width: number;
+  height: number;
+  weight: number;
+  caption?: string;
+  displayOrder?: number;
+}
+
+export interface BicycleImageUploadResponse {
+  imageId: string;
+  uploadUrl: string | null;
+  path: string;
+}
+
+export interface BicycleImage {
+  imageId: number;
+  url: string;
+  width?: number;
+  height?: number;
+}
+
+export interface GroupedImagesResponse {
+  images: {
+    MAIN_PHOTO?: BicycleImage[];
+    GALLERY?: BicycleImage[];
+    RECEIPT?: BicycleImage[];
+  };
+  limits?: {
+    MAIN_PHOTO?: number;
+    GALLERY?: number;
+    RECEIPT?: number;
+  };
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class BicycleService {
   private apiUrl = `${environment.apiUrl}${environment.endpoints.bicycles}`;
+  private imagesUrl = `${environment.apiUrl}/bicycles-images`;
   private http = inject(HttpClient);
-  private authService = inject(AuthService);
+
+  private readonly MAX_RETRIES = 3;
+  private readonly UPLOAD_TIMEOUT = 60000;
 
   
   constructor() {}
@@ -38,7 +76,7 @@ export class BicycleService {
       );
   }
   
-  addBicycle(bicycleData: Omit<Bicycle, 'id' | 'hasPhoto'>): Observable<any> {
+  addBicycle(bicycleData: Omit<Bicycle, 'id' | 'mainPhotoUrl'>): Observable<any> {
     // Upewniamy się, że frameNumber jest null, a nie pustym stringiem
     const payload = {
       ...bicycleData, 
@@ -70,43 +108,82 @@ export class BicycleService {
       );
   }
   
-  uploadBicyclePhoto(bicycleId: number, photoFile: File): Observable<any> {
-    if (!photoFile) {
-      return throwError(() => new Error('No file selected'));
+  /**
+   * Step 1: Request presigned upload URL from backend
+   */
+  generateImageUploadUrl(bicycleId: number, request: BicycleImageUploadRequest): Observable<BicycleImageUploadResponse> {
+    return this.http.post<BicycleImageUploadResponse>(
+      `${this.imagesUrl}/${bicycleId}`,
+      request
+    ).pipe(
+      catchError(error => {
+        console.error('Error generating upload URL:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Step 2: Upload file directly to R2 via presigned URL with retry
+   */
+  async uploadToR2(uploadUrl: string, file: File, retryCount = 0): Promise<void> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.UPLOAD_TIMEOUT);
+
+      const result = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type,
+          'Cache-Control': 'public, max-age=31536000, immutable'
+        },
+        body: file,
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!result.ok) {
+        const errorText = await result.text().catch(() => 'Unknown error');
+        throw new Error(`Upload failed with status ${result.status}: ${errorText}`);
+      }
+
+      console.log('[BicycleService] R2 upload successful');
+    } catch (error) {
+      console.error(`[BicycleService] Upload attempt ${retryCount + 1} failed:`, error);
+
+      if (retryCount < this.MAX_RETRIES) {
+        const delay = Math.pow(2, retryCount) * 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.uploadToR2(uploadUrl, file, retryCount + 1);
+      }
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Upload przekroczył limit czasu (60s).');
+      }
+      throw error;
     }
-    
-    // Sprawdź typ pliku
-    if (!photoFile.type.match('image.*')) {
-      return throwError(() => new Error('Only image files are allowed'));
-    }
-    
-    const formData = new FormData();
-    formData.append('photo', photoFile);
-    
-    console.log(`Uploading photo for bicycle ID: ${bicycleId}`);
-    
-    return this.http.post(`${this.apiUrl}/${bicycleId}/photo`, formData)
+  }
+  
+  getAllBicycleImages(bicycleId: number): Observable<GroupedImagesResponse> {
+    return this.http.get<GroupedImagesResponse>(`${this.imagesUrl}/${bicycleId}`)
       .pipe(
-        map(response => {
-          console.log('Photo upload success:', response);
-          return response;
-        }),
         catchError(error => {
-          console.error('Error uploading bicycle photo:', error);
+          console.error('Error fetching bicycle images:', error);
           return throwError(() => error);
         })
       );
   }
-  
+
   getBicyclePhotoUrl(bicycleId: number): string {
-    return `${this.apiUrl}/${bicycleId}/photo`;
+    return `${this.imagesUrl}/${bicycleId}`;
   }
   
   deleteBicyclePhoto(bicycleId: number, isComplete: boolean = true): Observable<any> {
     // Add query parameter for isComplete
     const params = new HttpParams().set('isComplete', isComplete.toString());
     
-    return this.http.delete(`${this.apiUrl}/${bicycleId}/photo`, { params })
+    return this.http.delete(`${this.imagesUrl}/${bicycleId}`, { params })
       .pipe(
         catchError(error => {
           console.error('Error deleting bicycle photo:', error);
@@ -128,7 +205,7 @@ export class BicycleService {
       );
   }
   
-  updateBicycle(id: number, bicycleData: Omit<Bicycle, 'id' | 'hasPhoto'>, isComplete: boolean = true): Observable<any> {
+  updateBicycle(id: number, bicycleData: Omit<Bicycle, 'id' | 'mainPhotoUrl'>, isComplete: boolean = true): Observable<any> {
     console.log(`Updating bicycle ID ${id} with data:`, bicycleData);
     console.log(`isComplete parameter: ${isComplete}`);
     

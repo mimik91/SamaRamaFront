@@ -6,7 +6,7 @@ import { isPlatformBrowser } from '@angular/common';
 
 // Role-based auth guard
 export const authGuard: CanActivateFn = (
-  route: ActivatedRouteSnapshot, 
+  route: ActivatedRouteSnapshot,
   state: RouterStateSnapshot
 ) => {
   const authService = inject(AuthService);
@@ -26,36 +26,36 @@ export const authGuard: CanActivateFn = (
     router.navigate(['/login'], { replaceUrl: true });
     return false;
   }
-  
+
   // Get allowed roles from route data
   const allowedRoles = route.data['roles'] as string[] | undefined;
-  
+
   // If no specific roles required, any authenticated user can access
   if (!allowedRoles || allowedRoles.length === 0) {
     console.log('AuthGuard: No specific roles required, access granted');
     return true;
   }
-  
+
   // Check if user has one of the required roles
   const userRole = authService.getUserRole();
   console.log('AuthGuard: User role:', userRole, 'Required roles:', allowedRoles);
-  
+
   if (userRole && allowedRoles.includes(userRole)) {
     return true;
   }
-  
-  // If user has ADMIN or MODERATOR role, always allow access regardless of other roles
-  if (userRole === 'ADMIN' || userRole === 'MODERATOR') {
+
+  // ADMIN always has access
+  if (userRole === 'ADMIN') {
     return true;
   }
-  
+
   // Redirect based on user role - UNIKAJ pętli przekierowań!
   console.log('AuthGuard: Access denied, redirecting based on role');
-  if (userRole === 'CLIENT') {
+  if (userRole === 'CLIENT' || userRole === 'MODERATOR') {
     router.navigate(['/bicycles'], { replaceUrl: true });
   } else if (userRole === 'SERVICE') {
     router.navigate(['/service-pending-verification'], { replaceUrl: true });
-  } else if (userRole === 'ADMIN' || userRole === 'MODERATOR') {
+  } else if (userRole === 'ADMIN') {
     router.navigate(['/admin-dashboard'], { replaceUrl: true });
   } else {
     // Jeśli nieznana rola, wyloguj użytkownika
@@ -63,7 +63,7 @@ export const authGuard: CanActivateFn = (
     authService.logout();
     router.navigate(['/login'], { replaceUrl: true });
   }
-  
+
   return false;
 };
 
@@ -72,54 +72,90 @@ export const clientGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
-  
+
   if (!isPlatformBrowser(platformId)) {
     return true;
   }
-  
+
   console.log('ClientGuard: Checking client access to:', state.url);
-  
+
   if (!authService.isLoggedIn()) {
     console.log('ClientGuard: Not logged in, redirecting to /login');
     router.navigate(['/login'], { replaceUrl: true });
     return false;
   }
-  
+
   if (authService.isClient() || authService.isAdmin()) {
     console.log('ClientGuard: Access granted');
     return true;
   }
-  
+
   console.log('ClientGuard: Access denied');
   router.navigate(['/login'], { replaceUrl: true });
   return false;
 };
 
-// Specific guard for admin role
+// Specific guard for admin role (tylko ADMIN, bez MODERATORA)
 export const adminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
-  
+
   if (!isPlatformBrowser(platformId)) {
     return true;
   }
-  
+
   console.log('AdminGuard: Checking admin access to:', state.url);
-  
+
   if (!authService.isLoggedIn()) {
     console.log('AdminGuard: Not logged in, redirecting to /login');
     router.navigate(['/login'], { replaceUrl: true });
     return false;
   }
-  
-  if (authService.isAdmin() || authService.isModerator()) {
+
+  if (authService.isAdmin()) {
     console.log('AdminGuard: Admin access granted');
     return true;
   }
-  
+
   // Redirect based on role
   console.log('AdminGuard: Not admin, redirecting based on role');
+  if (authService.isClient() || authService.isModerator()) {
+    router.navigate(['/bicycles'], { replaceUrl: true });
+  } else if (authService.isService()) {
+    router.navigate(['/service-pending-verification'], { replaceUrl: true });
+  } else {
+    router.navigate(['/login'], { replaceUrl: true });
+  }
+
+  return false;
+};
+
+// Guard dla tras dostępnych dla ADMIN i MODERATOR (panel kuriera, zamówienia)
+export const moderatorGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  const platformId = inject(PLATFORM_ID);
+
+  if (!isPlatformBrowser(platformId)) {
+    return true;
+  }
+
+  console.log('ModeratorGuard: Checking access to:', state.url);
+
+  if (!authService.isLoggedIn()) {
+    console.log('ModeratorGuard: Not logged in, redirecting to /login');
+    router.navigate(['/login'], { replaceUrl: true });
+    return false;
+  }
+
+  if (authService.isAdmin() || authService.isModerator()) {
+    console.log('ModeratorGuard: Access granted');
+    return true;
+  }
+
+  // Redirect based on role
+  console.log('ModeratorGuard: Access denied, redirecting based on role');
   if (authService.isClient()) {
     router.navigate(['/bicycles'], { replaceUrl: true });
   } else if (authService.isService()) {
@@ -127,7 +163,7 @@ export const adminGuard: CanActivateFn = (route, state) => {
   } else {
     router.navigate(['/login'], { replaceUrl: true });
   }
-  
+
   return false;
 };
 
@@ -136,31 +172,31 @@ export const serviceGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
-  
+
   if (!isPlatformBrowser(platformId)) {
     return true;
   }
-  
+
   console.log('ServiceGuard: Checking service access to:', state.url);
-  
+
   if (!authService.isLoggedIn()) {
     console.log('ServiceGuard: Not logged in, redirecting to /login');
     router.navigate(['/login'], { replaceUrl: true });
     return false;
   }
-  
+
   // Admini również mają dostęp do tras SERVICE (dla celów zarządzania)
-  if (authService.isService() || authService.isAdmin() || authService.isModerator()) {
+  if (authService.isService() || authService.isAdmin()) {
     console.log('ServiceGuard: Access granted');
     return true;
   }
-  
+
   console.log('ServiceGuard: Access denied, redirecting based on role');
-  if (authService.isClient()) {
+  if (authService.isClient() || authService.isModerator()) {
     router.navigate(['/bicycles'], { replaceUrl: true });
   } else {
     router.navigate(['/login'], { replaceUrl: true });
   }
-  
+
   return false;
 };

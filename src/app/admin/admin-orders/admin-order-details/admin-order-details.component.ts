@@ -180,18 +180,7 @@ export class AdminOrderDetailsComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-    const statusClasses: Record<string, string> = {
-      'PENDING': 'status-pending',
-      'CONFIRMED': 'status-confirmed',
-      'TO_PICK_UP': 'status-to-pick-up',
-      'PICKED_UP': 'status-picked-up',
-      'ON_THE_WAY': 'status-on-the-way',
-      'DELIVERED': 'status-delivered',
-      'RETURNING': 'status-returning',
-      'COMPLETED': 'status-completed',
-      'CANCELLED': 'status-cancelled'
-    };
-    return statusClasses[status] || '';
+    return this.adminOrdersService.getStatusClass(status);
   }
 
   canEditOrder(): boolean {

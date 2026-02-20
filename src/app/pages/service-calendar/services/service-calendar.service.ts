@@ -14,7 +14,9 @@ import {
   CreateCalendarOrderDto,
   UpdateCalendarOrderDto,
   CalendarOrderStatus,
-  OrderImage
+  OrderImage,
+  ClientLookupResult,
+  ClientBike
 } from '../../../shared/models/service-calendar.models';
 
 // ============================================
@@ -210,6 +212,26 @@ export class ServiceCalendarService {
     const params = new HttpParams().set('serviceId', serviceId.toString());
     return this.http.delete<void>(`${this.apiUrl}${url}/${imageId}`, { params })
       .pipe(catchError(this.handleError('deleteOrderImage')));
+  }
+
+  // ============================================
+  // WYSZUKIWANIE KLIENTA
+  // ============================================
+
+  lookupClient(email?: string, phone?: string): Observable<ClientLookupResult> {
+    let params = new HttpParams();
+    if (email) params = params.set('email', email);
+    if (phone) params = params.set('phone', phone);
+    return this.http.get<ClientLookupResult>(
+      `${this.apiUrl}${this.endpoints.clientLookup}`,
+      { params }
+    ).pipe(catchError(this.handleError('lookupClient')));
+  }
+
+  getClientBikes(clientId: number): Observable<ClientBike[]> {
+    const url = this.endpoints.clientBikes.replace(':clientId', clientId.toString());
+    return this.http.get<ClientBike[]>(`${this.apiUrl}${url}`)
+      .pipe(catchError(this.handleError('getClientBikes')));
   }
 
   // ============================================

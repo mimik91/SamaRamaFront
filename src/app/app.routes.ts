@@ -5,7 +5,7 @@ import { VerificationComponent } from './auth/verification/verification.componen
 import { ServicePendingVerificationComponent } from './pages/service-admin-panel/service-pending-verification/service-pending-verification.component';
 import { ServiceAdminPanelComponent } from './pages/service-admin-panel/service-admin-panel.component';
 import { ServiceCalendarComponent } from './pages/service-calendar/service-calendar.component';
-import { authGuard, clientGuard, adminGuard, serviceGuard} from './auth/auth.guard';
+import { authGuard, clientGuard, adminGuard, serviceGuard, moderatorGuard } from './auth/auth.guard';
 import { BicyclesListComponent } from './bicycles/bicycles-list/bicycles-list.component';
 import { BicycleFormComponent } from './bicycles/bicycle-form/bicycle-form.component';
 import { BicycleDetailsComponent } from './bicycles/bicycle-details/bicycle-details.component';
@@ -217,12 +217,12 @@ export const routes: Routes = [
       title: 'Panel Klienta'
     },
     
-    // Dashboard dla adminów
-    { 
-      path: 'admin-dashboard', 
-      component: AdminDashboardComponent, 
+    // Dashboard dla adminów (tylko ADMIN)
+    {
+      path: 'admin-dashboard',
+      component: AdminDashboardComponent,
       canActivate: [adminGuard],
-      data: { roles: ['ADMIN', 'MODERATOR'] },
+      data: { roles: ['ADMIN'] },
       title: 'Panel Administracyjny'
     },
     
@@ -253,13 +253,13 @@ export const routes: Routes = [
     {
       path: 'admin-orders/:id',
       component: AdminOrderDetailsComponent,
-      canActivate: [adminGuard],
+      canActivate: [moderatorGuard],
       title: 'Szczegóły Zamówienia - Admin'
     },
     {
       path: 'admin-orders',
       component: AdminOrdersComponent,
-      canActivate: [adminGuard],
+      canActivate: [moderatorGuard],
       title: 'Zamówienia - Admin'
     },
     { 
@@ -299,10 +299,10 @@ export const routes: Routes = [
     // === CHRONIONE TRASY ADMINÓW ===
     
     // Admin Orders Routes
-    { 
-      path: 'admin-orders', 
-      component: AdminOrdersComponent, 
-      canActivate: [adminGuard],
+    {
+      path: 'admin-orders',
+      component: AdminOrdersComponent,
+      canActivate: [moderatorGuard],
       title: 'Zamówienia - Admin'
     },
     { 
@@ -347,11 +347,10 @@ export const routes: Routes = [
       title: 'Serwisy - Admin'
     },
     
-    { 
-      path: 'mistrzauta', 
-      component: CourierPanelComponent, 
-      canActivate: [adminGuard],
-      data: { roles: ['ADMIN', 'MODERATOR'] },
+    {
+      path: 'mistrzauta',
+      component: CourierPanelComponent,
+      canActivate: [moderatorGuard],
       title: 'Panel Kuriera'
     },
     

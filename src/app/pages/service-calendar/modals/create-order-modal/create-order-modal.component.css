@@ -119,6 +119,7 @@
 .form-group select,
 .form-group textarea {
   width: 100%;
+  box-sizing: border-box;
   padding: var(--spacing-3);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -263,6 +264,80 @@
 
 .autocomplete-item:active {
   background: var(--color-primary-light, #dbeafe);
+}
+
+/* Disabled inputs */
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+  background: var(--color-slate-100);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+/* Client lookup status */
+.client-lookup-status {
+  margin: var(--spacing-2) 0 var(--spacing-3) 0;
+}
+
+.lookup-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.spinner-inline {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.lookup-found {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-success-dark, #1e8449);
+  background: var(--color-success-light, #dcfce7);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-md);
+}
+
+.found-icon {
+  font-weight: var(--font-weight-bold);
+}
+
+.registered-badge {
+  margin-left: auto;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: var(--font-size-xs);
+  padding: 2px var(--spacing-2);
+  border-radius: var(--radius-full, 9999px);
+}
+
+/* Client bikes selector */
+.client-bikes-select {
+  border: 1px solid var(--color-primary-alpha-20, rgba(59,130,246,0.2));
+  background: var(--color-slate-50);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-4);
+}
+
+.client-bikes-select label {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Responsive */

@@ -16,9 +16,9 @@
     
     <div class="bicycle-info">
       <div class="bicycle-image">
-        <ng-container *ngIf="bicycle.hasPhoto; else noImageTemplate">
-          <img 
-            [src]="getBicyclePhotoUrl(bicycle.id)" 
+        <ng-container *ngIf="bicycle.mainPhotoUrl; else noImageTemplate">
+          <img
+            [src]="bicycle.mainPhotoUrl"
             alt="Zdjęcie roweru"
             (error)="handleImageError()"
           >

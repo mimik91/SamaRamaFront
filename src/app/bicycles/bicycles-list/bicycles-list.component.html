@@ -37,10 +37,10 @@
           </div>
           
           <div class="bicycle-content">
-            <div class="bicycle-image" [ngClass]="{'has-photo': bicycle.hasPhoto, 'no-image': !bicycle.hasPhoto}">
-              <ng-container *ngIf="bicycle.hasPhoto; else noImageTemplate">
-                <img 
-                  [src]="getBicyclePhotoUrl(bicycle.id)" 
+            <div class="bicycle-image" [ngClass]="{'has-photo': !!bicycle.mainPhotoUrl, 'no-image': !bicycle.mainPhotoUrl}">
+              <ng-container *ngIf="bicycle.mainPhotoUrl; else noImageTemplate">
+                <img
+                  [src]="bicycle.mainPhotoUrl"
                   alt="Zdjęcie roweru"
                   (error)="handleImageError($event, bicycle)"
                 >

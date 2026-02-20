@@ -11,6 +11,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   // (np. zamówienia gościa, rejestracja, cennik)
   const publicEndpoints = [
     environment.endpoints.guestOrders.transport,
+    environment.endpoints.serviceRecords,
     '/auth/login'
   ];
   const isPublicEndpoint = publicEndpoints.some(url => req.url.includes(url));

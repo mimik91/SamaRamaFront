@@ -1,40 +1,60 @@
 <div class="bicycle-form-container">
   <h1>Dodaj nowy rower</h1>
-  
+
   <form [formGroup]="bicycleForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label for="brand">Marka*</label>
-      <select 
-        id="brand" 
-        formControlName="brand" 
-        [class.is-invalid]="isFieldInvalid('brand')"
-        [attr.disabled]="loadingBrands ? '' : null"
-      >
-        <option value="" disabled>-- Wybierz markę --</option>
-        <option *ngIf="loadingBrands" value="" disabled>Ładowanie...</option>
-        <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
-        <!-- Opcja dla innych marek -->
-        <option value="Inna">Inna marka (wpisz w polu model)</option>
-      </select>
+      <div class="autocomplete-wrapper">
+        <input
+          type="text"
+          id="brand"
+          formControlName="brand"
+          placeholder="Wpisz markę roweru"
+          [class.is-invalid]="isFieldInvalid('brand')"
+          (input)="onBrandInput()"
+          (focus)="onBrandFocus()"
+          (blur)="onBrandBlur()"
+          autocomplete="off"
+        >
+        <button
+          type="button"
+          class="autocomplete-toggle"
+          (mousedown)="toggleBrandDropdown($event)"
+          tabindex="-1"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 10l5 5 5-5z"/>
+          </svg>
+        </button>
+        <ul class="autocomplete-dropdown" *ngIf="showBrandDropdown && filteredBrands.length > 0">
+          <li
+            *ngFor="let brand of filteredBrands"
+            (mousedown)="selectBrand(brand)"
+            [class.highlighted]="brand === bicycleForm.get('brand')?.value"
+          >
+            {{ brand }}
+          </li>
+        </ul>
+      </div>
       <div *ngIf="isFieldInvalid('brand')" class="error-message">
         Marka jest wymagana
       </div>
     </div>
-    
+
     <div class="form-group">
       <label for="model">Model</label>
-      <input 
-        type="text" 
-        id="model" 
+      <input
+        type="text"
+        id="model"
         formControlName="model"
         placeholder="Wpisz model roweru"
       >
     </div>
-    
+
     <div class="form-group">
       <label for="type">Typ roweru</label>
-      <select 
-        id="type" 
+      <select
+        id="type"
         formControlName="type"
         [attr.disabled]="loadingTypes ? '' : null"
       >
@@ -43,11 +63,11 @@
         <option *ngFor="let type of bikeTypes" [value]="type">{{ type }}</option>
       </select>
     </div>
-    
+
     <div class="form-group">
       <label for="frameMaterial">Materiał ramy</label>
-      <select 
-        id="frameMaterial" 
+      <select
+        id="frameMaterial"
         formControlName="frameMaterial"
         [attr.disabled]="loadingMaterials ? '' : null"
       >
@@ -57,41 +77,47 @@
       </select>
     </div>
 
-      <div class="warning-box" style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin: 10px 0; border-radius: 4px;">
-        <strong>Uwaga:</strong> Obsługa rowerów z ramą karbonową zostanie w pełni wprowadzona w 2026r. Aktualnie zamawiając serwis dla roweru karbonowego, odpowiedzialność za potencjalne uszkodzenia ponosi klient. Dokładamy wszelkich starań, aby zapewnić najwyższą jakość usług, jednak obecnie nie jesteśmy w stanie zagwarantować specjalistycznych warunków transportu dla ram karbonowych.
-      </div>
-    
+    <div class="form-group">
+      <label for="frameNumber">Numer ramy</label>
+      <input
+        type="text"
+        id="frameNumber"
+        formControlName="frameNumber"
+        placeholder="Wpisz numer ramy"
+      >
+    </div>
+
     <div class="form-group">
       <label for="productionDate">Rok produkcji</label>
-      <input 
-        type="date" 
-        id="productionDate" 
+      <input
+        type="date"
+        id="productionDate"
         formControlName="productionDate"
       >
     </div>
-    
+
     <div class="form-group">
-      <label for="photo">Zdjęcie roweru (maks. 1MB)</label>
-      <input 
-        type="file" 
-        id="photo" 
-        accept="image/*"
+      <label for="photo">Zdjęcie roweru (maks. 10MB, zostanie skompresowane do WebP)</label>
+      <input
+        type="file"
+        id="photo"
+        accept="image/jpeg,image/png,image/webp"
         (change)="onFileSelected($event)"
       >
       <div *ngIf="photoError" class="error-message">
         {{ photoError }}
       </div>
-      
+
       <div *ngIf="selectedFile" class="photo-preview">
         <img [src]="previewUrl" alt="Podgląd zdjęcia roweru">
       </div>
     </div>
-    
+
     <div class="form-actions">
       <button type="button" class="cancel-btn" (click)="goBack()">Anuluj</button>
-      <button 
-        type="submit" 
-        class="submit-btn" 
+      <button
+        type="submit"
+        class="submit-btn"
         [disabled]="bicycleForm.invalid || isSubmitting || loadingBrands || loadingTypes || loadingMaterials"
       >
         {{ isSubmitting ? 'Dodawanie...' : 'Dodaj rower' }}

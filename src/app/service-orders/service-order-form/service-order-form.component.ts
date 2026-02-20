@@ -474,7 +474,7 @@ openPrivacyPolicy() {
   
   handleImageError(): void {
     if (this.bicycle) {
-      this.bicycle.hasPhoto = false;
+      this.bicycle.mainPhotoUrl = null;
     }
   }
   

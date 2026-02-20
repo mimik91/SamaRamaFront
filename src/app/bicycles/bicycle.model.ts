@@ -9,7 +9,7 @@ export interface Bicycle {
     type?: string;
     frameMaterial?: string;
     productionDate?: string;
-    hasPhoto: boolean;
+    mainPhotoUrl?: string | null;
     owner?: User;  // Added owner property
 }
   

@@ -114,6 +114,225 @@
 }
 
 /* =========================================
+   Transport Kraków Section
+   ========================================= */
+.transport-section {
+  margin-bottom: 60px;
+  padding: 52px 48px 48px;
+  background: linear-gradient(150deg, #f0fdf4 0%, #ffffff 65%);
+  border-radius: 16px;
+  border: 1px solid #bbf7d0;
+  box-shadow: 0 4px 24px rgba(27, 94, 32, 0.08);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.transport-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primary), #4ade80);
+  border-radius: 16px 16px 0 0;
+}
+
+/* Badge */
+.transport-badge-wrap {
+  margin-bottom: 20px;
+}
+
+.transport-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* Header */
+.transport-header {
+  margin-bottom: 44px;
+}
+
+.transport-header h2 {
+  font-size: 2.2rem;
+  color: var(--color-primary);
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.transport-header-sub {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.transport-intro {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 580px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Steps timeline */
+.transport-steps {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 36px 0;
+  position: relative;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Dashed connecting line through icon circles */
+.transport-steps::before {
+  content: '';
+  position: absolute;
+  top: 31px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  border-top: 2px dashed rgba(27, 94, 32, 0.25);
+  z-index: 0;
+}
+
+.ts-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  padding: 0 4px;
+}
+
+/* Arrow between steps */
+.ts-step:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  top: 18px;
+  right: -14px;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  opacity: 0.45;
+  z-index: 3;
+  line-height: 1;
+}
+
+/* Icon circle */
+.ts-icon-circle {
+  width: 64px;
+  height: 64px;
+  background: var(--color-white);
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 2px 12px rgba(27, 94, 32, 0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.ts-step:hover .ts-icon-circle {
+  transform: scale(1.1);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 6px 20px rgba(27, 94, 32, 0.25);
+}
+
+.ts-step:hover .ts-icon-circle svg {
+  stroke: var(--color-white);
+}
+
+.ts-num {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-white);
+  z-index: 3;
+}
+
+/* Step text */
+.ts-content h3 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  line-height: 1.35;
+}
+
+.ts-content p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Payment info */
+.transport-payment {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1px solid rgba(27, 94, 32, 0.22);
+  border-radius: 10px;
+  padding: 12px 24px;
+  margin-bottom: 36px;
+  color: var(--color-primary);
+  font-size: 0.95rem;
+}
+
+/* CTA area */
+.transport-cta-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.transport-cta-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.transport-cta-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.transport-cta-buttons .primary-btn {
+  font-size: 1.05rem;
+  padding: 15px 32px;
+}
+
+/* =========================================
    Features Section
    ========================================= */
 .features-section {
@@ -623,6 +842,102 @@
 
   .steps-container {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Transport section: 3+2 layout at medium screens */
+  .transport-steps {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .transport-steps::before {
+    display: none;
+  }
+
+  .ts-step {
+    flex: 0 0 calc(33.33% - 12px);
+    max-width: 200px;
+  }
+
+  .ts-step:not(:last-child)::after {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Transport section mobile: vertical timeline */
+  .transport-section {
+    padding: 40px 20px;
+  }
+
+  .transport-header h2 {
+    font-size: 1.7rem;
+  }
+
+  .transport-header-sub {
+    font-size: 1.2rem;
+  }
+
+  .transport-steps {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .transport-steps::before {
+    display: none;
+  }
+
+  .ts-step {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    gap: 16px;
+    padding: 16px;
+    background: var(--color-white);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(27, 94, 32, 0.1);
+  }
+
+  .ts-step:not(:last-child)::after {
+    content: '↓';
+    position: static;
+    display: block;
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    opacity: 0.4;
+    margin: -4px 0 -4px 40px;
+  }
+
+  .ts-icon-circle {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .ts-content {
+    padding-top: 8px;
+    flex: 1;
+  }
+
+  .ts-content h3 {
+    font-size: 0.95rem;
+  }
+
+  .ts-content p {
+    font-size: 0.875rem;
+  }
+
+  .transport-cta-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .transport-cta-buttons .primary-btn,
+  .transport-cta-buttons .secondary-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 

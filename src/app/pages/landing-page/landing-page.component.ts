@@ -187,6 +187,12 @@ export class LandingPageComponent implements OnInit {
     this.router.navigate(['/mapa-serwisow']);
   }
 
+  navigateToKrakowMap(): void {
+    this.router.navigate(['/mapa-serwisow'], {
+      queryParams: { lat: '50.0647', lng: '19.9450', zoom: '13' }
+    });
+  }
+
   navigateToForServices(): void {
     this.router.navigate(['/for-services']);
   }

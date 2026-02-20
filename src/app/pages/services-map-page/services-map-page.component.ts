@@ -134,6 +134,18 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Synchronicznie ustaw początkowy widok mapy z query params (lat/lng/zoom)
+    const snapshot = this.route.snapshot.queryParamMap;
+    const latParam = parseFloat(snapshot.get('lat') ?? '');
+    const lngParam = parseFloat(snapshot.get('lng') ?? '');
+    const zoomParam = parseInt(snapshot.get('zoom') ?? '');
+    if (!isNaN(latParam) && !isNaN(lngParam)) {
+      this.currentMapView = {
+        center: { lat: latParam, lng: lngParam },
+        zoom: !isNaN(zoomParam) ? zoomParam : 13
+      };
+    }
+
     // Inicjalizuj dane z resolvera (SSR)
     this.initializeFromResolver();
 
@@ -602,6 +614,17 @@ onCitySelected(city: CitySuggestion): void {
 
   onMapReady(): void {
     this.mapInitialized = true;
+
+    // Jeśli URL zawiera lat/lng/zoom, wycentruj mapę po jej inicjalizacji
+    const snapshot = this.route.snapshot.queryParamMap;
+    const lat = parseFloat(snapshot.get('lat') ?? '');
+    const lng = parseFloat(snapshot.get('lng') ?? '');
+    const zoom = parseInt(snapshot.get('zoom') ?? '');
+    if (!isNaN(lat) && !isNaN(lng) && this.mapComponent) {
+      setTimeout(() => {
+        this.mapComponent.centerOn(lat, lng, !isNaN(zoom) ? zoom : 13);
+      }, 300);
+    }
   }
 
   onMapMoved(viewState: MapViewState): void {

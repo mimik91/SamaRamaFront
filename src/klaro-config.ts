@@ -92,5 +92,8 @@ export function initKlaro(): void {
     (window as any).klaro = Klaro;
     (window as any).klaroConfig = klaroConfig;
     Klaro.setup(klaroConfig);
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    });
   }
 }

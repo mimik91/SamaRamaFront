@@ -27,7 +27,7 @@
 
       <div class="mobile-action-buttons">
         <button class="mobile-action-btn mobile-edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
-        <button class="mobile-action-btn mobile-service-btn" (click)="orderService()">Umów serwis</button>
+        <button class="mobile-action-btn mobile-service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
         <button class="mobile-action-btn mobile-report-btn" disabled title="Funkcja w przygotowaniu">Zgłoś kradzież</button>
         <button class="mobile-action-btn mobile-delete-btn" (click)="confirmDelete()">Usuń rower</button>
       </div>
@@ -91,7 +91,7 @@
 
           <div class="desktop-action-buttons">
             <button class="desktop-action-btn edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
-            <button class="desktop-action-btn service-btn" (click)="orderService()">Umów serwis</button>
+            <button class="desktop-action-btn service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
             <button class="desktop-action-btn report-btn" disabled title="Funkcja w przygotowaniu">Zgłoś kradzież</button>
             <button class="desktop-action-btn delete-btn" (click)="confirmDelete()">Usuń rower</button>
           </div>

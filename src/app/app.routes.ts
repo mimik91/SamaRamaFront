@@ -28,6 +28,7 @@ import { ServiceOrderDetailsComponent } from './service-orders/service-order-det
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
+import { CompleteRegistrationComponent } from './auth/complete-registration/complete-registration.component';
 import { ForServicesComponent } from './for-services/for-services.component';
 import { CourierPanelComponent } from './courier-panel/courier-panel.component';
 import { TermsOfServiceComponent } from './core/terms-of-service.component'
@@ -156,10 +157,15 @@ export const routes: Routes = [
       component: PasswordResetRequestComponent,
       title: 'Reset Hasła'
     },
-    { 
-      path: 'password-reset', 
+    {
+      path: 'password-reset',
       component: PasswordResetComponent,
       title: 'Nowe Hasło'
+    },
+    {
+      path: 'complete-registration',
+      component: CompleteRegistrationComponent,
+      title: 'Aktywacja Konta'
     },
     
     // Service registration - teraz dostępna w menu

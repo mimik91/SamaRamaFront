@@ -1,0 +1,86 @@
+<div class="container">
+  <div class="form-container">
+    <h2>Aktywacja konta</h2>
+    <p class="instruction">Ustaw hasło, aby dokończyć rejestrację konta.</p>
+
+    <form *ngIf="token && !successMessage && !terminalError" [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="password">Hasło</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          class="form-control"
+          [class.is-invalid]="isFieldInvalid('password')"
+          required
+        />
+        <div *ngIf="hasError('password', 'required')" class="validation-error">
+          Hasło jest wymagane
+        </div>
+        <div *ngIf="hasError('password', 'minlength')" class="validation-error">
+          Hasło musi mieć co najmniej 6 znaków
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Powtórz hasło</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          class="form-control"
+          [class.is-invalid]="isFieldInvalid('confirmPassword') || (registrationForm.hasError('mismatch') && registrationForm.get('confirmPassword')?.touched)"
+          required
+        />
+        <div *ngIf="hasError('confirmPassword', 'required')" class="validation-error">
+          Potwierdzenie hasła jest wymagane
+        </div>
+        <div *ngIf="registrationForm.hasError('mismatch') && registrationForm.get('confirmPassword')?.touched" class="validation-error">
+          Hasła nie są identyczne
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="secondary-btn" (click)="goToLogin()">
+          Anuluj
+        </button>
+        <button type="submit" class="primary-btn" [disabled]="registrationForm.invalid || isSubmitting">
+          {{ isSubmitting ? 'Zapisywanie...' : 'Ustaw hasło' }}
+        </button>
+      </div>
+    </form>
+
+    <div *ngIf="successMessage" class="success-message">
+      {{ successMessage }}
+      <p class="redirect-info">Za chwilę zostaniesz przekierowany do logowania...</p>
+    </div>
+
+    <div *ngIf="terminalError" class="token-error">
+      <div class="error-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <p>{{ terminalError }}</p>
+      <button class="primary-btn" (click)="goToLogin()">Przejdź do logowania</button>
+    </div>
+
+    <div *ngIf="!token" class="token-error">
+      <div class="error-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <p>Nieprawidłowy lub brakujący link aktywacyjny.</p>
+      <button class="primary-btn" (click)="goToLogin()">Przejdź do logowania</button>
+    </div>
+  </div>
+</div>

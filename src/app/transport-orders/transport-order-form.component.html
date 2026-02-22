@@ -412,13 +412,12 @@
               
               <div class="form-group">
                 <label for="pickupPostalCode">{{ t('transport_order.transport_form.postal_code_label') }}</label>
-                <input 
-                  type="text" 
-                  id="pickupPostalCode" 
+                <input
+                  type="text"
+                  id="pickupPostalCode"
                   formControlName="pickupPostalCode"
                   [class.is-invalid]="isFieldInvalid('pickupPostalCode')"
                   [placeholder]="t('transport_order.transport_form.postal_code_placeholder')"
-                  pattern="\d{2}-\d{3}"
                 >
                 <div *ngIf="isFieldInvalid('pickupPostalCode')" class="error-message">
                   {{ t('transport_order.transport_form.postal_code_invalid') }}

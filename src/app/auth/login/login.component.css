@@ -125,9 +125,14 @@ label {
   border: 1.5px solid var(--color-primary);
 }
 
-.secondary-btn:hover {
+.secondary-btn:hover:not(:disabled) {
   background-color: var(--color-primary);
   color: var(--color-white);
+}
+
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .error-message {

@@ -389,6 +389,11 @@
       "error_service_not_found": "Nie znaleziono serwisu o podanym ID",
       "error_loading": "Błąd podczas ładowania danych serwisu"
     },
+    "pickup_cities": {
+      "title": "Obszar odbioru",
+      "intro": "Aktualnie odbieramy rowery z następujących miejscowości:",
+      "cities": "Kraków, Batowice, Bibice, Boleń, Bosutów, Dziekanowice, Michałowice, Raciborowice, Węgrzce, Zielonki"
+    },
     "carbon_warning": {
       "title": "Bardzo ważne",
       "message": "Jeśli Twój rower ma ramę karbonową lub inne delikatne elementy, koniecznie wpisz tę informację w sekcji \u201Edodatkowe informacje o rowerze\u201D podczas składania zamówienia. Dzięki temu dobierzemy odpowiednią metodę transportu."
@@ -398,6 +403,7 @@
       "brand_label": "Marka roweru",
       "brand_placeholder": "-- Wybierz markę --",
       "brand_required": "Marka roweru jest wymagana",
+      "brand_hint": "Nie znasz marki? Możesz wpisać np. \"górski\", \"kolarzówka\" albo po prostu \"nie wiem\".",
       "model_label": "Model roweru",
       "model_placeholder": "np. Talon, Marlin, Rockhopper",
       "model_min_length": "Model roweru musi mieć co najmniej 2 znaki",

@@ -282,13 +282,21 @@ export class TransportOrderFormComponent implements OnInit {
     this.loadingCities = true;
     this.enumerationService.getCities().subscribe({
       next: (cities) => {
-        this.cities = cities;
+        this.cities = this.sortCitiesKrakowFirst(cities);
         this.loadingCities = false;
       },
       error: () => {
         this.loadingCities = false;
-        this.cities = environment.settings.fallback.cities;
+        this.cities = this.sortCitiesKrakowFirst(environment.settings.fallback.cities);
       }
+    });
+  }
+
+  private sortCitiesKrakowFirst(cities: string[]): string[] {
+    return [...cities].sort((a, b) => {
+      if (a === 'Kraków') return -1;
+      if (b === 'Kraków') return 1;
+      return a.localeCompare(b, 'pl');
     });
   }
 
@@ -324,7 +332,10 @@ export class TransportOrderFormComponent implements OnInit {
   // Step navigation
   nextStep(): void {
     if (this.isCurrentStepValid()) {
-      if (this.currentStep < this.totalSteps) this.currentStep++;
+      if (this.currentStep < this.totalSteps) {
+        this.currentStep++;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } else {
       this.markCurrentFormTouched();
       this.notificationService.warning(this.i18n.instant('transport_order.validation.fill_required_fields'));
@@ -332,11 +343,17 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   prevStep(): void {
-    if (this.currentStep > 1) this.currentStep--;
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   goToStep(step: number): void {
-    if (step <= this.getMaxAccessibleStep()) this.currentStep = step;
+    if (step <= this.getMaxAccessibleStep()) {
+      this.currentStep = step;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   getMaxAccessibleStep(): number {

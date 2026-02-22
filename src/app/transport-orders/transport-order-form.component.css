@@ -257,6 +257,33 @@ h1 { text-align: center; margin-bottom: var(--spacing-8); }
 
 .service-reminder strong { color: var(--color-primary-dark); font-weight: var(--font-weight-bold); }
 
+/* Pickup cities info */
+.pickup-cities-info {
+  background: #f0f7ff;
+  border: 1px solid #b3d4f5;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-5);
+  margin-bottom: var(--spacing-5);
+  position: relative;
+  overflow: hidden;
+}
+
+.pickup-cities-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+}
+
+.pickup-cities-content { display: flex; align-items: flex-start; gap: var(--spacing-4); }
+.pickup-cities-icon { font-size: var(--font-size-2xl); flex-shrink: 0; margin-top: 2px; }
+.pickup-cities-text h4 { margin: 0 0 var(--spacing-2); color: #1d4ed8; font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
+.pickup-cities-text p { margin: 0 0 var(--spacing-1); color: #1e40af; line-height: var(--line-height-normal); font-size: var(--font-size-sm); }
+.pickup-cities-text .cities-list { font-weight: var(--font-weight-semibold); margin-top: var(--spacing-1); }
+
 /* Carbon bike warning */
 .carbon-bike-warning {
   background: var(--color-warning-bg);

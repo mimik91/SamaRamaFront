@@ -889,6 +889,9 @@
   }
 
   .ts-step {
+    flex: 0 0 100%;
+    max-width: 100%;
+    width: 100%;
     flex-direction: row;
     align-items: flex-start;
     text-align: left;
@@ -901,14 +904,7 @@
   }
 
   .ts-step:not(:last-child)::after {
-    content: '↓';
-    position: static;
-    display: block;
-    text-align: center;
-    font-size: 1.1rem;
-    color: var(--color-primary);
-    opacity: 0.4;
-    margin: -4px 0 -4px 40px;
+    display: none;
   }
 
   .ts-icon-circle {

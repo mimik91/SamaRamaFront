@@ -132,6 +132,18 @@
         </div>
       </div>
 
+      <!-- Obszar odbioru -->
+      <div class="pickup-cities-info">
+        <div class="pickup-cities-content">
+          <div class="pickup-cities-icon">📍</div>
+          <div class="pickup-cities-text">
+            <h4>{{ t('transport_order.pickup_cities.title') }}</h4>
+            <p>{{ t('transport_order.pickup_cities.intro') }}</p>
+            <p class="cities-list">{{ t('transport_order.pickup_cities.cities') }}</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Ostrzeżenie o rowerach karbonowych -->
       <div class="carbon-bike-warning">
         <div class="warning-content">
@@ -209,6 +221,7 @@
                 <div *ngIf="isBicycleFieldInvalid(i, 'brand')" class="error-message">
                   {{ t('transport_order.bicycle_form.brand_required') }}
                 </div>
+                <div class="help-text">{{ t('transport_order.bicycle_form.brand_hint') }}</div>
               </div>
 
               <div class="form-group">

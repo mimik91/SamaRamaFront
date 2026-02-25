@@ -7,7 +7,7 @@
  */
 export interface CourierOrder {
   id: number;
-  status: 'CONFIRMED' | 'ON_THE_WAY_BACK';
+  status: 'CONFIRMED' | 'PICKED_UP' | 'ON_THE_WAY' | 'ON_THE_WAY_BACK' | 'DELIVERED';
   orderDate: string;
   pickupDate: string;
   pickupTimeWindow?: string;

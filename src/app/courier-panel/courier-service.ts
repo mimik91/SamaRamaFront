@@ -25,16 +25,11 @@ export class CourierService {
     );
   }
 
-  /**
-   * Oznacza zamówienie jako odebrane (zmienia status z CONFIRMED na PICKED_UP)
-   */
-  markOrderAsPickedUp(orderId: number): Observable<any> {
-    const url = `${environment.apiUrl}${environment.endpoints.admin.orderById.replace(':id', orderId.toString())}`;
-    return this.http.patch(url, {
-      status: 'PICKED_UP'
-    }).pipe(
+  updateOrderStatus(orderId: number, status: string): Observable<any> {
+    const url = `${environment.apiUrl}${environment.endpoints.admin.orderTransportStatus.replace(':id', orderId.toString())}`;
+    return this.http.patch(url, { status }).pipe(
       catchError(error => {
-        console.error('Error marking order as picked up:', error);
+        console.error('Error updating order status:', error);
         return throwError(() => error);
       })
     );

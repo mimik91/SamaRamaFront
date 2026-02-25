@@ -57,17 +57,38 @@ export class CourierPanelComponent implements OnInit {
     });
   }
 
-  markAsPickedUp(orderId: number): void {
-    this.courierService.markOrderAsPickedUp(orderId).subscribe({
-      next: () => {
-        this.notificationService.success('Status zamówienia został zaktualizowany');
-        this.loadOrders(); // Reload orders to reflect changes
+  private changeStatus(orderId: number, status: string): void {
+    this.courierService.updateOrderStatus(orderId, status).subscribe({
+      next: (response) => {
+        if (response?.message) {
+          this.notificationService.info(response.message);
+        } else {
+          this.notificationService.success('Status zamówienia został zaktualizowany');
+        }
+        this.loadOrders();
       },
       error: (error) => {
         console.error('Error updating order status:', error);
-        this.notificationService.error('Błąd podczas aktualizacji statusu');
+        const msg = error?.error?.message;
+        if (msg) {
+          this.notificationService.info(msg);
+        } else {
+          this.notificationService.error('Błąd podczas aktualizacji statusu');
+        }
       }
     });
+  }
+
+  markAsPickedUp(orderId: number): void {
+    this.changeStatus(orderId, 'PICKED_UP');
+  }
+
+  markAsOnTheWay(orderId: number): void {
+    this.changeStatus(orderId, 'ON_THE_WAY');
+  }
+
+  markAsDelivered(orderId: number): void {
+    this.changeStatus(orderId, 'DELIVERED');
   }
 
   setSortField(field: 'pickupDate' | 'brand' | 'status' | 'orderDate'): void {
@@ -127,8 +148,14 @@ export class CourierPanelComponent implements OnInit {
     switch (status) {
       case 'CONFIRMED':
         return 'status-confirmed';
+      case 'PICKED_UP':
+        return 'status-picked-up';
+      case 'ON_THE_WAY':
+        return 'status-on-the-way';
       case 'ON_THE_WAY_BACK':
         return 'status-returning';
+      case 'DELIVERED':
+        return 'status-delivered';
       default:
         return 'status-default';
     }
@@ -138,8 +165,14 @@ export class CourierPanelComponent implements OnInit {
     switch (status) {
       case 'CONFIRMED':
         return 'Do odbioru';
+      case 'PICKED_UP':
+        return 'Odebrany';
+      case 'ON_THE_WAY':
+        return 'W drodze';
       case 'ON_THE_WAY_BACK':
         return 'W drodze powrotnej';
+      case 'DELIVERED':
+        return 'Dostarczony';
       default:
         return status;
     }

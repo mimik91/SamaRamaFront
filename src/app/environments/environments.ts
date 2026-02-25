@@ -27,8 +27,10 @@ export const environment = {
       base: '/admin',
       bikeServices: '/admin/bike-services',
       orders: '/admin/orders',
-      orderById: '/admin/orders/:id'
+      orderById: '/admin/orders/:id',
+      orderTransportStatus: '/admin/orders/transport/:id/status'
     },
+
 
     orders: {
       service: '/orders/service',

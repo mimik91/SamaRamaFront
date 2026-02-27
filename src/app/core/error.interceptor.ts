@@ -12,7 +12,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const publicEndpoints = [
     environment.endpoints.guestOrders.transport,
     environment.endpoints.serviceRecords,
-    '/auth/login'
+    '/auth/login',
+    '/active-transport',
+    'service-records/bicycle',
+    '/user/service-orders'
   ];
   const isPublicEndpoint = publicEndpoints.some(url => req.url.includes(url));
 

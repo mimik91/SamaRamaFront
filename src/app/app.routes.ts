@@ -6,9 +6,9 @@ import { ServicePendingVerificationComponent } from './pages/service-admin-panel
 import { ServiceAdminPanelComponent } from './pages/service-admin-panel/service-admin-panel.component';
 import { ServiceCalendarComponent } from './pages/service-calendar/service-calendar.component';
 import { authGuard, clientGuard, adminGuard, serviceGuard, moderatorGuard } from './auth/auth.guard';
-import { BicyclesListComponent } from './bicycles/bicycles-list/bicycles-list.component';
-import { BicycleFormComponent } from './bicycles/bicycle-form/bicycle-form.component';
-import { BicycleDetailsComponent } from './bicycles/bicycle-details/bicycle-details.component';
+import { ClientPanelListComponent } from './pages/client-panel/client-panel-list/client-panel-list.component';
+import { ClientPanelFormComponent } from './pages/client-panel/client-panel-form/client-panel-form.component';
+import { ClientPanelDetailsComponent } from './pages/client-panel/client-panel-details/client-panel-details.component';
 import { ServiceOrderFormComponent } from './service-orders/service-order-form/service-order-form.component';
 import { GuestServiceOrderComponent } from './service-orders/guest-service-order/guest-service-order.component';
 import { TransportOrderFormComponent } from './transport-orders/transport-order-form.component';
@@ -216,13 +216,13 @@ export const routes: Routes = [
     
     // Dashboard dla klientów
     { 
-      path: 'client-dashboard', 
-      component: BicyclesListComponent,
+      path: 'client-dashboard',
+      component: ClientPanelListComponent,
       canActivate: [clientGuard],
       data: { roles: ['CLIENT'] },
       title: 'Panel Klienta'
     },
-    
+
     // Dashboard dla adminów (tylko ADMIN)
     {
       path: 'admin-dashboard',
@@ -231,25 +231,25 @@ export const routes: Routes = [
       data: { roles: ['ADMIN'] },
       title: 'Panel Administracyjny'
     },
-    
+
     // === CHRONIONE TRASY KLIENTÓW ===
-    
-    { 
-      path: 'bicycles', 
-      component: BicyclesListComponent, 
+
+    {
+      path: 'bicycles',
+      component: ClientPanelListComponent,
       canActivate: [clientGuard],
       title: 'Moje Rowery'
     },
-    { 
-      path: 'bicycles/add', 
-      component: BicycleFormComponent, 
+    {
+      path: 'bicycles/add',
+      component: ClientPanelFormComponent,
       canActivate: [clientGuard],
       title: 'Dodaj Rower'
     },
-    { 
-      path: 'bicycles/:id', 
-      component: BicycleDetailsComponent, 
-      canActivate: [clientGuard], 
+    {
+      path: 'bicycles/:id',
+      component: ClientPanelDetailsComponent,
+      canActivate: [clientGuard],
       data: { RenderMode: 'client' },
       title: 'Szczegóły Roweru'
     },

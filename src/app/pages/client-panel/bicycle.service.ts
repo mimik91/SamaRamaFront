@@ -2,8 +2,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
-import { Bicycle, BicycleForm } from './bicycle.model';
-import { environment } from '../environments/environments';
+import { Bicycle, BicycleForm } from '../../shared/models/bicycle.model';
+import { environment } from '../../environments/environments';
 
 export interface BicycleImageUploadRequest {
   type: string;
@@ -42,6 +42,53 @@ export interface GroupedImagesResponse {
   };
 }
 
+export interface ActiveTransportResponse {
+  hasActiveTransport: boolean;
+  transport?: {
+    status?: string;
+    statusDisplayName?: string;
+    pickupAddress?: string;
+    deliveryAddress?: string;
+    pickupDate?: string | null;
+    orderDate?: string | null;
+    targetServiceName?: string;
+  };
+}
+
+export interface ActiveServiceOrderCard {
+  id: number;
+  status: string;
+  statusDisplayName: string;
+  plannedDate: string | null;
+  createdAt: string | null;
+  orderNotes: string | null;
+  imagesCount: number;
+  bicycleBrand?: string;
+  bicycleModel?: string;
+  serviceName?: string;
+}
+
+export interface ServiceOrderMessage {
+  id: number;
+  senderType: 'SERVICE' | 'CLIENT';
+  content: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface ServiceOrderDetail {
+  id: number;
+  status: string;
+  statusDisplayName: string;
+  orderNotes: string | null;
+  serviceNotes: string | null;
+  plannedDate: string | null;
+  estimatedDurationHours: number | null;
+  serviceCompletionDate: string | null;
+  images: { url: string; [key: string]: any }[];
+  service?: { id: number; name: string };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -53,9 +100,9 @@ export class BicycleService {
   private readonly MAX_RETRIES = 3;
   private readonly UPLOAD_TIMEOUT = 60000;
 
-  
+
   constructor() {}
-  
+
   getUserBicycles(): Observable<Bicycle[]> {
     return this.http.get<Bicycle[]>(this.apiUrl)
       .pipe(
@@ -65,7 +112,7 @@ export class BicycleService {
         })
       );
   }
-  
+
   getBicycle(id: number): Observable<Bicycle> {
     return this.http.get<Bicycle>(`${this.apiUrl}/${id}`)
       .pipe(
@@ -75,16 +122,16 @@ export class BicycleService {
         })
       );
   }
-  
+
   addBicycle(bicycleData: Omit<Bicycle, 'id' | 'mainPhotoUrl'>): Observable<any> {
     // Upewniamy się, że frameNumber jest null, a nie pustym stringiem
     const payload = {
-      ...bicycleData, 
+      ...bicycleData,
       frameNumber: bicycleData.frameNumber || null
     };
-    
+
     console.log('Sending bicycle data to API:', payload);
-    
+
     return this.http.post(this.apiUrl, payload)
       .pipe(
         map((response: any) => {
@@ -107,7 +154,7 @@ export class BicycleService {
         })
       );
   }
-  
+
   /**
    * Step 1: Request presigned upload URL from backend
    */
@@ -164,7 +211,7 @@ export class BicycleService {
       throw error;
     }
   }
-  
+
   getAllBicycleImages(bicycleId: number): Observable<GroupedImagesResponse> {
     return this.http.get<GroupedImagesResponse>(`${this.imagesUrl}/${bicycleId}`)
       .pipe(
@@ -178,24 +225,97 @@ export class BicycleService {
   getBicyclePhotoUrl(bicycleId: number): string {
     return `${this.imagesUrl}/${bicycleId}`;
   }
-  
-  deleteBicyclePhoto(bicycleId: number, isComplete: boolean = true): Observable<any> {
-    // Add query parameter for isComplete
-    const params = new HttpParams().set('isComplete', isComplete.toString());
-    
-    return this.http.delete(`${this.imagesUrl}/${bicycleId}`, { params })
+
+  getActiveBicycleTransport(bicycleId: number): Observable<ActiveTransportResponse> {
+    return this.http.get<ActiveTransportResponse>(`${this.apiUrl}/${bicycleId}/active-transport`)
       .pipe(
         catchError(error => {
-          console.error('Error deleting bicycle photo:', error);
+          console.error('Error fetching active transport:', error);
           return throwError(() => error);
         })
       );
   }
-  
+
+  getActiveServiceOrders(): Observable<ActiveServiceOrderCard[]> {
+    return this.http.get<ActiveServiceOrderCard[]>(`${environment.apiUrl}/user/service-orders/active`)
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching active service orders:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  getServiceOrderDetail(orderId: number): Observable<ServiceOrderDetail> {
+    return this.http.get<ServiceOrderDetail>(`${environment.apiUrl}/user/service-orders/${orderId}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching service order detail:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  getServiceOrderMessages(orderId: number): Observable<{ messages: ServiceOrderMessage[]; unreadCount: number }> {
+    return this.http.get<{ messages: ServiceOrderMessage[]; unreadCount: number }>(
+      `${environment.apiUrl}/user/service-orders/${orderId}/messages`
+    ).pipe(
+      catchError(error => {
+        console.error('Error fetching service order messages:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  sendServiceOrderMessage(orderId: number, content: string): Observable<ServiceOrderMessage> {
+    return this.http.post<ServiceOrderMessage>(
+      `${environment.apiUrl}/user/service-orders/${orderId}/messages`,
+      { content }
+    ).pipe(
+      catchError(error => {
+        console.error('Error sending message:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getServiceOrderImages(orderId: number): Observable<{ url: string; imageId?: number }[]> {
+    return this.http.get<{ url: string; imageId?: number }[]>(
+      `${environment.apiUrl}/user/service-orders/${orderId}/images`
+    ).pipe(
+      catchError(error => {
+        console.error('Error fetching service order images:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  markServiceOrderMessagesAsRead(orderId: number): Observable<void> {
+    return this.http.patch<void>(
+      `${environment.apiUrl}/user/service-orders/${orderId}/messages/read`,
+      {}
+    ).pipe(
+      catchError(error => {
+        console.error('Error marking messages as read:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  deleteBicycleImageById(bicycleId: number, imageId: number): Observable<void> {
+    return this.http.delete<void>(`${this.imagesUrl}/${bicycleId}/image/${imageId}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error deleting bicycle image:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   deleteBicycle(id: number, isComplete: boolean = true): Observable<any> {
     // Add query parameter for isComplete
     const params = new HttpParams().set('isComplete', isComplete.toString());
-    
+
     return this.http.delete(`${this.apiUrl}/${id}`, { params })
       .pipe(
         catchError(error => {
@@ -204,14 +324,14 @@ export class BicycleService {
         })
       );
   }
-  
+
   updateBicycle(id: number, bicycleData: Omit<Bicycle, 'id' | 'mainPhotoUrl'>, isComplete: boolean = true): Observable<any> {
     console.log(`Updating bicycle ID ${id} with data:`, bicycleData);
     console.log(`isComplete parameter: ${isComplete}`);
-    
+
     // Dodaj parametr isComplete do zapytania
     const params = new HttpParams().set('isComplete', isComplete.toString());
-    
+
     return this.http.put(`${this.apiUrl}/${id}`, bicycleData, { params })
       .pipe(
         map(response => {
@@ -222,11 +342,11 @@ export class BicycleService {
           console.error(`Error updating bicycle with id ${id}:`, error);
           console.error('Request data was:', bicycleData);
           console.error('Request params were:', { isComplete });
-          
+
           if (error.error && error.error.message) {
             console.error('Error message from server:', error.error.message);
           }
-          
+
           return throwError(() => error);
         })
       );

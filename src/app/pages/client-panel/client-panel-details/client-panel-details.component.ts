@@ -1,25 +1,26 @@
-import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { BicycleService, GroupedImagesResponse, BicycleImage } from '../bicycle.service';
-import { Bicycle } from '../bicycle.model';
-import { NotificationService } from '../../core/notification.service';
-import { ServiceRecord } from '../../service-records/service-record.model';
-import { ServiceRecordService } from '../../service-records/service-record.service';
-import { EnumerationService } from '../../core/enumeration.service';
+import { BicycleService, GroupedImagesResponse, BicycleImage, ActiveTransportResponse, ActiveServiceOrderCard, ServiceOrderMessage, ServiceOrderDetail } from '../bicycle.service';
+import { Bicycle } from '../../../shared/models/bicycle.model';
+import { NotificationService } from '../../../core/notification.service';
+import { ServiceRecord } from '../../../service-records/service-record.model';
+import { ServiceRecordService } from '../../../service-records/service-record.service';
+import { EnumerationService } from '../../../core/enumeration.service';
 import { BicycleSelectionService } from '../bicycle-selection.service';
-import { ImageUtilsService } from '../../core/image-utils.service';
+import { ImageUtilsService } from '../../../core/image-utils.service';
 
 @Component({
-  selector: 'app-bicycle-details',
+  selector: 'app-client-panel-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './bicycle-details.component.html',
-  styleUrls: ['./bicycle-details.component.css']
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  templateUrl: './client-panel-details.component.html',
+  styleUrls: ['./client-panel-details.component.css']
 })
-export class BicycleDetailsComponent implements OnInit {
+export class ClientPanelDetailsComponent implements OnInit {
   @ViewChild('photoInput') photoInput!: ElementRef<HTMLInputElement>;
   @ViewChild('editForm') editFormElement!: ElementRef;
 
@@ -46,6 +47,34 @@ export class BicycleDetailsComponent implements OnInit {
   // Images
   bicycleImages: GroupedImagesResponse | null = null;
   activeGalleryTab: 'GALLERY' | 'RECEIPT' = 'GALLERY';
+  isGalleryUploading = false;
+
+  // Lightbox
+  lightboxOpen = false;
+  lightboxIndex = 0;
+  isLightboxDeleting = false;
+
+  // Gallery upload progress
+  galleryUploadCurrent = 0;
+  galleryUploadTotal = 0;
+
+  // Active status
+  activeTransport: ActiveTransportResponse | null = null;
+  activeServiceOrder: ActiveServiceOrderCard | null = null;
+
+  // Service order details (expanded)
+  isServiceOrderExpanded = false;
+  serviceOrderDetail: ServiceOrderDetail | null = null;
+  serviceOrderMessages: ServiceOrderMessage[] = [];
+  serviceOrderImages: { url: string; imageId?: number }[] = [];
+  serviceOrderUnreadCount = 0;
+  isLoadingServiceOrderDetail = false;
+  newMessageContent = '';
+  isSendingMessage = false;
+
+  // Service order image lightbox
+  soLightboxOpen = false;
+  soLightboxIndex = 0;
 
   // Listy dostępnych opcji
   brands: string[] = [];
@@ -79,11 +108,27 @@ export class BicycleDetailsComponent implements OnInit {
     return (photos && photos.length > 0) ? photos[0].url : null;
   }
 
+  get mainPhotoImageId(): number | null {
+    const photos = this.bicycleImages?.images?.MAIN_PHOTO;
+    return (photos && photos.length > 0) ? photos[0].imageId : null;
+  }
+
   get galleryImages(): BicycleImage[] {
     if (!this.bicycleImages?.images) return [];
     return this.activeGalleryTab === 'GALLERY'
       ? (this.bicycleImages.images.GALLERY ?? [])
       : (this.bicycleImages.images.RECEIPT ?? []);
+  }
+
+  get galleryUploadLabel(): string {
+    if (!this.isGalleryUploading) return '+ Dodaj zdjęcia';
+    return this.galleryUploadTotal > 1
+      ? `Dodawanie (${this.galleryUploadCurrent}/${this.galleryUploadTotal})…`
+      : 'Dodawanie…';
+  }
+
+  get isTransportDelivered(): boolean {
+    return this.activeTransport?.transport?.status === 'DELIVERED';
   }
 
   get hasGallery(): boolean {
@@ -130,12 +175,86 @@ export class BicycleDetailsComponent implements OnInit {
         this.initForm();
         this.loadServiceRecords(id);
         this.loadBicycleImages(id);
+        this.loadBicycleStatus(id);
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading bicycle:', error);
         this.notificationService.error('Nie udało się załadować danych roweru');
         this.loading = false;
+      }
+    });
+  }
+
+  loadBicycleStatus(bicycleId: number): void {
+    this.bicycleService.getActiveBicycleTransport(bicycleId).subscribe({
+      next: (response) => { this.activeTransport = response; },
+      error: () => { this.activeTransport = null; }
+    });
+
+    this.bicycleService.getActiveServiceOrders().subscribe({
+      next: (orders) => {
+        this.activeServiceOrder = orders.find(o =>
+          o.bicycleBrand === this.bicycle?.brand &&
+          o.bicycleModel === this.bicycle?.model
+        ) ?? null;
+      },
+      error: () => { this.activeServiceOrder = null; }
+    });
+  }
+
+  // ── Service order details ──────────────────────────────────────────────────
+
+  toggleServiceOrderDetails(): void {
+    this.isServiceOrderExpanded = !this.isServiceOrderExpanded;
+    if (this.isServiceOrderExpanded && this.activeServiceOrder) {
+      this.loadServiceOrderDetails(this.activeServiceOrder.id);
+    } else {
+      this.soLightboxOpen = false;
+    }
+  }
+
+  private loadServiceOrderDetails(orderId: number): void {
+    this.isLoadingServiceOrderDetail = true;
+    this.serviceOrderImages = [];
+
+    this.bicycleService.getServiceOrderDetail(orderId).subscribe({
+      next: (detail) => { this.serviceOrderDetail = detail; },
+      error: () => { this.serviceOrderDetail = null; }
+    });
+
+    this.bicycleService.getServiceOrderMessages(orderId).subscribe({
+      next: (response) => {
+        this.serviceOrderMessages = response.messages;
+        this.serviceOrderUnreadCount = response.unreadCount;
+        this.isLoadingServiceOrderDetail = false;
+        if (response.unreadCount > 0) {
+          this.bicycleService.markServiceOrderMessagesAsRead(orderId).subscribe();
+        }
+      },
+      error: () => { this.isLoadingServiceOrderDetail = false; }
+    });
+
+    this.bicycleService.getServiceOrderImages(orderId).subscribe({
+      next: (images) => { this.serviceOrderImages = images; },
+      error: () => { this.serviceOrderImages = []; }
+    });
+  }
+
+  sendServiceOrderMessage(): void {
+    const content = this.newMessageContent.trim();
+    if (!content || !this.activeServiceOrder || this.isSendingMessage) return;
+
+    this.isSendingMessage = true;
+    this.bicycleService.sendServiceOrderMessage(this.activeServiceOrder.id, content).subscribe({
+      next: (msg) => {
+        this.serviceOrderMessages = [...this.serviceOrderMessages, msg];
+        this.newMessageContent = '';
+        this.isSendingMessage = false;
+      },
+      error: () => {
+        this.notificationService.error('Nie udało się wysłać wiadomości');
+        this.isSendingMessage = false;
       }
     });
   }
@@ -254,15 +373,121 @@ export class BicycleDetailsComponent implements OnInit {
     }
   }
 
+  async onGalleryPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length || !this.bicycle) return;
+
+    const type = this.activeGalleryTab;
+    const limit = this.bicycleImages?.limits?.[type];
+    const currentCount = this.bicycleImages?.images?.[type]?.length ?? 0;
+
+    // Validate all selected files
+    const validFiles: File[] = [];
+    for (const file of Array.from(input.files)) {
+      const validation = this.imageUtils.validateImage(file);
+      if (validation.valid) {
+        validFiles.push(file);
+      } else {
+        this.notificationService.error(`"${file.name}": ${validation.error || 'Nieprawidłowy plik'}`);
+      }
+    }
+
+    if (validFiles.length === 0) { input.value = ''; return; }
+
+    // Enforce limit
+    let filesToUpload = validFiles;
+    if (limit !== undefined) {
+      const available = limit - currentCount;
+      if (available <= 0) {
+        this.notificationService.error(`Osiągnięto limit zdjęć (${limit}) dla tej kategorii`);
+        input.value = '';
+        return;
+      }
+      if (validFiles.length > available) {
+        this.notificationService.warning(
+          `Można dodać jeszcze ${available} z ${validFiles.length} wybranych zdjęć (limit: ${limit})`
+        );
+        filesToUpload = validFiles.slice(0, available);
+      }
+    }
+
+    this.isGalleryUploading = true;
+    this.galleryUploadCurrent = 0;
+    this.galleryUploadTotal = filesToUpload.length;
+
+    let uploaded = 0;
+    let failed = 0;
+    for (let i = 0; i < filesToUpload.length; i++) {
+      try {
+        await this.uploadGalleryPhotoToR2(this.bicycle.id, filesToUpload[i], type, currentCount + i);
+        uploaded++;
+      } catch (error) {
+        console.error('Error uploading gallery photo:', error);
+        failed++;
+      }
+      this.galleryUploadCurrent = uploaded + failed;
+    }
+
+    if (uploaded > 0 && failed === 0) {
+      this.notificationService.success(uploaded === 1 ? 'Zdjęcie zostało dodane' : `Dodano ${uploaded} zdjęć`);
+    } else if (uploaded > 0) {
+      this.notificationService.warning(`Dodano ${uploaded} z ${filesToUpload.length} zdjęć`);
+    } else {
+      this.notificationService.error('Nie udało się dodać zdjęć');
+    }
+
+    this.loadBicycleImages(this.bicycle.id);
+    this.isGalleryUploading = false;
+    this.galleryUploadCurrent = 0;
+    this.galleryUploadTotal = 0;
+    input.value = '';
+  }
+
+  private async uploadGalleryPhotoToR2(bicycleId: number, file: File, type: 'GALLERY' | 'RECEIPT', displayOrder?: number): Promise<void> {
+    const compressedFile = await this.imageUtils.compressImage(file, {
+      maxWidth: 1920,
+      maxHeight: 1920,
+      quality: 0.85,
+      outputFormat: 'webp'
+    });
+
+    const dimensions = await this.imageUtils.getImageDimensions(compressedFile);
+    const order = displayOrder ?? (this.bicycleImages?.images?.[type]?.length ?? 0);
+
+    const uploadResponse = await firstValueFrom(
+      this.bicycleService.generateImageUploadUrl(bicycleId, {
+        type: type,
+        fileName: `bicycle_${bicycleId}_${type.toLowerCase()}_${Date.now()}`,
+        mimeType: compressedFile.type,
+        width: dimensions.width,
+        height: dimensions.height,
+        weight: Math.round(compressedFile.size / 1024),
+        displayOrder: order
+      })
+    );
+
+    if (!uploadResponse || !uploadResponse.uploadUrl) {
+      throw new Error('Nie udało się wygenerować URL do uploadu');
+    }
+
+    await this.bicycleService.uploadToR2(uploadResponse.uploadUrl, compressedFile);
+  }
+
+  confirmDeletePhoto(): void {
+    if (confirm('Czy chcesz usunąć zdjęcie główne? Tej operacji nie można cofnąć.')) {
+      this.deletePhoto();
+    }
+  }
+
   deletePhoto(): void {
-    if (!this.bicycle || !this.mainPhotoUrl || this.isPhotoDeleting) {
+    const imageId = this.mainPhotoImageId;
+    if (!this.bicycle || !imageId || this.isPhotoDeleting) {
       return;
     }
 
     this.isPhotoDeleting = true;
-    const isComplete = !!this.bicycle.frameNumber;
 
-    this.bicycleService.deleteBicyclePhoto(this.bicycle.id, isComplete).subscribe({
+    this.bicycleService.deleteBicycleImageById(this.bicycle.id, imageId).subscribe({
       next: () => {
         this.notificationService.success('Zdjęcie zostało usunięte');
         if (this.bicycleImages?.images) {
@@ -390,6 +615,99 @@ export class BicycleDetailsComponent implements OnInit {
     if (this.bicycleImages?.images) {
       this.bicycleImages.images.MAIN_PHOTO = [];
     }
+  }
+
+  // ── Lightbox ─────────────────────────────────────────────────────────────
+
+  openLightbox(index: number): void {
+    this.lightboxIndex = index;
+    this.lightboxOpen = true;
+  }
+
+  closeLightbox(): void {
+    this.lightboxOpen = false;
+  }
+
+  lightboxPrev(event: Event): void {
+    event.stopPropagation();
+    this.lightboxIndex = (this.lightboxIndex - 1 + this.galleryImages.length) % this.galleryImages.length;
+  }
+
+  lightboxNext(event: Event): void {
+    event.stopPropagation();
+    this.lightboxIndex = (this.lightboxIndex + 1) % this.galleryImages.length;
+  }
+
+  onLightboxKey(event: KeyboardEvent): void {
+    if (event.key === 'Escape') this.closeLightbox();
+    if (event.key === 'ArrowLeft') this.lightboxIndex = (this.lightboxIndex - 1 + this.galleryImages.length) % this.galleryImages.length;
+    if (event.key === 'ArrowRight') this.lightboxIndex = (this.lightboxIndex + 1) % this.galleryImages.length;
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKey(event: KeyboardEvent): void {
+    if (this.soLightboxOpen) { this.onSoLightboxKey(event); return; }
+    if (this.lightboxOpen) { this.onLightboxKey(event); }
+  }
+
+  openSoLightbox(index: number): void {
+    this.soLightboxIndex = index;
+    this.soLightboxOpen = true;
+  }
+
+  closeSoLightbox(): void {
+    this.soLightboxOpen = false;
+  }
+
+  soLightboxPrev(event: Event): void {
+    event.stopPropagation();
+    this.soLightboxIndex = (this.soLightboxIndex - 1 + this.serviceOrderImages.length) % this.serviceOrderImages.length;
+  }
+
+  soLightboxNext(event: Event): void {
+    event.stopPropagation();
+    this.soLightboxIndex = (this.soLightboxIndex + 1) % this.serviceOrderImages.length;
+  }
+
+  onSoLightboxKey(event: KeyboardEvent): void {
+    if (event.key === 'Escape') this.closeSoLightbox();
+    if (event.key === 'ArrowLeft') this.soLightboxIndex = (this.soLightboxIndex - 1 + this.serviceOrderImages.length) % this.serviceOrderImages.length;
+    if (event.key === 'ArrowRight') this.soLightboxIndex = (this.soLightboxIndex + 1) % this.serviceOrderImages.length;
+  }
+
+  confirmDeleteLightboxImage(event: Event): void {
+    event.stopPropagation();
+    if (confirm('Czy chcesz usunąć to zdjęcie? Tej operacji nie można cofnąć.')) {
+      this.deleteLightboxImage();
+    }
+  }
+
+  deleteLightboxImage(): void {
+    if (!this.bicycle || this.isLightboxDeleting) return;
+
+    const image = this.galleryImages[this.lightboxIndex];
+    if (!image) return;
+
+    this.isLightboxDeleting = true;
+
+    this.bicycleService.deleteBicycleImageById(this.bicycle.id, image.imageId).subscribe({
+      next: () => {
+        this.notificationService.success('Zdjęcie zostało usunięte');
+        this.loadBicycleImages(this.bicycle!.id);
+        const remaining = this.galleryImages.length - 1;
+        if (remaining === 0) {
+          this.closeLightbox();
+        } else {
+          this.lightboxIndex = Math.min(this.lightboxIndex, remaining - 1);
+        }
+        this.isLightboxDeleting = false;
+      },
+      error: (error: any) => {
+        console.error('Error deleting image:', error);
+        this.notificationService.error('Nie udało się usunąć zdjęcia');
+        this.isLightboxDeleting = false;
+      }
+    });
   }
 
   goBack(): void {

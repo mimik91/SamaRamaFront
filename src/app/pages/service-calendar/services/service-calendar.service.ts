@@ -43,6 +43,14 @@ export interface StolenCheckResponse {
   frameNumber?: string;
 }
 
+export interface OrderMessage {
+  id: number;
+  senderType: 'SERVICE' | 'CLIENT';
+  content: string;
+  createdAt: string;
+  read: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -212,6 +220,33 @@ export class ServiceCalendarService {
     const params = new HttpParams().set('serviceId', serviceId.toString());
     return this.http.delete<void>(`${this.apiUrl}${url}/${imageId}`, { params })
       .pipe(catchError(this.handleError('deleteOrderImage')));
+  }
+
+  // ============================================
+  // WIADOMOŚCI ZLECENIA
+  // ============================================
+
+  getOrderMessages(serviceId: number, orderId: number): Observable<{ messages: OrderMessage[]; unreadCount: number }> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.get<{ messages: OrderMessage[]; unreadCount: number }>(
+      `${this.apiUrl}${this.endpoints.orders}/${orderId}/messages`, { params }
+    ).pipe(catchError(this.handleError('getOrderMessages')));
+  }
+
+  sendOrderMessage(serviceId: number, orderId: number, content: string): Observable<OrderMessage> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.post<OrderMessage>(
+      `${this.apiUrl}${this.endpoints.orders}/${orderId}/messages`,
+      { content }, { params }
+    ).pipe(catchError(this.handleError('sendOrderMessage')));
+  }
+
+  markOrderMessagesAsRead(serviceId: number, orderId: number): Observable<void> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.patch<void>(
+      `${this.apiUrl}${this.endpoints.orders}/${orderId}/messages/read`,
+      {}, { params }
+    ).pipe(catchError(this.handleError('markOrderMessagesAsRead')));
   }
 
   // ============================================

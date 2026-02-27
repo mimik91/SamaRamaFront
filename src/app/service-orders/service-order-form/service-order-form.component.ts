@@ -15,14 +15,14 @@ import {
   Validators 
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { BicycleService } from '../../bicycles/bicycle.service';
-import { Bicycle } from '../../bicycles/bicycle.model';
+import { BicycleService } from '../../pages/client-panel/bicycle.service';
+import { Bicycle } from '../../shared/models/bicycle.model';
 import { CreateServiceOrderRequest } from '../service-order.model';
 import { ServiceOrderService } from '../service-orders.service';
 import { NotificationService } from '../../core/notification.service';
 import { ServicePackageService } from '../../service-package/service-package.service';
 import { ServicePackage } from '../../service-package/service-package.model';
-import { BicycleSelectionService } from '../../bicycles/bicycle-selection.service';
+import { BicycleSelectionService } from '../../pages/client-panel/bicycle-selection.service';
 import { EnumerationService } from '../../core/enumeration.service';
 import { ServiceSlotService, ServiceSlotAvailability, SlotAvailabilityCheck } from '../../service-slots/service-slot.service';
 import { AuthService } from '../../auth/auth.service';

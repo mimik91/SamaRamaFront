@@ -4,20 +4,20 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { BicycleService } from '../bicycle.service';
-import { NotificationService } from '../../core/notification.service';
-import { Bicycle } from '../bicycle.model';
-import { EnumerationService } from '../../core/enumeration.service';
-import { ImageUtilsService } from '../../core/image-utils.service';
+import { NotificationService } from '../../../core/notification.service';
+import { Bicycle } from '../../../shared/models/bicycle.model';
+import { EnumerationService } from '../../../core/enumeration.service';
+import { ImageUtilsService } from '../../../core/image-utils.service';
 
 @Component({
-  selector: 'app-bicycle-form',
+  selector: 'app-client-panel-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './bicycle-form.component.html',
-  styleUrls: ['./bicycle-form.component.css']
+  templateUrl: './client-panel-form.component.html',
+  styleUrls: ['./client-panel-form.component.css']
 })
 
-export class BicycleFormComponent implements OnInit {
+export class ClientPanelFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private bicycleService = inject(BicycleService);
   private router = inject(Router);

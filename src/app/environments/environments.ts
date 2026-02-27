@@ -48,7 +48,7 @@ export const environment = {
     },
 
     servicePackages: '/service-packages',
-    serviceRecords: '/service-records',
+    serviceRecords: '/user/service-records',
 
     enumerations: {
       base: '/enumerations',

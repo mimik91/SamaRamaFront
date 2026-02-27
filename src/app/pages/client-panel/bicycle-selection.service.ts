@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Bicycle } from './bicycle.model';
+import { Bicycle } from '../../shared/models/bicycle.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BicycleSelectionService {
   private selectedBicyclesSubject = new BehaviorSubject<Bicycle[]>([]);
-  
+
   // Observable for components to subscribe to
   selectedBicycles$ = this.selectedBicyclesSubject.asObservable();
-  
+
   constructor() {}
 
   /**
@@ -27,7 +27,7 @@ export class BicycleSelectionService {
    */
   addBicycle(bicycle: Bicycle): void {
     const currentBicycles = this.selectedBicyclesSubject.getValue();
-    
+
     // Check if bicycle already exists in the selection
     if (!currentBicycles.some(b => b.id === bicycle.id)) {
       this.selectedBicyclesSubject.next([...currentBicycles, bicycle]);

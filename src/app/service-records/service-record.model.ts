@@ -1,4 +1,4 @@
-import { Bicycle } from '../bicycles/bicycle.model';
+import { Bicycle } from '../shared/models/bicycle.model';
 
 export interface ServiceRecord {
   id: number;

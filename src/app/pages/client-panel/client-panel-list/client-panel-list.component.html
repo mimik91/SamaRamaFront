@@ -1,6 +1,6 @@
 <div class="bicycles-container">
   <h1>Twoje rowery</h1>
-  
+
   <div class="action-bar">
     <button class="add-btn" (click)="goToAddBicycle()">Dodaj rower</button>
     <button *ngIf="!isMultiSelectMode" class="multi-select-btn" (click)="toggleMultiSelectMode()">
@@ -15,27 +15,27 @@
       </button>
     </ng-container>
   </div>
-  
+
   <div *ngIf="loading" class="loading-message">
     Ładowanie rowerów...
   </div>
-  
+
   <div *ngIf="error" class="error-message">
     {{ error }}
   </div>
-  
+
   <ng-container *ngIf="!loading && !error">
     <ng-container *ngIf="bicycles.length > 0; else noBicycles">
       <div class="bicycles-list">
-        <div *ngFor="let bicycle of bicycles" class="bicycle-card" 
+        <div *ngFor="let bicycle of bicycles" class="bicycle-card"
              [class.selected]="isBicycleSelected(bicycle.id)"
              (click)="viewBicycleDetails(bicycle.id)">
-          
+
           <!-- Checkbox for multi-select mode -->
           <div *ngIf="isMultiSelectMode" class="selection-checkbox" (click)="toggleBicycleSelection(bicycle.id, $event)">
             <input type="checkbox" [checked]="isBicycleSelected(bicycle.id)">
           </div>
-          
+
           <div class="bicycle-content">
             <div class="bicycle-image" [ngClass]="{'has-photo': !!bicycle.mainPhotoUrl, 'no-image': !bicycle.mainPhotoUrl}">
               <ng-container *ngIf="bicycle.mainPhotoUrl; else noImageTemplate">
@@ -65,7 +65,7 @@
         </div>
       </div>
     </ng-container>
-    
+
     <ng-template #noBicycles>
       <div class="no-bicycles">
         <p>Nie masz jeszcze dodanego roweru</p>

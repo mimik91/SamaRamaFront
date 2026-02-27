@@ -1,5 +1,5 @@
 // service-order.model.ts
-import { Bicycle } from '../bicycles/bicycle.model';
+import { Bicycle } from '../shared/models/bicycle.model';
 import { User } from '../core/models/user.models';
 import { ServicePackage } from '../service-package/service-package.model';
 

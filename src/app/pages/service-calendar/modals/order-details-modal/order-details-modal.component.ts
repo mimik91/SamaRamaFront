@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { I18nService } from '../../../../core/i18n.service';
 import { NotificationService } from '../../../../core/notification.service';
 import { ImageUtilsService } from '../../../../core/image-utils.service';
-import { ServiceCalendarService } from '../../services/service-calendar.service';
+import { ServiceCalendarService, OrderMessage } from '../../services/service-calendar.service';
 import {
   CalendarOrder,
   CalendarOrderStatus,
@@ -58,6 +58,16 @@ export class OrderDetailsModalComponent implements OnDestroy {
   uploadTotalCount: number = 0;
   selectedFiles: File[] = [];
   selectedPreviews: string[] = [];
+
+  // Messages
+  messages: OrderMessage[] = [];
+  messagesUnreadCount = 0;
+  isLoadingMessages = false;
+  newMessageContent = '';
+  isSendingMessage = false;
+
+  // Tab
+  activeTab: 'details' | 'messages' = 'details';
 
   // Statuses that allow image uploads (IN_PROGRESS and onwards)
   private readonly IMAGE_ALLOWED_STATUSES: CalendarOrderStatus[] = [
@@ -131,16 +141,20 @@ export class OrderDetailsModalComponent implements OnDestroy {
         this.selectedDate = this.fullOrder.plannedDate || '';
         this.notes = this.fullOrder.serviceNotes || '';
         this.isLoading = false;
+        if (!this.canShowImages) { this.activeTab = 'messages'; }
         // Laduj zdjecia jesli status na to pozwala
         this.loadImages();
+        this.loadMessages();
       },
       error: (err: any) => {
         // On error, use the passed order data
         console.error('Error loading full order details:', err);
         this.fullOrder = { ...this.order };
         this.isLoading = false;
+        if (!this.canShowImages) { this.activeTab = 'messages'; }
         // Laduj zdjecia jesli status na to pozwala
         this.loadImages();
+        this.loadMessages();
       }
     });
   }
@@ -573,6 +587,45 @@ export class OrderDetailsModalComponent implements OnDestroy {
     if (this.imageInput?.nativeElement) {
       this.imageInput.nativeElement.value = '';
     }
+  }
+
+  // ============================================
+  // WIADOMOŚCI
+  // ============================================
+
+  private loadMessages(): void {
+    this.isLoadingMessages = true;
+    this.calendarService.getOrderMessages(this.serviceId, this.fullOrder.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.messages = response.messages;
+          this.messagesUnreadCount = response.unreadCount;
+          this.isLoadingMessages = false;
+          if (response.unreadCount > 0) {
+            this.calendarService.markOrderMessagesAsRead(this.serviceId, this.fullOrder.id).subscribe();
+          }
+        },
+        error: () => { this.isLoadingMessages = false; }
+      });
+  }
+
+  sendMessage(): void {
+    const content = this.newMessageContent.trim();
+    if (!content || this.isSendingMessage) return;
+
+    this.isSendingMessage = true;
+    this.calendarService.sendOrderMessage(this.serviceId, this.fullOrder.id, content).subscribe({
+      next: (msg) => {
+        this.messages = [...this.messages, msg];
+        this.newMessageContent = '';
+        this.isSendingMessage = false;
+      },
+      error: () => {
+        this.notificationService.error(this.t('service_calendar.errors.send_message_failed'));
+        this.isSendingMessage = false;
+      }
+    });
   }
 
   // ============================================

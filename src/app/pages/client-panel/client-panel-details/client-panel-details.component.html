@@ -1,0 +1,455 @@
+<div class="bicycle-details-container">
+  <div class="header-section">
+    <h1>Szczegóły roweru</h1>
+    <button class="back-btn" (click)="goBack()">
+      Powrót do listy
+    </button>
+  </div>
+
+  <div class="content-container" *ngIf="bicycle">
+    <!-- ── Wersja mobilna ── -->
+    <div class="mobile-layout">
+      <div class="bicycle-title">
+        <div class="brand">{{ bicycle.brand }}</div>
+        <div class="model">{{ bicycle.model || '' }}</div>
+      </div>
+
+      <div class="bicycle-image-container">
+        <ng-container *ngIf="mainPhotoUrl; else mobileNoImage">
+          <img [src]="mainPhotoUrl" (error)="handleImageError()" alt="Zdjęcie roweru" class="bicycle-image">
+        </ng-container>
+        <ng-template #mobileNoImage>
+          <div class="no-image">
+            <div class="placeholder-content"><span>Brak zdjęcia</span></div>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="mobile-action-buttons">
+        <button class="mobile-action-btn mobile-edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
+        <button class="mobile-action-btn mobile-service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
+        <button class="mobile-action-btn mobile-report-btn" disabled title="Funkcja w przygotowaniu">Zgłoś kradzież</button>
+        <button class="mobile-action-btn mobile-delete-btn" (click)="confirmDelete()">Usuń rower</button>
+      </div>
+
+      <div class="bicycle-details">
+        <p *ngIf="bicycle.type"><strong>Typ roweru:</strong> {{ bicycle.type }}</p>
+        <p *ngIf="bicycle.frameMaterial"><strong>Materiał ramy:</strong> {{ bicycle.frameMaterial }}</p>
+        <p *ngIf="bicycle.frameNumber" class="frame-number"><strong>Numer ramy:</strong> {{ bicycle.frameNumber }}</p>
+        <p *ngIf="bicycle.productionDate"><strong>Rok produkcji:</strong> {{ bicycle.productionDate | date:'yyyy' }}</p>
+      </div>
+
+      <div class="service-records-section">
+        <h3>Historia serwisowa</h3>
+        <div *ngIf="loading" class="loading-message">Ładowanie historii serwisowej...</div>
+        <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+        <div *ngIf="!loading && !errorMessage">
+          <div *ngIf="serviceRecords.length > 0; else mobileNoRecords" class="service-records-list">
+            <div *ngFor="let record of serviceRecords" class="service-record-card">
+              <div class="service-record-header">
+                <h4>{{ record.name }}</h4>
+                <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+              </div>
+              <p class="service-description">{{ record.description }}</p>
+              <div class="service-footer">
+                <span *ngIf="record.price" class="service-price">Koszt: {{ record.price | currency:'PLN':'symbol':'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+          <ng-template #mobileNoRecords>
+            <div class="no-records-message">Brak historii serwisowej dla tego roweru.</div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Wersja desktopowa ── -->
+    <div class="desktop-layout">
+      <div class="bicycle-info-container">
+        <!-- Lewa kolumna: zdjęcie -->
+        <div class="bicycle-image-wrapper">
+          <div class="bicycle-image-container">
+            <ng-container *ngIf="mainPhotoUrl; else desktopNoImage">
+              <img [src]="mainPhotoUrl" (error)="handleImageError()" alt="Zdjęcie roweru" class="bicycle-image">
+            </ng-container>
+            <ng-template #desktopNoImage>
+              <div class="no-image">
+                <button *ngIf="!isEditing" class="add-photo-inline-btn" (click)="openPhotoUpload()">
+                  + Dodaj zdjęcie
+                </button>
+                <div *ngIf="isEditing" class="placeholder-content"><span>Brak zdjęcia</span></div>
+              </div>
+            </ng-template>
+          </div>
+          <button
+            *ngIf="mainPhotoUrl && !isEditing"
+            class="photo-delete-overlay-btn"
+            (click)="confirmDeletePhoto()"
+            [disabled]="isPhotoDeleting"
+            title="Usuń zdjęcie główne"
+          >
+            {{ isPhotoDeleting ? '…' : '✕' }}
+          </button>
+        </div>
+
+        <!-- Prawa kolumna: info + przyciski -->
+        <div class="bicycle-info">
+          <h2>{{ bicycle.brand }} {{ bicycle.model || '' }}</h2>
+
+          <div class="bicycle-details">
+            <p *ngIf="bicycle.type"><strong>Typ roweru:</strong> {{ bicycle.type }}</p>
+            <p *ngIf="bicycle.frameMaterial"><strong>Materiał ramy:</strong> {{ bicycle.frameMaterial }}</p>
+            <p *ngIf="bicycle.frameNumber" class="frame-number"><strong>Numer ramy:</strong> {{ bicycle.frameNumber }}</p>
+            <p *ngIf="bicycle.productionDate"><strong>Rok produkcji:</strong> {{ bicycle.productionDate | date:'yyyy' }}</p>
+          </div>
+
+          <div class="desktop-action-buttons">
+            <button class="desktop-action-btn edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
+            <button class="desktop-action-btn service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
+            <button class="desktop-action-btn report-btn" disabled title="Funkcja w przygotowaniu">Zgłoś kradzież</button>
+            <button class="desktop-action-btn delete-btn" (click)="confirmDelete()">Usuń rower</button>
+          </div>
+        </div>
+      </div>
+
+      <input #photoInput type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)">
+
+      <!-- ── Status aktywny ── -->
+      <div class="bicycle-active-status" *ngIf="activeServiceOrder || (activeTransport?.hasActiveTransport && !isTransportDelivered)">
+
+        <!-- Karta serwisu -->
+        <div class="status-card status-card--service" *ngIf="activeServiceOrder">
+          <div class="status-card-top-row">
+            <div class="status-card-icon">🔧</div>
+            <span class="status-card-label">
+              Aktywne zlecenie –
+              <strong *ngIf="activeServiceOrder.serviceName"> {{ activeServiceOrder.serviceName }}</strong>
+            </span>
+            <span class="service-order-unread" *ngIf="serviceOrderUnreadCount > 0">{{ serviceOrderUnreadCount }}</span>
+            <span class="status-card-badge">{{ activeServiceOrder.statusDisplayName }}</span>
+            <button class="status-card-toggle" (click)="toggleServiceOrderDetails()" [title]="isServiceOrderExpanded ? 'Zwiń' : 'Rozwiń szczegóły'">
+              {{ isServiceOrderExpanded ? '▲' : '▼' }}
+            </button>
+          </div>
+          <div class="status-card-details" *ngIf="activeServiceOrder.plannedDate">
+            <div class="status-card-detail-row">
+              <span class="status-detail-label">Planowana data:</span>
+              <span>{{ activeServiceOrder.plannedDate | date:'dd.MM.yyyy' }}</span>
+            </div>
+          </div>
+
+          <!-- Rozwinięte szczegóły -->
+          <div class="service-order-expanded" *ngIf="isServiceOrderExpanded">
+            <div class="service-order-loading" *ngIf="isLoadingServiceOrderDetail">Ładowanie...</div>
+
+            <ng-container *ngIf="!isLoadingServiceOrderDetail">
+
+              <!-- Notatki serwisu -->
+              <div class="service-notes-box" *ngIf="serviceOrderDetail?.serviceNotes">
+                <span class="service-notes-label">Notatki serwisu:</span>
+                <p>{{ serviceOrderDetail?.serviceNotes }}</p>
+              </div>
+
+              <!-- Zdjęcia od serwisu -->
+              <div class="service-order-images-section" *ngIf="serviceOrderImages.length">
+                <span class="service-section-title">Zdjęcia od serwisu</span>
+                <div class="service-order-images-grid">
+                  <img
+                    *ngFor="let img of serviceOrderImages; let i = index"
+                    [src]="img.url"
+                    alt="Zdjęcie zlecenia"
+                    loading="lazy"
+                    class="service-order-thumb"
+                    (click)="openSoLightbox(i)"
+                  >
+                </div>
+              </div>
+
+              <!-- Korespondencja -->
+              <div class="messages-section">
+                <span class="service-section-title">Korespondencja z serwisem</span>
+
+                <div class="messages-thread">
+                  <div
+                    *ngFor="let msg of serviceOrderMessages"
+                    class="message-item"
+                    [class.message-service]="msg.senderType === 'SERVICE'"
+                    [class.message-client]="msg.senderType === 'CLIENT'"
+                  >
+                    <span class="message-meta">
+                      {{ msg.senderType === 'SERVICE' ? 'Serwis' : 'Ty' }} · {{ msg.createdAt | date:'dd.MM HH:mm' }}
+                    </span>
+                    <p class="message-content">{{ msg.content }}</p>
+                  </div>
+                  <div class="no-messages" *ngIf="serviceOrderMessages.length === 0">
+                    Brak wiadomości — napisz pierwszy!
+                  </div>
+                </div>
+
+                <div class="message-input-row">
+                  <input
+                    type="text"
+                    class="message-input"
+                    [(ngModel)]="newMessageContent"
+                    placeholder="Napisz wiadomość..."
+                    [disabled]="isSendingMessage"
+                    (keydown.enter)="sendServiceOrderMessage()"
+                  >
+                  <button
+                    class="message-send-btn"
+                    (click)="sendServiceOrderMessage()"
+                    [disabled]="!newMessageContent.trim() || isSendingMessage"
+                  >
+                    {{ isSendingMessage ? '...' : 'Wyślij' }}
+                  </button>
+                </div>
+              </div>
+
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Karta transportu (ukryta gdy DELIVERED) -->
+        <div class="status-card status-card--transport" *ngIf="activeTransport?.hasActiveTransport && !isTransportDelivered">
+          <div class="status-card-top-row">
+            <div class="status-card-icon">🚴</div>
+            <span class="status-card-label">
+              Zamówiony transport do serwisu:
+              <strong *ngIf="activeTransport?.transport?.targetServiceName"> {{ activeTransport?.transport?.targetServiceName }}</strong>
+            </span>
+            <span class="status-card-badge">
+              {{ activeTransport?.transport?.statusDisplayName || activeTransport?.transport?.status }}
+            </span>
+          </div>
+          <div class="status-card-details">
+            <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.pickupDate">
+              <span class="status-detail-label">Odbiór:</span>
+              <span>{{ activeTransport?.transport?.pickupDate | date:'dd.MM.yyyy' }}</span>
+            </div>
+            <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.pickupAddress">
+              <span class="status-detail-label">Skąd:</span>
+              <span>{{ activeTransport?.transport?.pickupAddress }}</span>
+            </div>
+            <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.deliveryAddress">
+              <span class="status-detail-label">Dokąd:</span>
+              <span>{{ activeTransport?.transport?.deliveryAddress }}</span>
+            </div>
+            <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.orderDate">
+              <span class="status-detail-label">Zamówiono:</span>
+              <span>{{ activeTransport?.transport?.orderDate | date:'dd.MM.yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Galeria ── -->
+      <div class="gallery-section">
+        <div class="gallery-section-header">
+          <h3>Zdjęcia i dokumenty</h3>
+          <button
+            class="add-gallery-photo-btn"
+            (click)="galleryInput.click()"
+            [disabled]="isGalleryUploading"
+          >
+            {{ galleryUploadLabel }}
+          </button>
+          <input
+            #galleryInput
+            type="file"
+            accept="image/*"
+            multiple
+            style="display:none"
+            (change)="onGalleryPhotoSelected($event)"
+          >
+        </div>
+
+        <div class="gallery-tabs">
+          <button
+            class="gallery-tab"
+            [class.active]="activeGalleryTab === 'GALLERY'"
+            (click)="activeGalleryTab = 'GALLERY'"
+          >
+            Galeria
+          </button>
+          <button
+            class="gallery-tab"
+            [class.active]="activeGalleryTab === 'RECEIPT'"
+            (click)="activeGalleryTab = 'RECEIPT'"
+          >
+            Rachunki
+          </button>
+        </div>
+
+        <div class="gallery-grid" *ngIf="galleryImages.length > 0; else emptyGallery">
+          <div *ngFor="let image of galleryImages; let i = index" class="gallery-item" (click)="openLightbox(i)">
+            <img [src]="image.url" alt="Zdjęcie roweru" loading="lazy">
+          </div>
+        </div>
+        <ng-template #emptyGallery>
+          <div class="no-records-message">Brak zdjęć w tej kategorii.</div>
+        </ng-template>
+      </div>
+
+      <!-- ── Lightbox ── -->
+      <div
+        class="lightbox-overlay"
+        *ngIf="lightboxOpen"
+        (click)="closeLightbox()"
+        (keydown)="onLightboxKey($event)"
+        tabindex="-1"
+      >
+        <button class="lightbox-close" (click)="closeLightbox()" title="Zamknij">✕</button>
+
+        <button
+          class="lightbox-arrow lightbox-arrow-left"
+          *ngIf="galleryImages.length > 1"
+          (click)="lightboxPrev($event)"
+          title="Poprzednie"
+        >&#8249;</button>
+
+        <div class="lightbox-content" (click)="$event.stopPropagation()">
+          <img [src]="galleryImages[lightboxIndex]?.url" alt="Zdjęcie roweru" class="lightbox-img">
+          <div class="lightbox-toolbar">
+            <button
+              class="lightbox-delete-btn"
+              (click)="confirmDeleteLightboxImage($event)"
+              [disabled]="isLightboxDeleting"
+              title="Usuń zdjęcie"
+            >
+              {{ isLightboxDeleting ? 'Usuwanie…' : 'Usuń zdjęcie' }}
+            </button>
+          </div>
+        </div>
+
+        <button
+          class="lightbox-arrow lightbox-arrow-right"
+          *ngIf="galleryImages.length > 1"
+          (click)="lightboxNext($event)"
+          title="Następne"
+        >&#8250;</button>
+      </div>
+
+      <!-- ── Lightbox zdjęć serwisu ── -->
+      <div
+        class="lightbox-overlay"
+        *ngIf="soLightboxOpen"
+        (click)="closeSoLightbox()"
+        tabindex="-1"
+      >
+        <button class="lightbox-close" (click)="closeSoLightbox()" title="Zamknij">✕</button>
+
+        <button
+          class="lightbox-arrow lightbox-arrow-left"
+          *ngIf="serviceOrderImages.length > 1"
+          (click)="soLightboxPrev($event)"
+          title="Poprzednie"
+        >&#8249;</button>
+
+        <div class="lightbox-content" (click)="$event.stopPropagation()">
+          <img [src]="serviceOrderImages[soLightboxIndex]?.url" alt="Zdjęcie zlecenia serwisowego" class="lightbox-img">
+        </div>
+
+        <button
+          class="lightbox-arrow lightbox-arrow-right"
+          *ngIf="serviceOrderImages.length > 1"
+          (click)="soLightboxNext($event)"
+          title="Następne"
+        >&#8250;</button>
+      </div>
+
+      <!-- Historia serwisowa -->
+      <div class="service-records-section">
+        <h3>Historia serwisowa</h3>
+        <div *ngIf="loading" class="loading-message">Ładowanie historii serwisowej...</div>
+        <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+        <div *ngIf="!loading && !errorMessage">
+          <div *ngIf="serviceRecords.length > 0; else desktopNoRecords" class="service-records-list">
+            <div *ngFor="let record of serviceRecords" class="service-record-card">
+              <div class="service-record-header">
+                <h4>{{ record.name }}</h4>
+                <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+              </div>
+              <p class="service-description">{{ record.description }}</p>
+              <div class="service-footer">
+                <span *ngIf="record.price" class="service-price">Koszt: {{ record.price | currency:'PLN':'symbol':'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+          <ng-template #desktopNoRecords>
+            <div class="no-records-message">Brak historii serwisowej dla tego roweru.</div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Formularz edycji ── -->
+    <form *ngIf="isEditing" #editForm [formGroup]="bicycleForm" (ngSubmit)="onSubmit()" class="edit-form">
+      <h3>Edycja danych roweru</h3>
+
+      <div class="form-group">
+        <label for="brand">Marka*</label>
+        <select id="brand" formControlName="brand" [class.is-invalid]="isFieldInvalid('brand')" [attr.disabled]="loadingBrands ? '' : null">
+          <option value="" disabled>-- Wybierz markę --</option>
+          <option *ngIf="loadingBrands" value="" disabled>Ładowanie...</option>
+          <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
+          <option value="Inna">Inna marka (wpisz w polu model)</option>
+        </select>
+        <div *ngIf="isFieldInvalid('brand')" class="error-message">Marka jest wymagana</div>
+      </div>
+
+      <div class="form-group">
+        <label for="model">Model</label>
+        <input type="text" id="model" formControlName="model" placeholder="Wpisz model roweru">
+      </div>
+
+      <div class="form-group">
+        <label for="type">Typ roweru</label>
+        <select id="type" formControlName="type" [attr.disabled]="loadingTypes ? '' : null">
+          <option value="">-- Wybierz typ --</option>
+          <option *ngIf="loadingTypes" value="" disabled>Ładowanie...</option>
+          <option *ngFor="let type of bikeTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="frameMaterial">Materiał ramy</label>
+        <select id="frameMaterial" formControlName="frameMaterial" [attr.disabled]="loadingMaterials ? '' : null">
+          <option value="">-- Wybierz materiał --</option>
+          <option *ngIf="loadingMaterials" value="" disabled>Ładowanie...</option>
+          <option *ngFor="let material of frameMaterials" [value]="material">{{ material }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="productionDate">Rok produkcji</label>
+        <input type="date" id="productionDate" formControlName="productionDate">
+      </div>
+
+      <div class="form-group">
+        <label for="photo">Zmień zdjęcie główne (maks. 10MB, zostanie skompresowane do WebP)</label>
+        <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" (change)="onFileSelected($event)">
+        <div *ngIf="photoError" class="error-message">{{ photoError }}</div>
+        <div *ngIf="selectedFile" class="photo-preview">
+          <img [src]="previewUrl" alt="Podgląd zdjęcia roweru">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" (click)="cancelEditing()">Anuluj</button>
+        <button type="submit" class="submit-btn"
+          [disabled]="bicycleForm.invalid || isSubmitting || loadingBrands || loadingTypes || loadingMaterials">
+          {{ isSubmitting ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="!bicycle && !loading" class="not-found-message">
+    Nie znaleziono roweru o podanym ID.
+  </div>
+
+  <div *ngIf="loading && !bicycle" class="loading-container">
+    Ładowanie danych roweru...
+  </div>
+</div>

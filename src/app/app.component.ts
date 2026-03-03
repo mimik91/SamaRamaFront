@@ -45,9 +45,11 @@ export class AppComponent implements OnInit {
       }
 
       // Google Analytics
-      gtag('config', 'G-9ZYH1T3NCJ', {
-        page_path: event.urlAfterRedirects
-      });
+      if (typeof gtag !== 'undefined') {
+        gtag('config', 'G-9ZYH1T3NCJ', {
+          page_path: event.urlAfterRedirects
+        });
+      }
     });
   }
 }

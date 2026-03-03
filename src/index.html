@@ -60,23 +60,37 @@
     <!-- Google Analytics (blocked until consent) -->
 
     <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-</script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Domyślnie blokujemy analitykę do czasu kliknięcia w baner Klaro
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'wait_for_update': 500
+      });
+      gtag('js', new Date());
+    </script>
+
     <script
       type="text/plain"
       data-type="application/javascript"
       data-src="https://www.googletagmanager.com/gtag/js?id=G-9ZYH1T3NCJ"
       data-name="googleAnalytics">
     </script>
+
     <script
       type="text/plain"
       data-type="application/javascript"
       data-name="googleAnalytics">
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+      
+      // Użytkownik zaakceptował ciasteczka w Klaro, nadpisujemy zgodę!
+      gtag('consent', 'update', {
+        'analytics_storage': 'granted'
+      });
+      
       gtag('config', 'G-9ZYH1T3NCJ');
     </script>
   </head>

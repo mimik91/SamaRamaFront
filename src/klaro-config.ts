@@ -71,13 +71,6 @@ const klaroConfig: Klaro.Config = {
       required: false,
       optOut: false,
       onlyOnce: true,
-      callback: (consent: boolean) => {
-        if (consent && typeof (window as any).gtag === 'function') {
-          (window as any).gtag('config', 'G-9ZYH1T3NCJ', {
-            page_path: window.location.pathname,
-          });
-        }
-      },
     },
     {
       name: 'facebookPixel',
@@ -90,11 +83,6 @@ const klaroConfig: Klaro.Config = {
       required: false,
       optOut: false,
       onlyOnce: true,
-      callback: (consent: boolean) => {
-        if (consent && typeof (window as any).fbq === 'function') {
-          (window as any).fbq('track', 'PageView');
-        }
-      },
     },
   ],
 };

@@ -72,6 +72,14 @@ export const serverRoutes: ServerRoute[] = [
     path: 'guest-order',
     renderMode: RenderMode.Server
   },
+  {
+    path: 'reserve-service',
+    renderMode: RenderMode.Server
+  },
+  {
+    path: 'reserve-service/:suffix',
+    renderMode: RenderMode.Server
+  },
 
   // === CLIENT ONLY ROUTES (Authenticated/interactive pages) ===
 

@@ -67,7 +67,7 @@
         <!-- Dane klienta -->
         <div class="detail-section">
           <h3 class="section-title">{{ t('service_calendar.order_details.customer') }}</h3>
-          <div class="detail-grid">
+          <div class="detail-grid detail-grid--cols">
             <div class="detail-item">
               <span class="detail-label">{{ t('service_calendar.order_details.name') }}</span>
               <span class="detail-value">{{ fullOrder.clientName }}</span>
@@ -86,7 +86,7 @@
         <!-- Dane roweru -->
         <div class="detail-section">
           <h3 class="section-title">{{ t('service_calendar.order_details.bike') }}</h3>
-          <div class="detail-grid">
+          <div class="detail-grid detail-grid--cols">
             <div class="detail-item">
               <span class="detail-label">{{ t('service_calendar.order_details.brand_model') }}</span>
               <span class="detail-value">{{ fullOrder.bicycleBrand }} {{ fullOrder.bicycleModel }}</span>
@@ -101,7 +101,7 @@
         <!-- Data i serwisant -->
         <div class="detail-section" *ngIf="!canShowImages || calendarMode === 'ADVANCED'">
           <h3 class="section-title">{{ t('service_calendar.order_details.order_info') }}</h3>
-          <div class="detail-grid">
+          <div class="detail-grid detail-grid--cols">
             <div class="detail-item" *ngIf="!canShowImages">
               <span class="detail-label">{{ t('service_calendar.order_details.date') }}</span>
               <input
@@ -127,25 +127,6 @@
                 </option>
               </select>
             </div>
-          </div>
-        </div>
-
-        <!-- Notatki -->
-        <div class="detail-section">
-          <h3 class="section-title">{{ t('service_calendar.order_details.notes') }}</h3>
-          <div class="notes-container">
-            <textarea
-              [(ngModel)]="notes"
-              [placeholder]="t('service_calendar.order_details.notes_placeholder')"
-              rows="3"
-            ></textarea>
-            <button
-              class="btn-save-notes"
-              (click)="onSaveNotes()"
-              [disabled]="isUpdating || notes === (fullOrder.serviceNotes || '')"
-            >
-              {{ t('common.save') }}
-            </button>
           </div>
         </div>
 
@@ -227,6 +208,43 @@
                 {{ uploadCurrentIndex + 1 }}/{{ uploadTotalCount }}
                 ({{ uploadProgress | number:'1.0-0' }}%)
               </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notatki -->
+        <div class="detail-section">
+          <h3 class="section-title">{{ t('service_calendar.order_details.notes') }}</h3>
+          <div class="notes-fields">
+            <div class="notes-field">
+              <label class="notes-label">Co zostało zrobione</label>
+              <textarea
+                #noteTextarea
+                [(ngModel)]="notes"
+                placeholder="Co zostało zrobione"
+                rows="1"
+                (input)="autoResize($event)"
+              ></textarea>
+            </div>
+            <div class="notes-field">
+              <label class="notes-label notes-label--advice">Zalecenia pielęgnacyjne roweru</label>
+              <textarea
+                #noteTextarea
+                [(ngModel)]="maintenanceAdvice"
+                placeholder="Zalecenia pielęgnacyjne roweru"
+                rows="1"
+                (input)="autoResize($event)"
+              ></textarea>
+            </div>
+            <div class="notes-field">
+              <label class="notes-label notes-label--repairs">Zalecane naprawy w najbliższej przyszłości</label>
+              <textarea
+                #noteTextarea
+                [(ngModel)]="recommendedRepairs"
+                placeholder="Zalecane naprawy w najbliższej przyszłości"
+                rows="1"
+                (input)="autoResize($event)"
+              ></textarea>
             </div>
           </div>
         </div>
@@ -317,8 +335,9 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn-close" (click)="onClose()">
-        {{ t('common.close') }}
+      <button class="btn-cancel" (click)="onCancelNotes()">Anuluj</button>
+      <button class="btn-save-all" (click)="onSaveAllNotes()" [disabled]="isUpdating">
+        {{ isUpdating ? '...' : 'Zapisz' }}
       </button>
     </div>
   </div>

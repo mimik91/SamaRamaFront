@@ -40,6 +40,7 @@ export const environment = {
     guestOrders: {
       transport: '/guest-orders/transport',
       discounts: '/guest-orders/discounts',
+      serviceReservation: '/guest-orders/service-reservation'
     },
 
     serviceSlots: {
@@ -76,7 +77,8 @@ export const environment = {
       pricelistCategories: '/bike-services-registered/pricelist/categories',
       pricelistAvailableItems: '/bike-services-registered/pricelist/available-items',
       packages: '/bike-services-registered/my-service/packages',
-      packagesConfig: '/bike-services-registered/my-service/packages-config'
+      packagesConfig: '/bike-services-registered/my-service/packages-config',
+      serviceRecords: '/bike-services-registered/my-service/service-records'
     },
 
     services: {

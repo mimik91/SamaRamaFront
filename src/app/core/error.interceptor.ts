@@ -15,7 +15,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     '/auth/login',
     '/active-transport',
     'service-records/bicycle',
-    '/user/service-orders'
+    '/user/service-orders',
+    '/service-calendar/clients/lookup'
   ];
   const isPublicEndpoint = publicEndpoints.some(url => req.url.includes(url));
 

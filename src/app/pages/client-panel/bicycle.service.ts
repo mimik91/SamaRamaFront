@@ -325,6 +325,16 @@ export class BicycleService {
       );
   }
 
+  updateStolenStatus(id: number, stolen: boolean): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/${id}/stolen`, { stolen })
+      .pipe(
+        catchError(error => {
+          console.error(`Error updating stolen status for bicycle ${id}:`, error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   updateBicycle(id: number, bicycleData: Omit<Bicycle, 'id' | 'mainPhotoUrl'>, isComplete: boolean = true): Observable<any> {
     console.log(`Updating bicycle ID ${id} with data:`, bicycleData);
     console.log(`isComplete parameter: ${isComplete}`);

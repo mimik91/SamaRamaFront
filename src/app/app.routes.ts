@@ -8,10 +8,12 @@ import { ServiceCalendarComponent } from './pages/service-calendar/service-calen
 import { authGuard, clientGuard, adminGuard, serviceGuard, moderatorGuard } from './auth/auth.guard';
 import { ClientPanelListComponent } from './pages/client-panel/client-panel-list/client-panel-list.component';
 import { ClientPanelFormComponent } from './pages/client-panel/client-panel-form/client-panel-form.component';
-import { ClientPanelDetailsComponent } from './pages/client-panel/client-panel-details/client-panel-details.component';
+import { ClientPanelDetailsComponent } from './pages/client-panel/client-panel-bicycle-details/client-panel-bicycle-details.component';
 import { ServiceOrderFormComponent } from './service-orders/service-order-form/service-order-form.component';
 import { GuestServiceOrderComponent } from './service-orders/guest-service-order/guest-service-order.component';
 import { TransportOrderFormComponent } from './transport-orders/transport-order-form.component';
+import { GuestReservationFormComponent } from './service-reservation/guest-reservation-form.component';
+import { ServiceHistoryPageComponent } from './pages/service-history-page/service-history-page.component';
 import { OrderSummaryComponent } from './transport-orders/order-summary/order-summary.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/admin-enumerations-manager.component';
@@ -129,6 +131,18 @@ export const routes: Routes = [
       component: TransportOrderFormComponent,
       title: 'Zamów Transport'
     },
+
+    // Service reservation
+    {
+      path: 'reserve-service/:suffix',
+      component: GuestReservationFormComponent,
+      title: 'Zarezerwuj Serwis'
+    },
+    {
+      path: 'reserve-service',
+      component: GuestReservationFormComponent,
+      title: 'Zarezerwuj Serwis'
+    },
     { 
       path: 'ordersummary', 
       component: OrderSummaryComponent,
@@ -210,6 +224,14 @@ export const routes: Routes = [
       component: ServiceAdminPanelComponent,
       canActivate: [serviceGuard, suffixValidationGuard],
       title: 'Ustawienia Profilu Serwisu'
+    },
+
+    // Historia zleceń serwisu
+    {
+      path: ':suffix/historia-zlecen',
+      component: ServiceHistoryPageComponent,
+      canActivate: [serviceGuard, suffixValidationGuard],
+      title: 'Historia Zleceń'
     },
     
     // === DASHBOARD ROUTES (dla przekierowań po logowaniu) ===

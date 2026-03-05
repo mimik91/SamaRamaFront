@@ -31,6 +31,7 @@ interface BikeServiceRegisteredDto {
   isRegistered: boolean;
   displayEmail?: boolean;
   displayPhoneNumber?: boolean;
+  reservationAvailable?: boolean;
 }
 
 interface ServiceProfileUpdateDto {
@@ -45,6 +46,7 @@ interface ServiceProfileUpdateDto {
   description?: string;
   displayEmail?: boolean;
   displayPhoneNumber?: boolean;
+  reservationAvailable?: boolean;
 }
 
 @Component({
@@ -85,7 +87,8 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
       youtube: this.serviceDetails.youtube || '',
       description: this.serviceDetails.description || '',
       displayEmail: this.serviceDetails.displayEmail ?? true,
-      displayPhoneNumber: this.serviceDetails.displayPhoneNumber ?? true
+      displayPhoneNumber: this.serviceDetails.displayPhoneNumber ?? true,
+      reservationAvailable: this.serviceDetails.reservationAvailable ?? false
     };
   }
 

@@ -43,7 +43,8 @@ export interface ServiceDetails {
   createdAt: string;
   updatedAt?: string;
   registered: boolean;
-  logoUrl?: string
+  logoUrl?: string;
+  reservationAvailable?: boolean;
 }
 
 export interface CitySuggestion {

@@ -138,8 +138,11 @@ export class ServiceCalendarService {
    */
   createOrder(serviceId: number, order: CreateCalendarOrderDto): Observable<CalendarOrder> {
     const params = new HttpParams().set('serviceId', serviceId.toString());
-    return this.http.post<CalendarOrder>(`${this.apiUrl}${this.endpoints.orders}`, order, { params })
-      .pipe(catchError(this.handleError('createOrder')));
+    return this.http.post<any>(`${this.apiUrl}${this.endpoints.orders}`, order, { params })
+      .pipe(
+        map((res) => res?.order ?? res),
+        catchError(this.handleError('createOrder'))
+      );
   }
 
   /**

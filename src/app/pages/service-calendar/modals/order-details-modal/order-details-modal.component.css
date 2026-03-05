@@ -16,7 +16,7 @@
   background: var(--color-white);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 600px;
+  max-width: 860px;
   max-height: 90vh;
   overflow: hidden;
   display: flex;
@@ -267,6 +267,10 @@
   gap: var(--spacing-3);
 }
 
+.detail-grid--cols {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 .detail-item {
   display: flex;
   flex-direction: column;
@@ -295,47 +299,49 @@
 }
 
 /* Notes */
-.notes-container {
+.notes-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.notes-field {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
 }
 
-.notes-container textarea {
+.notes-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+}
+
+.notes-label--advice {
+  color: #2563eb;
+}
+
+.notes-label--repairs {
+  color: #d97706;
+}
+
+.notes-field textarea {
   width: 100%;
+  box-sizing: border-box;
   padding: var(--spacing-3);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
-  resize: vertical;
-  min-height: 80px;
+  font-family: inherit;
+  resize: none;
+  overflow: hidden;
+  min-height: 40px;
+  line-height: 1.5;
 }
 
-.notes-container textarea:focus {
+.notes-field textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-}
-
-.btn-save-notes {
-  align-self: flex-end;
-  padding: var(--spacing-2) var(--spacing-4);
-  background: var(--color-primary);
-  color: var(--color-white);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: var(--transition-all);
-}
-
-.btn-save-notes:hover:not(:disabled) {
-  background: var(--color-primary-dark);
-}
-
-.btn-save-notes:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Images preview */
@@ -630,12 +636,13 @@
 .modal-footer {
   display: flex;
   justify-content: flex-end;
+  gap: var(--spacing-3);
   padding: var(--spacing-4) var(--spacing-6);
   border-top: 1px solid var(--border-color);
   background: var(--color-slate-50);
 }
 
-.btn-close {
+.btn-cancel {
   padding: var(--spacing-3) var(--spacing-6);
   background: var(--color-white);
   border: 1px solid var(--border-color);
@@ -647,8 +654,29 @@
   transition: var(--transition-all);
 }
 
-.btn-close:hover {
+.btn-cancel:hover {
   background: var(--color-slate-100);
+}
+
+.btn-save-all {
+  padding: var(--spacing-3) var(--spacing-6);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.btn-save-all:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btn-save-all:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Image clickable cursor */
@@ -791,7 +819,8 @@
     gap: var(--spacing-2);
   }
 
-  .btn-close {
+  .btn-cancel,
+  .btn-save-all {
     width: 100%;
     min-height: 44px;
   }
@@ -812,9 +841,8 @@
     width: 100%;
   }
 
-  .btn-save-notes {
+  .notes-field textarea {
     min-height: 44px;
-    align-self: stretch;
   }
 
   .btn-manage-images {
@@ -1017,7 +1045,7 @@
   }
 
   /* Notes textarea slightly taller */
-  .notes-container textarea {
-    min-height: 100px;
+  .notes-field textarea {
+    min-height: 48px;
   }
 }

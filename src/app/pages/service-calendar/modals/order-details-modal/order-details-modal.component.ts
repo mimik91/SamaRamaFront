@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, ViewChild, ElementRef, DestroyRef, OnDestroy, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, ViewChild, ViewChildren, QueryList, ElementRef, DestroyRef, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -34,6 +34,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
   private destroyRef = inject(DestroyRef);
 
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
+  @ViewChildren('noteTextarea') noteTextareas!: QueryList<ElementRef<HTMLTextAreaElement>>;
 
   @Input() order!: CalendarOrder;
   @Input() serviceId!: number;
@@ -90,6 +91,8 @@ export class OrderDetailsModalComponent implements OnDestroy {
   selectedTechnicianId: number | null = null;
   selectedDate: string = '';
   notes: string = '';
+  maintenanceAdvice: string = '';
+  recommendedRepairs: string = '';
 
   // Min date for date picker (today)
   get minDate(): string {
@@ -120,6 +123,8 @@ export class OrderDetailsModalComponent implements OnDestroy {
     this.selectedTechnicianId = this.order.assignedTechnicianId || null;
     this.selectedDate = this.order.plannedDate || '';
     this.notes = this.order.serviceNotes || '';
+    this.maintenanceAdvice = this.order.maintenanceAdvice || '';
+    this.recommendedRepairs = this.order.recommendedRepairs || '';
 
     // Fetch full order details from API to get all fields (including bicycleBrand, bicycleModel)
     this.loadFullOrderDetails();
@@ -140,8 +145,10 @@ export class OrderDetailsModalComponent implements OnDestroy {
         this.selectedTechnicianId = this.fullOrder.assignedTechnicianId || null;
         this.selectedDate = this.fullOrder.plannedDate || '';
         this.notes = this.fullOrder.serviceNotes || '';
+        this.maintenanceAdvice = this.fullOrder.maintenanceAdvice || '';
+        this.recommendedRepairs = this.fullOrder.recommendedRepairs || '';
         this.isLoading = false;
-        if (!this.canShowImages) { this.activeTab = 'messages'; }
+        this.resizeAllNoteTextareas();
         // Laduj zdjecia jesli status na to pozwala
         this.loadImages();
         this.loadMessages();
@@ -151,7 +158,6 @@ export class OrderDetailsModalComponent implements OnDestroy {
         console.error('Error loading full order details:', err);
         this.fullOrder = { ...this.order };
         this.isLoading = false;
-        if (!this.canShowImages) { this.activeTab = 'messages'; }
         // Laduj zdjecia jesli status na to pozwala
         this.loadImages();
         this.loadMessages();
@@ -322,16 +328,51 @@ export class OrderDetailsModalComponent implements OnDestroy {
     });
   }
 
-  onSaveNotes(): void {
-    if (this.notes === (this.fullOrder.serviceNotes || '')) return;
+  autoResize(event: Event): void {
+    const el = event.target as HTMLTextAreaElement;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+
+  private resizeAllNoteTextareas(): void {
+    setTimeout(() => {
+      this.noteTextareas?.forEach(ref => {
+        const el = ref.nativeElement;
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+      });
+    }, 0);
+  }
+
+  onSaveAllNotes(): void {
+    const payload: any = {};
+    let hasChanges = false;
+
+    if (this.notes !== (this.fullOrder.serviceNotes || '')) {
+      payload.serviceNotes = this.notes;
+      hasChanges = true;
+    }
+    if (this.maintenanceAdvice !== (this.fullOrder.maintenanceAdvice || '')) {
+      payload.maintenanceAdvice = this.maintenanceAdvice;
+      hasChanges = true;
+    }
+    if (this.recommendedRepairs !== (this.fullOrder.recommendedRepairs || '')) {
+      payload.recommendedRepairs = this.recommendedRepairs;
+      hasChanges = true;
+    }
+
+    if (!hasChanges) { this.onClose(); return; }
 
     this.isUpdating = true;
 
-    this.calendarService.updateOrder(this.serviceId, this.fullOrder.id, { serviceNotes: this.notes }).subscribe({
+    this.calendarService.updateOrder(this.serviceId, this.fullOrder.id, payload).subscribe({
       next: () => {
+        this.fullOrder.serviceNotes = this.notes;
+        this.fullOrder.maintenanceAdvice = this.maintenanceAdvice;
+        this.fullOrder.recommendedRepairs = this.recommendedRepairs;
         this.notificationService.success(this.t('service_calendar.messages.notes_saved'));
         this.isUpdating = false;
-        this.orderUpdated.emit();
+        this.onClose();
       },
       error: (err: any) => {
         this.notificationService.error(this.t('service_calendar.errors.save_notes_failed'));
@@ -339,6 +380,13 @@ export class OrderDetailsModalComponent implements OnDestroy {
         console.error('Error saving notes:', err);
       }
     });
+  }
+
+  onCancelNotes(): void {
+    this.notes = this.fullOrder.serviceNotes || '';
+    this.maintenanceAdvice = this.fullOrder.maintenanceAdvice || '';
+    this.recommendedRepairs = this.fullOrder.recommendedRepairs || '';
+    this.onClose();
   }
 
   // ============================================

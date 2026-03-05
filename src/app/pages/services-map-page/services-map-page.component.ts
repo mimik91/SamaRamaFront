@@ -705,6 +705,12 @@ onCitySelected(city: CitySuggestion): void {
     });
   }
 
+  onReserveService(serviceDetails: ServiceDetails): void {
+    this.router.navigate(['/reserve-service'], {
+      queryParams: { serviceId: serviceDetails.id }
+    });
+  }
+
   onClusterClicked(data: { lat: number; lng: number; zoom: number }): void {
     if (this.mapComponent) {
       this.mapComponent.centerOn(data.lat, data.lng, data.zoom);

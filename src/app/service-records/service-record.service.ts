@@ -16,7 +16,7 @@ export class ServiceRecordService {
   constructor() {}
   
   getBicycleServiceRecords(bicycleId: number): Observable<ServiceRecord[]> {
-    return this.http.get<ServiceRecord[]>(`${this.apiUrl}/bicycle/${bicycleId}`)
+    return this.http.get<ServiceRecord[]>(`${environment.apiUrl}${environment.endpoints.bicycles}/${bicycleId}/service-records`)
       .pipe(
         catchError(error => {
           console.error(`Error fetching service records for bicycle ${bicycleId}:`, error);

@@ -16,7 +16,8 @@
       "services": "Dostępne usługi",
       "pricelist": "Zarządzaj cennikiem",
       "hours": "Godziny otwarcia",
-      "images": "Zarządzaj zdjęciami"
+      "images": "Zarządzaj zdjęciami",
+      "history": "Historia zleceń"
     }
   },
   "service_calendar": {

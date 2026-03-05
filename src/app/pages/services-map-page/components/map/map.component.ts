@@ -70,6 +70,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   @Output() viewServiceDetails = new EventEmitter<ServiceDetails>();
   @Output() registerService = new EventEmitter<ServiceDetails>();
   @Output() orderTransport = new EventEmitter<ServiceDetails>();
+  @Output() reserveService = new EventEmitter<ServiceDetails>();
 
   // Internal state
   private map: any;
@@ -640,9 +641,10 @@ if (markerElement) {
     const hasTransport = serviceDetails.transportAvailable &&
       serviceDetails.transportCost !== undefined &&
       serviceDetails.transportCost !== null;
+    const hasReservation = Boolean(serviceDetails.reservationAvailable);
 
     if (isMobile) {
-      return this.buildMobilePopupContent(serviceDetails, logoUrl, fullAddress, isVerified, hasTransport);
+      return this.buildMobilePopupContent(serviceDetails, logoUrl, fullAddress, isVerified, hasTransport, hasReservation);
     }
 
     let popupContent = `
@@ -735,7 +737,17 @@ if (markerElement) {
       `;
     }
 
-    if (hasTransport) {
+    if (hasReservation) {
+      popupContent += `
+        <button
+          id="reserve-service-btn-${serviceDetails.id}"
+          class="popup-action-btn reserve"
+          style="flex: 1; min-width: 120px; padding: 12px 18px; background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);"
+        >
+          📅 Zarezerwuj serwis
+        </button>
+      `;
+    } else if (hasTransport) {
       popupContent += `
         <button
           id="order-transport-btn-${serviceDetails.id}"
@@ -757,7 +769,8 @@ if (markerElement) {
     logoUrl: string,
     fullAddress: string,
     isVerified: boolean,
-    hasTransport: boolean
+    hasTransport: boolean,
+    hasReservation: boolean = false
   ): string {
     // Logo box: 44px height + 10px padding total in header = 54px header height
     const logoSize = 44;
@@ -835,7 +848,17 @@ if (markerElement) {
       `;
     }
 
-    if (hasTransport) {
+    if (hasReservation) {
+      content += `
+        <button
+          id="reserve-service-btn-${serviceDetails.id}"
+          class="popup-action-btn reserve"
+          style="flex: 1; padding: 9px 10px; background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.3s ease;"
+        >
+          📅 Zarezerwuj
+        </button>
+      `;
+    } else if (hasTransport) {
       content += `
         <button
           id="order-transport-btn-${serviceDetails.id}"
@@ -891,7 +914,16 @@ if (markerElement) {
       }
     }
 
-    if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
+    if (serviceDetails.reservationAvailable) {
+      const reserveBtn = document.getElementById(`reserve-service-btn-${serviceDetails.id}`);
+      if (reserveBtn) {
+        const handler = () => {
+          this.reserveService.emit(serviceDetails);
+        };
+        reserveBtn.addEventListener('click', handler);
+        listeners.push({ element: reserveBtn, event: 'click', handler });
+      }
+    } else if (serviceDetails.transportAvailable && serviceDetails.transportCost !== undefined && serviceDetails.transportCost !== null) {
       const transportBtn = document.getElementById(`order-transport-btn-${serviceDetails.id}`);
       if (transportBtn) {
         const handler = () => {

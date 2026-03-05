@@ -1,10 +1,17 @@
-import { Bicycle } from '../shared/models/bicycle.model';
+export interface ItemDto {
+  name: string;
+  quantity: number;
+  price: number;
+}
 
 export interface ServiceRecord {
   id: number;
-  bicycle: Bicycle;
-  name: string;
-  description: string;
   serviceDate: string;
-  price?: number;
+  serviceName: string;
+  items: ItemDto[];
+  totalPrice: number;
+  orderNotes?: string;
+  serviceNotes?: string;
+  maintenanceAdvice?: string;
+  recommendedRepairs?: string;
 }

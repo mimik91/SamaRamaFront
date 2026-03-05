@@ -28,7 +28,7 @@
       <div class="mobile-action-buttons">
         <button class="mobile-action-btn mobile-edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
         <button class="mobile-action-btn mobile-service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
-        <button class="mobile-action-btn mobile-report-btn" disabled title="Funkcja w przygotowaniu">Zgłoś kradzież</button>
+        <button class="mobile-action-btn mobile-report-btn" (click)="reportStolen()">Zgłoś kradzież</button>
         <button class="mobile-action-btn mobile-delete-btn" (click)="confirmDelete()">Usuń rower</button>
       </div>
 
@@ -45,14 +45,50 @@
         <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
         <div *ngIf="!loading && !errorMessage">
           <div *ngIf="serviceRecords.length > 0; else mobileNoRecords" class="service-records-list">
-            <div *ngFor="let record of serviceRecords" class="service-record-card">
-              <div class="service-record-header">
-                <h4>{{ record.name }}</h4>
-                <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+            <div *ngFor="let record of serviceRecords" class="service-record-card" [class.expanded]="expandedRecordIds.has(record.id)">
+              <div class="service-record-header" (click)="toggleRecord(record.id)">
+                <div class="service-record-title">
+                  <h4>{{ record.serviceName }}</h4>
+                  <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+                </div>
+                <div class="service-record-summary">
+                  <span class="service-price-badge">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</span>
+                  <span class="expand-icon">{{ expandedRecordIds.has(record.id) ? '▲' : '▼' }}</span>
+                </div>
               </div>
-              <p class="service-description">{{ record.description }}</p>
-              <div class="service-footer">
-                <span *ngIf="record.price" class="service-price">Koszt: {{ record.price | currency:'PLN':'symbol':'1.2-2' }}</span>
+              <div class="service-record-body" *ngIf="expandedRecordIds.has(record.id)">
+                <div *ngIf="record.items && record.items.length > 0" class="service-items">
+                  <h5>Wykonane usługi / części</h5>
+                  <table class="items-table">
+                    <thead><tr><th>Nazwa</th><th>Ilość</th><th>Cena</th></tr></thead>
+                    <tbody>
+                      <tr *ngFor="let item of record.items">
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr><td colspan="2"><strong>Łącznie</strong></td><td><strong>{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <div *ngIf="record.orderNotes" class="record-note">
+                  <h5>Uwagi do zlecenia</h5>
+                  <p>{{ record.orderNotes }}</p>
+                </div>
+                <div *ngIf="record.serviceNotes" class="record-note">
+                  <h5>Notatki serwisanta</h5>
+                  <p>{{ record.serviceNotes }}</p>
+                </div>
+                <div *ngIf="record.maintenanceAdvice" class="record-note record-note--advice">
+                  <h5>Zalecenia obsługi</h5>
+                  <p>{{ record.maintenanceAdvice }}</p>
+                </div>
+                <div *ngIf="record.recommendedRepairs" class="record-note record-note--repairs">
+                  <h5>Zalecane naprawy</h5>
+                  <p>{{ record.recommendedRepairs }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -106,7 +142,7 @@
           <div class="desktop-action-buttons">
             <button class="desktop-action-btn edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
             <button class="desktop-action-btn service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
-            <button class="desktop-action-btn report-btn" disabled title="Funkcja w przygotowaniu">Zgłoś kradzież</button>
+            <button class="desktop-action-btn report-btn" (click)="reportStolen()">Zgłoś kradzież</button>
             <button class="desktop-action-btn delete-btn" (click)="confirmDelete()">Usuń rower</button>
           </div>
         </div>
@@ -365,14 +401,50 @@
         <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
         <div *ngIf="!loading && !errorMessage">
           <div *ngIf="serviceRecords.length > 0; else desktopNoRecords" class="service-records-list">
-            <div *ngFor="let record of serviceRecords" class="service-record-card">
-              <div class="service-record-header">
-                <h4>{{ record.name }}</h4>
-                <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+            <div *ngFor="let record of serviceRecords" class="service-record-card" [class.expanded]="expandedRecordIds.has(record.id)">
+              <div class="service-record-header" (click)="toggleRecord(record.id)">
+                <div class="service-record-title">
+                  <h4>{{ record.serviceName }}</h4>
+                  <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+                </div>
+                <div class="service-record-summary">
+                  <span class="service-price-badge">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</span>
+                  <span class="expand-icon">{{ expandedRecordIds.has(record.id) ? '▲' : '▼' }}</span>
+                </div>
               </div>
-              <p class="service-description">{{ record.description }}</p>
-              <div class="service-footer">
-                <span *ngIf="record.price" class="service-price">Koszt: {{ record.price | currency:'PLN':'symbol':'1.2-2' }}</span>
+              <div class="service-record-body" *ngIf="expandedRecordIds.has(record.id)">
+                <div *ngIf="record.items && record.items.length > 0" class="service-items">
+                  <h5>Wykonane usługi / części</h5>
+                  <table class="items-table">
+                    <thead><tr><th>Nazwa</th><th>Ilość</th><th>Cena</th></tr></thead>
+                    <tbody>
+                      <tr *ngFor="let item of record.items">
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr><td colspan="2"><strong>Łącznie</strong></td><td><strong>{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <div *ngIf="record.orderNotes" class="record-note">
+                  <h5>Uwagi do zlecenia</h5>
+                  <p>{{ record.orderNotes }}</p>
+                </div>
+                <div *ngIf="record.serviceNotes" class="record-note">
+                  <h5>Notatki serwisanta</h5>
+                  <p>{{ record.serviceNotes }}</p>
+                </div>
+                <div *ngIf="record.maintenanceAdvice" class="record-note record-note--advice">
+                  <h5>Zalecenia obsługi</h5>
+                  <p>{{ record.maintenanceAdvice }}</p>
+                </div>
+                <div *ngIf="record.recommendedRepairs" class="record-note record-note--repairs">
+                  <h5>Zalecane naprawy</h5>
+                  <p>{{ record.recommendedRepairs }}</p>
+                </div>
               </div>
             </div>
           </div>

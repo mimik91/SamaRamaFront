@@ -241,6 +241,8 @@ export interface CalendarOrder {
   statusDisplayName?: string;
   description?: string;
   serviceNotes?: string;
+  maintenanceAdvice?: string;
+  recommendedRepairs?: string;
 
   // Serwisant
   assignedTechnicianId?: number | null;
@@ -306,6 +308,8 @@ export interface UpdateCalendarOrderDto {
   plannedDate?: string;
   description?: string;
   serviceNotes?: string;
+  maintenanceAdvice?: string;
+  recommendedRepairs?: string;
   assignedTechnicianId?: number | null;
   // Dane klienta - istniejący
   clientId?: number;

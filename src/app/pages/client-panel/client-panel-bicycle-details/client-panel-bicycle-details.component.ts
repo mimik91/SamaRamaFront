@@ -14,11 +14,11 @@ import { BicycleSelectionService } from '../bicycle-selection.service';
 import { ImageUtilsService } from '../../../core/image-utils.service';
 
 @Component({
-  selector: 'app-client-panel-details',
+  selector: 'app-client-panel-bicycle-details',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
-  templateUrl: './client-panel-details.component.html',
-  styleUrls: ['./client-panel-details.component.css']
+  templateUrl: './client-panel-bicycle-details.component.html',
+  styleUrls: ['./client-panel-bicycle-details.component.css']
 })
 export class ClientPanelDetailsComponent implements OnInit {
   @ViewChild('photoInput') photoInput!: ElementRef<HTMLInputElement>;
@@ -37,6 +37,7 @@ export class ClientPanelDetailsComponent implements OnInit {
   bicycle: Bicycle | null = null;
   bicycleForm: FormGroup;
   serviceRecords: ServiceRecord[] = [];
+  expandedRecordIds = new Set<number>();
   loading = true;
   isEditing = false;
   isSubmitting = false;
@@ -287,6 +288,14 @@ export class ClientPanelDetailsComponent implements OnInit {
         }
       }
     });
+  }
+
+  toggleRecord(id: number): void {
+    if (this.expandedRecordIds.has(id)) {
+      this.expandedRecordIds.delete(id);
+    } else {
+      this.expandedRecordIds.add(id);
+    }
   }
 
   initForm(): void {
@@ -712,6 +721,16 @@ export class ClientPanelDetailsComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/bicycles']);
+  }
+
+  reportStolen(): void {
+    if (!this.bicycle) return;
+    if (confirm('Czy na pewno chcesz zgłosić ten rower jako skradziony?')) {
+      this.bicycleService.updateStolenStatus(this.bicycle.id, true).subscribe({
+        next: () => this.notificationService.success('Rower został zgłoszony jako skradziony'),
+        error: () => this.notificationService.error('Nie udało się zgłosić kradzieży roweru')
+      });
+    }
   }
 
   confirmDelete(): void {

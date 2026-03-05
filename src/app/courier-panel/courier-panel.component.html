@@ -81,6 +81,12 @@
               <span class="info-label">Cel dostawy</span>
               <span class="info-value">{{ order.deliveryAddress }}</span>
             </div>
+            <div class="info-row" *ngIf="order.clientPhone">
+              <span class="info-label">Telefon klienta</span>
+              <span class="info-value">
+                <a href="tel:{{ order.clientPhone }}">{{ order.clientPhone }}</a>
+              </span>
+            </div>
           </div>
 
           <!-- Card action -->

@@ -7,8 +7,18 @@
     <p>Ładowanie danych serwisu...</p>
   </div>
 
+  <!-- Form inactive placeholder -->
+  <div *ngIf="!loading && serviceInfo && !isFormActive" class="form-inactive-placeholder">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <p class="form-inactive-message">{{ formInactiveMessage }}</p>
+    <button class="btn-secondary" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Wróć do mapy
+    </button>
+  </div>
+
   <!-- Form content -->
-  <ng-container *ngIf="!loading && serviceInfo">
+  <ng-container *ngIf="!loading && serviceInfo && isFormActive">
 
     <!-- Service info card -->
     <div class="service-info-card">
@@ -187,20 +197,26 @@
 
           <div class="form-group">
             <label class="form-label">Planowana data serwisu <span class="required">*</span></label>
-            <input
-              type="date"
-              formControlName="plannedDate"
-              class="form-input date-input"
-              [class.invalid]="isFieldInvalid('plannedDate')"
-              [min]="minDate"
-              [max]="maxDate"
-            />
-            <span class="field-hint">Dostępne terminy: poniedziałek – piątek</span>
+            <div class="date-picker-wrapper" [class.invalid]="isFieldInvalid('plannedDate')">
+              <input
+                [matDatepicker]="picker"
+                [matDatepickerFilter]="dateFilter"
+                [min]="minDateObj"
+                [max]="maxDateObj"
+                formControlName="plannedDate"
+                class="form-input date-input"
+                placeholder="Wybierz datę"
+                readonly
+              />
+              <mat-datepicker-toggle [for]="picker" class="date-toggle"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </div>
+            <span class="field-hint">{{ acceptedDaysHint }}</span>
             <span *ngIf="isFieldInvalid('plannedDate') && reservationForm.get('plannedDate')?.errors?.['required']" class="field-error">
               Data serwisu jest wymagana
             </span>
-            <span *ngIf="isFieldInvalid('plannedDate') && reservationForm.get('plannedDate')?.errors?.['notWeekday']" class="field-error">
-              Wybierz dzień od poniedziałku do piątku
+            <span *ngIf="isFieldInvalid('plannedDate') && reservationForm.get('plannedDate')?.errors?.['notAcceptedDay']" class="field-error">
+              Wybierz jeden z dostępnych dni: {{ acceptedDaysHint.replace('Dostępne dni: ', '') }}
             </span>
           </div>
 

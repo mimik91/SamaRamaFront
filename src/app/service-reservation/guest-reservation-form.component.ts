@@ -11,6 +11,8 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { NotificationService } from '../core/notification.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { environment } from '../environments/environments';
@@ -24,10 +26,26 @@ interface ServiceInfo {
   transportCost: number | null;
 }
 
+interface ReservationSettings {
+  acceptedDays: string[];
+  formSchedule: { [key: string]: { fromTime: string | null; toTime: string | null } };
+  estimatedReservationDay?: string | null;
+}
+
+const DAY_KEYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+const DAY_LABELS: { [key: string]: string } = {
+  MONDAY: 'poniedziałek', TUESDAY: 'wtorek', WEDNESDAY: 'środa',
+  THURSDAY: 'czwartek', FRIDAY: 'piątek', SATURDAY: 'sobota', SUNDAY: 'niedziela'
+};
+
 @Component({
   selector: 'app-guest-reservation-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule],
+  providers: [
+    provideNativeDateAdapter(),
+    { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' }
+  ],
   templateUrl: './guest-reservation-form.component.html',
   styleUrls: ['./guest-reservation-form.component.css']
 })
@@ -44,9 +62,25 @@ export class GuestReservationFormComponent implements OnInit {
   submitting = false;
 
   serviceInfo: ServiceInfo | null = null;
+  reservationSettings: ReservationSettings | null = null;
+  isFormActive = true;
+  formInactiveMessage = '';
 
   minDate: string;
   maxDate: string;
+  minDateObj: Date;
+  maxDateObj: Date;
+
+  // Datepicker filter — greys out days not in acceptedDays
+  readonly dateFilter = (date: Date | null): boolean => {
+    if (!date) return false;
+    const dayKey = DAY_KEYS[date.getDay()];
+    const accepted = this.reservationSettings?.acceptedDays;
+    if (accepted && accepted.length > 0) {
+      return accepted.includes(dayKey);
+    }
+    return true;
+  };
 
   brands: string[] = [];
   filteredBrands: string[] = [];
@@ -68,11 +102,13 @@ export class GuestReservationFormComponent implements OnInit {
   constructor() {
     const minD = new Date();
     minD.setDate(minD.getDate() + 1);
-    this.minDate = minD.toISOString().split('T')[0];
+    this.minDateObj = minD;
+    this.minDate = this.dateToStr(minD);
 
     const maxD = new Date();
     maxD.setDate(maxD.getDate() + 30);
-    this.maxDate = maxD.toISOString().split('T')[0];
+    this.maxDateObj = maxD;
+    this.maxDate = this.dateToStr(maxD);
 
     this.reservationForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -81,7 +117,7 @@ export class GuestReservationFormComponent implements OnInit {
       phone: ['', [Validators.pattern(/^\d{9}$/)]],
       bicycleBrand: ['', Validators.required],
       bicycleModel: [''],
-      plannedDate: ['', [Validators.required, this.weekdayValidator.bind(this)]],
+      plannedDate: ['', [Validators.required, this.acceptedDayValidator.bind(this)]],
       description: [''],
       withTransport: [false]
     });
@@ -94,12 +130,27 @@ export class GuestReservationFormComponent implements OnInit {
     });
   }
 
-  // Validator — only Mon–Fri (days 1–5)
-  weekdayValidator(control: AbstractControl): ValidationErrors | null {
+  // Validator — only accepted days (or Mon–Fri if no restriction set)
+  acceptedDayValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) return null;
-    const day = new Date(control.value + 'T00:00:00').getDay();
-    if (day === 0 || day === 6) return { notWeekday: true };
+    const date: Date = control.value instanceof Date ? control.value : new Date(control.value + 'T00:00:00');
+    const dayIndex = date.getDay();
+    const dayKey = DAY_KEYS[dayIndex];
+    const accepted = this.reservationSettings?.acceptedDays;
+    if (accepted && accepted.length > 0) {
+      if (!accepted.includes(dayKey)) return { notAcceptedDay: true };
+    }
     return null;
+  }
+
+  private dateToStr(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  get acceptedDaysHint(): string {
+    const accepted = this.reservationSettings?.acceptedDays;
+    if (!accepted || accepted.length === 0) return 'Dostępne terminy: wszystkie dni tygodnia';
+    return 'Dostępne dni: ' + accepted.map(d => DAY_LABELS[d] || d).join(', ');
   }
 
   get withTransport(): boolean {
@@ -110,9 +161,9 @@ export class GuestReservationFormComponent implements OnInit {
   get transportDate(): string {
     const planned = this.reservationForm.get('plannedDate')?.value;
     if (!planned) return '';
-    const d = new Date(planned + 'T00:00:00');
+    const d = planned instanceof Date ? new Date(planned) : new Date(planned + 'T00:00:00');
     d.setDate(d.getDate() - 1);
-    return d.toISOString().split('T')[0];
+    return this.dateToStr(d);
   }
 
   ngOnInit(): void {
@@ -147,26 +198,33 @@ export class GuestReservationFormComponent implements OnInit {
 
   private loadServiceInfo(): void {
     const suffix = this.route.snapshot.paramMap.get('suffix');
+
     if (suffix) {
-      // Mamy suffix w URL — musimy pobrać ID serwisu
-      this.loading = true;
-      const url = `${environment.apiUrl}${environment.endpoints.bikeServices.bySuffix}?suffix=${suffix}`;
-      this.http.get<{ id: number }>(url).subscribe({
-        next: (res) => {
-          if (res.id) {
-            this.loadServiceDetails(res.id);
-          } else {
+      // Jeśli nawigacja przekazała serviceId przez state (np. z mapy) — używamy go bezpośrednio
+      const stateServiceId = window.history.state?.serviceId;
+      if (stateServiceId) {
+        this.loadServiceDetails(+stateServiceId);
+      } else {
+        // Brak state — pobieramy serviceId z backendu po suffixie (np. bezpośredni link)
+        this.loading = true;
+        const url = `${environment.apiUrl}${environment.endpoints.bikeServices.bySuffix}?suffix=${suffix}`;
+        this.http.get<{ id: number }>(url).subscribe({
+          next: (res) => {
+            if (res.id) {
+              this.loadServiceDetails(res.id);
+            } else {
+              this.notificationService.error('Nie znaleziono serwisu.');
+              this.router.navigate([environment.links.servicesMap]);
+              this.loading = false;
+            }
+          },
+          error: () => {
             this.notificationService.error('Nie znaleziono serwisu.');
             this.router.navigate([environment.links.servicesMap]);
             this.loading = false;
           }
-        },
-        error: () => {
-          this.notificationService.error('Nie znaleziono serwisu.');
-          this.router.navigate([environment.links.servicesMap]);
-          this.loading = false;
-        }
-      });
+        });
+      }
     } else {
       // Mamy serviceId w query params — ładujemy detale bezpośrednio
       this.route.queryParams.subscribe(params => {
@@ -201,6 +259,7 @@ export class GuestReservationFormComponent implements OnInit {
           transportAvailable: !!d.transportAvailable,
           transportCost: d.transportCost ?? null
         };
+        this.loadReservationSettings(d.id);
         this.loading = false;
       },
       error: () => {
@@ -209,6 +268,95 @@ export class GuestReservationFormComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  private loadReservationSettings(serviceId: number): void {
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/${serviceId}/reservation-settings`;
+    this.http.get<ReservationSettings>(url).subscribe({
+      next: (settings) => {
+        this.reservationSettings = settings;
+        this.computeFormAvailability(settings);
+        this.updateMinDate(settings);
+        // Re-validate plannedDate with new accepted days
+        this.reservationForm.get('plannedDate')?.updateValueAndValidity();
+      },
+      error: () => {
+        // Settings not available — keep defaults (Mon–Fri, tomorrow as min)
+      }
+    });
+  }
+
+  private computeFormAvailability(settings: ReservationSettings): void {
+    if (!settings.formSchedule || Object.keys(settings.formSchedule).length === 0) {
+      this.isFormActive = true;
+      return;
+    }
+
+    const now = new Date();
+    const currentDayKey = DAY_KEYS[now.getDay()];
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const schedule = settings.formSchedule[currentDayKey];
+
+    if (schedule) {
+      const fromMinutes = schedule.fromTime ? this.timeToMinutes(schedule.fromTime) : 1;
+      const toMinutes = schedule.toTime ? this.timeToMinutes(schedule.toTime) : 23 * 60 + 59;
+      if (currentMinutes >= fromMinutes && currentMinutes <= toMinutes) {
+        this.isFormActive = true;
+        return;
+      }
+    }
+
+    this.isFormActive = false;
+    this.formInactiveMessage = this.findNextAvailableMessage(settings, now);
+  }
+
+  private timeToMinutes(time: string): number {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  private findNextAvailableMessage(settings: ReservationSettings, now: Date): string {
+    const currentDayIndex = now.getDay();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    // Check if there's still an upcoming window today
+    const todayKey = DAY_KEYS[currentDayIndex];
+    const todaySchedule = settings.formSchedule[todayKey];
+    if (todaySchedule) {
+      const fromMinutes = todaySchedule.fromTime ? this.timeToMinutes(todaySchedule.fromTime) : 1;
+      if (fromMinutes > currentMinutes) {
+        const fromStr = todaySchedule.fromTime ? todaySchedule.fromTime.substring(0, 5) : '00:01';
+        return `Rezerwacja jest aktualnie wyłączona. Zapraszamy dzisiaj od ${fromStr}.`;
+      }
+    }
+
+    // Check next 6 days
+    for (let i = 1; i <= 6; i++) {
+      const nextDayIndex = (currentDayIndex + i) % 7;
+      const nextDayKey = DAY_KEYS[nextDayIndex];
+      const nextSchedule = settings.formSchedule[nextDayKey];
+      if (nextSchedule) {
+        const dayName = DAY_LABELS[nextDayKey];
+        const fromStr = nextSchedule.fromTime ? nextSchedule.fromTime.substring(0, 5) : '00:01';
+        return `Rezerwacja jest aktualnie wyłączona. Zapraszamy w ${dayName} od ${fromStr}.`;
+      }
+    }
+
+    return 'Rezerwacja jest aktualnie wyłączona.';
+  }
+
+  private updateMinDate(settings: ReservationSettings): void {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = this.dateToStr(tomorrow);
+
+    if (settings.estimatedReservationDay && settings.estimatedReservationDay > tomorrowStr) {
+      this.minDate = settings.estimatedReservationDay;
+      this.minDateObj = new Date(settings.estimatedReservationDay + 'T00:00:00');
+    } else {
+      this.minDate = tomorrowStr;
+      this.minDateObj = tomorrow;
+    }
   }
 
   // ===== Brand autocomplete =====
@@ -299,6 +447,9 @@ export class GuestReservationFormComponent implements OnInit {
     this.submitting = true;
     const rv = this.reservationForm.value;
 
+    const plannedDateVal = rv.plannedDate;
+    const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
+
     const reservationPayload = {
       firstName: rv.firstName.trim(),
       lastName: rv.lastName.trim(),
@@ -306,7 +457,7 @@ export class GuestReservationFormComponent implements OnInit {
       phone: rv.phone?.trim() || null,
       bicycleBrand: rv.bicycleBrand.trim(),
       bicycleModel: rv.bicycleModel?.trim() || null,
-      plannedDate: rv.plannedDate,
+      plannedDate: plannedDateStr,
       description: rv.description?.trim() || null
     };
 
@@ -418,9 +569,10 @@ export class GuestReservationFormComponent implements OnInit {
     this.router.navigate([environment.links.servicesMap]);
   }
 
-  formatDatePL(dateStr: string): string {
-    if (!dateStr) return '';
-    return new Date(dateStr + 'T00:00:00').toLocaleDateString('pl-PL', {
+  formatDatePL(val: string | Date): string {
+    if (!val) return '';
+    const date = val instanceof Date ? val : new Date(val + 'T00:00:00');
+    return date.toLocaleDateString('pl-PL', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',

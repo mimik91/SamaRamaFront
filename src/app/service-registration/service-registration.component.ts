@@ -1,582 +1,736 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  FormControl,
-  Validators,
-  AbstractControl,
-  ValidationErrors
-} from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AsyncValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { NotificationService } from '../core/notification.service';
-import { EnumerationService } from '../core/enumeration.service';
 import { environment } from '../environments/environments';
+import { firstValueFrom, Observable, of, timer, Subscription } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 
-interface ServiceInfo {
+interface BikeRepairCoverageCategory {
   id: number;
   name: string;
-  address: string;
-  logoUrl: string | null;
-  transportAvailable: boolean;
-  transportCost: number | null;
+  displayOrder?: number;
 }
 
-interface ReservationSettings {
-  acceptedDays: string[];
-  formSchedule: { [key: string]: { fromTime: string | null; toTime: string | null } };
-  estimatedReservationDay?: string | null;
+interface BikeRepairCoverage {
+  id: number;
+  name: string;
+  categoryId: number;
 }
 
-const DAY_KEYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-const DAY_LABELS: { [key: string]: string } = {
-  MONDAY: 'poniedziałek', TUESDAY: 'wtorek', WEDNESDAY: 'środa',
-  THURSDAY: 'czwartek', FRIDAY: 'piątek', SATURDAY: 'sobota', SUNDAY: 'niedziela'
-};
+interface BikeRepairCoverageMapDto {
+  coveragesByCategory: { [key: string]: BikeRepairCoverage[] };
+}
 
 @Component({
-  selector: 'app-guest-reservation-form',
+  selector: 'app-service-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule],
-  providers: [
-    provideNativeDateAdapter(),
-    { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' }
-  ],
-  templateUrl: './guest-reservation-form.component.html',
-  styleUrls: ['./guest-reservation-form.component.css']
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  templateUrl: './service-registration.component.html',
+  styleUrls: ['./service-registration.component.css']
 })
-export class GuestReservationFormComponent implements OnInit {
+export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
-  private enumerationService = inject(EnumerationService);
 
+  // Formularze dla różnych etapów
+  basicInfoForm!: FormGroup;
+  coverageForm!: FormGroup;
+  passwordForm!: FormGroup;
+  acceptTermsForm!: FormGroup;
+  
+  // Stan komponentu
   currentStep = 1;
-  loading = false;
-  submitting = false;
+  totalSteps = 3;
+  isSubmitting = false;
+  isSuccess = false;
+  isLoadingCoverages = false;
+  isExistingService = false;
+  serviceId: number | null = null;
+  registeredServiceId: number | null = null;
 
-  serviceInfo: ServiceInfo | null = null;
-  reservationSettings: ReservationSettings | null = null;
-  isFormActive = true;
-  formInactiveMessage = '';
+  // Stan sprawdzania suffixu
+  isCheckingSuffix = false;
+  suffixCheckResult: 'available' | 'taken' | null = null;
+  private suffixStatusSubscription?: Subscription;
 
-  minDate: string;
-  maxDate: string;
-  minDateObj: Date;
-  maxDateObj: Date;
+  // Stan sprawdzania nazwy serwisu
+  isCheckingServiceName = false;
+  serviceNameCheckResult: 'available' | 'taken' | null = null;
+  private serviceNameStatusSubscription?: Subscription;
 
-  // Datepicker filter — greys out days not in acceptedDays
-  readonly dateFilter = (date: Date | null): boolean => {
-    if (!date) return false;
-    const dayKey = DAY_KEYS[date.getDay()];
-    const accepted = this.reservationSettings?.acceptedDays;
-    if (accepted && accepted.length > 0) {
-      return accepted.includes(dayKey);
-    }
-    return true;
-  };
-
-  brands: string[] = [];
-  filteredBrands: string[] = [];
-  showBrandDropdown = false;
-
-  // Discount coupon (transport)
-  couponControl = new FormControl('');
-  isApplyingCoupon = false;
-  couponMessage: string | null = null;
-  isCouponInvalid = false;
-  finalTransportPrice: number | null = null;
-
-  readonly links = environment.links;
-
-  reservationForm: FormGroup;
-  transportForm: FormGroup;
-  termsControl = new FormControl(false, [Validators.requiredTrue]);
+  // Dane coverage
+  availableCoverages: BikeRepairCoverageMapDto | null = null;
+  categories: BikeRepairCoverageCategory[] = [];
+  selectedCoverages: { [categoryId: number]: number[] } = {};
+  customCoverages: { [categoryId: number]: string[] } = {};
+  customCategories: { name: string; coverages: string[] }[] = [];
 
   constructor() {
-    const minD = new Date();
-    minD.setDate(minD.getDate() + 1);
-    this.minDateObj = minD;
-    this.minDate = this.dateToStr(minD);
+    this.initializeForms();
+  }
 
-    const maxD = new Date();
-    maxD.setDate(maxD.getDate() + 30);
-    this.maxDateObj = maxD;
-    this.maxDate = this.dateToStr(maxD);
-
-    this.reservationForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.pattern(/^\d{9}$/)]],
-      bicycleBrand: ['', Validators.required],
-      bicycleModel: [''],
-      plannedDate: ['', [Validators.required, this.acceptedDayValidator.bind(this)]],
-      description: [''],
-      withTransport: [false]
+  private initializeForms(): void {
+    this.basicInfoForm = this.fb.group({
+      contactPerson: ['', [Validators.maxLength(100)]],
+      phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      serviceName: ['', [Validators.required, Validators.maxLength(50)], [this.serviceNameAsyncValidator.bind(this)]],
+      suffix: ['', [Validators.maxLength(100)], [this.suffixAsyncValidator.bind(this)]],
+      website: ['', [Validators.maxLength(255)]],
+      description: ['', [Validators.maxLength(1500)]],
+      street: ['', [Validators.maxLength(255)]],
+      building: ['', [Validators.maxLength(20)]],
+      flat: ['', [Validators.maxLength(20)]],
+      postalCode: ['', [Validators.maxLength(10)]],
+      city: ['', [Validators.maxLength(100)]]
     });
 
-    this.transportForm = this.fb.group({
-      pickupStreet: ['', Validators.required],
-      pickupBuildingNumber: ['', Validators.required],
-      pickupCity: ['', Validators.required],
-      pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]]
+    this.basicInfoForm.get('suffix')?.valueChanges.subscribe(value => {
+      if (value && typeof value === 'string') {
+        const lowercase = value.toLowerCase();
+        if (value !== lowercase) {
+          this.basicInfoForm.get('suffix')?.setValue(lowercase, { emitEvent: false });
+        }
+      }
+    });
+
+    this.coverageForm = this.fb.group({
+    });
+
+    this.passwordForm = this.fb.group({
+      userEmail: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(120)]],
+      confirmPassword: ['', [Validators.required]],
+    }, { validators: this.passwordMatchValidator });
+    this.acceptTermsForm = this.fb.group({
+      acceptPrivacyPolicy: [false, [Validators.required, Validators.requiredTrue]] // KONTROLKA Z HTML
+    });
+
+    // Nasłuchuj zmian statusu pola suffix i serviceName
+    this.setupSuffixStatusListener();
+    this.setupServiceNameStatusListener();
+  }
+
+  private setupSuffixStatusListener(): void {
+    this.suffixStatusSubscription = this.basicInfoForm.get('suffix')?.statusChanges.subscribe(status => {
+      const suffixControl = this.basicInfoForm.get('suffix');
+      
+      if (status === 'PENDING') {
+        this.isCheckingSuffix = true;
+        this.suffixCheckResult = null;
+      } else {
+        this.isCheckingSuffix = false;
+        
+        if (suffixControl?.valid && suffixControl.value && suffixControl.value.trim()) {
+          this.suffixCheckResult = 'available';
+        } else if (suffixControl?.hasError('suffixTaken')) {
+          this.suffixCheckResult = 'taken';
+        } else {
+          this.suffixCheckResult = null;
+        }
+      }
     });
   }
 
-  // Validator — only accepted days (or Mon–Fri if no restriction set)
-  acceptedDayValidator(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) return null;
-    const date: Date = control.value instanceof Date ? control.value : new Date(control.value + 'T00:00:00');
-    const dayIndex = date.getDay();
-    const dayKey = DAY_KEYS[dayIndex];
-    const accepted = this.reservationSettings?.acceptedDays;
-    if (accepted && accepted.length > 0) {
-      if (!accepted.includes(dayKey)) return { notAcceptedDay: true };
+  private setupServiceNameStatusListener(): void {
+    this.serviceNameStatusSubscription = this.basicInfoForm.get('serviceName')?.statusChanges.subscribe(status => {
+      const serviceNameControl = this.basicInfoForm.get('serviceName');
+      
+      if (status === 'PENDING') {
+        this.isCheckingServiceName = true;
+        this.serviceNameCheckResult = null;
+      } else {
+        this.isCheckingServiceName = false;
+        
+        if (serviceNameControl?.valid && serviceNameControl.value && serviceNameControl.value.trim()) {
+          this.serviceNameCheckResult = 'available';
+        } else if (serviceNameControl?.hasError('serviceNameTaken')) {
+          this.serviceNameCheckResult = 'taken';
+        } else {
+          this.serviceNameCheckResult = null;
+        }
+      }
+    });
+  }
+
+  // Asynchroniczny walidator nazwy serwisu
+  private serviceNameAsyncValidator(control: AbstractControl): Observable<ValidationErrors | null> {
+    // Jeśli pole jest puste, nie sprawdzamy
+    if (!control.value || control.value.trim() === '') {
+      return of(null);
     }
+
+    const trimmedValue = control.value.trim();
+
+    return timer(500).pipe( // Debounce 500ms
+      switchMap(() => this.checkServiceNameAvailability(trimmedValue)),
+      map(isTaken => {
+        return isTaken ? { serviceNameTaken: true } : null;
+      }),
+      catchError(() => {
+        // W przypadku błędu API, nie blokujemy formularza
+        console.error('Error checking service name availability');
+        return of(null);
+      })
+    );
+  }
+
+  // Metoda sprawdzająca dostępność nazwy serwisu
+  private checkServiceNameAvailability(serviceName: string): Observable<boolean> {
+    return this.http.get<boolean>(`${environment.apiUrl}/bike-services/check-service-name`, {
+      params: { serviceName: serviceName }
+    });
+  }
+
+  // Asynchroniczny walidator suffixu
+  private suffixAsyncValidator(control: AbstractControl): Observable<ValidationErrors | null> {
+    // Jeśli pole jest puste, nie sprawdzamy
+    if (!control.value || control.value.trim() === '') {
+      return of(null);
+    }
+
+    const trimmedValue = control.value.trim();
+
+    return timer(500).pipe( // Debounce 500ms
+      switchMap(() => this.checkSuffixAvailability(trimmedValue)),
+      map(isTaken => {
+        return isTaken ? { suffixTaken: true } : null;
+      }),
+      catchError(() => {
+        // W przypadku błędu API, nie blokujemy formularza
+        console.error('Error checking suffix availability');
+        return of(null);
+      })
+    );
+  }
+
+  // Metoda sprawdzająca dostępność suffixu
+  private checkSuffixAvailability(suffix: string): Observable<boolean> {
+    return this.http.get<boolean>(`${environment.apiUrl}/bike-services/check-suffix`, {
+      params: { suffix: suffix }
+    });
+  }
+
+  private passwordMatchValidator(group: FormGroup) {
+    const password = group.get('password');
+    const confirmPassword = group.get('confirmPassword');
+    
+    if (password && confirmPassword && password.value !== confirmPassword.value) {
+      confirmPassword.setErrors({ mismatch: true });
+      return { mismatch: true };
+    }
+    
+    if (confirmPassword?.hasError('mismatch')) {
+      confirmPassword.setErrors(null);
+    }
+    
     return null;
   }
 
-  private dateToStr(d: Date): string {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-
-  get acceptedDaysHint(): string {
-    const accepted = this.reservationSettings?.acceptedDays;
-    if (!accepted || accepted.length === 0) return 'Dostępne terminy: wszystkie dni tygodnia';
-    return 'Dostępne dni: ' + accepted.map(d => DAY_LABELS[d] || d).join(', ');
-  }
-
-  get withTransport(): boolean {
-    return this.reservationForm.get('withTransport')?.value === true;
-  }
-
-  // Transport date = 1 day before the service reservation date
-  get transportDate(): string {
-    const planned = this.reservationForm.get('plannedDate')?.value;
-    if (!planned) return '';
-    const d = planned instanceof Date ? new Date(planned) : new Date(planned + 'T00:00:00');
-    d.setDate(d.getDate() - 1);
-    return this.dateToStr(d);
-  }
-
   ngOnInit(): void {
-    this.loadBrands();
-    this.loadServiceInfo();
-
-    this.reservationForm.get('withTransport')?.valueChanges.subscribe(val => {
-      const phoneCtrl = this.reservationForm.get('phone')!;
-      if (val) {
-        this.transportForm.enable();
-        phoneCtrl.addValidators(Validators.required);
-      } else {
-        this.transportForm.disable();
-        phoneCtrl.removeValidators(Validators.required);
-        this.couponControl.setValue('');
-        this.couponMessage = null;
-        this.isCouponInvalid = false;
-        this.finalTransportPrice = null;
+    this.route.queryParams.subscribe(params => {
+      console.log('Received query params:', params);
+      
+      if (params['serviceId']) {
+        this.isExistingService = true;
+        this.serviceId = +params['serviceId'];
+        
+        const formData = {
+          serviceName: params['serviceName'] || '',
+          phoneNumber: params['phoneNumber'] || '',
+          email: params['email'] || '',
+          street: params['street'] || '',
+          building: params['building'] || '',
+          flat: params['flat'] || '',
+          city: params['city'] || ''
+        };
+        
+        console.log('About to patch form with:', formData);
+        this.basicInfoForm.patchValue(formData);
+        
+        console.log('Form values after patch:', this.basicInfoForm.value);
       }
-      phoneCtrl.updateValueAndValidity();
-    });
-
-    this.transportForm.disable();
-  }
-
-  private loadBrands(): void {
-    this.enumerationService.getEnumeration('BRAND').subscribe({
-      next: (brands) => { this.brands = brands; },
-      error: () => { this.brands = environment.settings.fallback.brands; }
     });
   }
 
-  private loadServiceInfo(): void {
-    const suffix = this.route.snapshot.paramMap.get('suffix');
+  ngOnDestroy(): void {
+    if (this.suffixStatusSubscription) {
+      this.suffixStatusSubscription.unsubscribe();
+    }
+    if (this.serviceNameStatusSubscription) {
+      this.serviceNameStatusSubscription.unsubscribe();
+    }
+  }
 
-    if (suffix) {
-      // Jeśli nawigacja przekazała serviceId przez state (np. z mapy) — używamy go bezpośrednio
-      const stateServiceId = window.history.state?.serviceId;
-      if (stateServiceId) {
-        this.loadServiceDetails(+stateServiceId);
-      } else {
-        // Brak state — pobieramy serviceId z backendu po suffixie (np. bezpośredni link)
-        this.loading = true;
-        const url = `${environment.apiUrl}${environment.endpoints.bikeServices.bySuffix}?suffix=${suffix}`;
-        this.http.get<{ id: number }>(url).subscribe({
-          next: (res) => {
-            if (res.id) {
-              this.loadServiceDetails(res.id);
-            } else {
-              this.notificationService.error('Nie znaleziono serwisu.');
-              this.router.navigate([environment.links.servicesMap]);
-              this.loading = false;
-            }
-          },
-          error: () => {
-            this.notificationService.error('Nie znaleziono serwisu.');
-            this.router.navigate([environment.links.servicesMap]);
-            this.loading = false;
-          }
-        });
-      }
-    } else {
-      // Mamy serviceId w query params — ładujemy detale bezpośrednio
-      this.route.queryParams.subscribe(params => {
-        const serviceId = params['serviceId'];
-        if (serviceId) {
-          this.loadServiceDetails(+serviceId);
-        } else {
-          this.notificationService.error('Nie znaleziono serwisu.');
-          this.router.navigate([environment.links.servicesMap]);
+  private loadAvailableCoverages(): void {
+    this.isLoadingCoverages = true;
+    this.http.get<BikeRepairCoverageMapDto>(`${environment.apiUrl}/bike-services/repair-coverage/all`)
+      .subscribe({
+        next: (data) => {
+          this.availableCoverages = data;
+          this.setupCoverageForm(data);
+          this.isLoadingCoverages = false;
+        },
+        error: (error) => {
+          console.error('Error loading coverages:', error);
+          this.notificationService.error('Błąd podczas ładowania dostępnych usług.');
+          this.isLoadingCoverages = false;
+          // W przypadku błędu, cofnij do kroku 1
+          this.currentStep = 1;
         }
       });
-    }
   }
 
-  private loadServiceDetails(serviceId: number): void {
-    this.loading = true;
-    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/${serviceId}`;
-    this.http.get<any>(url).subscribe({
-      next: (d) => {
-        const parts: string[] = [];
-        if (d.street) parts.push(d.street);
-        if (d.building) parts.push(d.building);
-        if (d.flat) parts.push('/' + d.flat);
-        let address = parts.join(' ');
-        if (d.city) address += (address ? ', ' : '') + d.city;
+  private setupCoverageForm(data: BikeRepairCoverageMapDto): void {
+    // Przekonwertuj mapę na tablicę kategorii - klucze to stringi reprezentujące DTO
+    this.categories = Object.keys(data.coveragesByCategory).map((categoryKey) => {
+      // Parse string w formacie "BikeRepairCoverageCategoryDto(id=1, name=Typ roweru, displayOrder=1)"
+      const idMatch = categoryKey.match(/id=(\d+)/);
+      const nameMatch = categoryKey.match(/name=([^,)]+)/);
+      const displayOrderMatch = categoryKey.match(/displayOrder=(\d+)/);
+      
+      return {
+        id: idMatch ? parseInt(idMatch[1]) : 0,
+        name: nameMatch ? nameMatch[1] : '',
+        displayOrder: displayOrderMatch ? parseInt(displayOrderMatch[1]) : 0
+      };
+    }).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
 
-        this.serviceInfo = {
-          id: d.id,
-          name: d.name,
-          address,
-          logoUrl: d.logoUrl || null,
-          transportAvailable: !!d.transportAvailable,
-          transportCost: d.transportCost ?? null
-        };
-        this.loadReservationSettings(d.id);
-        this.loading = false;
-      },
-      error: () => {
-        this.notificationService.error('Nie udało się załadować danych serwisu.');
-        this.router.navigate([environment.links.servicesMap]);
-        this.loading = false;
-      }
+    // Zainicjalizuj selectedCoverages dla każdej kategorii
+    this.categories.forEach(category => {
+      this.selectedCoverages[category.id] = [];
+      this.customCoverages[category.id] = [''];
     });
   }
 
-  private loadReservationSettings(serviceId: number): void {
-    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/${serviceId}/reservation-settings`;
-    this.http.get<ReservationSettings>(url).subscribe({
-      next: (settings) => {
-        this.reservationSettings = settings;
-        this.computeFormAvailability(settings);
-        this.updateMinDate(settings);
-        // Re-validate plannedDate with new accepted days
-        this.reservationForm.get('plannedDate')?.updateValueAndValidity();
-      },
-      error: () => {
-        // Settings not available — keep defaults (Mon–Fri, tomorrow as min)
-      }
-    });
+  // Metody pomocnicze dla formularzy
+  isFieldInvalid(form: FormGroup, fieldName: string): boolean {
+    const field = form.get(fieldName);
+    return field ? (field.invalid && (field.dirty || field.touched)) : false;
   }
 
-  private computeFormAvailability(settings: ReservationSettings): void {
-    if (!settings.formSchedule || Object.keys(settings.formSchedule).length === 0) {
-      this.isFormActive = true;
-      return;
-    }
-
-    const now = new Date();
-    const currentDayKey = DAY_KEYS[now.getDay()];
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const schedule = settings.formSchedule[currentDayKey];
-
-    if (schedule) {
-      const fromMinutes = schedule.fromTime ? this.timeToMinutes(schedule.fromTime) : 1;
-      const toMinutes = schedule.toTime ? this.timeToMinutes(schedule.toTime) : 23 * 60 + 59;
-      if (currentMinutes >= fromMinutes && currentMinutes <= toMinutes) {
-        this.isFormActive = true;
-        return;
-      }
-    }
-
-    this.isFormActive = false;
-    this.formInactiveMessage = this.findNextAvailableMessage(settings, now);
+  getCharacterCount(form: FormGroup, fieldName: string): number {
+    const field = form.get(fieldName);
+    return field ? (field.value?.length || 0) : 0;
   }
 
-  private timeToMinutes(time: string): number {
-    const [h, m] = time.split(':').map(Number);
-    return h * 60 + m;
-  }
-
-  private findNextAvailableMessage(settings: ReservationSettings, now: Date): string {
-    const currentDayIndex = now.getDay();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-    // Check if there's still an upcoming window today
-    const todayKey = DAY_KEYS[currentDayIndex];
-    const todaySchedule = settings.formSchedule[todayKey];
-    if (todaySchedule) {
-      const fromMinutes = todaySchedule.fromTime ? this.timeToMinutes(todaySchedule.fromTime) : 1;
-      if (fromMinutes > currentMinutes) {
-        const fromStr = todaySchedule.fromTime ? todaySchedule.fromTime.substring(0, 5) : '00:01';
-        return `Rezerwacja jest aktualnie wyłączona. Zapraszamy dzisiaj od ${fromStr}.`;
-      }
-    }
-
-    // Check next 6 days
-    for (let i = 1; i <= 6; i++) {
-      const nextDayIndex = (currentDayIndex + i) % 7;
-      const nextDayKey = DAY_KEYS[nextDayIndex];
-      const nextSchedule = settings.formSchedule[nextDayKey];
-      if (nextSchedule) {
-        const dayName = DAY_LABELS[nextDayKey];
-        const fromStr = nextSchedule.fromTime ? nextSchedule.fromTime.substring(0, 5) : '00:01';
-        return `Rezerwacja jest aktualnie wyłączona. Zapraszamy w ${dayName} od ${fromStr}.`;
-      }
-    }
-
-    return 'Rezerwacja jest aktualnie wyłączona.';
-  }
-
-  private updateMinDate(settings: ReservationSettings): void {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = this.dateToStr(tomorrow);
-
-    if (settings.estimatedReservationDay && settings.estimatedReservationDay > tomorrowStr) {
-      this.minDate = settings.estimatedReservationDay;
-      this.minDateObj = new Date(settings.estimatedReservationDay + 'T00:00:00');
-    } else {
-      this.minDate = tomorrowStr;
-      this.minDateObj = tomorrow;
-    }
-  }
-
-  // ===== Brand autocomplete =====
-
-  onBrandInput(event: Event): void {
-    const q = (event.target as HTMLInputElement).value;
-    this.reservationForm.get('bicycleBrand')?.setValue(q, { emitEvent: false });
-    if (q.length >= 3) {
-      this.filteredBrands = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
-      this.showBrandDropdown = this.filteredBrands.length > 0;
-    } else {
-      this.showBrandDropdown = false;
-    }
-  }
-
-  onBrandFocus(): void {
-    const q = this.reservationForm.get('bicycleBrand')?.value || '';
-    if (q.length >= 3) {
-      this.filteredBrands = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
-      this.showBrandDropdown = this.filteredBrands.length > 0;
-    }
-  }
-
-  onBrandBlur(): void {
-    setTimeout(() => { this.showBrandDropdown = false; }, 200);
-  }
-
-  selectBrand(brand: string): void {
-    this.reservationForm.get('bicycleBrand')?.setValue(brand);
-    this.showBrandDropdown = false;
-  }
-
-  expandAllBrands(): void {
-    this.filteredBrands = [...this.brands];
-    this.showBrandDropdown = true;
-  }
-
-  // ===== Navigation =====
-
+  // Metody zarządzania krokami
   nextStep(): void {
-    if (this.isStep1Valid()) {
+    if (this.currentStep === 1 && this.basicInfoForm.valid) {
+      // Przechodzenie do kroku 2 - załaduj coverage'y
+      if (!this.availableCoverages) {
+        this.loadAvailableCoverages();
+      }
       this.currentStep = 2;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      this.markAllTouched(this.reservationForm);
-      if (this.withTransport) this.markAllTouched(this.transportForm);
-      this.notificationService.warning('Wypełnij wszystkie wymagane pola poprawnie.');
+    } else if (this.currentStep === 2) {
+      // Przejście do kroku 3 - skopiuj email z kroku 1 do pola userEmail
+      this.passwordForm.patchValue({
+        userEmail: this.basicInfoForm.value.email
+      });
+      this.currentStep = 3;
+    } else if (this.currentStep === 1) {
+      // Oznacz wszystkie pola jako dotknięte, aby pokazać błędy walidacji
+      Object.keys(this.basicInfoForm.controls).forEach(key => {
+        const control = this.basicInfoForm.get(key);
+        control?.markAsTouched();
+      });
+      this.notificationService.warning('Wypełnij wszystkie wymagane pola formularza.');
     }
   }
 
   prevStep(): void {
-    this.currentStep = 1;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (this.currentStep > 1) {
+      this.currentStep--;
+    }
   }
 
-  isStep1Valid(): boolean {
-    const reservOk = this.reservationForm.valid;
-    const transportOk = !this.withTransport || this.transportForm.valid;
-    return reservOk && transportOk;
+  // Metody zarządzania coverage
+  getCoveragesForCategory(categoryId: number): BikeRepairCoverage[] {
+    if (!this.availableCoverages) return [];
+    
+    // Znajdź klucz kategorii na podstawie ID
+    for (const [categoryKey, coverages] of Object.entries(this.availableCoverages.coveragesByCategory)) {
+      const idMatch = categoryKey.match(/id=(\d+)/);
+      if (idMatch && parseInt(idMatch[1]) === categoryId) {
+        return coverages;
+      }
+    }
+    return [];
   }
 
-  isStepCompleted(step: number): boolean {
-    return this.currentStep > step;
+  toggleCoverage(categoryId: number, coverageId: number): void {
+    if (!this.selectedCoverages[categoryId]) {
+      this.selectedCoverages[categoryId] = [];
+    }
+
+    const index = this.selectedCoverages[categoryId].indexOf(coverageId);
+    if (index > -1) {
+      this.selectedCoverages[categoryId].splice(index, 1);
+    } else {
+      this.selectedCoverages[categoryId].push(coverageId);
+    }
   }
 
-  isStepActive(step: number): boolean {
-    return this.currentStep === step;
+  isCoverageSelected(categoryId: number, coverageId: number): boolean {
+    return this.selectedCoverages[categoryId]?.includes(coverageId) || false;
   }
 
-  private markAllTouched(group: FormGroup): void {
-    Object.values(group.controls).forEach(c => c.markAsTouched());
+  addCustomCoverage(categoryId: number): void {
+    if (!this.customCoverages[categoryId]) {
+      this.customCoverages[categoryId] = [];
+    }
+    this.customCoverages[categoryId].push('');
   }
 
-  isFieldInvalid(fieldName: string, form: FormGroup = this.reservationForm): boolean {
-    const f = form.get(fieldName);
-    return !!(f?.invalid && (f.dirty || f.touched));
+  removeCustomCoverage(categoryId: number, index: number): void {
+    if (this.customCoverages[categoryId]) {
+      this.customCoverages[categoryId].splice(index, 1);
+    }
   }
 
-  // ===== Submission =====
+  updateCustomCoverage(categoryId: number, index: number, value: string): void {
+    if (this.customCoverages[categoryId]) {
+      this.customCoverages[categoryId][index] = value;
+    
 
-  onSubmit(): void {
-    if (!this.isStep1Valid() || !this.termsControl.valid || !this.serviceInfo) {
-      this.termsControl.markAsTouched();
-      this.notificationService.warning('Zaakceptuj regulamin aby kontynuować.');
+      // Jeśli to ostatnie pole i nie jest puste, dodaj nowe
+      if (index === this.customCoverages[categoryId].length - 1 && value.trim()) {
+        this.addCustomCoverage(categoryId);
+      }
+    }
+  }
+
+  updateCustomCategoryItem(categoryIndex: number, itemIndex: number, value: string): void {
+    this.customCategories[categoryIndex].coverages[itemIndex] = value;
+    
+    // Jeśli to ostatnie pole i nie jest puste, dodaj nowe
+    const coverages = this.customCategories[categoryIndex].coverages;
+    if (itemIndex === coverages.length - 1 && value.trim()) {
+      this.addCustomCategoryItem(categoryIndex);
+    }
+  }
+
+  addCustomCategory(): void {
+    this.customCategories.push({ name: '', coverages: [''] });
+  }
+
+  removeCustomCategory(index: number): void {
+    this.customCategories.splice(index, 1);
+  }
+
+  updateCustomCategoryName(index: number, name: string): void {
+    this.customCategories[index].name = name;
+  }
+
+  addCustomCategoryItem(categoryIndex: number): void {
+    this.customCategories[categoryIndex].coverages.push('');
+  }
+
+  removeCustomCategoryItem(categoryIndex: number, itemIndex: number): void {
+    this.customCategories[categoryIndex].coverages.splice(itemIndex, 1);
+  }
+
+  trackByFn(index: number, item: any): number {
+    return index; // Używamy indeksu, ponieważ elementy są stringami
+  }
+
+  // Finalizacja rejestracji
+  async finalizeRegistration(): Promise<void> {
+    if (this.passwordForm.invalid || this.acceptTermsForm.invalid) {
+      Object.keys(this.passwordForm.controls).forEach(key => {
+        const control = this.passwordForm.get(key);
+        control?.markAsTouched();
+      });
+
+      Object.keys(this.acceptTermsForm.controls).forEach(key => {
+        const control = this.acceptTermsForm.get(key);
+        control?.markAsTouched();
+      });
+
+      this.notificationService.warning('Wypełnij poprawnie dane hasła i zaakceptuj regulamin.');
       return;
     }
 
-    this.submitting = true;
-    const rv = this.reservationForm.value;
+    this.isSubmitting = true;
 
-    const plannedDateVal = rv.plannedDate;
-    const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
-
-    const reservationPayload = {
-      firstName: rv.firstName.trim(),
-      lastName: rv.lastName.trim(),
-      email: rv.email.trim(),
-      phone: rv.phone?.trim() || null,
-      bicycleBrand: rv.bicycleBrand.trim(),
-      bicycleModel: rv.bicycleModel?.trim() || null,
-      plannedDate: plannedDateStr,
-      description: rv.description?.trim() || null
-    };
-
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.serviceReservation}?serviceId=${this.serviceInfo.id}`;
-
-    this.http.post(url, reservationPayload).subscribe({
-      next: () => {
-        if (this.withTransport) {
-          this.submitTransport(rv);
-        } else {
-          this.onSuccess();
-        }
-      },
-      error: (err) => {
-        this.submitting = false;
-        const msg = err.error?.message || 'Nie udało się złożyć rezerwacji. Spróbuj ponownie.';
-        this.notificationService.error(msg);
+    try {
+      // 1. Zarejestruj serwis
+      console.log('Rejestrowanie serwisu...');
+      const serviceData = this.buildServiceData();
+      const serviceResponse = await this.registerBikeService(serviceData);
+      
+      if (!serviceResponse || !serviceResponse.id) {
+        throw new Error('Nie otrzymano ID zarejestrowanego serwisu');
       }
-    });
+      
+      this.registeredServiceId = serviceResponse.id;
+      console.log('Serwis zarejestrowany z ID:', this.registeredServiceId);
+
+      // 2. Zarejestruj użytkownika serwisu
+      console.log('Rejestrowanie użytkownika...');
+      await this.registerServiceUser();
+      console.log('Użytkownik zarejestrowany');
+
+      // 3. Przypisz coverage'y - OPCJONALNE, nie blokuj rejestracji jeśli się nie uda
+      try {
+        console.log('Przypisywanie coverage...');
+        await this.assignCoverages();
+        console.log('Coverage przypisane');
+      } catch (coverageError) {
+        console.warn('Nie udało się przypisać coverage, ale rejestracja przebiegła pomyślnie:', coverageError);
+        // Nie rzucaj błędu - coverage można przypisać później w panelu użytkownika
+      }
+
+      this.isSubmitting = false;
+      this.isSuccess = true;
+      this.notificationService.success('Serwis został pomyślnie zarejestrowany!');
+
+    } catch (error: any) {
+      this.isSubmitting = false;
+      console.error('Error during registration:', error);
+      
+      // Obsługa błędu HTTP 409 (CONFLICT) - nazwa lub suffix zajęty
+      if (error?.status === 409) {
+        // Sprawdź różne miejsca gdzie może być komunikat
+        let errorMessage = 'Nazwa serwisu lub suffix jest już zajęty. Wróć i zmień dane.';
+        
+        // Sprawdź errorText (dodany w registerBikeService)
+        if (error?.errorText && typeof error.errorText === 'string') {
+          errorMessage = error.errorText;
+        }
+        // Sprawdź statusText
+        else if (error?.statusText && error.statusText !== 'Unknown Error' && error.statusText !== 'Conflict') {
+          errorMessage = error.statusText;
+        }
+        // Fallback na domyślny komunikat
+        
+        console.log('Displaying 409 error message:', errorMessage);
+        this.notificationService.error(errorMessage);
+        
+        // NIE przekierowuj - użytkownik zostaje na kroku 3 i może się cofnąć
+        return;
+      }
+      
+      // Inne błędy
+      if (error?.error?.message) {
+        this.notificationService.error(`Błąd rejestracji: ${error.error.message}`);
+      } else if (error?.message) {
+        this.notificationService.error(`Błąd rejestracji: ${error.message}`);
+      } else {
+        this.notificationService.error('Wystąpił błąd podczas rejestracji. Spróbuj ponownie później.');
+      }
+    }
   }
 
-  applyDiscountCoupon(): void {
-    const coupon = this.couponControl.value?.trim();
-    if (!coupon || this.isApplyingCoupon || !this.serviceInfo?.transportCost) return;
+  private buildServiceData(): any {
+    const basicData = this.basicInfoForm.value;
+    
+    return {
+      // Pola z BikeService
+      name: basicData.serviceName,
+      email: basicData.email,
+      street: basicData.street,
+      building: basicData.building,
+      flat: basicData.flat,
+      postalCode: basicData.postalCode,
+      city: basicData.city,
+      phoneNumber: basicData.phoneNumber,
+      transportCost: 0,
+      transportAvailable: false,
+      
+      // Pola z BikeServiceRegistered
+      suffix: basicData.suffix,
+      contactPerson: basicData.contactPerson,
+      website: basicData.website,
+      description: basicData.description
+    };
+  }
 
-    this.isApplyingCoupon = true;
-    this.couponMessage = null;
-    this.isCouponInvalid = false;
+  private async registerBikeService(serviceData: any): Promise<any> {
+    try {
+      // Dla sukcesu oczekujemy JSON, dla błędów będziemy obsługiwać text
+      const response = await firstValueFrom(
+        this.http.post(`${environment.apiUrl}/bike-services/register`, serviceData)
+      );
+      console.log('Service registered successfully:', response);
+      return response;
+    } catch (error: any) {
+      console.error('Error registering bike service:', error);
+      
+      // Jeśli to błąd 409, spróbuj pobrać tekst z odpowiedzi jeszcze raz
+      if (error?.status === 409) {
+        try {
+          // Spróbuj pobrać response jako text
+          const textResponse = await firstValueFrom(
+            this.http.post(`${environment.apiUrl}/bike-services/register`, serviceData, {
+              responseType: 'text'
+            })
+          );
+          // To nie powinno się wykonać, bo to był błąd, ale dla pewności
+          console.log('Text response:', textResponse);
+        } catch (textError: any) {
+          // Teraz textError.error powinien zawierać text
+          console.log('Text error details:', {
+            status: textError?.status,
+            error: textError?.error,
+            errorType: typeof textError?.error
+          });
+          
+          // Rzuć nowy błąd z tekstem
+          const enhancedError = {
+            ...error,
+            errorText: textError?.error || error.statusText
+          };
+          throw enhancedError;
+        }
+      }
+      
+      throw error;
+    }
+  }
 
-    const plannedDate = this.reservationForm.get('plannedDate')?.value;
-    if (!plannedDate) {
-      this.notificationService.warning('Wybierz najpierw datę serwisu.');
-      this.isApplyingCoupon = false;
-      return;
+  private async registerServiceUser(): Promise<any> {
+    const userData = {
+      email: this.passwordForm.value.userEmail, // Używamy emaila z kroku 3
+      password: this.passwordForm.value.password,
+      bikeServiceId: this.registeredServiceId
+    };
+
+    try {
+      const response = await firstValueFrom(
+        this.http.post(`${environment.apiUrl}/auth/signup/service`, userData)
+      );
+      console.log('User registered successfully:', response);
+      return response;
+    } catch (error: any) {
+      console.error('Error registering service user:', error);
+      throw error;
+    }
+  }
+
+  private async assignCoverages(): Promise<any> {
+    const coverageData = this.buildCoverageData();
+    
+    // Sprawdź czy są jakieś dane do przypisania
+    const hasData = coverageData.existingCoverageIds.length > 0 || 
+                    coverageData.customCoverages.length > 0 || 
+                    coverageData.newCategories.length > 0;
+    
+    if (!hasData) {
+      console.log('Brak coverage do przypisania, pomijam...');
+      return Promise.resolve({ success: true, message: 'No coverage to assign' });
     }
 
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.discounts}`;
-    this.http.post<{ newPrice: number }>(url, {
-      coupon,
-      currentTransportPrice: this.serviceInfo.transportCost,
-      orderDate: this.transportDate
-    }).subscribe({
-      next: (res) => {
-        if (res.newPrice < this.serviceInfo!.transportCost!) {
-          this.finalTransportPrice = res.newPrice;
-          this.couponMessage = `Kupon zastosowany! Nowa cena: ${res.newPrice} PLN`;
-          this.isCouponInvalid = false;
-        } else {
-          this.finalTransportPrice = null;
-          this.couponMessage = 'Kupon jest nieprawidłowy lub już wygasł.';
-          this.isCouponInvalid = true;
-        }
-        this.isApplyingCoupon = false;
-      },
-      error: () => {
-        this.finalTransportPrice = null;
-        this.couponMessage = 'Nie udało się sprawdzić kuponu. Spróbuj ponownie.';
-        this.isCouponInvalid = true;
-        this.isApplyingCoupon = false;
-      }
-    });
+    try {
+      console.log('Wysyłanie coverage data:', coverageData);
+      
+      const response = await firstValueFrom(
+        this.http.put(
+          `${environment.apiUrl}/bike-services/repair-coverage/assign/${this.registeredServiceId}`, 
+          coverageData,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      );
+      
+      console.log('Coverage assigned successfully:', response);
+      return response;
+      
+    } catch (error: any) {
+      console.error('Error assigning coverages:', error);
+      console.error('Error details:', {
+        status: error?.status,
+        statusText: error?.statusText,
+        error: error?.error,
+        message: error?.message
+      });
+      throw error;
+    }
   }
 
-  get effectiveTransportPrice(): number {
-    return this.finalTransportPrice ?? this.serviceInfo?.transportCost ?? 0;
-  }
-
-  private submitTransport(rv: any): void {
-    const tv = this.transportForm.value;
-    const payload = {
-      bicycles: [{
-        brand: rv.bicycleBrand.trim(),
-        model: rv.bicycleModel?.trim() || '',
-        additionalInfo: rv.description?.trim() || ''
-      }],
-      email: rv.email.trim(),
-      phone: rv.phone?.trim() || '',
-      pickupStreet: tv.pickupStreet,
-      pickupBuildingNumber: tv.pickupBuildingNumber,
-      pickupCity: tv.pickupCity,
-      pickupPostalCode: tv.pickupPostalCode || '',
-      pickupDate: this.transportDate,
-      targetServiceId: this.serviceInfo!.id,
-      transportPrice: this.effectiveTransportPrice,
-      transportNotes: '',
-      additionalNotes: '',
-      discountCoupon: this.finalTransportPrice !== null ? this.couponControl.value : null
+  private buildCoverageData(): any {
+    const data = {
+      existingCoverageIds: [] as number[],
+      newCategories: [] as any[],
+      customCoverages: [] as any[]
     };
 
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.transport}`;
-    this.http.post(url, payload).subscribe({
-      next: () => this.onSuccess(),
-      error: (err) => {
-        this.submitting = false;
-        const msg = err.error?.message ||
-          'Rezerwacja serwisu złożona, ale nie udało się zarezerwować transportu. Skontaktuj się z serwisem.';
-        this.notificationService.error(msg);
+    // 1. Zbierz wybrane istniejące coverage'y
+    this.categories.forEach(category => {
+      const selectedIds = this.selectedCoverages[category.id] || [];
+      data.existingCoverageIds.push(...selectedIds);
+
+      // 2. Dodaj niestandardowe coverage'y do istniejących kategorii
+      const customCoveragesForCategory = this.customCoverages[category.id] || [];
+      customCoveragesForCategory.forEach(coverageName => {
+        if (coverageName.trim()) {
+          data.customCoverages.push({
+            categoryName: category.name, // używamy nazwy kategorii zamiast ID
+            coverageName: coverageName.trim()
+          });
+        }
+      });
+    });
+
+    // 3. Dodaj nowe kategorie (tylko nazwy, bez coverage'ów)
+    const uniqueCategoryNames = new Set<string>();
+    
+    this.customCategories.forEach(customCategory => {
+      if (customCategory.name.trim()) {
+        const categoryName = customCategory.name.trim();
+        
+        // Dodaj kategorię tylko raz (eliminuj duplikaty w żądaniu)
+        if (!uniqueCategoryNames.has(categoryName)) {
+          data.newCategories.push({
+            name: categoryName
+          });
+          uniqueCategoryNames.add(categoryName);
+        }
+
+        // 4. Dodaj coverage'y dla nowych kategorii jako customCoverages
+        customCategory.coverages.forEach(coverageName => {
+          if (coverageName.trim()) {
+            data.customCoverages.push({
+              categoryName: categoryName,
+              coverageName: coverageName.trim()
+            });
+          }
+        });
       }
     });
+
+    console.log('Simplified coverage data built:', data);
+    return data;
   }
 
-  private onSuccess(): void {
-    this.submitting = false;
-    this.notificationService.success('Rezerwacja złożona pomyślnie! Serwis skontaktuje się z Tobą wkrótce.');
-    this.router.navigate([environment.links.homepage]);
+  // Nawigacja
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  goToHome(): void {
+    this.router.navigate(['/']);
   }
 
   goBack(): void {
-    this.router.navigate([environment.links.servicesMap]);
-  }
-
-  formatDatePL(val: string | Date): string {
-    if (!val) return '';
-    const date = val instanceof Date ? val : new Date(val + 'T00:00:00');
-    return date.toLocaleDateString('pl-PL', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    if (this.currentStep === 1) {
+      if (this.isExistingService) {
+        this.router.navigate(['/']);
+      } else {
+        this.goToHome();
+      }
+    } else {
+      this.prevStep();
+    }
   }
 }

@@ -127,7 +127,14 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
       },
       error: (err: any) => {
         this.isSaving = false;
-        this.saveError = 'Nie udało się zapisać zmian. Spróbuj ponownie.';
+        const body = err?.error;
+        if (body?.errors?.length) {
+          this.saveError = body.errors.join('\n');
+        } else if (body?.message) {
+          this.saveError = body.message;
+        } else {
+          this.saveError = 'Nie udało się zapisać zmian. Spróbuj ponownie.';
+        }
         console.error('Error saving changes:', err);
       }
     });

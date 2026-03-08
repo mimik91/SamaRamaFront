@@ -8,6 +8,7 @@ import { ServiceAdminCoveragesComponent } from './service-admin-coverages/servic
 import { ServiceAdminPricelistWrapperComponent } from './service-admin-pricelist/service-admin-pricelist-wrapper.component';
 import { ServiceAdminOpeningHoursComponent } from './service-admin-opening-hours/service-admin-opening-hours.component';
 import { ServiceAdminImagesComponent } from './service-admin-images/service-admin-images.component';
+import { ServiceAdminReservationsComponent } from './service-admin-reservations/service-admin-reservations.component';
 import {
   BikeServiceNameIdDto,
   BikeServiceRegisteredDto,
@@ -30,7 +31,8 @@ import {
     ServiceAdminCoveragesComponent,
     ServiceAdminPricelistWrapperComponent,
     ServiceAdminOpeningHoursComponent,
-    ServiceAdminImagesComponent
+    ServiceAdminImagesComponent,
+    ServiceAdminReservationsComponent
   ],
   templateUrl: './service-admin-panel.component.html',
   styleUrls: ['./service-admin-panel.component.css']

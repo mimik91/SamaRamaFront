@@ -57,6 +57,9 @@ export interface BikeServiceRegisteredDto {
   youtube?: string;
   description?: string;
   isRegistered: boolean;
+  displayEmail?: boolean;
+  displayPhoneNumber?: boolean;
+  reservationAvailable?: boolean;
   openingHoursInfo?: string;
   openingHoursNote?: string;
   pricelistInfo?: string;

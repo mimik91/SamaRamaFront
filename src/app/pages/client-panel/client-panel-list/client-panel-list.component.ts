@@ -24,6 +24,14 @@ export class ClientPanelListComponent implements OnInit {
   error: string | null = null;
   timestamp = Date.now();
 
+  get activeBicycles(): Bicycle[] {
+    return this.bicycles.filter(b => !b.stolen);
+  }
+
+  get stolenBicycles(): Bicycle[] {
+    return this.bicycles.filter(b => b.stolen);
+  }
+
   // New state for multi-select
   isMultiSelectMode = false;
   selectedBicycles: Set<number> = new Set();
@@ -103,6 +111,26 @@ export class ClientPanelListComponent implements OnInit {
         }
       });
     }
+  }
+
+  toggleStolen(bicycle: Bicycle, event: Event): void {
+    event.stopPropagation();
+    const newValue = !bicycle.stolen;
+    const msg = newValue ? 'Czy na pewno chcesz zgłosić ten rower jako skradziony?' : 'Czy chcesz cofnąć zgłoszenie kradzieży?';
+    if (!window.confirm(msg)) return;
+
+    this.bicycleService.updateStolenStatus(bicycle.id, newValue).subscribe({
+      next: (res) => {
+        bicycle.stolen = newValue;
+        const backendMsg = res?.message;
+        const defaultMsg = newValue ? 'Rower zgłoszony jako skradziony' : 'Zgłoszenie kradzieży cofnięte';
+        this.notificationService.success(backendMsg || defaultMsg);
+      },
+      error: (err) => {
+        const backendMsg = err?.error?.message;
+        this.notificationService.error(backendMsg || 'Nie udało się zaktualizować statusu roweru');
+      }
+    });
   }
 
   // Toggle multi-select mode

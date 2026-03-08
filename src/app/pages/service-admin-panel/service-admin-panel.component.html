@@ -109,7 +109,14 @@
           *ngIf="activeTab === 'images'"
           [serviceId]="selectedServiceId!">
         </app-service-admin-images>
-        
+
+        <!-- Reservations Tab -->
+        <app-service-admin-reservations
+          *ngIf="activeTab === 'reservations'"
+          [serviceDetails]="serviceDetails"
+          [serviceId]="selectedServiceId!">
+        </app-service-admin-reservations>
+
       </div>
     </div>
   </div>

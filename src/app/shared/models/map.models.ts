@@ -45,6 +45,7 @@ export interface ServiceDetails {
   registered: boolean;
   logoUrl?: string;
   reservationAvailable?: boolean;
+  suffix?: string;
 }
 
 export interface CitySuggestion {

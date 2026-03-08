@@ -478,7 +478,7 @@ export class TransportOrderFormComponent implements OnInit {
     if (this.actualTransportCost !== null && this.actualTransportCost === 0) {
       return 0;
     }
-    const baseCost = this.actualTransportCost !== null ? this.actualTransportCost : 50;
+    const baseCost = this.actualTransportCost ?? 0;
     if (selectedCount === 1) {
       return baseCost;
     }
@@ -490,7 +490,7 @@ export class TransportOrderFormComponent implements OnInit {
     if (this.actualTransportCost !== null && this.actualTransportCost === 0) {
       return 0;
     }
-    return this.actualTransportCost !== null ? this.actualTransportCost : 50;
+    return this.actualTransportCost ?? 0;
   }
 
   getAdditionalBikesCost(): number {

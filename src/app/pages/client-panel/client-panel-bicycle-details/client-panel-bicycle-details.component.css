@@ -277,6 +277,10 @@
   background: linear-gradient(135deg, var(--color-warning) 0%, var(--color-warning-orange) 100%);
 }
 
+.desktop-action-btn.found-btn {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
 .desktop-action-btn.delete-btn {
   background: var(--gradient-danger);
   box-shadow: var(--shadow-danger);
@@ -1223,6 +1227,10 @@
 
   .mobile-report-btn {
     background: linear-gradient(135deg, var(--color-warning) 0%, var(--color-warning-orange) 100%);
+  }
+
+  .mobile-found-btn {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   }
 
   .mobile-delete-btn {

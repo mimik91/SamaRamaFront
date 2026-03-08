@@ -1,5 +1,5 @@
 
-export type AdminPanelTab = 'basic' | 'services' | 'pricelist' | 'hours' | 'images';
+export type AdminPanelTab = 'basic' | 'services' | 'pricelist' | 'hours' | 'images' | 'reservations';
 
 /**
  * Konfiguracja zakładki
@@ -39,6 +39,11 @@ export const ADMIN_PANEL_TABS: TabConfig[] = [
     id: 'images',
     labelKey: 'service_admin.tabs.images',
     icon: 'image'
+  },
+  {
+    id: 'reservations',
+    labelKey: 'service_admin.tabs.reservations',
+    icon: 'calendar'
   }
 ];
 
@@ -81,7 +86,7 @@ export function isTabActive(currentTab: AdminPanelTab, tabId: AdminPanelTab): bo
  * Waliduje czy tab jest poprawnym typem
  */
 export function isValidTab(tab: string): tab is AdminPanelTab {
-  return ['basic', 'services', 'pricelist', 'hours', 'images'].includes(tab);
+  return ['basic', 'services', 'pricelist', 'hours', 'images', 'reservations'].includes(tab);
 }
 
 /**

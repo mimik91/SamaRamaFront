@@ -1,0 +1,156 @@
+<div class="reservations-container">
+
+  <!-- Sekcja: Włącznik rezerwacji online -->
+  <div class="detail-card">
+    <h2>Rezerwacja online</h2>
+    <div class="detail-item">
+      <span class="label">Status rezerwacji:</span>
+      <label class="toggle-label">
+        <input type="checkbox" [(ngModel)]="reservationAvailable" class="toggle-input">
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">{{ reservationAvailable ? 'Włączona' : 'Wyłączona' }}</span>
+      </label>
+    </div>
+    <div class="card-actions">
+      <button (click)="saveAvailability()" [disabled]="isSavingAvailability" class="save-btn">
+        {{ isSavingAvailability ? 'Zapisywanie...' : 'Zapisz' }}
+      </button>
+    </div>
+    <div *ngIf="availabilitySuccess" class="success-message">✓ Zapisano pomyślnie</div>
+    <div *ngIf="availabilityError" class="error-message">{{ availabilityError }}</div>
+  </div>
+
+  <!-- Ładowanie ustawień -->
+  <div *ngIf="isLoadingSettings" class="loading-state">
+    <div class="spinner"></div>
+    <p>Ładowanie ustawień rezerwacji...</p>
+  </div>
+
+  <div *ngIf="settingsLoadError && !isLoadingSettings" class="error-state">
+    <p>{{ settingsLoadError }}</p>
+    <button (click)="loadSettings()" class="retry-btn">Spróbuj ponownie</button>
+  </div>
+
+  <!-- Ustawienia rezerwacji -->
+  <ng-container *ngIf="!isLoadingSettings && !settingsLoadError">
+
+    <!-- Akcje -->
+    <div class="header-actions">
+      <ng-container *ngIf="!isEditMode">
+        <button (click)="enterEditMode()" class="edit-btn">Edytuj ustawienia</button>
+      </ng-container>
+      <ng-container *ngIf="isEditMode">
+        <button (click)="cancelEdit()" class="cancel-btn">Anuluj</button>
+        <button (click)="saveSettings()" [disabled]="isSavingSettings" class="save-btn">
+          {{ isSavingSettings ? 'Zapisywanie...' : 'Zapisz ustawienia' }}
+        </button>
+      </ng-container>
+    </div>
+
+    <div *ngIf="settingsSuccess" class="success-message">✓ Ustawienia zapisane pomyślnie</div>
+    <div *ngIf="settingsError" class="error-message">{{ settingsError }}</div>
+
+    <!-- Szacowana data rezerwacji -->
+    <div class="detail-card">
+      <h2>Szacowana data realizacji</h2>
+      <p class="description-hint">
+        Orientacyjna data, na którą klienci mogą zarezerwować wizytę.
+      </p>
+
+      <div *ngIf="!isEditMode" class="date-field-group">
+        <span class="date-field-label">Data:</span>
+        <span class="date-field-value">{{ estimatedReservationDay ? (estimatedReservationDay | date:'dd.MM.yyyy') : 'Nie ustawiono' }}</span>
+      </div>
+
+      <div *ngIf="isEditMode" class="date-field-group">
+        <label class="date-field-label">Data:</label>
+        <input
+          type="date"
+          [(ngModel)]="estimatedReservationDay"
+          [min]="todayDate"
+          class="date-input"
+        >
+      </div>
+    </div>
+
+    <!-- Akceptowane dni -->
+    <div class="detail-card">
+      <h2>Akceptowane dni rezerwacji</h2>
+      <p class="description-hint">
+        Zaznacz dni, na które klienci mogą składać rezerwacje. Brak zaznaczenia = codziennie można przyprowadzić rower.
+      </p>
+
+      <!-- Tryb podglądu -->
+      <div *ngIf="!isEditMode" class="detail-item">
+        <span class="label">Dozwolone dni:</span>
+        <span class="value">{{ getDisplayDays() }}</span>
+      </div>
+
+      <!-- Tryb edycji -->
+      <div *ngIf="isEditMode" class="days-grid">
+        <label *ngFor="let day of daysOfWeek" class="day-checkbox-label">
+          <input type="checkbox" [(ngModel)]="acceptedDays[day.key]" class="edit-checkbox">
+          <span>{{ day.label }}</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Harmonogram formularza -->
+    <div class="detail-card">
+      <h2>Harmonogram formularza rezerwacji</h2>
+      <p class="description-hint">
+        Określ godziny, w których formularz rezerwacji jest aktywny. Dzień bez zaznaczenia = formularz nieaktywny tego dnia. Brak aktywnych dni = formularz aktywny 24/7.
+      </p>
+
+      <!-- Tryb podglądu -->
+      <div *ngIf="!isEditMode">
+        <div *ngIf="isFormScheduleEmpty()" class="empty-hint">
+          Brak ograniczeń — formularz aktywny całą dobę
+        </div>
+        <div *ngIf="!isFormScheduleEmpty()">
+          <div *ngFor="let day of daysOfWeek" class="detail-item">
+            <span class="label">{{ day.label }}:</span>
+            <span class="value">{{ getScheduleDisplay(day.key) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tryb edycji -->
+      <div *ngIf="isEditMode" class="schedule-table">
+        <div *ngFor="let day of daysOfWeek" class="schedule-row">
+          <div class="schedule-day">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="daySchedules[day.key].active" class="edit-checkbox">
+              <span class="day-name">{{ day.label }}</span>
+            </label>
+          </div>
+          <div class="schedule-times" *ngIf="daySchedules[day.key].active">
+            <div class="time-input-group">
+              <span class="time-label">Od:</span>
+              <input
+                type="time"
+                [(ngModel)]="daySchedules[day.key].fromTime"
+                class="time-input">
+              <span class="time-hint">puste = od początku dnia</span>
+            </div>
+            <div class="time-input-group">
+              <span class="time-label">Do:</span>
+              <input
+                type="time"
+                [(ngModel)]="daySchedules[day.key].toTime"
+                class="time-input">
+              <span class="time-hint">puste = do końca dnia</span>
+            </div>
+            <button (click)="copyToAllDays(day.key)" class="copy-btn" title="Kopiuj godziny do wszystkich dni">
+              Kopiuj do wszystkich
+            </button>
+          </div>
+          <div class="schedule-inactive" *ngIf="!daySchedules[day.key].active">
+            <span class="inactive-text">Formularz nieaktywny</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

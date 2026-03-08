@@ -706,8 +706,17 @@ onCitySelected(city: CitySuggestion): void {
   }
 
   onReserveService(serviceDetails: ServiceDetails): void {
-    this.router.navigate(['/reserve-service'], {
-      queryParams: { serviceId: serviceDetails.id }
+    this.mapService.getServiceSuffix(serviceDetails.id).subscribe(response => {
+      const suffix = response?.suffix;
+      if (suffix) {
+        this.router.navigate(['/reserve-service', suffix], {
+          state: { serviceId: serviceDetails.id }
+        });
+      } else {
+        this.router.navigate(['/reserve-service'], {
+          queryParams: { serviceId: serviceDetails.id }
+        });
+      }
     });
   }
 

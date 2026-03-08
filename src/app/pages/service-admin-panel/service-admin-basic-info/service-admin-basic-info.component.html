@@ -25,7 +25,7 @@
       ✓ Zmiany zostały zapisane pomyślnie
     </div>
     <div *ngIf="saveError" class="error-message">
-      {{ saveError }}
+      <span *ngFor="let line of saveError.split('\n'); let last = last">{{ line }}<br *ngIf="!last"></span>
     </div>
   </div>
 
@@ -174,24 +174,6 @@
       <div class="detail-item" *ngIf="serviceDetails.updatedAt">
         <span class="label">Ostatnia aktualizacja:</span>
         <span class="value">{{ formatDate(serviceDetails.updatedAt) }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="label">Rezerwacja online:</span>
-        <span class="value" *ngIf="!isEditMode">
-          <span [class.badge-success]="serviceDetails.reservationAvailable"
-                [class.badge-inactive]="!serviceDetails.reservationAvailable"
-                class="badge">
-            {{ serviceDetails.reservationAvailable ? 'Włączona' : 'Wyłączona' }}
-          </span>
-        </span>
-        <label *ngIf="isEditMode" class="toggle-label">
-          <input
-            type="checkbox"
-            [(ngModel)]="editableData.reservationAvailable"
-            class="toggle-input">
-          <span class="toggle-slider"></span>
-          <span class="toggle-text">{{ editableData.reservationAvailable ? 'Włączona' : 'Wyłączona' }}</span>
-        </label>
       </div>
     </div>
 

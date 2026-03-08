@@ -17,7 +17,8 @@
       "pricelist": "Zarządzaj cennikiem",
       "hours": "Godziny otwarcia",
       "images": "Zarządzaj zdjęciami",
-      "history": "Historia zleceń"
+      "history": "Historia zleceń",
+      "reservations": "Zarządzanie rezerwacjami"
     }
   },
   "service_calendar": {

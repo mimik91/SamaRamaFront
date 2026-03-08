@@ -3,17 +3,6 @@
 
   <div class="action-bar">
     <button class="add-btn" (click)="goToAddBicycle()">Dodaj rower</button>
-    <button *ngIf="!isMultiSelectMode" class="multi-select-btn" (click)="toggleMultiSelectMode()">
-      Wybierz wiele rowerów
-    </button>
-    <ng-container *ngIf="isMultiSelectMode">
-      <button class="service-multi-btn" [disabled]="selectedBicycles.size === 0" (click)="orderServiceForSelected()">
-        Zamów serwis ({{ selectedBicycles.size }})
-      </button>
-      <button class="cancel-multi-btn" (click)="toggleMultiSelectMode()">
-        Anuluj
-      </button>
-    </ng-container>
   </div>
 
   <div *ngIf="loading" class="loading-message">
@@ -26,44 +15,76 @@
 
   <ng-container *ngIf="!loading && !error">
     <ng-container *ngIf="bicycles.length > 0; else noBicycles">
-      <div class="bicycles-list">
-        <div *ngFor="let bicycle of bicycles" class="bicycle-card"
-             [class.selected]="isBicycleSelected(bicycle.id)"
-             (click)="viewBicycleDetails(bicycle.id)">
 
-          <!-- Checkbox for multi-select mode -->
-          <div *ngIf="isMultiSelectMode" class="selection-checkbox" (click)="toggleBicycleSelection(bicycle.id, $event)">
-            <input type="checkbox" [checked]="isBicycleSelected(bicycle.id)">
+      <!-- Aktywne rowery -->
+      <div class="bicycles-list" *ngIf="activeBicycles.length > 0">
+        <ng-container *ngFor="let bicycle of activeBicycles">
+          <div class="bicycle-card"
+               [class.selected]="isBicycleSelected(bicycle.id)"
+               (click)="viewBicycleDetails(bicycle.id)">
+
+            <div *ngIf="isMultiSelectMode" class="selection-checkbox" (click)="toggleBicycleSelection(bicycle.id, $event)">
+              <input type="checkbox" [checked]="isBicycleSelected(bicycle.id)">
+            </div>
+
+            <div class="bicycle-content">
+              <div class="bicycle-image" [ngClass]="{'has-photo': !!bicycle.mainPhotoUrl, 'no-image': !bicycle.mainPhotoUrl}">
+                <ng-container *ngIf="bicycle.mainPhotoUrl; else noImageActive">
+                  <img [src]="bicycle.mainPhotoUrl" alt="Zdjęcie roweru" (error)="handleImageError($event, bicycle)">
+                </ng-container>
+                <ng-template #noImageActive>
+                  <div class="placeholder-content"><span>Brak zdjęcia</span></div>
+                </ng-template>
+              </div>
+              <div class="bicycle-details">
+                <h3>{{ bicycle.brand }} {{ bicycle.model || '' }}</h3>
+                <p class="frame-number" *ngIf="bicycle.frameNumber">Numer ramy: {{ bicycle.frameNumber }}</p>
+                <p *ngIf="bicycle.type">Typ: {{ bicycle.type }}</p>
+                <p *ngIf="bicycle.frameMaterial">Materiał ramy: {{ bicycle.frameMaterial }}</p>
+              </div>
+            </div>
+            <div class="bicycle-actions">
+              <button class="view-btn" (click)="viewBicycleDetails(bicycle.id); $event.stopPropagation()">Szczegóły</button>
+              <button class="delete-btn" (click)="deleteBicycle(bicycle.id); $event.stopPropagation()">Usuń</button>
+            </div>
           </div>
+        </ng-container>
+      </div>
 
-          <div class="bicycle-content">
-            <div class="bicycle-image" [ngClass]="{'has-photo': !!bicycle.mainPhotoUrl, 'no-image': !bicycle.mainPhotoUrl}">
-              <ng-container *ngIf="bicycle.mainPhotoUrl; else noImageTemplate">
-                <img
-                  [src]="bicycle.mainPhotoUrl"
-                  alt="Zdjęcie roweru"
-                  (error)="handleImageError($event, bicycle)"
-                >
-              </ng-container>
-              <ng-template #noImageTemplate>
-                <div class="placeholder-content">
-                  <span>Brak zdjęcia</span>
+      <!-- Skradzione rowery -->
+      <div class="stolen-section" *ngIf="stolenBicycles.length > 0">
+        <div class="stolen-section-header">
+          <span class="stolen-icon">⚠️</span>
+          <h2>Zgłoszone jako skradzione</h2>
+        </div>
+        <div class="bicycles-list stolen-list">
+          <ng-container *ngFor="let bicycle of stolenBicycles">
+            <div class="bicycle-card bicycle-card--stolen" (click)="viewBicycleDetails(bicycle.id)">
+              <div class="stolen-badge">Skradziony</div>
+              <div class="bicycle-content">
+                <div class="bicycle-image bicycle-image--stolen" [ngClass]="{'has-photo': !!bicycle.mainPhotoUrl, 'no-image': !bicycle.mainPhotoUrl}">
+                  <ng-container *ngIf="bicycle.mainPhotoUrl; else noImageStolen">
+                    <img [src]="bicycle.mainPhotoUrl" alt="Zdjęcie roweru" (error)="handleImageError($event, bicycle)">
+                  </ng-container>
+                  <ng-template #noImageStolen>
+                    <div class="placeholder-content"><span>Brak zdjęcia</span></div>
+                  </ng-template>
                 </div>
-              </ng-template>
+                <div class="bicycle-details">
+                  <h3>{{ bicycle.brand }} {{ bicycle.model || '' }}</h3>
+                  <p class="frame-number" *ngIf="bicycle.frameNumber">Numer ramy: {{ bicycle.frameNumber }}</p>
+                  <p *ngIf="bicycle.type">Typ: {{ bicycle.type }}</p>
+                </div>
+              </div>
+              <div class="bicycle-actions">
+                <button class="view-btn" (click)="viewBicycleDetails(bicycle.id); $event.stopPropagation()">Szczegóły</button>
+                <button class="delete-btn" (click)="deleteBicycle(bicycle.id); $event.stopPropagation()">Usuń</button>
+              </div>
             </div>
-            <div class="bicycle-details">
-              <h3>{{ bicycle.brand }} {{ bicycle.model || '' }}</h3>
-              <p class="frame-number" *ngIf="bicycle.frameNumber">Numer ramy: {{ bicycle.frameNumber }}</p>
-              <p *ngIf="bicycle.type">Typ: {{ bicycle.type }}</p>
-              <p *ngIf="bicycle.frameMaterial">Materiał ramy: {{ bicycle.frameMaterial }}</p>
-            </div>
-          </div>
-          <div class="bicycle-actions" *ngIf="!isMultiSelectMode">
-            <button class="view-btn" (click)="viewBicycleDetails(bicycle.id); $event.stopPropagation()">Szczegóły</button>
-            <button class="delete-btn" (click)="deleteBicycle(bicycle.id); $event.stopPropagation()">Usuń</button>
-          </div>
+          </ng-container>
         </div>
       </div>
+
     </ng-container>
 
     <ng-template #noBicycles>

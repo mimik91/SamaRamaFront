@@ -10,6 +10,7 @@ export interface Bicycle {
     productionDate?: string;
     mainPhotoUrl?: string | null;
     owner?: User;
+    stolen?: boolean | null;
 }
 
 export interface BicycleForm {

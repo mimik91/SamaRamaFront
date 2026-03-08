@@ -98,6 +98,7 @@ export class ClientPanelDetailsComponent implements OnInit {
       model: [''],
       type: [''],
       frameMaterial: [''],
+      frameNumber: [''],
       productionDate: ['']
     });
   }
@@ -305,6 +306,7 @@ export class ClientPanelDetailsComponent implements OnInit {
         model: this.bicycle.model,
         type: this.bicycle.type,
         frameMaterial: this.bicycle.frameMaterial,
+        frameNumber: this.bicycle.frameNumber || '',
         productionDate: this.formatDateForForm(this.bicycle.productionDate)
       });
     }
@@ -538,10 +540,10 @@ export class ClientPanelDetailsComponent implements OnInit {
       type: this.bicycleForm.value.type || null,
       frameMaterial: this.bicycleForm.value.frameMaterial || null,
       productionDate: productionDate,
-      frameNumber: this.bicycle.frameNumber
+      frameNumber: this.bicycleForm.value.frameNumber || null
     };
 
-    const isComplete = !!this.bicycle.frameNumber;
+    const isComplete = !!(this.bicycleForm.value.frameNumber || this.bicycle.frameNumber);
 
     this.bicycleService.updateBicycle(this.bicycle.id, bicycleData, isComplete).subscribe({
       next: async () => {
@@ -725,12 +727,25 @@ export class ClientPanelDetailsComponent implements OnInit {
 
   reportStolen(): void {
     if (!this.bicycle) return;
-    if (confirm('Czy na pewno chcesz zgłosić ten rower jako skradziony?')) {
-      this.bicycleService.updateStolenStatus(this.bicycle.id, true).subscribe({
-        next: () => this.notificationService.success('Rower został zgłoszony jako skradziony'),
-        error: () => this.notificationService.error('Nie udało się zgłosić kradzieży roweru')
-      });
-    }
+    const isCurrentlyStolen = !!this.bicycle.stolen;
+    const msg = isCurrentlyStolen
+      ? 'Czy rower się znalazł? Cofnąć zgłoszenie kradzieży?'
+      : 'Czy na pewno chcesz zgłosić ten rower jako skradziony?';
+    if (!confirm(msg)) return;
+
+    const newValue = !isCurrentlyStolen;
+    this.bicycleService.updateStolenStatus(this.bicycle.id, newValue).subscribe({
+      next: (res) => {
+        this.bicycle!.stolen = newValue;
+        const backendMsg = res?.message;
+        const defaultMsg = newValue ? 'Rower zgłoszony jako skradziony' : 'Zgłoszenie kradzieży cofnięte';
+        this.notificationService.success(backendMsg || defaultMsg);
+      },
+      error: (err) => {
+        const backendMsg = err?.error?.message;
+        this.notificationService.error(backendMsg || 'Nie udało się zaktualizować statusu roweru');
+      }
+    });
   }
 
   confirmDelete(): void {

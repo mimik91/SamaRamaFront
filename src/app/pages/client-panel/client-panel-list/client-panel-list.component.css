@@ -29,7 +29,9 @@
 .service-multi-btn,
 .cancel-multi-btn,
 .view-btn,
-.delete-btn {
+.delete-btn,
+.stolen-btn,
+.unstolen-btn {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-2);
@@ -261,6 +263,82 @@
 .delete-btn:hover {
   box-shadow: var(--shadow-danger-hover);
   transform: translateY(-1px);
+}
+
+.stolen-btn {
+  background: #f97316;
+  color: var(--color-white);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+}
+
+.stolen-btn:hover {
+  background: #ea6c0a;
+  transform: translateY(-1px);
+}
+
+.unstolen-btn {
+  background: #6b7280;
+  color: var(--color-white);
+}
+
+.unstolen-btn:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* ── Stolen section ── */
+.stolen-section {
+  margin-top: var(--spacing-10);
+}
+
+.stolen-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 2px dashed #f97316;
+}
+
+.stolen-section-header h2 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: #ea580c;
+  margin: 0;
+}
+
+.stolen-icon {
+  font-size: var(--font-size-xl);
+}
+
+.bicycle-card--stolen {
+  opacity: 0.8;
+  border-color: #fdba74 !important;
+  background: #fff7ed;
+  position: relative;
+}
+
+.bicycle-card--stolen:hover {
+  opacity: 1;
+}
+
+.stolen-badge {
+  position: absolute;
+  top: var(--spacing-2);
+  right: var(--spacing-2);
+  background: #f97316;
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: 2px var(--spacing-2);
+  border-radius: var(--radius-sm);
+  z-index: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bicycle-image--stolen {
+  filter: grayscale(40%);
 }
 
 /* ── Selection checkbox ── */

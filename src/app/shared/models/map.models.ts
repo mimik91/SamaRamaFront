@@ -20,6 +20,7 @@ export interface MapPin {
   phoneNumber?: string;
   email?: string;
   verified?: boolean;
+  reservationAvailable?: boolean;
   category?: string;
   logoUrl?: string;
 }

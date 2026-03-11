@@ -47,6 +47,44 @@
   color: var(--color-primary);
 }
 
+/* Hero CTA */
+.hero-cta {
+  margin-top: var(--spacing-5);
+  display: flex;
+  justify-content: center;
+}
+
+.hero-cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-4) var(--spacing-8);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-white);
+  background: var(--gradient-primary);
+  border-radius: var(--radius-button);
+  text-decoration: none;
+  transition: var(--transition-all);
+  box-shadow: var(--shadow-primary);
+}
+
+.hero-cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary-hover);
+}
+
+.hero-cta-button svg {
+  flex-shrink: 0;
+}
+
+.hero-hint {
+  margin-top: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
 /* CTA Banner for service owners */
 .service-cta-banner {
   margin-bottom: var(--spacing-6);
@@ -468,6 +506,32 @@
   flex-shrink: 0;
 }
 
+/* Reservation button */
+.reservation-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background: linear-gradient(135deg, #1B3A5E 0%, #1e4f7e 100%);
+  border: none;
+  border-radius: var(--radius-button);
+  cursor: pointer;
+  transition: var(--transition-all);
+  text-align: left;
+}
+
+.reservation-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(27, 58, 94, 0.4);
+}
+
+.reservation-button svg {
+  flex-shrink: 0;
+}
+
 /* Register service button (for unregistered services) */
 .register-service-button {
   display: flex;
@@ -560,6 +624,53 @@
 .transport-steps li::marker,
 .benefits-list li::marker {
   color: var(--color-primary);
+}
+
+/* SEO transport image (door-to-door section) */
+.seo-transport-image {
+  width: 100%;
+  max-width: 700px;
+  height: auto;
+  border-radius: var(--radius-card);
+  margin: var(--spacing-4) auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* FAQ list */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  margin: var(--spacing-4) 0;
+}
+
+.faq-item {
+  padding: var(--spacing-4) var(--spacing-5);
+  background-color: var(--color-white);
+  border-radius: var(--radius-card);
+  border-left: 3px solid var(--color-primary);
+}
+
+.faq-item h3 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary-dark);
+  margin: 0 0 var(--spacing-2) 0;
+}
+
+.faq-item p {
+  font-size: var(--font-size-md);
+  color: var(--text-slate);
+  margin: 0;
+}
+
+/* SEO H3 district headers */
+.seo-content h3 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  margin: var(--spacing-4) 0 var(--spacing-1) 0;
 }
 
 /* Footer with city links */
@@ -679,7 +790,8 @@
 
   .transport-button,
   .service-page-button,
-  .register-service-button {
+  .register-service-button,
+  .reservation-button {
     width: 100%;
     justify-content: center;
     text-align: center;

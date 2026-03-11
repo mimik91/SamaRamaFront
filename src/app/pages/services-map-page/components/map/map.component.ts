@@ -162,8 +162,10 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
       'cluster-hover-medium': computedStyle.getPropertyValue('--map-cluster-hover-medium').trim(),
       'cluster-hover-large': computedStyle.getPropertyValue('--map-cluster-hover-large').trim(),
       'pin-verified': computedStyle.getPropertyValue('--map-pin-verified').trim(),
+      'pin-reservation': computedStyle.getPropertyValue('--map-pin-reservation').trim(),
       'pin-unverified': computedStyle.getPropertyValue('--map-pin-unverified').trim(),
       'pin-hover-verified': computedStyle.getPropertyValue('--map-pin-hover-verified').trim(),
+      'pin-hover-reservation': computedStyle.getPropertyValue('--map-pin-hover-reservation').trim(),
       'pin-hover-unverified': computedStyle.getPropertyValue('--map-pin-hover-unverified').trim()
     };
   }
@@ -448,7 +450,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     markerIcon = this.createClusterIcon(count);
     zIndexOffset = count >= 50 ? 3000 : (count >= 10 ? 2000 : 1000);
   } else {
-    markerIcon = this.createPinIcon(pin.verified);
+    markerIcon = this.createPinIcon(pin.verified, pin.reservationAvailable);
     zIndexOffset = 500;
   }
 
@@ -508,7 +510,7 @@ if (markerElement) {
           const currentFill = path.getAttribute('fill') || '';
           path.setAttribute('data-original-fill', currentFill);
           
-          const hoverColorKey = pin.verified ? 'pin-hover-verified' : 'pin-hover-unverified';
+          const hoverColorKey = (pin.verified && pin.reservationAvailable) ? 'pin-hover-reservation' : (pin.verified ? 'pin-hover-verified' : 'pin-hover-unverified');
           path.setAttribute('fill', this.getColor(hoverColorKey, '#4CAF50'));
         }
       }
@@ -592,24 +594,26 @@ if (markerElement) {
   const popupContent = this.buildPopupContent(serviceDetails, isMobile);
   const popupMaxWidth = isMobile ? 280 : 400;
 
-  if (!marker.getPopup()) {
-      marker.bindPopup(popupContent, {
-          maxWidth: popupMaxWidth,
-          className: 'detailed-service-popup',
-          closeButton: true,
-          autoPan: false
-      });
-  } else {
-      marker.getPopup().setContent(popupContent);
+  // Zawsze unbind + rebind, żeby mieć czysty stan (eliminuje problem toggle Leafleta)
+  if (marker.getPopup()) {
+    marker.off('popupclose');
+    marker.unbindPopup();
   }
 
-  marker.openPopup();
+  marker.bindPopup(popupContent, {
+    maxWidth: popupMaxWidth,
+    className: 'detailed-service-popup',
+    closeButton: true,
+    autoPan: false
+  });
 
-  // Nasłuchuj zamknięcia popupu przez użytkownika
-  marker.off('popupclose');
+  // Listener PRZED otwarciem
   marker.on('popupclose', () => {
     this.popupClosed.emit(serviceDetails.id);
   });
+
+  // Defer openPopup poza bieżący event loop (po ewentualnym toggle Leafleta)
+  setTimeout(() => marker.openPopup(), 0);
 
   // Cleanup old listeners if popup was reopened
   this.cleanupPopupListeners(serviceDetails.id);
@@ -985,17 +989,28 @@ if (markerElement) {
     });
   }
 
-  private createPinIcon(verified: boolean = true): any {
+  private createPinIcon(verified: boolean = true, reservationAvailable: boolean = false): any {
     const pinSize = 40;
-    // Kolor zależny od statusu weryfikacji - z CSS variables
-    const colorKey = verified ? 'pin-verified' : 'pin-unverified';
-    const pinColor = this.getColor(colorKey, '#2e7d32');
-    
+    // Zarejestrowany + rezerwacja → niebieski; zarejestrowany → ciemna zieleń; niezarejestrowany → szara zieleń
+    let colorKey: string;
+    let glowId: string;
+    if (verified && reservationAvailable) {
+      colorKey = 'pin-reservation';
+      glowId = 'reservation';
+    } else if (verified) {
+      colorKey = 'pin-verified';
+      glowId = 'verified';
+    } else {
+      colorKey = 'pin-unverified';
+      glowId = 'unverified';
+    }
+    const pinColor = this.getColor(colorKey, '#1B5E20');
+
     const iconHtml = `
       <div style="width: ${pinSize}px; height: ${pinSize * 1.2}px; position: relative; cursor: pointer;">
         <svg xmlns="http://www.w3.org/2000/svg" width="${pinSize}" height="${pinSize * 1.2}" viewBox="0 0 40 48" style="display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); transition: all 0.3s ease;">
           <defs>
-            <filter id="glow-${verified ? 'verified' : 'unverified'}">
+            <filter id="glow-${glowId}">
               <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
               <feMerge>
                 <feMergeNode in="coloredBlur"/>
@@ -1003,7 +1018,7 @@ if (markerElement) {
               </feMerge>
             </filter>
           </defs>
-          <path d="M20 0c-8.284 0-15 6.656-15 14.866 0 8.211 15 33.134 15 33.134s15-24.923 15-33.134C35 6.656 28.284 0 20 0zm0 20c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z" fill="${pinColor}" stroke="white" stroke-width="2" filter="url(#glow-${verified ? 'verified' : 'unverified'})" style="transition: fill 0.3s ease;"/>
+          <path d="M20 0c-8.284 0-15 6.656-15 14.866 0 8.211 15 33.134 15 33.134s15-24.923 15-33.134C35 6.656 28.284 0 20 0zm0 20c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z" fill="${pinColor}" stroke="white" stroke-width="2" filter="url(#glow-${glowId})" style="transition: fill 0.3s ease;"/>
           <circle cx="20" cy="14" r="4" fill="white"/>
         </svg>
       </div>

@@ -31,6 +31,8 @@
   display: flex;
   align-items: center;
   z-index: 10002; /* Wyżej niż menu */
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
 .navbar-brand a {

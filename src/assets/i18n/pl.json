@@ -630,8 +630,8 @@
   "city_services": {
     "page_title": "Serwisy rowerowe {city}",
     "subtitle": "Lista serwisów rowerowych w mieście {city} i okolicach",
-    "meta_title": "Serwisy rowerowe {city} - lista serwisów | CycloPick",
-    "meta_description": "Znajdź najlepszy serwis rowerowy w mieście {city}. Lista serwisów rowerowych z adresami i numerami telefonów. Sprawdź dostępne warsztaty rowerowe.",
+    "meta_title": "Serwis rowerowy {city} – lista warsztatów i napraw rowerów | CycloPick",
+    "meta_description": "Serwis rowerowy {city} – znajdź warsztat rowerowy z adresem i telefonem. Lista sprawdzonych serwisów i napraw rowerów w {city}. Umów wizytę online.",
     "select_city": "Wybierz miasto:",
     "show_on_map": "Pokaż na mapie",
     "loading": "Ładowanie serwisów...",

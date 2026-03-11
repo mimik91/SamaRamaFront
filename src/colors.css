@@ -212,9 +212,11 @@
   --map-cluster-hover-large: #dc4a26;
   
   /* Kolory pinezek pojedynczych serwisów */
-  --map-pin-verified: #2B82AD;
+  --map-pin-verified: #1B5E20;
+  --map-pin-reservation: #1B3A5E;
   --map-pin-unverified: #4caf4fa9;
-  --map-pin-hover-verified: #2b9ead;
+  --map-pin-hover-verified: #2e7d32;
+  --map-pin-hover-reservation: #1e4f7e;
   --map-pin-hover-unverified: #81c784a9;
   --map-pin-selected: #e11d48;
 

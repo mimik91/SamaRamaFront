@@ -3,20 +3,32 @@
   <header class="city-header" *ngIf="!cityNotFound">
     <h1 itemprop="name">
       <ng-container *ngIf="isKrakow; else defaultTitle">
-        Serwisy Rowerowe w Krakowie – Lista
+        Mobilny Serwis Rowerowy Krak&#243;w &#8211; Naprawa Door&#8209;to&#8209;Door
       </ng-container>
       <ng-template #defaultTitle>
-        Serwisy rowerowe {{ currentCity?.name }}
+        Serwis rowerowy {{ currentCity?.name }} &#8211; lista warsztat&#243;w i napraw rower&#243;w
       </ng-template>
     </h1>
     <p class="subtitle">
       <ng-container *ngIf="isKrakow; else defaultSubtitle">
-        Szukasz dobrego mechanika w Krakowie? Poniżej znajdziesz aktualną listę ponad 90 warsztatów rowerowych z podziałem na dzielnice. Niezależnie czy mieszkasz na Starym Mieście, potrzebujesz szybkiej naprawy na Krowodrzy, czy szukasz sprawdzonego mechanika w Nowej Hucie lub na Podgórzu – CycloPick pomoże Ci zlokalizować najbliższy punkt. Nasza baza obejmuje również rejony takie jak Prądnik Biały i Czerwony, Grzegórzki, Zwierzyniec oraz Ruczaj. Nie masz czasu na dojazd? Skorzystaj z usługi door-to-door – wybierz serwis z listy, a my odbierzemy od Ciebie rower i odwieziemy go po naprawie.
+        <strong>Serwis rowerowy z dojazdem w Krakowie</strong> &#8211; kurier odbiera rower spod Twoich drzwi i dostarcza go do wybranego warsztatu na terenie ca&#322;ego Krakowa. Dzia&#322;amy na Starym Mie&#347;cie, Krowodrzy, Nowej Hucie, Podg&#243;rzu i we wszystkich dzielnicach. Wybierz warsztat z listy poni&#380;ej i zam&#243;w odbi&#243;r online.
       </ng-container>
       <ng-template #defaultSubtitle>
         Lista serwis&#243;w rowerowych w mie&#347;cie {{ currentCity?.name }} i okolicach
       </ng-template>
     </p>
+    <div class="hero-cta" *ngIf="isKrakow">
+      <a href="#serwisy" class="hero-cta-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+        Zam&#243;w odbi&#243;r roweru &#8211; door&#8209;to&#8209;door
+      </a>
+      <p class="hero-hint">Wybierz serwis z listy poni&#380;ej i kliknij &#8222;Zam&#243;w transport&#8221; lub &#8222;Zarezerwuj wizyt&#281;&#8221;</p>
+    </div>
   </header>
 
   <!-- CTA Banner for service owners -->
@@ -48,10 +60,9 @@
         </svg>
       </div>
       <div class="transport-text">
-        <h2>Transport rower&#243;w door-to-door w Krakowie</h2>
+        <h2>Mobilny serwis rowerowy Krak&#243;w &#8211; Door&#8209;to&#8209;Door</h2>
         <p>
-          Nie masz czasu na wiezienie roweru do serwisu? Skorzystaj z naszej us&#322;ugi <strong>transportu rower&#243;w w Krakowie</strong>!
-          Kurier odbierze Tw&#243;j rower spod drzwi, dostarczy do wybranego serwisu rowerowego, a po naprawie przywiezie go z powrotem.
+          Szukasz <strong>serwisu rowerowego z dojazdem w Krakowie</strong>? Dzi&#281;ki CycloPick nie musisz sam wie&#378;&#263; roweru do warsztatu &#8211; nasz kurier odbierze go spod Twoich drzwi, dostarczy do wybranego serwisu rowerowego, a po naprawie przywiezie z powrotem. <strong>Door-to-door rower Krak&#243;w</strong> &#8211; wygodnie, szybko, online.
         </p>
       </div>
     </div>
@@ -117,7 +128,7 @@
   </div>
 
   <!-- Services list -->
-  <main *ngIf="!loading && !error && !cityNotFound" class="services-section">
+  <main id="serwisy" *ngIf="!loading && !error && !cityNotFound" class="services-section">
     <h2 class="services-count-header">
       <ng-container *ngIf="isKrakow; else defaultCount">
         Znaleziono <strong>{{ totalServices }}</strong> serwis&#243;w rowerowych w Krakowie
@@ -185,9 +196,24 @@
             Zarejestruj ten serwis
           </button>
 
-          <!-- Transport button only for Krak&#243;w -->
+          <!-- Przycisk rezerwacji (gdy reservationAvailable = true; zastępuje transport) -->
+          <button
+            *ngIf="service.reservationAvailable"
+            (click)="navigateToReservation(service)"
+            class="reservation-button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Zarezerwuj wizyt&#281; w serwisie {{ service.name }}
+          </button>
+
+          <!-- Transport button only for Krak&#243;w i gdy brak rezerwacji -->
           <a
-            *ngIf="isKrakow"
+            *ngIf="isKrakow && !service.reservationAvailable"
             [routerLink]="['/order-transport']"
             [queryParams]="{ serviceId: service.id }"
             class="transport-button"
@@ -211,38 +237,85 @@
 
   <!-- SEO content - different for Krak&#243;w -->
   <section class="seo-content" *ngIf="isKrakow && !cityNotFound">
-    <h2>Naprawa rower&#243;w w Krakowie z us&#322;ug&#261; transportu door-to-door</h2>
-    <p>
-      Szukasz <strong>serwisu rowerowego w Krakowie</strong>? Trafi&#322;e&#347; we w&#322;a&#347;ciwe miejsce!
-      Na tej stronie znajdziesz pe&#322;n&#261; list&#281; <strong>warsztat&#243;w rowerowych w Krakowie</strong> i okolicach.
-      Ka&#380;dy serwis posiada dane kontaktowe, dzi&#281;ki czemu mo&#380;esz szybko um&#243;wi&#263; si&#281; na <strong>napraw&#281; roweru</strong>.
-    </p>
 
-    <h2>Transport rower&#243;w w Krakowie - jak to dzia&#322;a?</h2>
+    <h2>Jak zam&#243;wi&#263; serwis roweru z odbiorem w Krakowie?</h2>
+
+    <img
+      src="assets/images/pictures/transport-rowerow.webp"
+      alt="Za&#322;adunek rower&#243;w na samoch&#243;d &#8211; us&#322;uga transportu roweru door-to-door w Krakowie"
+      class="seo-transport-image"
+      width="1536" height="1024"
+      loading="lazy"
+    >
+
     <p>
-      CycloPick oferuje unikaln&#261; us&#322;ug&#281; <strong>transportu rower&#243;w door-to-door w Krakowie</strong>.
-      Nie musisz ju&#380; sam wie&#378;&#263; roweru do serwisu! Nasz kurier:
+      CycloPick to jedyna platforma w Krakowie &#322;&#261;cz&#261;ca <strong>serwisy rowerowe z us&#322;ug&#261; transportu door-to-door</strong>.
+      Wystarczy wybra&#263; warsztat z listy powy&#380;ej, a nasz kurier zajmie si&#281; reszt&#261;:
     </p>
     <ul class="transport-steps">
-      <li>Odbierze Tw&#243;j rower spod wskazanego adresu w Krakowie</li>
-      <li>Dostarczy go do wybranego serwisu rowerowego</li>
-      <li>Po zako&#324;czeniu naprawy przywiezie rower z powrotem do Ciebie</li>
+      <li><strong>Odbi&#243;r roweru</strong> &#8211; kurier przyje&#380;d&#380;a pod wskazany adres w Krakowie (18:00&#8211;22:00)</li>
+      <li><strong>Dostawa do serwisu</strong> &#8211; rower trafia do wybranego warsztatu rowerowego na czas wizyty</li>
+      <li><strong>Zwr&#243;t roweru</strong> &#8211; po naprawie kurier odwozi rower z powrotem pod Twoje drzwi (18:00&#8211;22:00)</li>
     </ul>
-
-    <h2>Dlaczego warto skorzysta&#263; z transportu roweru?</h2>
     <p>
-      Us&#322;uga <strong>odbioru i dostawy roweru</strong> to idealne rozwi&#261;zanie dla os&#243;b, kt&#243;re:
+      Dzi&#281;ki temu <strong>mobilny serwis rowerowy w Krakowie</strong> staje si&#281; rzeczywisto&#347;ci&#261; &#8211; naprawisz rower bez wychodzenia z domu.
+      P&#322;atno&#347;&#263; za transport odbywa si&#281; got&#243;wk&#261; lub BLIKIEM przy odbiorze roweru.
+    </p>
+
+    <h2>Dla kogo jest serwis rowerowy z dojazdem?</h2>
+    <p>
+      Us&#322;uga <strong>mechanika rowerowego z dojazdem w Krakowie</strong> sprawdza si&#281; szczeg&#243;lnie, gdy:
     </p>
     <ul class="benefits-list">
-      <li>Nie maj&#261; samochodu lub baga&#380;nika rowerowego</li>
-      <li>Nie maj&#261; czasu na wiezienie roweru do warsztatu</li>
-      <li>Posiadaj&#261; rower elektryczny lub ci&#281;&#380;ki rower</li>
-      <li>Chc&#261; wygodnie naprawi&#263; rower bez wychodzenia z domu</li>
+      <li>Nie masz samochodu ani baga&#380;nika rowerowego</li>
+      <li>Masz ci&#281;&#380;ki <strong>rower elektryczny</strong></li>
+      <li>Nie chcesz traci&#263; czasu na dojazd do warsztatu</li>
+      <li>Chcesz um&#243;wi&#263; serwis z wyprzedzeniem bez wychodzenia z domu</li>
+      <li>Rower uleg&#322; awarii w trasie i nie nadaje si&#281; do jazdy</li>
     </ul>
 
+    <h2>Zasi&#281;g door-to-door &#8211; obs&#322;ugujemy ca&#322;y Krak&#243;w</h2>
     <p>
-      <strong>Zam&#243;w transport roweru</strong> ju&#380; dzi&#347; i ciesz si&#281; sprawnym jednos&#322;adem bez zb&#281;dnych problem&#243;w!
-      Kliknij przycisk "Zam&#243;w transport" przy wybranym serwisie rowerowym.
+      <strong>Odbi&#243;r roweru z dojazdem</strong> realizujemy na terenie wszystkich dzielnic Krakowa:
+    </p>
+    <h3>Serwis rowerowy &#346;r&#243;dmie&#347;cie, Stare Miasto i Grzeg&#243;rzki</h3>
+    <p>Centrum Krakowa, Kazimierz, Grzeg&#243;rzki &#8211; kurier dociera tu bez dodatkowych op&#322;at.</p>
+    <h3>Serwis rowerowy Krowodrza, Pr&#261;dnik Bia&#322;y i Pr&#261;dnik Czerwony</h3>
+    <p>P&#243;&#322;nocna cz&#281;&#347;&#263; Krakowa &#8211; Krowodrza, Bronowice, D&#281;bniki, Zwierzyniec i Ruczaj.</p>
+    <h3>Serwis rowerowy Nowa Huta i Mistrzejowice</h3>
+    <p>Wschodnie dzielnice Krakowa &#8211; Nowa Huta, Mistrzejowice, Bieńczyce.</p>
+    <h3>Serwis rowerowy Podg&#243;rze i &#321;agiewniki</h3>
+    <p>Po&#322;udniowa cz&#281;&#347;&#263; Krakowa &#8211; Podg&#243;rze, Rybitwy, &#321;agiewniki.</p>
+
+    <h2>Najcz&#281;&#347;ciej zadawane pytania &#8211; serwis rowerowy z dojazdem Krak&#243;w</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3>Czy mo&#380;ecie odebra&#263; rower elektryczny door-to-door w Krakowie?</h3>
+        <p>Tak, obs&#322;ugujemy rowery elektryczne. Us&#322;uga transportu door-to-door dzia&#322;a dla standardowych rower&#243;w i e-bike&#243;w.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Ile trwa odbi&#243;r roweru od momentu zam&#243;wienia?</h3>
+        <p>Kurier odbiera rower w godzinach 18:00&#8211;22:00 dzie&#324; przed um&#243;wion&#261; wizyt&#261; w serwisie. Wystarczy zam&#243;wi&#263; transport minimum dzie&#324; wcze&#347;niej przez platform&#281;.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Czy mog&#281; wybra&#263; konkretny serwis rowerowy do naprawy?</h3>
+        <p>Tak. Wybierasz serwis z listy powy&#380;ej, a nast&#281;pnie zamawiasz transport door-to-door do tego konkretnego warsztatu. Masz pe&#322;n&#261; kontrol&#281; nad wyborem mechanika.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Jak wygl&#261;da p&#322;atno&#347;&#263; za <strong>serwis rowerowy z dojazdem</strong>?</h3>
+        <p>P&#322;atno&#347;&#263; za transport odbywa si&#281; got&#243;wk&#261; lub BLIKIEM przy odbiorze roweru przez kuriera. Op&#322;ata za napraw&#281; ustalana jest bezpo&#347;rednio z serwisem.</p>
+      </div>
+    </div>
+
+    <h2>Baza 90+ serwis&#243;w rowerowych w Krakowie</h2>
+    <p>
+      Na tej stronie znajdziesz pe&#322;n&#261; list&#281; <strong>warsztat&#243;w rowerowych w Krakowie</strong> i okolicach.
+      Serwisy oznaczone jako zweryfikowane oferuj&#261; <strong>rezerwacj&#281; wizyty online</strong>
+      lub mo&#380;liwo&#347;&#263; zam&#243;wienia transportu door-to-door bezpo&#347;rednio przez platform&#281;.
+    </p>
+    <p>
+      <strong>Zam&#243;w serwis rowerowy z dojazdem</strong> ju&#380; dzi&#347; &#8211; kliknij przycisk przy wybranym warsztacie i um&#243;w termin online.
     </p>
   </section>
 

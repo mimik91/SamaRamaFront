@@ -40,6 +40,20 @@
         </div>
       </div>
 
+      <div class="form-group consent-group">
+        <label class="consent-label">
+          <input
+            type="checkbox"
+            formControlName="privacyAccepted"
+            [class.is-invalid]="isFieldInvalid('privacyAccepted')"
+          >
+          Akceptuję <a routerLink="/privacy-policy" target="_blank">Politykę Prywatności</a> *
+        </label>
+        <div *ngIf="isFieldInvalid('privacyAccepted')" class="validation-error">
+          Musisz zaakceptować politykę prywatności
+        </div>
+      </div>
+
       <div *ngIf="errorMessage" class="error-message">
         {{ errorMessage }}
       </div>

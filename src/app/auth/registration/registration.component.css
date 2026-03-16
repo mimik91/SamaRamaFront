@@ -179,3 +179,34 @@ label {
     width: 100%;
   }
 }
+
+.consent-group {
+  margin-top: 8px;
+}
+
+.consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-weight: normal;
+}
+
+.consent-label input[type="checkbox"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.consent-label a {
+  color: var(--color-primary, #28a745);
+  text-decoration: none;
+}
+
+.consent-label a:hover {
+  text-decoration: underline;
+}

@@ -1,24 +1,21 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environments';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-complete-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './complete-registration.component.html',
   styleUrls: ['./complete-registration.component.css']
 })
 export class CompleteRegistrationComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private http = inject(HttpClient);
+  private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-
-  private apiUrl = `${environment.apiUrl}${environment.endpoints.auth}`;
 
   registrationForm: FormGroup;
   isSubmitting = false;
@@ -38,7 +35,8 @@ export class CompleteRegistrationComponent implements OnInit {
   constructor() {
     this.registrationForm = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
+      confirmPassword: ['', [Validators.required]],
+      privacyAccepted: [false, Validators.requiredTrue]
     }, { validators: this.passwordMatchValidator });
   }
 
@@ -60,10 +58,7 @@ export class CompleteRegistrationComponent implements OnInit {
 
       const password = this.registrationForm.get('password')?.value;
 
-      this.http.post<{ message: string }>(
-        `${this.apiUrl}/complete-registration`,
-        { token: this.token, password }
-      ).subscribe({
+      this.authService.completeRegistration(this.token, password).subscribe({
         next: (response) => {
           this.isSubmitting = false;
           this.successMessage = response?.message || 'Hasło zostało ustawione. Możesz się teraz zalogować.';

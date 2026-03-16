@@ -79,6 +79,20 @@
           </div>
         </div>
         
+        <div class="form-group consent-group">
+          <label class="consent-label">
+            <input
+              type="checkbox"
+              formControlName="privacyAccepted"
+              [class.is-invalid]="isFieldInvalid('privacyAccepted')"
+            >
+            Akceptuję <a routerLink="/privacy-policy" target="_blank">Politykę Prywatności</a> *
+          </label>
+          <div class="error-message" *ngIf="isFieldInvalid('privacyAccepted')">
+            Musisz zaakceptować politykę prywatności
+          </div>
+        </div>
+
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="goToLogin()">
             Masz już konto? Zaloguj się

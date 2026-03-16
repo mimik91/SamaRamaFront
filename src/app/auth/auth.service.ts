@@ -123,6 +123,15 @@ export class AuthService {
       );
   }
 
+  completeRegistration(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/complete-registration`,
+      { token, password }
+    ).pipe(
+      catchError(error => throwError(() => error))
+    );
+  }
+
   private handleAuthResponse(response: AuthResponse): void {
     if (response && response.token) {
       console.log('Saving auth token for:', response.email);

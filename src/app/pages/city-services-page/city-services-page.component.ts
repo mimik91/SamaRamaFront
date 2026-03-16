@@ -154,13 +154,8 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     let titleText: string;
     let description: string;
 
-    if (this.isKrakow) {
-      titleText = `Serwis Rowerowy Kraków z Dojazdem Door to Door | CycloPick`;
-      description = `Serwis rowerowy Kraków z dojazdem door to door – kurier odbiera rower spod drzwi i dostarcza do warsztatu. 90+ serwisów w Krakowie. Umów online!`;
-    } else {
-      titleText = this.t('city_services.meta_title', { city: cityName });
-      description = this.t('city_services.meta_description', { city: cityName });
-    }
+    titleText = this.t('city_services.meta_title', { city: cityName });
+    description = this.t('city_services.meta_description', { city: cityName });
 
     this.title.setTitle(titleText);
     this.meta.updateTag({ name: 'description', content: description });
@@ -200,13 +195,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   }
 
   private getKeywords(cityName: string): string {
-    const baseKeywords = `serwis rowerowy ${cityName}, naprawa rowerów ${cityName}, warsztat rowerowy ${cityName}`;
-
-    if (this.isKrakow) {
-      return `${baseKeywords}, serwis rowerowy z dojazdem Kraków, mobilny serwis rowerowy Kraków, mechanik rowerowy z dojazdem Kraków, door-to-door serwis rowerowy Kraków, naprawa roweru z odbiorem Kraków, transport roweru door-to-door Kraków, odbiór roweru spod drzwi Kraków, serwis rowerów elektrycznych Kraków`;
-    }
-
-    return baseKeywords;
+    return `serwis rowerowy ${cityName}, naprawa rowerów ${cityName}, warsztat rowerowy ${cityName}`;
   }
 
   trackByServiceId(index: number, service: MapPin): number {
@@ -281,56 +270,6 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
     if (!itemList) return;
 
-    if (!this.isKrakow) {
-      this.seoService.addStructuredData(itemList);
-      return;
-    }
-
-    // Kraków: ItemList + Service door-to-door + FAQPage
-    const doorToDoorService = {
-      '@context': 'https://schema.org',
-      '@type': 'Service',
-      name: 'Transport roweru door-to-door Kraków',
-      serviceType: 'BikeTransport',
-      description: 'Odbiór roweru od klienta w Krakowie, transport do wybranego serwisu rowerowego i zwrot po naprawie pod wskazany adres. Mobilny serwis rowerowy door-to-door.',
-      provider: {
-        '@type': 'LocalBusiness',
-        name: 'CycloPick',
-        url: 'https://www.cyclopick.pl'
-      },
-      areaServed: {
-        '@type': 'City',
-        name: 'Kraków'
-      },
-      availableChannel: {
-        '@type': 'ServiceChannel',
-        serviceUrl: 'https://www.cyclopick.pl/serwisy/krakow'
-      }
-    };
-
-    const faqSchema = SchemaOrgHelper.generateFAQPage([
-      {
-        question: 'Jak działa serwis rowerowy z dojazdem w Krakowie?',
-        answer: 'CycloPick oferuje usługę transportu roweru door-to-door w Krakowie. Kurier odbiera rower spod Twoich drzwi wieczorem (18:00–22:00), dostarcza do wybranego warsztatu rowerowego, a po naprawie zwraca pod ten sam adres.'
-      },
-      {
-        question: 'Czy możecie odebrać rower elektryczny door-to-door w Krakowie?',
-        answer: 'Tak, obsługujemy rowery elektryczne. Usługa transportu door-to-door w Krakowie działa dla standardowych rowerów i e-bike\'ów.'
-      },
-      {
-        question: 'W jakich dzielnicach Krakowa działa mobilny serwis rowerowy?',
-        answer: 'Obsługujemy cały Kraków: Stare Miasto, Krowodrza, Nowa Huta, Podgórze, Prądnik Biały, Prądnik Czerwony, Grzegórzki, Zwierzyniec, Ruczaj, Dębniki, Mistrzejowice i Łagiewniki.'
-      },
-      {
-        question: 'Ile trwa odbiór roweru od momentu zamówienia transportu?',
-        answer: 'Kurier odbiera rower w godzinach 18:00–22:00 dzień przed umówioną wizytą w serwisie. Wystarczy zamówić transport online minimum dzień wcześniej.'
-      },
-      {
-        question: 'Czy mogę wybrać konkretny serwis rowerowy do naprawy?',
-        answer: 'Tak, na stronie CycloPick wybierasz serwis rowerowy z listy, a następnie zamawiasz transport door-to-door do tego konkretnego warsztatu. Masz pełną kontrolę nad wyborem mechanika.'
-      }
-    ]);
-
-    this.seoService.addMultipleStructuredData([itemList, doorToDoorService, faqSchema].filter(Boolean));
+    this.seoService.addStructuredData(itemList);
   }
 }

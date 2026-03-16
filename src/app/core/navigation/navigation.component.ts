@@ -108,6 +108,19 @@ export class NavigationComponent implements OnInit {
     console.log('=== navigateToServicePanel END ===');
   }
 
+  navigateToKanban(event?: Event): void {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    if (!this.serviceSuffix) this.loadServiceSuffix();
+    if (this.serviceSuffix) {
+      const encodedSuffix = encodeURIComponent(this.serviceSuffix);
+      this.router.navigateByUrl(`/${encodedSuffix}/panel-administratora/kanban`).then(
+        success => { if (success) this.closeMobileMenu(); }
+      );
+    } else {
+      this.notification.error('Nie można załadować danych serwisu. Spróbuj się wylogować i zalogować ponownie.');
+    }
+  }
+
   navigateToServiceHistory(event?: Event): void {
     if (event) {
       event.preventDefault();

@@ -5,6 +5,7 @@ import { VerificationComponent } from './auth/verification/verification.componen
 import { ServicePendingVerificationComponent } from './pages/service-admin-panel/service-pending-verification/service-pending-verification.component';
 import { ServiceAdminPanelComponent } from './pages/service-admin-panel/service-admin-panel.component';
 import { ServiceCalendarComponent } from './pages/service-calendar/service-calendar.component';
+import { ServiceKanbanComponent } from './pages/service-kanban/service-kanban.component';
 import { authGuard, clientGuard, adminGuard, serviceGuard, moderatorGuard } from './auth/auth.guard';
 import { ClientPanelListComponent } from './pages/client-panel/client-panel-list/client-panel-list.component';
 import { ClientPanelFormComponent } from './pages/client-panel/client-panel-form/client-panel-form.component';
@@ -36,6 +37,8 @@ import { CourierPanelComponent } from './courier-panel/courier-panel.component';
 import { TermsOfServiceComponent } from './core/terms-of-service.component'
 import { TermsOfServiceWorkshopsComponent } from './core/terms-of-service-workshops.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
+import { CookiePolicyComponent } from './core/cookie-policy.component';
+import { TransportKrakowComponent } from './pages/transport-krakow/transport-krakow.component';
 import { suffixValidationGuard } from './auth/suffix-validation.guard';
 import { ServiceProfileTitleResolver} from './environments/service-profile-title.resolver';
 import { ServiceProfileResolver } from './pages/service-profile/service-profile.resolver';
@@ -98,10 +101,15 @@ export const routes: Routes = [
       component: TermsOfServiceWorkshopsComponent, 
       title: 'CycloPick | mapa serwisów rowerowych'
     },
-    { 
-      path: 'privacy-policy', 
-      component: PrivacyPolicyComponent, 
+    {
+      path: 'privacy-policy',
+      component: PrivacyPolicyComponent,
       title: 'CycloPick | mapa serwisów rowerowych'
+    },
+    {
+      path: 'cookie-policy',
+      component: CookiePolicyComponent,
+      title: 'CycloPick | Polityka Cookies'
     },
     
     // Pricing route - dostępna dla wszystkich
@@ -192,6 +200,13 @@ export const routes: Routes = [
     // Przekierowanie z /about na stronę główną
     { path: 'about', redirectTo: '', pathMatch: 'full' },
 
+    // Transport door-to-door Kraków — dedykowana strona SEO
+    {
+      path: 'transport-roweru-krakow',
+      component: TransportKrakowComponent,
+      title: 'Transport Roweru Kraków – Serwis Door to Door | CycloPick'
+    },
+
     // About page - usługi dla serwisów rowerowych
     {
       path: 'for-services',
@@ -209,6 +224,14 @@ export const routes: Routes = [
       title: 'Oczekiwanie na Weryfikację'
     },
     
+    // Kanban serwisu
+    {
+      path: ':suffix/panel-administratora/kanban',
+      component: ServiceKanbanComponent,
+      canActivate: [serviceGuard, suffixValidationGuard],
+      title: 'Kanban Serwisu'
+    },
+
     // Kalendarz serwisu (domyślny widok panelu)
     // WAŻNE: Ta trasa jest bardziej specyficzna niż :suffix, więc ma priorytet
     {

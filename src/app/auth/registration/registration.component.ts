@@ -1,14 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { UserRegistrationData } from '../../shared/models/auth.models';
 
 @Component({
   selector: 'app-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.css']
 })
@@ -30,7 +30,8 @@ export class RegistrationComponent implements OnInit {
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]]
+      phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
+      privacyAccepted: [false, Validators.requiredTrue]
     });
   }
 

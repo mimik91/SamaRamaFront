@@ -155,8 +155,8 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     let description: string;
 
     if (this.isKrakow) {
-      titleText = `Serwis Rowerowy Kraków z Dojazdem i Door-to-Door | CycloPick`;
-      description = `Serwis rowerowy Kraków z dojazdem – kurier odbiera rower spod Twoich drzwi i dostarcza do warsztatu. Mobilny serwis rowerowy door-to-door w Krakowie. 90+ warsztatów rowerowych. Umów online!`;
+      titleText = `Serwis Rowerowy Kraków z Dojazdem Door to Door | CycloPick`;
+      description = `Serwis rowerowy Kraków z dojazdem door to door – kurier odbiera rower spod drzwi i dostarcza do warsztatu. 90+ serwisów w Krakowie. Umów online!`;
     } else {
       titleText = this.t('city_services.meta_title', { city: cityName });
       description = this.t('city_services.meta_description', { city: cityName });

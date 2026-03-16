@@ -3,7 +3,7 @@
   <header class="city-header" *ngIf="!cityNotFound">
     <h1 itemprop="name">
       <ng-container *ngIf="isKrakow; else defaultTitle">
-        Mobilny Serwis Rowerowy Krak&#243;w &#8211; Naprawa Door&#8209;to&#8209;Door
+        Mobilny Serwis Rowerowy Krak&#243;w &#8211; Naprawa Door to Door
       </ng-container>
       <ng-template #defaultTitle>
         Serwis rowerowy {{ currentCity?.name }} &#8211; lista warsztat&#243;w i napraw rower&#243;w

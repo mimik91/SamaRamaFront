@@ -157,6 +157,10 @@ export class GuestReservationFormComponent implements OnInit {
     return this.reservationForm.get('withTransport')?.value === true;
   }
 
+  setTransport(val: boolean): void {
+    this.reservationForm.get('withTransport')?.setValue(val);
+  }
+
   // Transport date = 1 day before the service reservation date
   get transportDate(): string {
     const planned = this.reservationForm.get('plannedDate')?.value;

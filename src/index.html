@@ -40,11 +40,44 @@
     <meta name="twitter:description" content="Interaktywna mapa serwisów rowerowych w Polsce. Cenniki, godziny otwarcia, kontakt." />
     <meta name="twitter:image" content="https://www.cyclopick.pl/assets/images/pictures/smok-wawelski-na-rowerze.webp" />
 
+    <!-- Capture fbclid + UTM params to sessionStorage immediately (before Angular/Klaro) -->
+    <script>
+      (function() {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var fbclid = params.get('fbclid');
+          if (fbclid) {
+            var toSave = { fbclid: fbclid };
+            ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k) {
+              var v = params.get(k); if (v) toSave[k] = v;
+            });
+            sessionStorage.setItem('_fb_params', JSON.stringify(toSave));
+          }
+        } catch(e) {}
+      })();
+    </script>
+
     <!-- Meta Pixel Code (blocked until consent) -->
     <script
       type="text/plain"
       data-type="application/javascript"
       data-name="facebookPixel">
+    // Restore fbclid from sessionStorage if Angular redirect stripped it
+    (function() {
+      try {
+        if (!new URLSearchParams(window.location.search).get('fbclid')) {
+          var stored = sessionStorage.getItem('_fb_params');
+          if (stored) {
+            var p = JSON.parse(stored);
+            if (p.fbclid) {
+              var url = new URL(window.location.href);
+              url.searchParams.set('fbclid', p.fbclid);
+              history.replaceState(null, '', url.toString());
+            }
+          }
+        }
+      } catch(e) {}
+    })();
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};

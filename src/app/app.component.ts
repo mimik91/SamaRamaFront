@@ -6,6 +6,7 @@ import { NavigationComponent } from './core/navigation/navigation.component';
 import { SeoService } from './core/seo.service';
 
 declare let gtag: Function;
+declare let fbq: Function;
 
 @Component({
   selector: 'app-root',
@@ -49,6 +50,11 @@ export class AppComponent implements OnInit {
         gtag('config', 'G-9ZYH1T3NCJ', {
           page_path: event.urlAfterRedirects
         });
+      }
+
+      // Facebook Pixel - SPA page view tracking
+      if (typeof fbq !== 'undefined') {
+        fbq('track', 'PageView');
       }
     });
   }

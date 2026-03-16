@@ -72,9 +72,9 @@ export const routes: Routes = [
       runGuardsAndResolvers: 'paramsOrQueryParamsChange'
     },
 
-    // Aliasy dla mapy - przekierowanie na nowy URL
-    { path: 'mapa', redirectTo: 'mapa-serwisow', pathMatch: 'full' },
-    { path: 'services-map', redirectTo: 'mapa-serwisow', pathMatch: 'full' },
+    // Aliasy dla mapy - przekierowanie na nowy URL (z zachowaniem query params)
+    { path: 'mapa', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `mapa-serwisow?${qs}` : 'mapa-serwisow'; }, pathMatch: 'full' },
+    { path: 'services-map', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `mapa-serwisow?${qs}` : 'mapa-serwisow'; }, pathMatch: 'full' },
 
     // SEO - lista serwisów dla miast
     {
@@ -197,8 +197,8 @@ export const routes: Routes = [
       title: 'Zarejestruj Serwis'
     },
     
-    // Przekierowanie z /about na stronę główną
-    { path: 'about', redirectTo: '', pathMatch: 'full' },
+    // Przekierowanie z /about na stronę główną (z zachowaniem query params)
+    { path: 'about', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `?${qs}` : ''; }, pathMatch: 'full' },
 
     // Transport door-to-door Kraków — dedykowana strona SEO
     {
@@ -439,6 +439,6 @@ export const routes: Routes = [
     
     // === FALLBACK ===
     
-    // Wildcard route - ZAWSZE na końcu
-    { path: '**', redirectTo: '' }
+    // Wildcard route - ZAWSZE na końcu (z zachowaniem query params)
+    { path: '**', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `?${qs}` : ''; } }
 ];

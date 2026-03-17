@@ -211,7 +211,7 @@ export class GuestReservationFormComponent implements OnInit {
       } else {
         // Brak state — pobieramy serviceId z backendu po suffixie (np. bezpośredni link)
         this.loading = true;
-        const url = `${environment.apiUrl}${environment.endpoints.bikeServices.bySuffix}?suffix=${suffix}`;
+        const url = `${environment.apiUrl}${environment.endpoints.bikeServices.bySuffix}/${suffix}`;
         this.http.get<{ id: number }>(url).subscribe({
           next: (res) => {
             if (res.id) {

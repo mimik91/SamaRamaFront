@@ -205,6 +205,15 @@ export class TransportOrderFormComponent implements OnInit {
     this.transportOrderService.getServiceDetails(+serviceId).subscribe({
       next: (serviceDetails) => {
         if (serviceDetails) {
+          // Przekieruj na rezerwację jeśli dostępna
+          if (serviceDetails.reservationAvailable) {
+            const suffix = this.route.snapshot.paramMap.get('suffix');
+            if (suffix) {
+              this.router.navigate(['/reserve-service', suffix], { replaceUrl: true });
+              return;
+            }
+          }
+
           // Sprawdź dostępność transportu
           if (!serviceDetails.transportAvailable) {
             const isKrakow = serviceDetails.city?.toLowerCase() === 'kraków';

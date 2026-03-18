@@ -252,14 +252,16 @@ export class LandingPageComponent implements OnInit {
   }
 
   navigateToKrakowMap(): void {
+    const zoom = window.innerWidth < 768 ? '12' : '14';
     this.router.navigate(['/mapa-serwisow'], {
-      queryParams: { lat: '50.0647', lng: '19.9450', zoom: '14' }
+      queryParams: { lat: '50.0647', lng: '19.9450', zoom }
     });
   }
 
   navigateToKrakowMapPartner(): void {
+    const zoom = window.innerWidth < 768 ? '12' : '14';
     this.router.navigate(['/mapa-serwisow'], {
-      queryParams: { lat: '50.0647', lng: '19.9450', zoom: '14', coverages: '342' }
+      queryParams: { lat: '50.0647', lng: '19.9450', zoom, coverages: '342' }
     });
   }
 

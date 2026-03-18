@@ -132,11 +132,11 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
   navigateToMap(): void {
     if (this.currentCity) {
-      this.router.navigate(['/'], {
+      this.router.navigate(['/mapa-serwisow'], {
         queryParams: {
-          city: this.currentCity.name,
           lat: this.currentCity.latitude,
-          lng: this.currentCity.longitude
+          lng: this.currentCity.longitude,
+          zoom: '14'
         }
       });
     }

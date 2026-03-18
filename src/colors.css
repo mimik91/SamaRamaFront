@@ -10,6 +10,19 @@
   
   /* SECONDARY COLORS */
   --color-secondary: #e11d48;
+
+  /* NAVY (granatowy) - pinezki z rezerwacją, opcja 2 */
+  --color-navy: #1B3A5E;
+  --color-navy-dark: #142d4a;
+  --color-navy-light: #2a5282;
+  --color-navy-bg: #ebf4ff;
+  --color-navy-border: #bee3f8;
+
+  /* ACCENT ORANGE (wyróżnienia, CTA dla serwisów) */
+  --color-accent-orange: #D84315;
+  --color-accent-orange-dark: #bf360c;
+  --color-accent-orange-bg: #fbe9e7;
+  --color-accent-orange-border: #ffccbc;
   
   /* ACCENT COLORS - Zielone jako akcent */
   --color-accent: #4CAF50;

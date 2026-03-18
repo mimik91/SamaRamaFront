@@ -451,7 +451,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     zIndexOffset = count >= 50 ? 3000 : (count >= 10 ? 2000 : 1000);
   } else {
     markerIcon = this.createPinIcon(pin.verified, pin.reservationAvailable);
-    zIndexOffset = 500;
+    zIndexOffset = (pin.verified && pin.reservationAvailable) ? 700 : 500;
   }
 
   const marker = L.marker([pin.latitude, pin.longitude], { 
@@ -990,7 +990,7 @@ if (markerElement) {
   }
 
   private createPinIcon(verified: boolean = true, reservationAvailable: boolean = false): any {
-    const pinSize = 40;
+    const pinSize = (verified && reservationAvailable) ? 52 : 38;
     // Zarejestrowany + rezerwacja → niebieski; zarejestrowany → ciemna zieleń; niezarejestrowany → szara zieleń
     let colorKey: string;
     let glowId: string;

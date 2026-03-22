@@ -43,6 +43,20 @@ export interface StolenCheckResponse {
   frameNumber?: string;
 }
 
+export interface ReturnTransportRequestDto {
+  deliveryStreet: string;
+  deliveryBuilding: string;
+  deliveryApartment?: string;
+  transportNotes?: string;
+}
+
+export interface TransportAddressResponse {
+  street: string;
+  building: string;
+  apartment?: string;
+  transportNotes?: string;
+}
+
 export interface OrderMessage {
   id: number;
   senderType: 'SERVICE' | 'CLIENT';
@@ -171,6 +185,36 @@ export class ServiceCalendarService {
     const params = new HttpParams().set('serviceId', serviceId.toString());
     return this.http.get<CalendarOrder>(`${this.apiUrl}${this.endpoints.orders}/${orderId}`, { params })
       .pipe(catchError(this.handleError('getOrder')));
+  }
+
+  /**
+   * Proponuje nową datę zlecenia (dla statusu PENDING_CONFIRMATION)
+   */
+  proposeDate(serviceId: number, orderId: number, proposedDate: string): Observable<unknown> {
+    const url = this.endpoints.proposeDate.replace(':id', orderId.toString());
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.post<unknown>(`${this.apiUrl}${url}`, { proposedDate }, { params })
+      .pipe(catchError(this.handleError('proposeDate')));
+  }
+
+  /**
+   * Tworzy zamowienie transportu powrotnego dla zlecenia
+   */
+  createReturnTransport(serviceId: number, orderId: number, data: ReturnTransportRequestDto): Observable<unknown> {
+    const url = this.endpoints.returnTransport.replace(':id', orderId.toString());
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.post<unknown>(`${this.apiUrl}${url}`, data, { params })
+      .pipe(catchError(this.handleError('createReturnTransport')));
+  }
+
+  /**
+   * Pobiera adres transportu zwrotnego dla zlecenia
+   */
+  getTransportAddress(serviceId: number, orderId: number): Observable<TransportAddressResponse> {
+    const url = this.endpoints.transportAddress.replace(':id', orderId.toString());
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.get<TransportAddressResponse>(`${this.apiUrl}${url}`, { params })
+      .pipe(catchError(this.handleError('getTransportAddress')));
   }
 
   /**

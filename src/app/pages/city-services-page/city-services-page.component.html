@@ -16,7 +16,7 @@
         <strong>Nie ma tutaj Twojego serwisu?</strong>
         <span>Sprawd&#378; co mo&#380;esz zyska&#263; i zarejestruj sw&#243;j serwis rowerowy w CycloPick!</span>
       </div>
-      <a routerLink="/for-services" class="service-cta-button">
+      <a routerLink="/register-service" class="service-cta-button">
         Zarejestruj serwis
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -25,30 +25,6 @@
       </a>
     </div>
   </aside>
-
-  <!-- Transport info banner for Krak&#243;w -->
-  <section *ngIf="isKrakow && !cityNotFound" class="transport-banner">
-    <div class="transport-banner-content">
-      <div class="transport-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="1" y="3" width="15" height="13"></rect>
-          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-          <circle cx="5.5" cy="18.5" r="2.5"></circle>
-          <circle cx="18.5" cy="18.5" r="2.5"></circle>
-        </svg>
-      </div>
-      <div class="transport-text">
-        <h2>Mobilny serwis rowerowy Krak&#243;w &#8211; Door&#8209;to&#8209;Door</h2>
-        <a routerLink="/transport-roweru-krakow" class="hero-cta-button">
-          Transport roweru
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-        </a>
-      </div>
-    </div>
-  </section>
 
   <!-- City selector & actions -->
   <div class="actions-bar" *ngIf="!cityNotFound">

@@ -518,6 +518,61 @@
   margin-bottom: var(--spacing-1);
 }
 
+/* Pickup method */
+.pickup-section {
+  margin-top: var(--spacing-4);
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-4);
+}
+
+.pickup-options {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+}
+
+.pickup-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-4);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-all);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.pickup-option input[type="radio"] {
+  display: none;
+}
+
+.pickup-option.active {
+  border-color: var(--color-success);
+  background: var(--color-success-light, #dcfce7);
+  color: var(--color-success-dark, #1e8449);
+}
+
+.pickup-option:hover:not(.active) {
+  border-color: var(--color-slate-300);
+  background: var(--color-slate-50);
+}
+
+.pickup-icon {
+  font-size: var(--font-size-lg);
+}
+
+.delivery-fields {
+  margin-top: var(--spacing-2);
+}
+
+.delivery-fields .form-row {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .modal-overlay {

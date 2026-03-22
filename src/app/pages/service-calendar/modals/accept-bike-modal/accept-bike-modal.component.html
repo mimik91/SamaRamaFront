@@ -53,6 +53,43 @@
         <div class="empty-state" *ngIf="waitingOrders.length === 0">
           <p>{{ t('service_calendar.accept_bike_modal.no_waiting_orders') }}</p>
         </div>
+
+        <!-- Pickup method for select mode -->
+        <div class="form-section pickup-section" *ngIf="selectedOrderId">
+          <h3 class="section-title">Odbiór roweru</h3>
+          <div class="pickup-options">
+            <label class="pickup-option" [class.active]="pickupMethod === 'self'">
+              <input type="radio" name="pickupMethodSelect" value="self" [(ngModel)]="pickupMethod" />
+              <span class="pickup-icon">🚴</span>
+              <span>Odbiór osobisty</span>
+            </label>
+            <label class="pickup-option" [class.active]="pickupMethod === 'delivery'">
+              <input type="radio" name="pickupMethodSelect" value="delivery" [(ngModel)]="pickupMethod" />
+              <span class="pickup-icon">🚚</span>
+              <span>Podwózka pod dom</span>
+            </label>
+          </div>
+          <div class="delivery-fields" *ngIf="pickupMethod === 'delivery'">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="deliveryStreetS">Ulica *</label>
+                <input type="text" id="deliveryStreetS" [(ngModel)]="deliveryStreet" name="deliveryStreetS" placeholder="np. Długa" required />
+              </div>
+              <div class="form-group">
+                <label for="deliveryBuildingS">Nr budynku *</label>
+                <input type="text" id="deliveryBuildingS" [(ngModel)]="deliveryBuilding" name="deliveryBuildingS" placeholder="np. 12A" required />
+              </div>
+              <div class="form-group">
+                <label for="deliveryApartmentS">Nr lokalu</label>
+                <input type="text" id="deliveryApartmentS" [(ngModel)]="deliveryApartment" name="deliveryApartmentS" placeholder="np. 5" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="transportNotesS">Uwagi do transportu</label>
+              <textarea id="transportNotesS" [(ngModel)]="transportNotes" name="transportNotesS" rows="2" placeholder="Dodatkowe informacje dla kuriera..."></textarea>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- New walk-in mode -->
@@ -246,6 +283,81 @@
               rows="2"
               [placeholder]="t('service_calendar.create_order.notes_placeholder')"
             ></textarea>
+          </div>
+
+          <!-- Pickup method -->
+          <div class="form-section">
+            <h3 class="section-title">Odbiór roweru</h3>
+
+            <div class="pickup-options">
+              <label class="pickup-option" [class.active]="pickupMethod === 'self'">
+                <input
+                  type="radio"
+                  name="pickupMethod"
+                  value="self"
+                  [(ngModel)]="pickupMethod"
+                />
+                <span class="pickup-icon">🚴</span>
+                <span>Odbiór osobisty</span>
+              </label>
+              <label class="pickup-option" [class.active]="pickupMethod === 'delivery'">
+                <input
+                  type="radio"
+                  name="pickupMethod"
+                  value="delivery"
+                  [(ngModel)]="pickupMethod"
+                />
+                <span class="pickup-icon">🚚</span>
+                <span>Podwózka pod dom</span>
+              </label>
+            </div>
+
+            <div class="delivery-fields" *ngIf="pickupMethod === 'delivery'">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="deliveryStreet">Ulica *</label>
+                  <input
+                    type="text"
+                    id="deliveryStreet"
+                    [(ngModel)]="deliveryStreet"
+                    name="deliveryStreet"
+                    placeholder="np. Długa"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="deliveryBuilding">Nr budynku *</label>
+                  <input
+                    type="text"
+                    id="deliveryBuilding"
+                    [(ngModel)]="deliveryBuilding"
+                    name="deliveryBuilding"
+                    placeholder="np. 12A"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="deliveryApartment">Nr lokalu</label>
+                  <input
+                    type="text"
+                    id="deliveryApartment"
+                    [(ngModel)]="deliveryApartment"
+                    name="deliveryApartment"
+                    placeholder="np. 5"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="transportNotes">Uwagi do transportu</label>
+                <textarea
+                  id="transportNotes"
+                  [(ngModel)]="transportNotes"
+                  name="transportNotes"
+                  rows="2"
+                  placeholder="Dodatkowe informacje dla kuriera..."
+                ></textarea>
+              </div>
+            </div>
           </div>
         </form>
       </div>

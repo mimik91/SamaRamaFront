@@ -7,7 +7,7 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { I18nService } from '../../../../core/i18n.service';
 import { NotificationService } from '../../../../core/notification.service';
 import { EnumerationService } from '../../../../core/enumeration.service';
-import { ServiceCalendarService, StolenCheckResponse } from '../../services/service-calendar.service';
+import { ServiceCalendarService, StolenCheckResponse, ReturnTransportRequestDto } from '../../services/service-calendar.service';
 import {
   CalendarOrder,
   CreateCalendarOrderDto,
@@ -69,6 +69,13 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   clientBikes: ClientBike[] = [];
   isLookingUpClient: boolean = false;
   selectedBikeId: number | null = null;
+
+  // Pickup method
+  pickupMethod: 'self' | 'delivery' = 'self';
+  deliveryStreet: string = '';
+  deliveryBuilding: string = '';
+  deliveryApartment: string = '';
+  transportNotes: string = '';
 
   // Stolen check
   stolenCheckResult: StolenCheckResponse | null = null;
@@ -325,16 +332,21 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     return this.waitingOrders.find(o => o.id === this.selectedOrderId);
   }
 
+  get isDeliveryAddressValid(): boolean {
+    if (this.pickupMethod !== 'delivery') return true;
+    return !!(this.deliveryStreet.trim() && this.deliveryBuilding.trim());
+  }
+
   get isFormValid(): boolean {
     if (this.mode === 'select') {
-      return this.selectedOrderId !== null;
+      return this.selectedOrderId !== null && this.isDeliveryAddressValid;
     } else {
       const hasClient = !!(
         this.foundClient ||
         (this.clientEmail.trim() || this.clientPhone.trim())
       );
       const hasBike = !!(this.selectedBikeId || this.bikeBrand.trim());
-      return !!(hasClient && hasBike);
+      return !!(hasClient && hasBike && this.isDeliveryAddressValid);
     }
   }
 
@@ -393,14 +405,39 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   private changeStatusToInProgress(orderId: number): void {
     this.calendarService.updateOrderStatus(this.serviceId, orderId, 'IN_PROGRESS').subscribe({
       next: () => {
-        this.notificationService.success(this.t('service_calendar.messages.bike_accepted'));
-        this.isSubmitting = false;
-        this.bikeAccepted.emit();
+        if (this.pickupMethod === 'delivery') {
+          this.createReturnTransport(orderId);
+        } else {
+          this.notificationService.success(this.t('service_calendar.messages.bike_accepted'));
+          this.isSubmitting = false;
+          this.bikeAccepted.emit();
+        }
       },
       error: (err: any) => {
         this.notificationService.error(this.t('service_calendar.errors.accept_bike_failed'));
         this.isSubmitting = false;
         console.error('Error accepting bike:', err);
+      }
+    });
+  }
+
+  private createReturnTransport(orderId: number): void {
+    const data: ReturnTransportRequestDto = {
+      deliveryStreet: this.deliveryStreet.trim(),
+      deliveryBuilding: this.deliveryBuilding.trim(),
+      deliveryApartment: this.deliveryApartment.trim() || undefined,
+      transportNotes: this.transportNotes.trim() || undefined
+    };
+    this.calendarService.createReturnTransport(this.serviceId, orderId, data).subscribe({
+      next: () => {
+        this.notificationService.success(this.t('service_calendar.messages.bike_accepted'));
+        this.isSubmitting = false;
+        this.bikeAccepted.emit();
+      },
+      error: (err: any) => {
+        this.notificationService.error(this.t('service_calendar.errors.return_transport_failed'));
+        this.isSubmitting = false;
+        console.error('Error creating return transport:', err);
       }
     });
   }
@@ -434,9 +471,13 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
       next: (createdOrder) => {
         this.calendarService.updateOrderStatus(this.serviceId, createdOrder.id, 'IN_PROGRESS').subscribe({
           next: () => {
-            this.notificationService.success(this.t('service_calendar.messages.bike_accepted'));
-            this.isSubmitting = false;
-            this.bikeAccepted.emit();
+            if (this.pickupMethod === 'delivery') {
+              this.createReturnTransport(createdOrder.id);
+            } else {
+              this.notificationService.success(this.t('service_calendar.messages.bike_accepted'));
+              this.isSubmitting = false;
+              this.bikeAccepted.emit();
+            }
           },
           error: (err: any) => {
             this.notificationService.success(this.t('service_calendar.messages.order_created'));

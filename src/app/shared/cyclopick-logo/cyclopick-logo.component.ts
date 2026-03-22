@@ -1,12 +1,12 @@
-import { Component, Input, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-cyclopick-logo',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div *ngIf="isBrowser" class="logo-container" [style.height]="height">
+    <div class="logo-container" [style.height]="height">
       <div class="logo-svg" [style.height]="height">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" preserveAspectRatio="xMidYMid meet" [style.height]="height" [style.width]="height">
             <g transform="translate(0,1024) scale(0.1,-0.1)" fill="currentColor" stroke="none" class="cyclopick-logo-icon">
@@ -131,11 +131,6 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
       </div>
       <span *ngIf="showText" class="logo-text" [style.font-size]="textSize" [style.color]="textColor">CycloPick</span>
     </div>
-    
-    <!-- Alternatywna wersja dla renderowania SSR -->
-    <div *ngIf="!isBrowser" class="logo-placeholder" [style.height]="height">
-      <span *ngIf="showText" class="logo-text" [style.font-size]="textSize" [style.color]="textColor">CycloPick</span>
-    </div>
   `,
   styles: [`
     .logo-container {
@@ -174,18 +169,10 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
     }
   `]
 })
-export class CycloPickLogoComponent implements OnInit {
+export class CycloPickLogoComponent {
   @Input() height: string = '40px';
   @Input() showText: boolean = true;
   @Input() textSize: string = '1.5rem';
   @Input() altText: string = 'CycloPick Logo';
-  @Input() textColor: string = '#1A1F36'; // Domyślny kolor tekstu
-  
-  isBrowser: boolean = false;
-  
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
-  
-  ngOnInit(): void {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
+  @Input() textColor: string = '#1A1F36';
 }

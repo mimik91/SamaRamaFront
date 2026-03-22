@@ -467,10 +467,10 @@ export class GuestReservationFormComponent implements OnInit {
 
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.serviceReservation}?serviceId=${this.serviceInfo.id}`;
 
-    this.http.post(url, reservationPayload).subscribe({
-      next: () => {
+    this.http.post<{ message: string; serviceOrderId: number }>(url, reservationPayload).subscribe({
+      next: (res) => {
         if (this.withTransport) {
-          this.submitTransport(rv);
+          this.submitTransport(rv, res.serviceOrderId);
         } else {
           this.onSuccess();
         }
@@ -529,9 +529,10 @@ export class GuestReservationFormComponent implements OnInit {
     return this.finalTransportPrice ?? this.serviceInfo?.transportCost ?? 0;
   }
 
-  private submitTransport(rv: any): void {
+  private submitTransport(rv: any, serviceOrderId: number): void {
     const tv = this.transportForm.value;
     const payload = {
+      serviceOrderId,
       bicycles: [{
         brand: rv.bicycleBrand.trim(),
         model: rv.bicycleModel?.trim() || '',

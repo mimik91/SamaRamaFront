@@ -124,67 +124,144 @@
       </div>
     </section>
 
-    <!-- ===== SEKCJA: JAK TO DZIAŁA (3 KROKI) ===== -->
-    <section class="how-it-works-section" aria-labelledby="how-heading">
-      <div class="section-eyebrow">Jak to działa?</div>
-      <h2 id="how-heading">Zarezerwuj serwis rowerowy online w Krakowie u Partnerów CycloPick</h2>
-      <ol class="steps-container steps-3col" aria-label="Trzy kroki serwisu rowerowego door-to-door w Krakowie">
-        <li class="step-card">
-          <div class="step-number" aria-hidden="true">1</div>
-          <div class="step-icon step-icon--primary" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>
-            </svg>
+    <!-- ===== SEKCJA: JAK TO DZIAŁA (INFOGRAFIKA) ===== -->
+    <section class="how-v2-section" aria-labelledby="how-v2-heading">
+      <h2 id="how-v2-heading" class="how-v2-heading">Jak to działa?</h2>
+
+      <div class="how-v2-grid">
+
+        <!-- LEWA KOLUMNA: KROK 1 + opcje A/B -->
+        <div class="how-v2-left">
+          <div class="how-v2-step-hdr">
+            <span class="how-v2-krok-label">KROK 1</span>
+            <strong class="how-v2-krok-title">Wybierz model serwisu</strong>
           </div>
-          <div class="step-content">
-            <h3>Wybierz serwis rowerowy na mapie</h3>
-            <p>Kliknij <strong>niebieską pinezkę</strong> – to Partnerzy CycloPick z darmowym transportem door-to-door w Krakowie. Zarezerwuj wizytę online w kilka sekund.</p>
+
+          <div class="how-v2-opts">
+
+            <!-- Opcja A -->
+            <div class="how-v2-opt how-v2-opt--a">
+              <div class="how-v2-opt-top">
+                <svg class="how-v2-pin-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 40 48" aria-hidden="true">
+                  <path d="M20 0c-8.284 0-15 6.656-15 14.866 0 8.211 15 33.134 15 33.134s15-24.923 15-33.134C35 6.656 28.284 0 20 0zm0 20c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z" fill="#1B3A5E" stroke="white" stroke-width="1.5"/>
+                  <circle cx="20" cy="14" r="4" fill="white"/>
+                </svg>
+                <span class="how-v2-opt-tag">OPCJA A:<br>Partnerzy CycloPick</span>
+              </div>
+              <img
+                src="assets/images/pictures/landingpage/cyclopick-z-telefonem.webp"
+                alt="Rezerwacja online u Partnera CycloPick"
+                class="how-v2-opt-img"
+                loading="lazy"
+              >
+              <div class="how-v2-opt-body">
+                <strong class="how-v2-opt-title">OPCJA A: Partnerzy CycloPick – 0 zł</strong>
+                <p>Wybierasz Partnera na mapie (niebieska pinezka) i rezerwujesz termin online w&nbsp;30&nbsp;sekund. My wiemy o&nbsp;wszystkim automatycznie.</p>
+              </div>
+            </div>
+
+            <!-- Opcja B -->
+            <div class="how-v2-opt how-v2-opt--b">
+              <div class="how-v2-opt-top">
+                <svg class="how-v2-pin-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 40 48" aria-hidden="true">
+                  <path d="M20 0c-8.284 0-15 6.656-15 14.866 0 8.211 15 33.134 15 33.134s15-24.923 15-33.134C35 6.656 28.284 0 20 0zm0 20c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z" fill="#1B5E20" stroke="white" stroke-width="1.5"/>
+                  <circle cx="20" cy="14" r="4" fill="white"/>
+                </svg>
+                <span class="how-v2-opt-tag">OPCJA B:<br>Dowolny</span>
+              </div>
+              <img
+                src="assets/images/pictures/landingpage/cyclopick-dzwoniacy.webp"
+                alt="Zamówienie transportu do dowolnego warsztatu"
+                class="how-v2-opt-img"
+                loading="lazy"
+              >
+              <div class="how-v2-opt-body">
+                <strong class="how-v2-opt-title">OPCJA B: Dowolny warsztat – 60 zł</strong>
+                <p>Dzwonisz do mechanika i ustalasz termin. Wybierasz serwis z mapy i podajesz swój adres odbioru.</p>
+              </div>
+            </div>
+
           </div>
-        </li>
-        <li class="step-card">
-          <div class="step-number" aria-hidden="true">2</div>
-          <div class="step-icon step-icon--navy" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-              <circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>
-            </svg>
+
+          <!-- CTA – pod kaflami w lewej kolumnie -->
+          <div class="how-v2-cta">
+            <button class="primary-btn" (click)="navigateToKrakowMapPartner()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              Wybierz Partnera CycloPick
+            </button>
+            <button class="secondary-btn" (click)="navigateToKrakow()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                <circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>
+              </svg>
+              Zamów transport do dowolnego serwisu
+            </button>
           </div>
-          <div class="step-content">
-            <h3>Nasz kurier odbiera rower spod drzwi</h3>
-            <p>Oszczędzaj czas i nie brudź samochodu. Zamawiasz serwis rowerowy z transportem door-to-door w Krakowie. Odbieramy w godzinach 18:00–22:00 spod Twoich drzwi.</p>
-          </div>
-        </li>
-        <li class="step-card">
-          <div class="step-number" aria-hidden="true">3</div>
-          <div class="step-icon step-icon--accent" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-          </div>
-          <div class="step-content">
-            <h3>Zyskaj cyfrową historię napraw roweru</h3>
-            <p>Po każdej naprawie u Partnera CycloPick Twój rower zyskuje wpis w cyfrowej historii serwisowej. Eksportuj „Certyfikat CycloPick" jednym kliknięciem i zwiększ wartość roweru.</p>
-          </div>
-        </li>
-      </ol>
-      <div class="steps-cta">
-        <button class="primary-btn" (click)="navigateToKrakowMap()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>
+
+        </div>
+
+        <!-- STRZAŁKA -->
+        <div class="how-v2-arrow-col" aria-hidden="true">
+          <svg class="how-v2-arrow-svg" viewBox="0 0 48 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 12 H40 M31 4 L42 12 L31 20" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Otwórz mapę serwisów · Kraków
-        </button>
-        <a routerLink="/serwisy/krakow" class="secondary-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>
-          </svg>
-          Lista serwisów door-to-door w Krakowie
-        </a>
+        </div>
+
+        <!-- PRAWA KOLUMNA: KROKI 2, 3, 4 -->
+        <div class="how-v2-right">
+
+          <!-- KROK 2 -->
+          <div class="how-v2-step-block">
+            <div class="how-v2-step-2-hdr">
+              <div>
+                <span class="how-v2-krok-label">KROK 2</span>
+                <strong class="how-v2-krok-title">Wieczorny odbiór</strong>
+              </div>
+              <div class="how-v2-step-2-imgs" aria-hidden="true">
+                <img src="assets/images/pictures/landingpage/transport.webp" alt="" class="how-v2-img-transport" loading="lazy">
+                <img src="assets/images/pictures/landingpage/transport pod domem.webp" alt="" class="how-v2-img-house" loading="lazy">
+              </div>
+            </div>
+            <h3 class="how-v2-body-title">Wieczorny odbiór (18:00 – 22:00)</h3>
+            <p class="how-v2-body-text">Nasz kurier podjeżdża pod Twój dom lub biuro wieczorem. Odbieramy rower, bezpiecznie go zabezpieczamy i&nbsp;transportujemy do wybranego warsztatu. Ty oszczędzasz czas na dojazdach w&nbsp;korkach.</p>
+          </div>
+
+          <!-- KROK 3 -->
+          <div class="how-v2-step-block how-v2-step-side">
+            <img
+              src="assets/images/pictures/landingpage/gość z telefonem.webp"
+              alt=""
+              class="how-v2-side-img"
+              loading="lazy"
+              aria-hidden="true"
+            >
+            <div>
+              <span class="how-v2-krok-label">KROK 3</span>
+              <h3 class="how-v2-body-title">Płatność i transport do serwisu</h3>
+              <p class="how-v2-body-text">Płacisz nam stałą stawkę <strong>60 zł</strong> (gotówką lub BLIKiem) przy odbiorze roweru (Opcja&nbsp;B), LUB zyskujesz darmowy transport (Opcja&nbsp;A). <strong>Płacisz tylko za transport</strong> – za samą naprawę rozliczasz się bezpośrednio z&nbsp;serwisem.</p>
+            </div>
+          </div>
+
+          <!-- KROK 4 -->
+          <div class="how-v2-step-block how-v2-step-side">
+            <img
+              src="assets/images/pictures/landingpage/rower z komunikate.webp"
+              alt=""
+              class="how-v2-side-img"
+              loading="lazy"
+              aria-hidden="true"
+            >
+            <div>
+              <span class="how-v2-krok-label">KROK 4</span>
+              <h3 class="how-v2-body-title">Zwrot gotowego sprzętu</h3>
+              <p class="how-v2-body-text">Gdy naprawa dobiegnie końca, odwozimy sprawny sprzęt pod same drzwi. W&nbsp;Opcji&nbsp;A dostaniesz powiadomienie e-mail, a&nbsp;rower wróci z cyfrową historią napraw CycloPick.</p>
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </section>
 

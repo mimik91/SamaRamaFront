@@ -99,7 +99,10 @@ export const environment = {
       orderStatus: '/service-calendar/orders/:id/status',
       orderImages: '/service-orders/:id/images',
       clientLookup: '/service-calendar/clients/lookup',
-      clientBikes: '/service-calendar/clients/:clientId/bikes'
+      clientBikes: '/service-calendar/clients/:clientId/bikes',
+      returnTransport: '/service-calendar/orders/:id/return-transport',
+      transportAddress: '/service-calendar/orders/:id/transport-address',
+      proposeDate: '/service-calendar/orders/:id/propose-date'
     },
 
     // Service Order Images (separate controller)

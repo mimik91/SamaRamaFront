@@ -277,6 +277,10 @@
   gap: var(--spacing-1);
 }
 
+.detail-item--full {
+  grid-column: 1 / -1;
+}
+
 .detail-label {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
@@ -1048,4 +1052,303 @@
   .notes-field textarea {
     min-height: 48px;
   }
+}
+
+/* ── Sposób zwrotu ── */
+.return-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-6) 0;
+}
+
+
+.return-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--color-success, #27ae60);
+  color: #fff;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.return-transport-assigned {
+  text-align: center;
+  padding: var(--spacing-4) 0 var(--spacing-3);
+}
+
+.return-transport-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: var(--spacing-2);
+}
+
+.return-transport-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success-dark, #1e8449);
+  margin: 0 0 var(--spacing-1);
+}
+
+.return-transport-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-4);
+}
+
+/* Pickup options (shared style with accept-bike-modal) */
+.pickup-options {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+}
+
+.pickup-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-4);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-all);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.pickup-option input[type="radio"] {
+  display: none;
+}
+
+.pickup-option.active {
+  border-color: var(--color-success);
+  background: var(--color-success-light, #dcfce7);
+  color: var(--color-success-dark, #1e8449);
+}
+
+.pickup-option:hover:not(.active) {
+  border-color: var(--color-slate-300);
+  background: var(--color-slate-50);
+}
+
+.pickup-icon {
+  font-size: var(--font-size-lg);
+}
+
+.self-pickup-info {
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.self-pickup-info p {
+  margin: 0;
+}
+
+.delivery-fields {
+  margin-top: var(--spacing-2);
+}
+
+.delivery-address-row {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+.form-group {
+  margin-bottom: var(--spacing-4);
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--spacing-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background: var(--color-white);
+  transition: var(--transition-all);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.2);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-light);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+}
+
+.btn-order-transport {
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-6);
+  background: var(--color-success);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.btn-order-transport:hover:not(:disabled) {
+  background: var(--color-success-dark, #1e8449);
+}
+
+.btn-order-transport:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .pickup-options {
+    flex-direction: column;
+  }
+
+  .delivery-address-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-order-transport {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* ── Akcje potwierdzenia (PENDING_CONFIRMATION) ── */
+.pending-buttons {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+.btn-confirm-order,
+.btn-reject-order,
+.btn-propose-date {
+  flex: 1;
+  min-width: 140px;
+  padding: var(--spacing-3) var(--spacing-4);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.btn-confirm-order {
+  background: var(--color-success);
+  color: var(--color-white);
+}
+
+.btn-confirm-order:hover:not(:disabled) {
+  background: var(--color-success-dark);
+}
+
+.btn-reject-order {
+  background: var(--color-danger);
+  color: var(--color-white);
+}
+
+.btn-reject-order:hover:not(:disabled) {
+  background: var(--color-danger-dark);
+}
+
+.btn-propose-date {
+  background: var(--color-white);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-propose-date:hover:not(:disabled) {
+  background: var(--color-slate-100);
+}
+
+.btn-confirm-order:disabled,
+.btn-reject-order:disabled,
+.btn-propose-date:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.propose-date-form {
+  margin-top: var(--spacing-4);
+}
+
+.propose-date-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-2);
+}
+
+.propose-date-row {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-send-proposal {
+  padding: var(--spacing-2) var(--spacing-4);
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-all);
+  white-space: nowrap;
+}
+
+.btn-send-proposal:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btn-send-proposal:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

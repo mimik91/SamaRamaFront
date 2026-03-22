@@ -38,7 +38,6 @@ import { TermsOfServiceComponent } from './core/terms-of-service.component'
 import { TermsOfServiceWorkshopsComponent } from './core/terms-of-service-workshops.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
 import { CookiePolicyComponent } from './core/cookie-policy.component';
-import { TransportKrakowComponent } from './pages/transport-krakow/transport-krakow.component';
 import { suffixValidationGuard } from './auth/suffix-validation.guard';
 import { ServiceProfileTitleResolver} from './environments/service-profile-title.resolver';
 import { ServiceProfileResolver } from './pages/service-profile/service-profile.resolver';
@@ -72,9 +71,9 @@ export const routes: Routes = [
       runGuardsAndResolvers: 'paramsOrQueryParamsChange'
     },
 
-    // Aliasy dla mapy - przekierowanie na nowy URL (z zachowaniem query params)
-    { path: 'mapa', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `mapa-serwisow?${qs}` : 'mapa-serwisow'; }, pathMatch: 'full' },
-    { path: 'services-map', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `mapa-serwisow?${qs}` : 'mapa-serwisow'; }, pathMatch: 'full' },
+    // Aliasy dla mapy - przekierowanie na nowy URL
+    { path: 'mapa', redirectTo: 'mapa-serwisow', pathMatch: 'full' },
+    { path: 'services-map', redirectTo: 'mapa-serwisow', pathMatch: 'full' },
 
     // SEO - lista serwisów dla miast
     {
@@ -197,15 +196,8 @@ export const routes: Routes = [
       title: 'Zarejestruj Serwis'
     },
     
-    // Przekierowanie z /about na stronę główną (z zachowaniem query params)
-    { path: 'about', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `?${qs}` : ''; }, pathMatch: 'full' },
-
-    // Transport door-to-door Kraków — dedykowana strona SEO
-    {
-      path: 'transport-roweru-krakow',
-      component: TransportKrakowComponent,
-      title: 'Transport Roweru Kraków – Serwis Door to Door | CycloPick'
-    },
+    // Przekierowanie z /about na stronę główną
+    { path: 'about', redirectTo: '', pathMatch: 'full' },
 
     // About page - usługi dla serwisów rowerowych
     {
@@ -439,6 +431,6 @@ export const routes: Routes = [
     
     // === FALLBACK ===
     
-    // Wildcard route - ZAWSZE na końcu (z zachowaniem query params)
-    { path: '**', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `?${qs}` : ''; } }
+    // Wildcard route - ZAWSZE na końcu
+    { path: '**', redirectTo: '' }
 ];

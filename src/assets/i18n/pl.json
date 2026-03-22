@@ -53,6 +53,7 @@
       "in_progress": "W trakcie",
       "waiting_for_parts": "Oczekuje na części",
       "awaiting_client_decision": "Oczekuje na decyzję klienta",
+      "awaiting_client_date_confirmation": "Oczekuje na potwierdzenie daty przez klienta",
       "ready_for_pickup": "Gotowe do odbioru",
       "completed": "Zakończone"
     },
@@ -156,6 +157,7 @@
       "cancel_order_failed": "Nie udało się anulować zlecenia",
       "confirm_order_failed": "Nie udało się potwierdzić zlecenia",
       "accept_bike_failed": "Nie udało się przyjąć roweru",
+      "return_transport_failed": "Rower przyjęty, ale nie udało się zlecić transportu powrotnego",
       "ready_for_pickup_failed": "Nie udało się oznaczyć jako gotowe do odbioru",
       "complete_order_failed": "Nie udało się zakończyć zlecenia",
       "assign_failed": "Nie udało się przypisać zlecenia do serwisanta",

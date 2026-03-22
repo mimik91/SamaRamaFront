@@ -61,6 +61,7 @@ export type CalendarOrderStatus =
   | 'IN_PROGRESS'
   | 'WAITING_FOR_PARTS'
   | 'AWAITING_CLIENT_DECISION'
+  | 'AWAITING_CLIENT_DATE_CONFIRMATION'
   | 'READY_FOR_PICKUP'
   | 'COMPLETED';
 
@@ -126,6 +127,12 @@ export const CALENDAR_ORDER_STATUSES: OrderStatusConfig[] = [
     fallbackColor: '#f59e0b'
   },
   {
+    value: 'AWAITING_CLIENT_DATE_CONFIRMATION',
+    i18nKey: 'service_calendar.statuses.awaiting_client_date_confirmation',
+    cssVar: '--color-warning',
+    fallbackColor: '#f59e0b'
+  },
+  {
     value: 'READY_FOR_PICKUP',
     i18nKey: 'service_calendar.statuses.ready_for_pickup',
     cssVar: '--color-accent',
@@ -149,7 +156,8 @@ export function getStatusConfig(status: CalendarOrderStatus): OrderStatusConfig 
  * UWAGA: CONFIRMED jest pomijany w UI - przejscie idzie bezposrednio do WAITING_FOR_BIKE
  */
 export const STATUS_TRANSITIONS: Record<CalendarOrderStatus, CalendarOrderStatus[]> = {
-  'PENDING_CONFIRMATION': ['WAITING_FOR_BIKE', 'REJECTED', 'CANCELLED'],
+  'PENDING_CONFIRMATION': ['CONFIRMED', 'WAITING_FOR_BIKE', 'REJECTED', 'CANCELLED'],
+  'AWAITING_CLIENT_DATE_CONFIRMATION': ['CONFIRMED', 'REJECTED', 'CANCELLED'],
   'CONFIRMED': ['WAITING_FOR_BIKE', 'CANCELLED'],
   'WAITING_FOR_BIKE': ['CANCELLED'],
   'IN_PROGRESS': ['WAITING_FOR_PARTS', 'AWAITING_CLIENT_DECISION', 'READY_FOR_PICKUP', 'CANCELLED'],
@@ -254,6 +262,20 @@ export interface CalendarOrder {
   // Metadane
   createdAt?: string;
   updatedAt?: string;
+}
+
+// ============================================
+// TRANSPORT ZWROTNY
+// ============================================
+
+export interface ReturnTransportInfo {
+  id?: number;
+  deliveryStreet: string;
+  deliveryBuilding: string;
+  deliveryApartment?: string;
+  transportNotes?: string;
+  status?: string;
+  createdAt?: string;
 }
 
 // ============================================

@@ -32,6 +32,14 @@
           Korespondencja
           <span class="unread-badge" *ngIf="messagesUnreadCount > 0">{{ messagesUnreadCount }}</span>
         </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'return'"
+          (click)="onReturnTabClick()"
+        >
+          Sposób zwrotu
+          <span class="return-badge" *ngIf="hasReturnTransport">&#10003;</span>
+        </button>
       </div>
 
       <!-- Tab: Szczegóły zlecenia -->
@@ -95,11 +103,52 @@
               <span class="detail-label">{{ t('service_calendar.order_details.frame_number') }}</span>
               <span class="detail-value">{{ fullOrder.bicycleFrameNumber }}</span>
             </div>
+            <div class="detail-item detail-item--full" *ngIf="fullOrder.description">
+              <span class="detail-label">Opis zlecenia</span>
+              <span class="detail-value">{{ fullOrder.description }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Akcje potwierdzenia (tylko dla PENDING_CONFIRMATION) -->
+        <div class="detail-section pending-actions" *ngIf="isPendingConfirmation">
+          <h3 class="section-title">Akcje</h3>
+
+          <div class="pending-buttons">
+            <button class="btn-confirm-order" (click)="onConfirmOrder()" [disabled]="isUpdating">
+              Potwierdź zlecenie
+            </button>
+            <button class="btn-reject-order" (click)="onRejectOrder()" [disabled]="isUpdating">
+              Odrzuć zlecenie
+            </button>
+            <button class="btn-propose-date" (click)="showProposeDateForm = !showProposeDateForm" [disabled]="isUpdating">
+              Zaproponuj zmianę daty
+            </button>
+          </div>
+
+          <div class="propose-date-form" *ngIf="showProposeDateForm">
+            <label class="propose-date-label">Proponowana data wizyty</label>
+            <div class="propose-date-row">
+              <input
+                type="date"
+                [(ngModel)]="proposedDate"
+                [min]="minDate"
+                class="date-input"
+                [disabled]="isUpdating"
+              />
+              <button
+                class="btn-send-proposal"
+                (click)="onSubmitProposeDate()"
+                [disabled]="!proposedDate || isUpdating"
+              >
+                {{ isUpdating ? '...' : 'Wyślij propozycję' }}
+              </button>
+            </div>
           </div>
         </div>
 
         <!-- Data i serwisant -->
-        <div class="detail-section" *ngIf="!canShowImages || calendarMode === 'ADVANCED'">
+        <div class="detail-section" *ngIf="(!canShowImages || calendarMode === 'ADVANCED') && !isPendingConfirmation">
           <h3 class="section-title">{{ t('service_calendar.order_details.order_info') }}</h3>
           <div class="detail-grid detail-grid--cols">
             <div class="detail-item" *ngIf="!canShowImages">
@@ -131,7 +180,7 @@
         </div>
 
         <!-- Zdjecia -->
-        <div class="detail-section" *ngIf="canShowImages">
+        <div class="detail-section" *ngIf="canShowImages && !isPendingConfirmation">
           <div class="section-header">
             <h3 class="section-title">{{ t('service_calendar.order_details.images') }}</h3>
             <span class="images-count" *ngIf="images.length > 0">({{ images.length }})</span>
@@ -213,7 +262,7 @@
         </div>
 
         <!-- Notatki -->
-        <div class="detail-section">
+        <div class="detail-section" *ngIf="!isPendingConfirmation">
           <h3 class="section-title">{{ t('service_calendar.order_details.notes') }}</h3>
           <div class="notes-fields">
             <div class="notes-field">
@@ -250,7 +299,7 @@
         </div>
 
         <!-- Metadane -->
-        <div class="detail-section metadata">
+        <div class="detail-section metadata" *ngIf="!isPendingConfirmation">
           <div class="meta-item">
             <span class="meta-label">{{ t('service_calendar.order_details.created') }}:</span>
             <span class="meta-value">{{ fullOrder.createdAt | date:'short' }}</span>
@@ -332,12 +381,124 @@
 
       </div><!-- /tab-content messages -->
 
+      <!-- Tab: Sposób zwrotu -->
+      <div class="tab-content" *ngIf="activeTab === 'return'">
+
+        <!-- Ładowanie -->
+        <div class="return-loading" *ngIf="isLoadingReturnTransport">
+          <div class="spinner-small"></div>
+        </div>
+
+        <ng-container *ngIf="!isLoadingReturnTransport">
+
+        <!-- Transport już przypisany — pokaż szczegóły -->
+        <div *ngIf="hasReturnTransport; else returnTransportForm">
+          <div class="detail-section">
+            <div class="return-transport-assigned">
+              <div class="return-transport-icon">🚚</div>
+              <h3 class="return-transport-title">Transport zwrotny zlecony</h3>
+              <p class="return-transport-subtitle">Rower zostanie dostarczony pod wskazany adres</p>
+            </div>
+            <div class="detail-grid detail-grid--cols">
+              <div class="detail-item">
+                <span class="detail-label">Ulica</span>
+                <span class="detail-value">{{ transportAddress!.street }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Nr budynku</span>
+                <span class="detail-value">{{ transportAddress!.building }}</span>
+              </div>
+              <div class="detail-item" *ngIf="transportAddress!.apartment">
+                <span class="detail-label">Nr lokalu</span>
+                <span class="detail-value">{{ transportAddress!.apartment }}</span>
+              </div>
+              <div class="detail-item detail-item--full" *ngIf="transportAddress!.transportNotes">
+                <span class="detail-label">Uwagi</span>
+                <span class="detail-value">{{ transportAddress!.transportNotes }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formularz wyboru sposobu zwrotu -->
+        <ng-template #returnTransportForm>
+          <div class="detail-section">
+            <p class="section-hint">Wybierz w jaki sposób klient odbierze rower po zakończeniu serwisu.</p>
+
+            <div class="pickup-options">
+              <label class="pickup-option" [class.active]="returnPickupMethod === 'self'">
+                <input type="radio" name="returnPickupMethod" value="self" [(ngModel)]="returnPickupMethod" />
+                <span class="pickup-icon">🚴</span>
+                <span>Odbiór osobisty</span>
+              </label>
+              <label class="pickup-option" [class.active]="returnPickupMethod === 'delivery'">
+                <input type="radio" name="returnPickupMethod" value="delivery" [(ngModel)]="returnPickupMethod" />
+                <span class="pickup-icon">🚚</span>
+                <span>Podwózka pod dom</span>
+              </label>
+            </div>
+
+            <div class="self-pickup-info" *ngIf="returnPickupMethod === 'self'">
+              <p>Klient odbierze rower osobiście w warsztacie. Żadne dodatkowe działania nie są wymagane.</p>
+            </div>
+
+            <div class="delivery-fields" *ngIf="returnPickupMethod === 'delivery'">
+              <div class="form-row delivery-address-row">
+                <div class="form-group">
+                  <label for="retDeliveryStreet">Ulica *</label>
+                  <input
+                    type="text"
+                    id="retDeliveryStreet"
+                    [(ngModel)]="returnDeliveryStreet"
+                    name="retDeliveryStreet"
+                    placeholder="np. Długa"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="retDeliveryBuilding">Nr budynku *</label>
+                  <input
+                    type="text"
+                    id="retDeliveryBuilding"
+                    [(ngModel)]="returnDeliveryBuilding"
+                    name="retDeliveryBuilding"
+                    placeholder="np. 12A"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="retDeliveryApartment">Nr lokalu</label>
+                  <input
+                    type="text"
+                    id="retDeliveryApartment"
+                    [(ngModel)]="returnDeliveryApartment"
+                    name="retDeliveryApartment"
+                    placeholder="np. 5"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="retTransportNotes">Uwagi do transportu</label>
+                <textarea
+                  id="retTransportNotes"
+                  [(ngModel)]="returnTransportNotes"
+                  name="retTransportNotes"
+                  rows="2"
+                  placeholder="Dodatkowe informacje dla kuriera..."
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+
+        </ng-container>
+
+      </div><!-- /tab-content return -->
+
     </div>
 
     <div class="modal-footer">
       <button class="btn-cancel" (click)="onCancelNotes()">Anuluj</button>
-      <button class="btn-save-all" (click)="onSaveAllNotes()" [disabled]="isUpdating">
-        {{ isUpdating ? '...' : 'Zapisz' }}
+      <button class="btn-save-all" (click)="onSaveAllNotes()" [disabled]="isSaveDisabled">
+        {{ isSavingReturnTransport ? 'Zlecanie...' : isUpdating ? '...' : 'Zapisz' }}
       </button>
     </div>
   </div>

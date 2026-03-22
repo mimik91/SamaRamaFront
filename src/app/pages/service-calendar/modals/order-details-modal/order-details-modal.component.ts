@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { I18nService } from '../../../../core/i18n.service';
 import { NotificationService } from '../../../../core/notification.service';
 import { ImageUtilsService } from '../../../../core/image-utils.service';
-import { ServiceCalendarService, OrderMessage } from '../../services/service-calendar.service';
+import { ServiceCalendarService, OrderMessage, ReturnTransportRequestDto, TransportAddressResponse } from '../../services/service-calendar.service';
 import {
   CalendarOrder,
   CalendarOrderStatus,
@@ -68,7 +68,22 @@ export class OrderDetailsModalComponent implements OnDestroy {
   isSendingMessage = false;
 
   // Tab
-  activeTab: 'details' | 'messages' = 'details';
+  activeTab: 'details' | 'messages' | 'return' = 'details';
+
+  // Propose date
+  showProposeDateForm = false;
+  proposedDate: string = '';
+
+  // Return transport tab
+  returnPickupMethod: 'self' | 'delivery' = 'self';
+  returnDeliveryStreet: string = '';
+  returnDeliveryBuilding: string = '';
+  returnDeliveryApartment: string = '';
+  returnTransportNotes: string = '';
+  isSavingReturnTransport: boolean = false;
+  isLoadingReturnTransport: boolean = false;
+  transportAddress: TransportAddressResponse | null = null;
+  transportAddressLoaded: boolean = false;
 
   // Statuses that allow image uploads (IN_PROGRESS and onwards)
   private readonly IMAGE_ALLOWED_STATUSES: CalendarOrderStatus[] = [
@@ -133,7 +148,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
   /**
    * Pobiera pelne dane zlecenia z API
    */
-  private loadFullOrderDetails(): void {
+  loadFullOrderDetails(): void {
     this.isLoading = true;
     this.calendarService.getOrder(this.serviceId, this.order.id).subscribe({
       next: (orderData: any) => {
@@ -181,6 +196,9 @@ export class OrderDetailsModalComponent implements OnDestroy {
       this.fullOrder.clientEmail = this.fullOrder.clientEmail || data.client.email || '';
       this.fullOrder.clientPhone = this.fullOrder.clientPhone || data.client.phone || '';
     }
+    if (data.orderNotes && !this.fullOrder.description) {
+      this.fullOrder.description = data.orderNotes;
+    }
   }
 
   /**
@@ -197,6 +215,56 @@ export class OrderDetailsModalComponent implements OnDestroy {
   /**
    * Czy pokazac przycisk "Przyjmij rower"
    */
+  get isPendingConfirmation(): boolean {
+    return (this.fullOrder?.status || this.order.status) === 'PENDING_CONFIRMATION';
+  }
+
+  onConfirmOrder(): void {
+    this.isUpdating = true;
+    this.calendarService.updateOrderStatus(this.serviceId, this.fullOrder.id, 'CONFIRMED').subscribe({
+      next: () => {
+        this.notificationService.success('Zlecenie zostało potwierdzone.');
+        this.isUpdating = false;
+        this.orderUpdated.emit();
+      },
+      error: () => {
+        this.notificationService.error(this.t('service_calendar.errors.update_status_failed'));
+        this.isUpdating = false;
+      }
+    });
+  }
+
+  onRejectOrder(): void {
+    this.isUpdating = true;
+    this.calendarService.updateOrderStatus(this.serviceId, this.fullOrder.id, 'REJECTED').subscribe({
+      next: () => {
+        this.notificationService.success('Zlecenie zostało odrzucone.');
+        this.isUpdating = false;
+        this.orderUpdated.emit();
+      },
+      error: () => {
+        this.notificationService.error(this.t('service_calendar.errors.update_status_failed'));
+        this.isUpdating = false;
+      }
+    });
+  }
+
+  onSubmitProposeDate(): void {
+    if (!this.proposedDate || this.isUpdating) return;
+    this.isUpdating = true;
+    this.calendarService.proposeDate(this.serviceId, this.fullOrder.id, this.proposedDate).subscribe({
+      next: () => {
+        this.notificationService.success('Propozycja daty została wysłana do klienta.');
+        this.isUpdating = false;
+        this.orderUpdated.emit();
+      },
+      error: () => {
+        this.notificationService.error('Nie udało się wysłać propozycji daty.');
+        this.isUpdating = false;
+      }
+    });
+  }
+
   get canAcceptBike(): boolean {
     const status = this.fullOrder?.status || this.order.status;
     return status === 'CONFIRMED' || status === 'WAITING_FOR_BIKE';
@@ -344,7 +412,20 @@ export class OrderDetailsModalComponent implements OnDestroy {
     }, 0);
   }
 
+  get isSaveDisabled(): boolean {
+    if (this.isUpdating || this.isSavingReturnTransport) return true;
+    if (this.activeTab === 'return') {
+      return this.returnPickupMethod !== 'delivery' || !this.isReturnDeliveryFormValid;
+    }
+    return false;
+  }
+
   onSaveAllNotes(): void {
+    if (this.activeTab === 'return') {
+      this.onSaveReturnTransport();
+      return;
+    }
+
     const payload: any = {};
     let hasChanges = false;
 
@@ -719,6 +800,69 @@ export class OrderDetailsModalComponent implements OnDestroy {
    */
   formatFileSize(bytes: number): string {
     return this.imageUtils.formatFileSize(bytes);
+  }
+
+  // ============================================
+  // TRANSPORT ZWROTNY
+  // ============================================
+
+  get hasReturnTransport(): boolean {
+    return !!(this.transportAddress);
+  }
+
+  get isReturnDeliveryFormValid(): boolean {
+    if (this.returnPickupMethod !== 'delivery') return true;
+    return !!(this.returnDeliveryStreet.trim() && this.returnDeliveryBuilding.trim());
+  }
+
+  onReturnTabClick(): void {
+    this.activeTab = 'return';
+    if (!this.transportAddressLoaded) {
+      this.loadTransportAddress();
+    }
+  }
+
+  private loadTransportAddress(): void {
+    this.isLoadingReturnTransport = true;
+    this.calendarService.getTransportAddress(this.serviceId, this.fullOrder.id).subscribe({
+      next: (data) => {
+        this.transportAddress = data;
+        this.isLoadingReturnTransport = false;
+        this.transportAddressLoaded = true;
+      },
+      error: () => {
+        // 404 lub brak transportu — po prostu brak danych
+        this.transportAddress = null;
+        this.isLoadingReturnTransport = false;
+        this.transportAddressLoaded = true;
+      }
+    });
+  }
+
+  onSaveReturnTransport(): void {
+    if (this.returnPickupMethod === 'self' || !this.isReturnDeliveryFormValid || this.isSavingReturnTransport) return;
+
+    this.isSavingReturnTransport = true;
+    const data: ReturnTransportRequestDto = {
+      deliveryStreet: this.returnDeliveryStreet.trim(),
+      deliveryBuilding: this.returnDeliveryBuilding.trim(),
+      deliveryApartment: this.returnDeliveryApartment.trim() || undefined,
+      transportNotes: this.returnTransportNotes.trim() || undefined
+    };
+
+    this.calendarService.createReturnTransport(this.serviceId, this.fullOrder.id, data).subscribe({
+      next: () => {
+        this.notificationService.success('Transport zwrotny został zlecony');
+        this.isSavingReturnTransport = false;
+        this.transportAddressLoaded = false;
+        this.loadTransportAddress();
+      },
+      error: (err: any) => {
+        this.notificationService.error('Nie udało się zlecić transportu zwrotnego');
+        this.isSavingReturnTransport = false;
+        console.error('Error creating return transport:', err);
+      }
+    });
   }
 
   ngOnDestroy(): void {

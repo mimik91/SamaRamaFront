@@ -258,6 +258,12 @@ export class LandingPageComponent implements OnInit {
     });
   }
 
+  navigateToKrakow(): void {
+    this.router.navigate(['/serwisy/krakow']).then(() => {
+      window.scrollTo({ top: 0 });
+    });
+  }
+
   navigateToKrakowMapPartner(): void {
     const zoom = window.innerWidth < 768 ? '12' : '14';
     this.router.navigate(['/mapa-serwisow'], {

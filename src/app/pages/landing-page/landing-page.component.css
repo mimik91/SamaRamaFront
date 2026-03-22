@@ -1044,19 +1044,24 @@
    ========================================= */
 @media (max-width: 768px) {
   .landing-hero {
-    min-height: 520px;
+    min-height: 480px;
     background-position: center center;
   }
 
   .hero-inner {
-    padding: 90px 24px 60px;
+    padding: 60px 20px 48px;
   }
 
   .landing-hero h1 {
-    font-size: 2rem !important;
+    font-size: 1.75rem !important;
+    margin-bottom: 20px;
   }
 
   .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .hero-pin-line {
     font-size: 1rem;
   }
 
@@ -1068,6 +1073,11 @@
 
   .btn-hero-primary,
   .btn-hero-outline {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-hero-bracket {
     width: 100%;
     justify-content: center;
   }
@@ -1085,7 +1095,11 @@
   }
 
   .options-section h2 {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.95rem;
   }
 
   .options-grid {
@@ -1093,17 +1107,22 @@
   }
 
   .option-card {
-    padding: 28px 22px;
+    padding: 28px 20px;
+  }
+
+  .option-price-main {
+    font-size: 3.2rem;
   }
 
   /* How V2 */
   .how-v2-section {
-    padding: 32px 20px;
+    padding: 28px 16px;
+    border-radius: 14px;
   }
 
   .how-v2-heading {
-    font-size: 1.8rem;
-    margin-bottom: 24px;
+    font-size: 1.6rem;
+    margin-bottom: 20px;
   }
 
   .how-v2-grid {
@@ -1114,15 +1133,62 @@
     display: none;
   }
 
+  .how-v2-opts {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .how-v2-opt-img {
+    height: 140px;
+  }
+
+  .how-v2-opt-tag {
+    font-size: 0.7rem;
+  }
+
+  .how-v2-opt-title {
+    font-size: 0.8rem;
+  }
+
+  .how-v2-opt-body p {
+    font-size: 0.82rem;
+  }
+
   .how-v2-right {
-    margin-top: 20px;
+    margin-top: 16px;
   }
 
   .how-v2-side-img {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
   }
 
+  .how-v2-body-title {
+    font-size: 0.92rem;
+  }
+
+  .how-v2-body-text {
+    font-size: 0.82rem;
+  }
+
+  .how-v2-cta {
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .how-v2-cta .primary-btn,
+  .how-v2-cta .secondary-btn {
+    font-size: 0.9rem;
+    padding: 12px 20px;
+  }
+
+  .how-v2-img-transport {
+    height: 44px;
+  }
+
+  .how-v2-img-house {
+    height: 52px;
+  }
 
   .process-row {
     gap: 16px;
@@ -1166,16 +1232,16 @@
   }
 
   .digital-history-section {
-    padding: 40px 24px;
+    padding: 32px 20px;
   }
 
   .digital-history-inner {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 28px;
   }
 
   .digital-history-text h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
   .mock-history-card {
@@ -1184,11 +1250,46 @@
   }
 
   .features-section h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    margin-bottom: 28px;
   }
 
   .features-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .feature-card {
+    padding: 20px 14px;
+  }
+
+  .feature-icon {
+    width: 54px;
+    height: 54px;
+    margin-bottom: 14px;
+  }
+
+  .feature-content h3 {
+    font-size: 0.9rem;
+  }
+
+  .feature-content p {
+    font-size: 0.82rem;
+  }
+
+  .faq-section h2 {
+    font-size: 1.4rem;
+    margin-bottom: 28px;
+  }
+
+  .faq-question {
+    padding: 14px 18px;
+    font-size: 0.93rem;
+  }
+
+  .faq-answer {
+    padding: 0 18px 18px;
+    font-size: 0.88rem;
   }
 
   .seo-footer-content {
@@ -1204,6 +1305,61 @@
   .seo-footer-links-grid {
     grid-template-columns: repeat(2, 1fr);
     justify-items: center;
+  }
+}
+
+/* =========================================
+   RESPONSIVE – 480px (małe telefony)
+   ========================================= */
+@media (max-width: 480px) {
+  .landing-hero {
+    min-height: 440px;
+  }
+
+  .hero-inner {
+    padding: 50px 16px 40px;
+  }
+
+  .landing-hero h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .hero-logo-img {
+    height: 56px;
+  }
+
+  .hero-pin-line {
+    font-size: 0.9rem;
+  }
+
+  .landing-container {
+    padding: 0 14px 14px;
+  }
+
+  .options-section h2 {
+    font-size: 1.3rem;
+  }
+
+  .option-price-main {
+    font-size: 2.8rem;
+  }
+
+  .how-v2-heading {
+    font-size: 1.4rem;
+  }
+
+  .how-v2-section {
+    padding: 22px 14px;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    font-size: 0.9rem;
+    padding: 12px 20px;
   }
 }
 

@@ -86,6 +86,9 @@ export class GuestReservationFormComponent implements OnInit {
   filteredBrands: string[] = [];
   showBrandDropdown = false;
 
+  cities: string[] = [];
+  loadingCities = true;
+
   // Discount coupon (transport)
   couponControl = new FormControl('');
   isApplyingCoupon = false;
@@ -172,6 +175,7 @@ export class GuestReservationFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBrands();
+    this.loadCities();
     this.loadServiceInfo();
 
     this.reservationForm.get('withTransport')?.valueChanges.subscribe(val => {
@@ -197,6 +201,28 @@ export class GuestReservationFormComponent implements OnInit {
     this.enumerationService.getEnumeration('BRAND').subscribe({
       next: (brands) => { this.brands = brands; },
       error: () => { this.brands = environment.settings.fallback.brands; }
+    });
+  }
+
+  private loadCities(): void {
+    this.loadingCities = true;
+    this.enumerationService.getCities().subscribe({
+      next: (cities) => {
+        this.cities = this.sortCitiesKrakowFirst(cities);
+        this.loadingCities = false;
+      },
+      error: () => {
+        this.cities = this.sortCitiesKrakowFirst(environment.settings.fallback.cities);
+        this.loadingCities = false;
+      }
+    });
+  }
+
+  private sortCitiesKrakowFirst(cities: string[]): string[] {
+    return [...cities].sort((a, b) => {
+      if (a === 'Kraków') return -1;
+      if (b === 'Kraków') return 1;
+      return a.localeCompare(b, 'pl');
     });
   }
 
@@ -459,8 +485,11 @@ export class GuestReservationFormComponent implements OnInit {
       lastName: rv.lastName.trim(),
       email: rv.email.trim(),
       phone: rv.phone?.trim() || null,
-      bicycleBrand: rv.bicycleBrand.trim(),
-      bicycleModel: rv.bicycleModel?.trim() || null,
+      bicycles: [{
+        brand: rv.bicycleBrand.trim(),
+        model: rv.bicycleModel?.trim() || null,
+        additionalInfo: rv.description?.trim() || null
+      }],
       plannedDate: plannedDateStr,
       description: rv.description?.trim() || null
     };

@@ -304,14 +304,17 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Miasto <span class="required">*</span></label>
-                <input
-                  type="text"
+                <select
                   formControlName="pickupCity"
                   class="form-input"
                   [class.invalid]="isFieldInvalid('pickupCity', transportForm)"
-                  placeholder="Kraków"
-                />
-                <span *ngIf="isFieldInvalid('pickupCity', transportForm)" class="field-error">Miasto jest wymagane</span>
+                  [attr.disabled]="loadingCities ? '' : null"
+                >
+                  <option value="" disabled selected>-- Wybierz miasto --</option>
+                  <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
+                  <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                </select>
+                <span *ngIf="isFieldInvalid('pickupCity', transportForm)" class="field-error">Wybierz miasto z listy</span>
               </div>
               <div class="form-group">
                 <label class="form-label">Kod pocztowy <span class="optional-label">(opcjonalnie)</span></label>

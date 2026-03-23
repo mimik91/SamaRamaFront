@@ -40,6 +40,8 @@ export class OrderDetailsModalComponent implements OnDestroy {
   @Input() serviceId!: number;
   @Input() technicians: Technician[] = [];
   @Input() calendarMode: CalendarMode = 'SIMPLE';
+  @Input() reservationAvailable: boolean = false;
+  @Input() transportAvailable: boolean = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() orderUpdated = new EventEmitter<void>();
@@ -268,6 +270,16 @@ export class OrderDetailsModalComponent implements OnDestroy {
   get canAcceptBike(): boolean {
     const status = this.fullOrder?.status || this.order.status;
     return status === 'CONFIRMED' || status === 'WAITING_FOR_BIKE';
+  }
+
+  get showReturnTab(): boolean {
+    if (!this.reservationAvailable || !this.transportAvailable) return false;
+    const status = this.fullOrder?.status || this.order.status;
+    return status === 'IN_PROGRESS'
+      || status === 'WAITING_FOR_PARTS'
+      || status === 'AWAITING_CLIENT_DECISION'
+      || status === 'READY_FOR_PICKUP'
+      || status === 'COMPLETED';
   }
 
   onAcceptBikeClick(): void {

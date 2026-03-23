@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { I18nService } from '../../core/i18n.service';
 import { NotificationService } from '../../core/notification.service';
 import { BikeServiceVerificationService } from '../../auth/bike-service-verification.service';
+import { AuthService } from '../../auth/auth.service';
 import { ServiceCalendarService } from './services/service-calendar.service';
 import { CalendarHeaderComponent } from './components/calendar-header/calendar-header.component';
 import { CalendarDayViewComponent } from './components/calendar-day-view/calendar-day-view.component';
@@ -47,6 +48,7 @@ export class ServiceCalendarComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private verificationService = inject(BikeServiceVerificationService);
+  private authService = inject(AuthService);
   private calendarService = inject(ServiceCalendarService);
   private i18nService = inject(I18nService);
   private notificationService = inject(NotificationService);
@@ -57,6 +59,8 @@ export class ServiceCalendarComponent implements OnInit {
   // Serwisy uzytkownika
   myServices: BikeServiceNameIdDto[] = [];
   selectedServiceId: number | null = null;
+  reservationAvailable: boolean = false;
+  transportAvailable: boolean = false;
 
   // Konfiguracja kalendarza
   calendarConfig: CalendarConfig | null = null;
@@ -132,6 +136,9 @@ export class ServiceCalendarComponent implements OnInit {
   ngOnInit(): void {
     // Pobierz suffix z URL
     this.currentSuffix = this.route.snapshot.paramMap.get('suffix') || '';
+    // Odczytaj zapisane wartości z logowania (bez dodatkowego uderzenia w API)
+    this.reservationAvailable = this.authService.getActiveServiceReservationAvailable();
+    this.transportAvailable = this.authService.getActiveServiceTransportAvailable();
     this.loadMyServices();
   }
 
@@ -170,7 +177,20 @@ export class ServiceCalendarComponent implements OnInit {
   onServiceChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.selectedServiceId = Number(select.value);
+    this.refreshReservationAvailable();
     this.loadCalendarConfig();
+  }
+
+  private refreshReservationAvailable(): void {
+    this.verificationService.checkVerificationStatus().subscribe({
+      next: (status) => {
+        this.reservationAvailable = status.reservationAvailable ?? false;
+        this.transportAvailable = status.transportAvailable ?? false;
+        this.authService.setActiveServiceReservationAvailable(this.reservationAvailable);
+        this.authService.setActiveServiceTransportAvailable(this.transportAvailable);
+      },
+      error: () => { /* zostaw poprzednią wartość */ }
+    });
   }
 
   /**

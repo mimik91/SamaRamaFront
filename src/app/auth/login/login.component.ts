@@ -117,6 +117,10 @@ export class LoginComponent {
       next: (status) => {
         console.log('Service verification status:', status);
 
+        // Zapisz flagi do ponownego użycia (np. w kalendarzu)
+        this.authService.setActiveServiceReservationAvailable(status.reservationAvailable ?? false);
+        this.authService.setActiveServiceTransportAvailable(status.transportAvailable ?? false);
+
         // 1. Brak przypisanego serwisu
         if (!status.hasService) {
           console.log('Service not assigned, redirecting to pending verification');

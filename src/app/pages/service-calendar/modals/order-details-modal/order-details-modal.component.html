@@ -33,6 +33,7 @@
           <span class="unread-badge" *ngIf="messagesUnreadCount > 0">{{ messagesUnreadCount }}</span>
         </button>
         <button
+          *ngIf="showReturnTab"
           class="tab-btn"
           [class.active]="activeTab === 'return'"
           (click)="onReturnTabClick()"

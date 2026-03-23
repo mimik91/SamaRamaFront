@@ -322,9 +322,37 @@ export class AuthService {
       localStorage.removeItem('user_services');
       localStorage.removeItem('active_service_id');
       localStorage.removeItem('active_service_suffix');
+      localStorage.removeItem('active_service_reservation_available');
+      localStorage.removeItem('active_service_transport_available');
     }
     // Reset flag żeby umożliwić ponowne załadowanie w przyszłości
     this.isSessionLoaded = false;
+  }
+
+  setActiveServiceReservationAvailable(value: boolean): void {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('active_service_reservation_available', value ? 'true' : 'false');
+    }
+  }
+
+  getActiveServiceReservationAvailable(): boolean {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('active_service_reservation_available') === 'true';
+    }
+    return false;
+  }
+
+  setActiveServiceTransportAvailable(value: boolean): void {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('active_service_transport_available', value ? 'true' : 'false');
+    }
+  }
+
+  getActiveServiceTransportAvailable(): boolean {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('active_service_transport_available') === 'true';
+    }
+    return false;
   }
 
   // POPRAWIONA metoda isLoggedIn - korzysta z BehaviorSubject

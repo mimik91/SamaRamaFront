@@ -83,6 +83,8 @@ export interface ServiceVerificationStatus {
   suffix?: string;
   isActive?: boolean;
   verified?: boolean;
+  reservationAvailable?: boolean;
+  transportAvailable?: boolean;
 }
 
 /**

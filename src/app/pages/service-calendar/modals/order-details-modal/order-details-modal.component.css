@@ -167,6 +167,7 @@
 .section-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--spacing-2);
   margin-bottom: var(--spacing-3);
 }
@@ -1351,4 +1352,117 @@
 .btn-send-proposal:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Bike edit */
+.bike-edit-btn {
+  background: none;
+  border: none;
+  padding: var(--spacing-1) var(--spacing-2);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  border-radius: var(--radius-md);
+  line-height: 1;
+  transition: color 0.2s, background 0.2s;
+}
+
+.bike-edit-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-slate-100);
+}
+
+.detail-value--empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.bike-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.bike-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-3);
+}
+
+.bike-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.bike-edit-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.bike-edit-input {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background: var(--color-white);
+  width: 100%;
+}
+
+.bike-edit-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.bike-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+  padding-top: var(--spacing-1);
+}
+
+.bike-edit-cancel {
+  padding: var(--spacing-2) var(--spacing-4);
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.bike-edit-cancel:hover:not(:disabled) {
+  background: var(--color-slate-100);
+}
+
+.bike-edit-save {
+  padding: var(--spacing-2) var(--spacing-4);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.bike-edit-save:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.bike-edit-save:disabled,
+.bike-edit-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .bike-edit-row {
+    grid-template-columns: 1fr;
+  }
 }

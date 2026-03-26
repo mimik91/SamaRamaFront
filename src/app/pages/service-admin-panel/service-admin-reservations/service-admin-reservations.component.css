@@ -1,96 +1,100 @@
 .reservations-container {
   padding: 24px;
-  background: var(--color-gray-100);
+  padding-bottom: 80px;
   min-height: 400px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
+/* ===== HEADER ACTIONS ===== */
 .header-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
 }
 
-.edit-btn, .save-btn, .cancel-btn, .retry-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition);
-}
-
 .edit-btn {
-  background-color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background-color: var(--color-primary-dark);
   color: var(--color-white);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .edit-btn:hover {
-  background-color: var(--color-primary-dark);
-  box-shadow: var(--shadow-primary-hover);
+  background-color: var(--color-primary);
 }
 
-.save-btn {
-  background-color: var(--color-success);
-  color: var(--color-white);
-}
-
-.save-btn:hover:not(:disabled) {
-  background-color: var(--color-success-dark);
-  box-shadow: var(--shadow-success);
-}
-
-.save-btn:disabled {
-  background-color: var(--color-gray-500);
-  cursor: not-allowed;
-}
-
-.cancel-btn {
-  background-color: var(--color-danger);
-  color: var(--color-white);
-}
-
-.cancel-btn:hover {
-  background-color: var(--color-danger-dark);
+.edit-btn svg {
+  flex-shrink: 0;
 }
 
 .retry-btn {
-  background-color: var(--color-primary);
+  padding: 8px 18px;
+  background-color: var(--color-primary-dark);
   color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
+.retry-btn:hover {
+  background-color: var(--color-primary);
+}
+
+/* ===== MESSAGES ===== */
 .success-message {
-  padding: 12px;
-  background-color: var(--color-success-bg);
-  color: var(--color-success-text);
-  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--color-success-bg, #e8f5e9);
+  color: var(--color-success-text, #2f855a);
+  border-radius: var(--radius-md, 8px);
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .error-message {
-  padding: 12px;
-  background-color: var(--color-danger-bg);
-  color: var(--color-danger-text);
-  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--color-danger-bg, #fde8e8);
+  color: var(--color-danger-text, #c0392b);
+  border-radius: var(--radius-md, 8px);
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
+/* ===== CARDS ===== */
 .detail-card {
   padding: 24px;
   background: var(--color-white);
   border-radius: 12px;
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color-gray, #e9ecef);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .detail-card h2 {
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
   color: var(--text-primary);
-  font-size: 1.3rem;
-  border-bottom: 2px solid var(--border-color-gray);
-  padding-bottom: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-primary);
+  padding-bottom: 10px;
+  display: inline-block;
 }
 
 .description-hint {
@@ -112,6 +116,31 @@
   justify-content: flex-end;
 }
 
+.card-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background-color: var(--color-primary-dark);
+  color: var(--color-white);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.card-save-btn:hover:not(:disabled) {
+  background-color: var(--color-primary);
+}
+
+.card-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== DETAIL ITEMS ===== */
 .detail-item {
   display: flex;
   justify-content: space-between;
@@ -137,14 +166,15 @@
   flex: 1;
 }
 
-/* Toggle */
+/* ===== TOGGLE ===== */
 .toggle-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
   flex: 1;
   justify-content: flex-end;
+  user-select: none;
 }
 
 .toggle-input {
@@ -153,44 +183,45 @@
 
 .toggle-slider {
   position: relative;
-  width: 46px;
-  height: 26px;
-  background-color: var(--color-danger-bg, #fde8e8);
-  border: 2px solid var(--color-danger-text, #e53e3e);
-  border-radius: 13px;
-  transition: all 0.25s ease;
+  display: block;
+  width: 44px;
+  height: 22px;
+  background: var(--color-gray-300, #ccc);
+  border-radius: 11px;
   flex-shrink: 0;
+  transition: background 0.25s ease;
 }
 
-.toggle-slider::after {
+.toggle-slider::before {
   content: '';
   position: absolute;
   top: 2px;
   left: 2px;
   width: 18px;
   height: 18px;
-  background-color: var(--color-danger-text, #e53e3e);
+  background: white;
   border-radius: 50%;
-  transition: all 0.25s ease;
+  transition: transform 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .toggle-input:checked + .toggle-slider {
-  background-color: var(--color-success-bg, #e6f4ea);
-  border-color: var(--color-success-text, #2f855a);
+  background: var(--color-primary-dark, #1B5E20);
 }
 
-.toggle-input:checked + .toggle-slider::after {
-  left: 22px;
-  background-color: var(--color-success-text, #2f855a);
+.toggle-input:checked + .toggle-slider::before {
+  transform: translateX(22px);
 }
 
 .toggle-text {
   color: var(--text-primary);
   font-size: 0.95rem;
+  font-weight: 600;
   min-width: 70px;
+  text-align: right;
 }
 
-/* Days grid */
+/* ===== DAYS GRID ===== */
 .days-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -214,11 +245,11 @@
   accent-color: var(--color-primary);
 }
 
-/* Schedule table */
+/* ===== SCHEDULE TABLE ===== */
 .schedule-table {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .schedule-row {
@@ -254,6 +285,7 @@
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
+  align-items: flex-end;
 }
 
 .time-input-group {
@@ -293,14 +325,15 @@
   border-radius: 6px;
   font-size: 0.95rem;
   color: var(--text-primary);
-  transition: border-color var(--transition);
   cursor: pointer;
   width: 200px;
+  transition: border-color 0.2s;
 }
 
 .date-input:focus {
   outline: none;
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10, rgba(27,94,32,0.1));
 }
 
 .time-input {
@@ -309,7 +342,7 @@
   border-radius: 6px;
   font-size: 0.9rem;
   color: var(--text-primary);
-  transition: border-color var(--transition);
+  transition: border-color 0.2s;
 }
 
 .time-input:focus {
@@ -327,30 +360,31 @@
   flex: 1;
 }
 
-.copy-btn {
-  padding: 4px 10px;
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-primary);
-  font-size: 0.8rem;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--transition);
-}
-
-.copy-btn:hover {
-  background: var(--color-primary);
-  color: var(--color-white);
-}
-
 .inactive-text {
   font-size: 0.9rem;
   color: var(--text-muted);
   font-style: italic;
 }
 
-/* Loading / Error states */
+.copy-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-primary-dark);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.copy-btn:hover {
+  background: #e8f5e9;
+}
+
+/* ===== LOADING / ERROR STATES ===== */
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -384,13 +418,114 @@
   border-radius: var(--radius-md);
 }
 
+/* ===== STICKY SAVE BAR ===== */
+.sticky-save-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--color-white);
+  border-top: 2px solid var(--border-color-gray, #e9ecef);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.sticky-save-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sticky-save-hint {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.sticky-save-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.cancel-btn,
+.save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn {
+  background-color: transparent;
+  color: var(--color-accent-orange);
+  border: 2px solid var(--color-accent-orange);
+}
+
+.cancel-btn:hover {
+  background-color: var(--color-accent-orange-bg);
+}
+
+.save-btn {
+  background-color: var(--color-primary-dark);
+  color: var(--color-white);
+  border: 2px solid transparent;
+}
+
+.save-btn:hover:not(:disabled) {
+  background-color: var(--color-primary);
+}
+
+.save-btn:disabled,
+.cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.saving-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
+  .reservations-container {
+    padding: 16px;
+    padding-bottom: 120px;
+  }
+
   .header-actions {
     flex-direction: column;
   }
 
-  .edit-btn, .save-btn, .cancel-btn {
+  .edit-btn {
     width: 100%;
+    justify-content: center;
   }
 
   .schedule-row {
@@ -405,5 +540,16 @@
 
   .days-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sticky-save-inner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .sticky-save-actions {
+    justify-content: flex-end;
   }
 }

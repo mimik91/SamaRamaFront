@@ -55,7 +55,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
       position: fixed;
       top: 20px;
       right: 20px;
-      z-index: 1000;
+      z-index: 9999;
       max-width: 350px;
       width: calc(100% - 40px);
     }

@@ -84,16 +84,15 @@
           </div>
           
           <div class="form-group">
-            <label for="email">Email serwisu * <span class="char-limit">(max 100 znaków)</span></label>
-            <input 
-              type="email" 
-              id="email" 
+            <label for="email">Email serwisu *</label>
+            <input
+              type="email"
+              id="email"
               formControlName="email"
               [class.is-invalid]="isFieldInvalid(basicInfoForm, 'email')"
               placeholder="kontakt@twojserwis.pl"
               maxlength="100"
             >
-            <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'email') }}/100</div>
             <p class="form-help">Ten email będzie widoczny dla klientów jako kontakt do serwisu</p>
             <div *ngIf="isFieldInvalid(basicInfoForm, 'email')" class="error-message">
               Wprowadź poprawny adres email
@@ -106,7 +105,7 @@
           <h3>Informacje o serwisie</h3>
           
           <div class="form-group">
-            <label for="serviceName">Nazwa serwisu * <span class="char-limit">(max 50 znaków)</span></label>
+            <label for="serviceName">Nazwa serwisu *</label>
             <div class="input-with-status">
               <input 
                 type="text" 
@@ -141,7 +140,6 @@
                 </span>
               </div>
             </div>
-            <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'serviceName') }}/50</div>
             <div *ngIf="isFieldInvalid(basicInfoForm, 'serviceName')" class="error-message">
               <span *ngIf="basicInfoForm.get('serviceName')?.hasError('required')">Pole wymagane</span>
               <span *ngIf="basicInfoForm.get('serviceName')?.hasError('serviceNameTaken')">Ta nazwa jest już zajęta</span>
@@ -149,7 +147,7 @@
           </div>
 
           <div class="form-group">
-            <label for="suffix">Adres Twojej strony w CycloPick <span class="char-limit">(max 100 znaków)</span></label>
+            <label for="suffix">Adres Twojej strony w CycloPick</label>
             <div class="suffix-input-container">
               <span class="suffix-prefix">www.cyclopick.pl/</span>
               <input 
@@ -162,7 +160,6 @@
                 class="suffix-input"
               >
             </div>
-            <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'suffix') }}/100</div>
             <div class="suffix-info">
               <p>Pod tym adresem klienci będą mogli bezpośrednio wchodzić na stronę Twojego serwisu w systemie CycloPick.</p>
               <p>Przykład: <strong>www.cyclopick.pl/bike-service-warszawa</strong></p>
@@ -211,7 +208,7 @@
           
           <div class="form-row">
             <div class="form-group">
-              <label for="street">Ulica <span class="char-limit">(max 255 znaków)</span></label>
+              <label for="street">Ulica</label>
               <input 
                 type="text" 
                 id="street" 
@@ -220,11 +217,10 @@
                 placeholder="Nazwa ulicy"
                 maxlength="255"
               >
-              <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'street') }}/255</div>
             </div>
             
             <div class="form-group form-group-small">
-              <label for="building">Nr budynku <span class="char-limit">(max 20)</span></label>
+              <label for="building">Nr budynku</label>
               <input 
                 type="text" 
                 id="building" 
@@ -236,7 +232,7 @@
             </div>
             
             <div class="form-group form-group-small">
-              <label for="flat">Nr lokalu <span class="char-limit">(max 20)</span></label>
+              <label for="flat">Nr lokalu</label>
               <input 
                 type="text" 
                 id="flat" 
@@ -250,7 +246,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="postalCode">Kod pocztowy <span class="char-limit">(max 10 znaków)</span></label>
+              <label for="postalCode">Kod pocztowy</label>
               <input 
                 type="text" 
                 id="postalCode" 
@@ -262,7 +258,7 @@
             </div>
 
             <div class="form-group">
-              <label for="city">Miasto <span class="char-limit">(max 100 znaków)</span></label>
+              <label for="city">Miasto</label>
               <input 
                 type="text" 
                 id="city" 
@@ -271,7 +267,6 @@
                 placeholder="Kraków"
                 maxlength="100"
               >
-              <div class="char-counter">{{ getCharacterCount(basicInfoForm, 'city') }}/100</div>
             </div>
           </div>
         </div>
@@ -307,19 +302,23 @@
 
         <!-- Istniejące kategorie -->
         <div *ngIf="!isLoadingCoverages && availableCoverages">
+          <div class="categories-grid">
           <div *ngFor="let category of categories" class="coverage-category">
             <h4>{{ category.name }}</h4>
-            
+
             <div class="coverage-items">
-              <div *ngFor="let coverage of getCoveragesForCategory(category.id)" class="coverage-item">
+              <div *ngFor="let coverage of getCoveragesForCategory(category.id)"
+                   class="coverage-item"
+                   [class.coverage-item-active]="isCoverageSelected(category.id, coverage.id)">
                 <label class="coverage-toggle">
-                  <input 
+                  <input
                     type="checkbox"
                     [checked]="isCoverageSelected(category.id, coverage.id)"
                     (change)="toggleCoverage(category.id, coverage.id)"
                   >
                   <span class="coverage-slider"></span>
-                  <span class="coverage-name">{{ coverage.name }}</span>
+                  <span class="coverage-name"
+                    [class.coverage-name-active]="isCoverageSelected(category.id, coverage.id)">{{ coverage.name }}</span>
                 </label>
               </div>
               
@@ -345,6 +344,7 @@
               </div>
             </div>
           </div>
+          </div><!-- /categories-grid -->
 
           <!-- Dodawanie nowych kategorii -->
           <div class="custom-categories">
@@ -436,7 +436,7 @@
           </div>
 
           <div class="form-group">
-            <label for="userEmail">Email do logowania * <span class="char-limit">(max 100 znaków)</span></label>
+            <label for="userEmail">Email do logowania *</label>
             <input 
               type="email" 
               id="userEmail" 
@@ -445,7 +445,6 @@
               placeholder="email@przyklad.pl"
               maxlength="100"
             >
-            <div class="char-counter">{{ getCharacterCount(passwordForm, 'userEmail') }}/100</div>
             <p class="form-help">Na ten adres zostanie wysłany link aktywacyjny. Możesz użyć tego samego emaila co w kroku 1 lub innego.</p>
             <div *ngIf="isFieldInvalid(passwordForm, 'userEmail')" class="error-message">
               Wprowadź poprawny adres email
@@ -453,7 +452,7 @@
           </div>
 
           <div class="form-group">
-            <label for="password">Hasło * <span class="char-limit">(min. 6 znaków)</span></label>
+            <label for="password">Hasło *</label>
             <input 
               type="password" 
               id="password" 

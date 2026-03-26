@@ -69,10 +69,6 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
   {
-    path: 'guest-order',
-    renderMode: RenderMode.Server
-  },
-  {
     path: 'reserve-service',
     renderMode: RenderMode.Server
   },
@@ -176,22 +172,6 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: 'bicycles/:id',
-    renderMode: RenderMode.Client
-  },
-  {
-    path: 'bicycles/:id/order-service',
-    renderMode: RenderMode.Client
-  },
-  {
-    path: 'service-appointments',
-    renderMode: RenderMode.Client
-  },
-  {
-    path: 'service-appointments/:id',
-    renderMode: RenderMode.Client
-  },
-  {
-    path: 'order-service',
     renderMode: RenderMode.Client
   },
   {

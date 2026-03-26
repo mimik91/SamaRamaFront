@@ -102,7 +102,8 @@ export const environment = {
       clientBikes: '/service-calendar/clients/:clientId/bikes',
       returnTransport: '/service-calendar/orders/:id/return-transport',
       transportAddress: '/service-calendar/orders/:id/transport-address',
-      proposeDate: '/service-calendar/orders/:id/propose-date'
+      proposeDate: '/service-calendar/orders/:id/propose-date',
+      bikes: '/service-calendar/bikes'
     },
 
     // Service Order Images (separate controller)

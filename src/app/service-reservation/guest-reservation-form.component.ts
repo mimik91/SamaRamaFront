@@ -4,6 +4,7 @@ import {
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
+  FormArray,
   FormControl,
   Validators,
   AbstractControl,
@@ -71,23 +72,20 @@ export class GuestReservationFormComponent implements OnInit {
   minDateObj: Date;
   maxDateObj: Date;
 
-  // Datepicker filter — greys out days not in acceptedDays
   readonly dateFilter = (date: Date | null): boolean => {
     if (!date) return false;
     const dayKey = DAY_KEYS[date.getDay()];
     const accepted = this.reservationSettings?.acceptedDays;
-    if (accepted && accepted.length > 0) {
-      return accepted.includes(dayKey);
-    }
+    if (accepted && accepted.length > 0) return accepted.includes(dayKey);
     return true;
   };
 
   brands: string[] = [];
-  filteredBrands: string[] = [];
-  showBrandDropdown = false;
-
   cities: string[] = [];
   loadingCities = true;
+
+  // Per-bike brand autocomplete state
+  bikeBrandStates: { filtered: string[]; showDropdown: boolean }[] = [];
 
   // Discount coupon (transport)
   couponControl = new FormControl('');
@@ -98,8 +96,9 @@ export class GuestReservationFormComponent implements OnInit {
 
   readonly links = environment.links;
 
-  reservationForm: FormGroup;
-  transportForm: FormGroup;
+  reservationForm!: FormGroup;
+  bikesArray!: FormArray;
+  transportForm!: FormGroup;
   termsControl = new FormControl(false, [Validators.requiredTrue]);
 
   constructor() {
@@ -113,15 +112,15 @@ export class GuestReservationFormComponent implements OnInit {
     this.maxDateObj = maxD;
     this.maxDate = this.dateToStr(maxD);
 
+    this.bikesArray = this.fb.array([this.createBikeGroup()]);
+    this.bikeBrandStates = [{ filtered: [], showDropdown: false }];
+
     this.reservationForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.pattern(/^\d{9}$/)]],
-      bicycleBrand: ['', Validators.required],
-      bicycleModel: [''],
       plannedDate: ['', [Validators.required, this.acceptedDayValidator.bind(this)]],
-      description: [''],
       withTransport: [false]
     });
 
@@ -133,12 +132,77 @@ export class GuestReservationFormComponent implements OnInit {
     });
   }
 
-  // Validator — only accepted days (or Mon–Fri if no restriction set)
+  // ===== Bike FormArray =====
+
+  createBikeGroup(): FormGroup {
+    return this.fb.group({
+      brand: ['', Validators.required],
+      model: [''],
+      additionalInfo: ['', Validators.required]
+    });
+  }
+
+  get bikeControls(): FormGroup[] {
+    return this.bikesArray.controls as FormGroup[];
+  }
+
+  addBike(): void {
+    this.bikesArray.push(this.createBikeGroup());
+    this.bikeBrandStates.push({ filtered: [], showDropdown: false });
+  }
+
+  removeBike(index: number): void {
+    if (this.bikesArray.length <= 1) return;
+    this.bikesArray.removeAt(index);
+    this.bikeBrandStates.splice(index, 1);
+  }
+
+  isBikeFieldInvalid(index: number, field: string): boolean {
+    const ctrl = this.bikesArray.at(index).get(field);
+    return !!(ctrl?.invalid && (ctrl.dirty || ctrl.touched));
+  }
+
+  // ===== Per-bike brand autocomplete =====
+
+  onBrandInput(event: Event, index: number): void {
+    const q = (event.target as HTMLInputElement).value;
+    this.bikesArray.at(index).get('brand')?.setValue(q, { emitEvent: false });
+    if (q.length >= 3) {
+      this.bikeBrandStates[index].filtered = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
+      this.bikeBrandStates[index].showDropdown = this.bikeBrandStates[index].filtered.length > 0;
+    } else {
+      this.bikeBrandStates[index].showDropdown = false;
+    }
+  }
+
+  onBrandFocus(index: number): void {
+    const q = this.bikesArray.at(index).get('brand')?.value || '';
+    if (q.length >= 3) {
+      this.bikeBrandStates[index].filtered = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
+      this.bikeBrandStates[index].showDropdown = this.bikeBrandStates[index].filtered.length > 0;
+    }
+  }
+
+  onBrandBlur(index: number): void {
+    setTimeout(() => { this.bikeBrandStates[index].showDropdown = false; }, 200);
+  }
+
+  selectBrand(brand: string, index: number): void {
+    this.bikesArray.at(index).get('brand')?.setValue(brand);
+    this.bikeBrandStates[index].showDropdown = false;
+  }
+
+  expandAllBrands(index: number): void {
+    this.bikeBrandStates[index].filtered = [...this.brands];
+    this.bikeBrandStates[index].showDropdown = true;
+  }
+
+  // ===== Validators =====
+
   acceptedDayValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) return null;
     const date: Date = control.value instanceof Date ? control.value : new Date(control.value + 'T00:00:00');
-    const dayIndex = date.getDay();
-    const dayKey = DAY_KEYS[dayIndex];
+    const dayKey = DAY_KEYS[date.getDay()];
     const accepted = this.reservationSettings?.acceptedDays;
     if (accepted && accepted.length > 0) {
       if (!accepted.includes(dayKey)) return { notAcceptedDay: true };
@@ -164,7 +228,6 @@ export class GuestReservationFormComponent implements OnInit {
     this.reservationForm.get('withTransport')?.setValue(val);
   }
 
-  // Transport date = 1 day before the service reservation date
   get transportDate(): string {
     const planned = this.reservationForm.get('plannedDate')?.value;
     if (!planned) return '';
@@ -230,12 +293,10 @@ export class GuestReservationFormComponent implements OnInit {
     const suffix = this.route.snapshot.paramMap.get('suffix');
 
     if (suffix) {
-      // Jeśli nawigacja przekazała serviceId przez state (np. z mapy) — używamy go bezpośrednio
       const stateServiceId = window.history.state?.serviceId;
       if (stateServiceId) {
         this.loadServiceDetails(+stateServiceId);
       } else {
-        // Brak state — pobieramy serviceId z backendu po suffixie (np. bezpośredni link)
         this.loading = true;
         const url = `${environment.apiUrl}${environment.endpoints.bikeServices.bySuffix}/${suffix}`;
         this.http.get<{ id: number }>(url).subscribe({
@@ -256,7 +317,6 @@ export class GuestReservationFormComponent implements OnInit {
         });
       }
     } else {
-      // Mamy serviceId w query params — ładujemy detale bezpośrednio
       this.route.queryParams.subscribe(params => {
         const serviceId = params['serviceId'];
         if (serviceId) {
@@ -307,12 +367,9 @@ export class GuestReservationFormComponent implements OnInit {
         this.reservationSettings = settings;
         this.computeFormAvailability(settings);
         this.updateMinDate(settings);
-        // Re-validate plannedDate with new accepted days
         this.reservationForm.get('plannedDate')?.updateValueAndValidity();
       },
-      error: () => {
-        // Settings not available — keep defaults (Mon–Fri, tomorrow as min)
-      }
+      error: () => {}
     });
   }
 
@@ -349,7 +406,6 @@ export class GuestReservationFormComponent implements OnInit {
     const currentDayIndex = now.getDay();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    // Check if there's still an upcoming window today
     const todayKey = DAY_KEYS[currentDayIndex];
     const todaySchedule = settings.formSchedule[todayKey];
     if (todaySchedule) {
@@ -360,7 +416,6 @@ export class GuestReservationFormComponent implements OnInit {
       }
     }
 
-    // Check next 6 days
     for (let i = 1; i <= 6; i++) {
       const nextDayIndex = (currentDayIndex + i) % 7;
       const nextDayKey = DAY_KEYS[nextDayIndex];
@@ -389,41 +444,6 @@ export class GuestReservationFormComponent implements OnInit {
     }
   }
 
-  // ===== Brand autocomplete =====
-
-  onBrandInput(event: Event): void {
-    const q = (event.target as HTMLInputElement).value;
-    this.reservationForm.get('bicycleBrand')?.setValue(q, { emitEvent: false });
-    if (q.length >= 3) {
-      this.filteredBrands = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
-      this.showBrandDropdown = this.filteredBrands.length > 0;
-    } else {
-      this.showBrandDropdown = false;
-    }
-  }
-
-  onBrandFocus(): void {
-    const q = this.reservationForm.get('bicycleBrand')?.value || '';
-    if (q.length >= 3) {
-      this.filteredBrands = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
-      this.showBrandDropdown = this.filteredBrands.length > 0;
-    }
-  }
-
-  onBrandBlur(): void {
-    setTimeout(() => { this.showBrandDropdown = false; }, 200);
-  }
-
-  selectBrand(brand: string): void {
-    this.reservationForm.get('bicycleBrand')?.setValue(brand);
-    this.showBrandDropdown = false;
-  }
-
-  expandAllBrands(): void {
-    this.filteredBrands = [...this.brands];
-    this.showBrandDropdown = true;
-  }
-
   // ===== Navigation =====
 
   nextStep(): void {
@@ -432,6 +452,7 @@ export class GuestReservationFormComponent implements OnInit {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       this.markAllTouched(this.reservationForm);
+      this.bikesArray.controls.forEach(c => this.markAllTouched(c as FormGroup));
       if (this.withTransport) this.markAllTouched(this.transportForm);
       this.notificationService.warning('Wypełnij wszystkie wymagane pola poprawnie.');
     }
@@ -443,9 +464,7 @@ export class GuestReservationFormComponent implements OnInit {
   }
 
   isStep1Valid(): boolean {
-    const reservOk = this.reservationForm.valid;
-    const transportOk = !this.withTransport || this.transportForm.valid;
-    return reservOk && transportOk;
+    return this.reservationForm.valid && this.bikesArray.valid && (!this.withTransport || this.transportForm.valid);
   }
 
   isStepCompleted(step: number): boolean {
@@ -480,26 +499,28 @@ export class GuestReservationFormComponent implements OnInit {
     const plannedDateVal = rv.plannedDate;
     const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
 
+    const bikesPayload = this.bikesArray.value.map((b: { brand: string; model: string; additionalInfo: string }) => ({
+      brand: b.brand.trim(),
+      model: b.model?.trim() || null,
+      additionalInfo: b.additionalInfo?.trim() || null
+    }));
+
     const reservationPayload = {
       firstName: rv.firstName.trim(),
       lastName: rv.lastName.trim(),
       email: rv.email.trim(),
       phone: rv.phone?.trim() || null,
-      bicycles: [{
-        brand: rv.bicycleBrand.trim(),
-        model: rv.bicycleModel?.trim() || null,
-        additionalInfo: rv.description?.trim() || null
-      }],
+      bicycles: bikesPayload,
       plannedDate: plannedDateStr,
-      description: rv.description?.trim() || null
+      description: bikesPayload[0]?.additionalInfo || null
     };
 
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.serviceReservation}?serviceId=${this.serviceInfo.id}`;
 
-    this.http.post<{ message: string; serviceOrderId: number }>(url, reservationPayload).subscribe({
+    this.http.post<{ message: string; orderIds: number[] }>(url, reservationPayload).subscribe({
       next: (res) => {
         if (this.withTransport) {
-          this.submitTransport(rv, res.serviceOrderId);
+          this.submitTransport(rv, res.orderIds);
         } else {
           this.onSuccess();
         }
@@ -558,15 +579,17 @@ export class GuestReservationFormComponent implements OnInit {
     return this.finalTransportPrice ?? this.serviceInfo?.transportCost ?? 0;
   }
 
-  private submitTransport(rv: any, serviceOrderId: number): void {
+  private submitTransport(rv: any, serviceOrderIds: number[]): void {
     const tv = this.transportForm.value;
+    const bikesPayload = this.bikesArray.value.map((b: { brand: string; model: string; additionalInfo: string }) => ({
+      brand: b.brand.trim(),
+      model: b.model?.trim() || '',
+      additionalInfo: b.additionalInfo?.trim() || ''
+    }));
+
     const payload = {
-      serviceOrderId,
-      bicycles: [{
-        brand: rv.bicycleBrand.trim(),
-        model: rv.bicycleModel?.trim() || '',
-        additionalInfo: rv.description?.trim() || ''
-      }],
+      serviceOrderIds,
+      bicycles: bikesPayload,
       email: rv.email.trim(),
       phone: rv.phone?.trim() || '',
       pickupStreet: tv.pickupStreet,

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -18,21 +18,72 @@ import {
 } from '../../shared/models/service-calendar.models';
 
 interface KanbanColumn {
-  status: CalendarOrderStatus;
+  id: string;
+  statuses: CalendarOrderStatus[];
+  dropStatus: CalendarOrderStatus;
   label: string;
   color: string;
   bgColor: string;
   orders: CalendarOrder[];
 }
 
+const STATUS_COLORS: Record<string, { color: string; bgColor: string }> = {
+  PENDING_CONFIRMATION:     { color: '#d97706', bgColor: '#fef3c7' },
+  CONFIRMED:                { color: '#2563eb', bgColor: '#eff6ff' },
+  WAITING_FOR_BIKE:         { color: '#2563eb', bgColor: '#eff6ff' },
+  IN_PROGRESS:              { color: '#ea580c', bgColor: '#fff7ed' },
+  WAITING_FOR_PARTS:        { color: '#7c3aed', bgColor: '#f5f3ff' },
+  AWAITING_CLIENT_DECISION: { color: '#4f46e5', bgColor: '#eef2ff' },
+  READY_FOR_PICKUP:         { color: '#16a34a', bgColor: '#f0fdf4' },
+  COMPLETED:                { color: '#64748b', bgColor: '#f8fafc' },
+  REJECTED:                 { color: '#dc2626', bgColor: '#fef2f2' },
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  PENDING_CONFIRMATION:     'Nowa rezerwacja',
+  CONFIRMED:                'Potwierdzona',
+  WAITING_FOR_BIKE:         'Oczekuje na rower',
+  IN_PROGRESS:              'W trakcie naprawy',
+  WAITING_FOR_PARTS:        'Oczekuje na części',
+  AWAITING_CLIENT_DECISION: 'Decyzja klienta',
+  READY_FOR_PICKUP:         'Gotowe do odbioru',
+  COMPLETED:                'Zakończone',
+  REJECTED:                 'Odrzucone',
+};
+
 const COLUMN_DEFS: Omit<KanbanColumn, 'orders'>[] = [
-  { status: 'PENDING_CONFIRMATION', label: 'Nowe rezerwacje',      color: '#d97706', bgColor: '#fef3c7' },
-  { status: 'WAITING_FOR_BIKE',     label: 'Oczekuje na rower',    color: '#2563eb', bgColor: '#eff6ff' },
-  { status: 'IN_PROGRESS',          label: 'W trakcie naprawy',    color: '#ea580c', bgColor: '#fff7ed' },
-  { status: 'WAITING_FOR_PARTS',    label: 'Oczekuje na części',   color: '#7c3aed', bgColor: '#f5f3ff' },
-  { status: 'AWAITING_CLIENT_DECISION', label: 'Decyzja klienta', color: '#4f46e5', bgColor: '#eef2ff' },
-  { status: 'READY_FOR_PICKUP',     label: 'Gotowe do odbioru',    color: '#16a34a', bgColor: '#f0fdf4' },
-  { status: 'COMPLETED',            label: 'Zakończone',           color: '#64748b', bgColor: '#f8fafc' },
+  {
+    id: 'reservations',
+    statuses: ['PENDING_CONFIRMATION', 'WAITING_FOR_BIKE'],
+    dropStatus: 'PENDING_CONFIRMATION',
+    label: 'Rezerwacje',
+    color: '#d97706',
+    bgColor: '#fef3c7',
+  },
+  {
+    id: 'in_progress',
+    statuses: ['IN_PROGRESS'],
+    dropStatus: 'IN_PROGRESS',
+    label: 'W trakcie naprawy',
+    color: '#ea580c',
+    bgColor: '#fff7ed',
+  },
+  {
+    id: 'paused',
+    statuses: ['WAITING_FOR_PARTS', 'AWAITING_CLIENT_DECISION'],
+    dropStatus: 'WAITING_FOR_PARTS',
+    label: 'Wstrzymana naprawa',
+    color: '#7c3aed',
+    bgColor: '#f5f3ff',
+  },
+  {
+    id: 'done',
+    statuses: ['READY_FOR_PICKUP', 'COMPLETED'],
+    dropStatus: 'READY_FOR_PICKUP',
+    label: 'Zakończone / Do odbioru',
+    color: '#16a34a',
+    bgColor: '#f0fdf4',
+  },
 ];
 
 @Component({
@@ -57,7 +108,6 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   columns: KanbanColumn[] = COLUMN_DEFS.map(d => ({ ...d, orders: [] }));
   technicians: Technician[] = [];
 
-  // Bieżący tydzień – punkt startowy ładowania
   currentWeekStart: Date = getWeekStart(new Date());
 
   // Modal
@@ -66,34 +116,7 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   showAcceptBike = false;
   preselectedOrderForAccept: CalendarOrder | null = null;
 
-  // Top scrollbar sync
-  @ViewChild('topScrollbar') topScrollbar!: ElementRef<HTMLDivElement>;
-  @ViewChild('topScrollbarInner') topScrollbarInner!: ElementRef<HTMLDivElement>;
-  @ViewChild('boardEl') boardEl!: ElementRef<HTMLDivElement>;
-  private _syncing = false;
-
-  onTopScroll(): void {
-    if (this._syncing || !this.boardEl) return;
-    this._syncing = true;
-    this.boardEl.nativeElement.scrollLeft = this.topScrollbar.nativeElement.scrollLeft;
-    this._syncing = false;
-  }
-
-  onBoardScroll(): void {
-    if (this._syncing || !this.topScrollbar) return;
-    this._syncing = true;
-    this.topScrollbar.nativeElement.scrollLeft = this.boardEl.nativeElement.scrollLeft;
-    this._syncing = false;
-  }
-
-  private updateScrollbarWidth(): void {
-    setTimeout(() => {
-      if (this.topScrollbarInner?.nativeElement && this.boardEl?.nativeElement) {
-        this.topScrollbarInner.nativeElement.style.width =
-          this.boardEl.nativeElement.scrollWidth + 'px';
-      }
-    }, 50);
-  }
+  private updateScrollbarWidth(): void {}
 
   // Undo move
   pendingMove: {
@@ -142,7 +165,6 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     this.loading = true;
     const sid = this.selectedServiceId;
 
-    // Ładujemy: poprzedni tydzień + bieżący + następny (3 równoległe wywołania)
     const prevStart = new Date(this.currentWeekStart);
     prevStart.setDate(prevStart.getDate() - 7);
     const nextStart = new Date(this.currentWeekStart);
@@ -185,12 +207,10 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   private fillColumns(orders: CalendarOrder[]): void {
     const cols = COLUMN_DEFS.map(d => ({ ...d, orders: [] as CalendarOrder[] }));
     for (const order of orders) {
-      // CONFIRMED traktujemy jak WAITING_FOR_BIKE
-      const status = order.status === 'CONFIRMED' ? 'WAITING_FOR_BIKE' : order.status;
-      const col = cols.find(c => c.status === status);
+      const status: CalendarOrderStatus = order.status === 'CONFIRMED' ? 'WAITING_FOR_BIKE' : order.status;
+      const col = cols.find(c => (c.statuses as string[]).includes(status));
       if (col) col.orders.push(order);
     }
-    // Sortuj karty po dacie rosnąco
     for (const col of cols) {
       col.orders.sort((a, b) => a.plannedDate.localeCompare(b.plannedDate));
     }
@@ -200,9 +220,8 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
 
   // ===== Drag & Drop =====
 
-  /** Lista ID wszystkich list – potrzebna żeby cdkDropList wiedział między jakimi listami można przenosić */
   get columnIds(): string[] {
-    return this.columns.map(c => 'col-' + c.status);
+    return this.columns.map(c => 'col-' + c.id);
   }
 
   onCardDrop(event: CdkDragDrop<CalendarOrder[]>, targetColumn: KanbanColumn): void {
@@ -211,16 +230,13 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Jeśli jest oczekujący ruch, zatwierdź go od razu przed nowym
     if (this.pendingMove) this.commitMove();
 
     const order: CalendarOrder = event.previousContainer.data[event.previousIndex];
-    const newStatus = targetColumn.status;
+    const newStatus = targetColumn.dropStatus;
 
-    // Przesuń kartę w UI natychmiast
     transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
 
-    // Zapamiętaj ruch – daj 5s na cofnięcie
     const timer = setTimeout(() => this.commitMove(), 6000);
     this.pendingMove = {
       order,
@@ -240,12 +256,18 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     this.pendingMove = null;
     clearTimeout(move.timer);
 
+    if (move.newStatus === 'READY_FOR_PICKUP' && !move.order.bicycleType?.trim()) {
+      transferArrayItem(move.toContainer, move.fromContainer, move.toIndex, move.fromIndex);
+      this.notificationService.error('Nie można ustawić statusu "Gotowe do odbioru" — rower nie ma przypisanego typu roweru.');
+      return;
+    }
+
     this.calendarService.updateOrderStatus(this.selectedServiceId, move.order.id, move.newStatus).subscribe({
       next: () => { move.order.status = move.newStatus; },
-      error: () => {
-        // Cofnij w UI przy błędzie API
+      error: (err: any) => {
         transferArrayItem(move.toContainer, move.fromContainer, move.toIndex, move.fromIndex);
-        this.notificationService.error('Nie udało się zmienić statusu zlecenia.');
+        const msg = err?.error?.message ?? 'Nie udało się zmienić statusu zlecenia.';
+        this.notificationService.error(msg);
       }
     });
   }
@@ -255,7 +277,6 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     const move = this.pendingMove;
     clearTimeout(move.timer);
     this.pendingMove = null;
-    // Przywróć kartę do poprzedniej kolumny
     transferArrayItem(move.toContainer, move.fromContainer, move.toIndex, move.fromIndex);
   }
 
@@ -289,9 +310,13 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   onQuickStatusChange(order: CalendarOrder, status: CalendarOrderStatus, event: Event): void {
     event.stopPropagation();
     if (!this.selectedServiceId) return;
+    if (status === 'READY_FOR_PICKUP' && !order.bicycleType?.trim()) {
+      this.notificationService.error('Nie można ustawić statusu "Gotowe do odbioru" — rower nie ma przypisanego typu roweru.');
+      return;
+    }
     this.calendarService.updateOrderStatus(this.selectedServiceId, order.id, status).subscribe({
       next: () => { this.loadKanbanData(); },
-      error: () => this.notificationService.error('Nie udało się zmienić statusu.')
+      error: (err: any) => this.notificationService.error(err?.error?.message ?? 'Nie udało się zmienić statusu.')
     });
   }
 
@@ -324,10 +349,22 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     this.loadKanbanData();
   }
 
+  // ===== Status helpers =====
+
+  getStatusInfo(status: CalendarOrderStatus): { color: string; bgColor: string } {
+    return STATUS_COLORS[status] ?? { color: '#94a3b8', bgColor: '#f8fafc' };
+  }
+
+  getStatusLabel(status: CalendarOrderStatus): string {
+    return STATUS_LABELS[status] ?? status;
+  }
+
   // ===== Navigation helpers =====
 
   get waitingForBikeOrders(): CalendarOrder[] {
-    return this.columns.find(c => c.status === 'WAITING_FOR_BIKE')?.orders ?? [];
+    return this.columns.flatMap(c =>
+      c.orders.filter(o => o.status === 'WAITING_FOR_BIKE' || o.status === 'CONFIRMED')
+    );
   }
 
   goToCalendar(): void {
@@ -346,13 +383,9 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     return this.technicians.find(t => t.id === technicianId)?.nickname ?? '';
   }
 
-  getColumnCount(col: KanbanColumn): number {
-    return col.orders.length;
-  }
-
   totalActiveOrders(): number {
-    return this.columns
-      .filter(c => c.status !== 'COMPLETED')
-      .reduce((sum, c) => sum + c.orders.length, 0);
+    return this.columns.reduce((sum, c) =>
+      sum + c.orders.filter(o => o.status !== 'COMPLETED').length, 0
+    );
   }
 }

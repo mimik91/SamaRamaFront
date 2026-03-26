@@ -160,25 +160,4 @@ export class ClientPanelListComponent implements OnInit {
   isBicycleSelected(bicycleId: number): boolean {
     return this.selectedBicycles.has(bicycleId);
   }
-
-  // Order service for selected bicycles
-  orderServiceForSelected(): void {
-    if (this.selectedBicycles.size === 0) {
-      this.notificationService.warning('Wybierz przynajmniej jeden rower, aby zamówić serwis');
-      return;
-    }
-
-    // Get selected bicycles as objects
-    const selectedBicycleObjects = this.bicycles.filter(b => this.selectedBicycles.has(b.id));
-
-    // Store selected bicycles in the service
-    this.bicycleSelectionService.selectBicycles(selectedBicycleObjects);
-
-    // Navigate to order service page without bicycle ID in URL
-    this.router.navigate(['/order-service']);
-
-    // Exit multi-select mode
-    this.isMultiSelectMode = false;
-    this.selectedBicycles.clear();
-  }
 }

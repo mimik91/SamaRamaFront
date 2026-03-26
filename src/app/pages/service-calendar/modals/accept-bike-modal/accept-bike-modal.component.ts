@@ -66,6 +66,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
 
   // Client lookup
   foundClient: ClientLookupResult | null = null;
+  clientFoundBy: 'email' | 'phone' | null = null;
+  clientLookingBy: 'email' | 'phone' | null = null;
   clientBikes: ClientBike[] = [];
   isLookingUpClient: boolean = false;
   selectedBikeId: number | null = null;
@@ -170,6 +172,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.clientEmail.length >= 5 && this.clientEmail.includes('@') && this.clientEmail.includes('.')) {
+      this.clientLookingBy = 'email';
       this.performClientLookup(this.clientEmail, undefined);
     }
   }
@@ -181,6 +184,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     }
     const digits = this.clientPhone.replace(/\D/g, '');
     if (digits.length >= 9) {
+      this.clientLookingBy = 'phone';
       this.performClientLookup(undefined, this.clientPhone);
     }
   }
@@ -190,6 +194,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.calendarService.lookupClient(email, phone).subscribe({
       next: (client) => {
         this.foundClient = client;
+        this.clientFoundBy = email ? 'email' : 'phone';
+        this.clientLookingBy = null;
         this.clientName = `${client.firstName} ${client.lastName || ''}`.trim();
         if (email && client.phone) this.clientPhone = client.phone;
         if (phone && client.email) this.clientEmail = client.email;
@@ -198,6 +204,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.foundClient = null;
+        this.clientFoundBy = null;
+        this.clientLookingBy = null;
         this.clientBikes = [];
         this.isLookingUpClient = false;
       }
@@ -226,6 +234,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
 
   resetClientLookup(): void {
     this.foundClient = null;
+    this.clientFoundBy = null;
+    this.clientLookingBy = null;
     this.clientBikes = [];
     this.selectedBikeId = null;
     this.bikeBrand = '';
@@ -414,7 +424,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
         }
       },
       error: (err: any) => {
-        this.notificationService.error(this.t('service_calendar.errors.accept_bike_failed'));
+        const msg = err?.error?.message ?? this.t('service_calendar.errors.accept_bike_failed');
+        this.notificationService.error(msg);
         this.isSubmitting = false;
         console.error('Error accepting bike:', err);
       }
@@ -480,9 +491,9 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
             }
           },
           error: (err: any) => {
-            this.notificationService.success(this.t('service_calendar.messages.order_created'));
+            const msg = err?.error?.message ?? this.t('service_calendar.errors.accept_bike_failed');
+            this.notificationService.error(msg);
             this.isSubmitting = false;
-            this.bikeAccepted.emit();
             console.error('Error updating status after create:', err);
           }
         });

@@ -6,7 +6,8 @@ import { firstValueFrom } from 'rxjs';
 import { I18nService } from '../../../../core/i18n.service';
 import { NotificationService } from '../../../../core/notification.service';
 import { ImageUtilsService } from '../../../../core/image-utils.service';
-import { ServiceCalendarService, OrderMessage, ReturnTransportRequestDto, TransportAddressResponse } from '../../services/service-calendar.service';
+import { EnumerationService } from '../../../../core/enumeration.service';
+import { ServiceCalendarService, OrderMessage, ReturnTransportRequestDto, TransportAddressResponse, BicycleUpdateDto } from '../../services/service-calendar.service';
 import {
   CalendarOrder,
   CalendarOrderStatus,
@@ -31,6 +32,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
   private notificationService = inject(NotificationService);
   private calendarService = inject(ServiceCalendarService);
   private imageUtils = inject(ImageUtilsService);
+  private enumerationService = inject(EnumerationService);
   private destroyRef = inject(DestroyRef);
 
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
@@ -111,6 +113,15 @@ export class OrderDetailsModalComponent implements OnDestroy {
   maintenanceAdvice: string = '';
   recommendedRepairs: string = '';
 
+  // Bike edit mode
+  isBikeEditMode = false;
+  editBikeBrand: string = '';
+  editBikeModel: string = '';
+  editBikeType: string = '';
+  editBikeFrameMaterial: string = '';
+  bikeTypes: string[] = [];
+  frameMaterials: string[] = [];
+
   // Min date for date picker (today)
   get minDate(): string {
     const today = new Date();
@@ -187,9 +198,12 @@ export class OrderDetailsModalComponent implements OnDestroy {
    */
   private normalizeOrderData(data: any): void {
     if (data.bicycle) {
+      this.fullOrder.bicycleId = data.bicycle.id;
       this.fullOrder.bicycleBrand = this.fullOrder.bicycleBrand || data.bicycle.brand || '';
       this.fullOrder.bicycleModel = this.fullOrder.bicycleModel || data.bicycle.model || '';
       this.fullOrder.bicycleFrameNumber = this.fullOrder.bicycleFrameNumber || data.bicycle.frameNumber || '';
+      this.fullOrder.bicycleType = data.bicycle.type || '';
+      this.fullOrder.bicycleFrameMaterial = data.bicycle.frameMaterial || '';
     }
     if (data.client) {
       const firstName = data.client.firstName || '';
@@ -308,6 +322,12 @@ export class OrderDetailsModalComponent implements OnDestroy {
   onStatusChange(): void {
     if (this.selectedStatus === this.fullOrder.status) return;
 
+    if (this.selectedStatus === 'READY_FOR_PICKUP' && !this.fullOrder.bicycleType?.trim()) {
+      this.notificationService.error('Nie można ustawić statusu "Gotowe do odbioru" — rower nie ma przypisanego typu roweru.');
+      setTimeout(() => { this.selectedStatus = this.fullOrder.status; });
+      return;
+    }
+
     this.isUpdating = true;
 
     // Specjalna obsluga: PENDING_CONFIRMATION -> WAITING_FOR_BIKE
@@ -324,7 +344,8 @@ export class OrderDetailsModalComponent implements OnDestroy {
         this.orderUpdated.emit();
       },
       error: (err: any) => {
-        this.notificationService.error(this.t('service_calendar.errors.update_status_failed'));
+        const msg = err?.error?.message ?? this.t('service_calendar.errors.update_status_failed');
+        this.notificationService.error(msg);
         this.isUpdating = false;
         this.selectedStatus = this.fullOrder.status; // Revert
         console.error('Error updating status:', err);
@@ -355,7 +376,8 @@ export class OrderDetailsModalComponent implements OnDestroy {
         });
       },
       error: (err: any) => {
-        this.notificationService.error(this.t('service_calendar.errors.update_status_failed'));
+        const msg = err?.error?.message ?? this.t('service_calendar.errors.update_status_failed');
+        this.notificationService.error(msg);
         this.isUpdating = false;
         this.selectedStatus = this.fullOrder.status; // Revert
         console.error('Error updating intermediate status:', err);
@@ -875,6 +897,56 @@ export class OrderDetailsModalComponent implements OnDestroy {
         console.error('Error creating return transport:', err);
       }
     });
+  }
+
+  // ============================================
+  // EDYCJA DANYCH ROWERU
+  // ============================================
+
+  toggleBikeEdit(): void {
+    this.isBikeEditMode = true;
+    this.editBikeBrand = this.fullOrder.bicycleBrand || '';
+    this.editBikeModel = this.fullOrder.bicycleModel || '';
+    this.editBikeType = this.fullOrder.bicycleType || '';
+    this.editBikeFrameMaterial = this.fullOrder.bicycleFrameMaterial || '';
+    if (this.bikeTypes.length === 0) {
+      this.enumerationService.getEnumeration('BIKE_TYPE').subscribe(types => (this.bikeTypes = types));
+    }
+    if (this.frameMaterials.length === 0) {
+      this.enumerationService.getEnumeration('FRAME_MATERIAL').subscribe(mats => (this.frameMaterials = mats));
+    }
+  }
+
+  cancelBikeEdit(): void {
+    this.isBikeEditMode = false;
+  }
+
+  saveBikeData(): void {
+    if (this.isUpdating || !this.fullOrder.bicycleId) return;
+    this.isUpdating = true;
+    const dto: BicycleUpdateDto = {
+      brand: this.editBikeBrand.trim(),
+      model: this.editBikeModel.trim() || undefined,
+      type: this.editBikeType || undefined,
+      frameMaterial: this.editBikeFrameMaterial || undefined
+    };
+    this.calendarService
+      .updateBicycle(this.fullOrder.bicycleId, this.serviceId, dto)
+      .subscribe({
+        next: () => {
+          this.fullOrder.bicycleBrand = this.editBikeBrand.trim();
+          this.fullOrder.bicycleModel = this.editBikeModel.trim();
+          this.fullOrder.bicycleType = this.editBikeType;
+          this.fullOrder.bicycleFrameMaterial = this.editBikeFrameMaterial;
+          this.isBikeEditMode = false;
+          this.isUpdating = false;
+          this.notificationService.success('Dane roweru zostały zaktualizowane.');
+        },
+        error: () => {
+          this.notificationService.error('Nie udało się zaktualizować danych roweru.');
+          this.isUpdating = false;
+        }
+      });
   }
 
   ngOnDestroy(): void {

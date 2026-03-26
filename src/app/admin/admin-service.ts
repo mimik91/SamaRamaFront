@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, catchError, throwError, map } from 'rxjs';
-import { ServiceOrder } from '../service-orders/service-order.model';
+import { ServiceOrder } from '../shared/models/service-order.model';
 import { environment } from '../environments/environments';
 import {
   DashboardStats,

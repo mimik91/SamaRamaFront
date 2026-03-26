@@ -16,7 +16,6 @@
     </div>
 
     <div class="kanban-header-right">
-      <!-- Service selector -->
       <div class="service-selector-wrapper" *ngIf="myServices.length > 1">
         <label class="selector-label">Serwis:</label>
         <select class="service-select" (change)="onServiceChange(+$any($event.target).value)">
@@ -49,18 +48,9 @@
     </select>
   </div>
 
-  <!-- Top scrollbar (sync z boardem) -->
-  <div
-    class="top-scrollbar"
-    *ngIf="!loading && selectedServiceId"
-    #topScrollbar
-    (scroll)="onTopScroll()"
-  >
-    <div class="top-scrollbar-inner" #topScrollbarInner></div>
-  </div>
-
   <!-- Kanban Board -->
-  <div class="kanban-board" *ngIf="!loading && selectedServiceId" #boardEl (scroll)="onBoardScroll()">
+  <div class="kanban-board" *ngIf="!loading && selectedServiceId">
+  <div class="kanban-board-inner">
     <div
       class="kanban-column"
       *ngFor="let col of columns"
@@ -78,7 +68,7 @@
       <div
         class="col-cards"
         cdkDropList
-        [id]="'col-' + col.status"
+        [id]="'col-' + col.id"
         [cdkDropListData]="col.orders"
         [cdkDropListConnectedTo]="columnIds"
         (cdkDropListDropped)="onCardDrop($event, col)"
@@ -89,10 +79,13 @@
           cdkDrag
           [cdkDragData]="order"
           (click)="openOrderDetails(order)"
-          [class.card--completed]="col.status === 'COMPLETED'"
+          [class.card--completed]="order.status === 'COMPLETED'"
+          [style.--col-color]="getStatusInfo(order.status).color"
+          [style.--col-bg]="getStatusInfo(order.status).bgColor"
         >
           <!-- Drag handle placeholder shown while dragging -->
           <div class="kanban-card-placeholder" *cdkDragPlaceholder></div>
+
           <!-- Card top: date + technician -->
           <div class="card-meta">
             <span class="card-date">{{ formatDate(order.plannedDate) }}</span>
@@ -100,6 +93,14 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               {{ getTechnicianName(order.assignedTechnicianId) }}
             </span>
+          </div>
+
+          <!-- Status badge -->
+          <div class="card-status-badge"
+               [style.color]="getStatusInfo(order.status).color"
+               [style.background]="getStatusInfo(order.status).bgColor">
+            <span class="card-status-dot" [style.background]="getStatusInfo(order.status).color"></span>
+            {{ getStatusLabel(order.status) }}
           </div>
 
           <!-- Bike info -->
@@ -123,7 +124,7 @@
 
             <!-- PENDING_CONFIRMATION: Potwierdź -->
             <button
-              *ngIf="col.status === 'PENDING_CONFIRMATION'"
+              *ngIf="order.status === 'PENDING_CONFIRMATION'"
               class="btn-action btn-action--confirm"
               (click)="onQuickConfirm(order, $event)"
             >
@@ -131,9 +132,9 @@
               Potwierdź
             </button>
 
-            <!-- WAITING_FOR_BIKE: Przyjmij rower -->
+            <!-- WAITING_FOR_BIKE / CONFIRMED: Przyjmij rower -->
             <button
-              *ngIf="col.status === 'WAITING_FOR_BIKE'"
+              *ngIf="order.status === 'WAITING_FOR_BIKE' || order.status === 'CONFIRMED'"
               class="btn-action btn-action--accept"
               (click)="onQuickAcceptBike(order, $event)"
             >
@@ -143,7 +144,7 @@
 
             <!-- IN_PROGRESS: Gotowe do odbioru -->
             <button
-              *ngIf="col.status === 'IN_PROGRESS'"
+              *ngIf="order.status === 'IN_PROGRESS'"
               class="btn-action btn-action--ready"
               (click)="onQuickStatusChange(order, 'READY_FOR_PICKUP', $event)"
             >
@@ -153,7 +154,7 @@
 
             <!-- WAITING_FOR_PARTS / AWAITING_CLIENT_DECISION: Wznów -->
             <button
-              *ngIf="col.status === 'WAITING_FOR_PARTS' || col.status === 'AWAITING_CLIENT_DECISION'"
+              *ngIf="order.status === 'WAITING_FOR_PARTS' || order.status === 'AWAITING_CLIENT_DECISION'"
               class="btn-action btn-action--resume"
               (click)="onQuickStatusChange(order, 'IN_PROGRESS', $event)"
             >
@@ -163,7 +164,7 @@
 
             <!-- READY_FOR_PICKUP: Zakończ -->
             <button
-              *ngIf="col.status === 'READY_FOR_PICKUP'"
+              *ngIf="order.status === 'READY_FOR_PICKUP'"
               class="btn-action btn-action--complete"
               (click)="onQuickStatusChange(order, 'COMPLETED', $event)"
             >
@@ -180,6 +181,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 
 </div>
@@ -204,6 +206,8 @@
   [serviceId]="selectedServiceId!"
   [technicians]="technicians"
   calendarMode="SIMPLE"
+  [reservationAvailable]="true"
+  [transportAvailable]="true"
   (close)="onOrderDetailsClose()"
   (orderUpdated)="onOrderUpdated()"
   (acceptBike)="onAcceptBikeFromDetails($event)"

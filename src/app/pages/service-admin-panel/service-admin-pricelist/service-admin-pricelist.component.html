@@ -43,40 +43,34 @@
           *ngIf="!isEditing"
           (click)="startEditing()"
           class="btn btn-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
           </svg>
           Edytuj cennik
         </button>
-
-        <div *ngIf="isEditing" class="edit-actions">
-          <button
-            (click)="cancelEditing()"
-            class="btn btn-secondary"
-            [disabled]="isSaving">
-            Anuluj
-          </button>
-          <button
-            (click)="savePricelist()"
-            class="btn btn-success"
-            [disabled]="isSaving">
-            <span *ngIf="!isSaving">Zapisz zmiany</span>
-            <span *ngIf="isSaving">Zapisywanie...</span>
-          </button>
-        </div>
       </div>
     </div>
 
-    <!-- Additional Fields -->
+    <!-- Settings -->
     <div class="pricelist-settings">
-      <div class="setting-row">
-        <label class="checkbox-label">
+      <!-- Toggle: cennik aktywny -->
+      <div class="setting-row setting-row-toggle">
+        <span class="setting-label">Cennik aktywny (widoczny publicznie)</span>
+        <label class="toggle-label" [class.toggle-disabled]="!isEditing">
           <input
             type="checkbox"
             [(ngModel)]="pricelistActive"
-            [disabled]="!isEditing">
-          <span>Cennik aktywny (widoczny publicznie)</span>
+            [disabled]="!isEditing"
+            class="toggle-input"
+            style="display:none" />
+          <span class="toggle-slider"></span>
+          <span
+            class="toggle-text"
+            [class.toggle-text-on]="pricelistActive"
+            [class.toggle-text-off]="!pricelistActive">
+            {{ pricelistActive ? 'Aktywny' : 'Nieaktywny' }}
+          </span>
         </label>
       </div>
 
@@ -111,7 +105,7 @@
           type="text"
           [(ngModel)]="searchQuery"
           placeholder="Wpisz nazwę usługi..."
-          class="search-input">
+          class="search-input" />
       </div>
 
       <div class="filter-group">
@@ -124,15 +118,15 @@
         </select>
       </div>
 
-      <div class="filter-group">
+      <div class="filter-group filter-group-checkbox">
         <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="showOnlyAssigned">
+          <input type="checkbox" [(ngModel)]="showOnlyAssigned" />
           <span>Tylko przypisane</span>
         </label>
       </div>
 
       <button
-        *ngIf="searchQuery || selectedCategoryId || showOnlyAssigned"
+        [style.visibility]="(searchQuery || selectedCategoryId || showOnlyAssigned) ? 'visible' : 'hidden'"
         (click)="clearFilters()"
         class="btn-clear-filters">
         Wyczyść filtry
@@ -141,35 +135,35 @@
 
     <!-- Categories List -->
     <div class="categories-list">
-      <div *ngFor="let category of getFilteredCategories()trackBy: trackByCategoryId" class="category-section">
+      <div *ngFor="let category of getFilteredCategories(); trackBy: trackByCategoryId" class="category-section">
         <h3 class="category-title" (click)="toggleCategory(category.category.id)">
-          {{ category.category.name }}
-              <svg *ngIf="isCategoryExpanded(category.category.id)" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-up toggle-icon">
-                <polyline points="18 15 12 9 6 15"></polyline>
-            </svg>
-            <svg *ngIf="!isCategoryExpanded(category.category.id)" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down toggle-icon">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+          <span>{{ category.category.name }}</span>
+          <svg *ngIf="isCategoryExpanded(category.category.id)" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+          <svg *ngIf="!isCategoryExpanded(category.category.id)" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
         </h3>
 
-        <div *ngIf="isCategoryExpanded(category.category.id)"class="items-grid">
-          <div *ngFor="let item of category.items; trackBy: trackByItemId" class="item-card" [class.assigned]="item.isAssigned">
-            <div class="item-info">
-              <h4>{{ item.name }}</h4>
-              <span *ngIf="item.isAssigned" class="assigned-badge">Przypisana</span>
-            </div>
+        <div *ngIf="isCategoryExpanded(category.category.id)" class="items-list">
+          <div
+            *ngFor="let item of category.items; trackBy: trackByItemId"
+            class="item-row"
+            [class.item-row-assigned]="item.isAssigned">
+            <span class="item-name" [class.item-name-assigned]="item.isAssigned">{{ item.name }}</span>
 
             <div class="item-price">
-              <div class="price-input-group">
+              <div class="price-input-group" [class.price-input-group-assigned]="item.isAssigned">
                 <input
                   type="number"
                   [value]="item.price"
                   (input)="onPriceChange(item, $any($event.target).value)"
                   [disabled]="!isEditing"
-                  placeholder="0.00"
+                  placeholder=""
                   min="0"
                   step="0.01"
-                  class="price-input">
+                  class="price-input" />
                 <span class="currency">zł</span>
               </div>
 
@@ -178,7 +172,7 @@
                 (click)="removeItem(item)"
                 class="btn-remove"
                 title="Usuń z cennika">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -196,6 +190,40 @@
         </svg>
         <p>Nie znaleziono usług pasujących do filtrów</p>
         <button (click)="clearFilters()" class="btn btn-secondary">Wyczyść filtry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky floating save bar -->
+  <div *ngIf="isEditing" class="sticky-save-bar">
+    <div class="sticky-save-inner">
+      <span class="sticky-save-hint">Tryb edycji — wpisz ceny i zapisz zmiany</span>
+      <div class="sticky-save-actions">
+        <button
+          type="button"
+          class="cancel-btn"
+          (click)="cancelEditing()"
+          [disabled]="isSaving">
+          Anuluj
+        </button>
+        <button
+          type="button"
+          class="save-btn"
+          (click)="savePricelist()"
+          [disabled]="isSaving">
+          <span *ngIf="!isSaving">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Zapisz zmiany
+          </span>
+          <span *ngIf="isSaving" class="saving-inner">
+            <div class="button-spinner"></div>
+            Zapisywanie...
+          </span>
+        </button>
       </div>
     </div>
   </div>

@@ -119,6 +119,7 @@
                   (blur)="onEmailBlur()"
                   name="clientEmail"
                   [placeholder]="t('service_calendar.create_order.email_placeholder')"
+                  [disabled]="!!(clientLookingBy === 'phone' || (foundClient && clientFoundBy === 'phone'))"
                 />
               </div>
               <div class="form-group">
@@ -130,6 +131,7 @@
                   (blur)="onPhoneBlur()"
                   name="clientPhone"
                   [placeholder]="t('service_calendar.create_order.phone_placeholder')"
+                  [disabled]="!!(clientLookingBy === 'email' || (foundClient && clientFoundBy === 'email'))"
                 />
               </div>
             </div>

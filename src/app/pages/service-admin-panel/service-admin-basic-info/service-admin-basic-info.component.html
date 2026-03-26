@@ -2,30 +2,28 @@
   <!-- Header with Edit/Save buttons -->
   <div class="header-section">
     <div class="header-actions">
-      <button 
-        *ngIf="!isEditMode" 
-        (click)="toggleEditMode()" 
+      <button
+        *ngIf="!isEditMode"
+        (click)="toggleEditMode()"
         class="edit-btn">
         Edytuj dane
       </button>
       <ng-container *ngIf="isEditMode">
-        <button (click)="toggleEditMode()" class="cancel-btn">
-          Anuluj
-        </button>
-        <button 
-          (click)="saveChanges()" 
+        <button (click)="toggleEditMode()" class="cancel-btn">Anuluj</button>
+        <button
+          (click)="saveChanges()"
           [disabled]="isSaving"
           class="save-btn">
           {{ isSaving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
         </button>
       </ng-container>
     </div>
-    
+
     <div *ngIf="saveSuccess" class="success-message">
       ✓ Zmiany zostały zapisane pomyślnie
     </div>
     <div *ngIf="saveError" class="error-message">
-      <span *ngFor="let line of saveError.split('\n'); let last = last">{{ line }}<br *ngIf="!last"></span>
+      <span *ngFor="let line of saveError.split('\n'); let last = last">{{ line }}<br *ngIf="!last" /></span>
     </div>
   </div>
 
@@ -38,8 +36,8 @@
       <p class="description-text" *ngIf="!isEditMode">
         {{ serviceDetails.description || 'Brak opisu' }}
       </p>
-      <textarea 
-        *ngIf="isEditMode" 
+      <textarea
+        *ngIf="isEditMode"
         [(ngModel)]="editableData.description"
         rows="5"
         placeholder="Dodaj opis swojego serwisu..."
@@ -51,76 +49,76 @@
       <h2>Informacje podstawowe</h2>
       <div class="detail-item">
         <span class="label">Nazwa:</span>
-        <span class="value">{{ serviceDetails.name }}</span>
+        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.name }}</span>
+        <input *ngIf="isEditMode" type="text" [value]="serviceDetails.name" disabled class="edit-input input-disabled" />
       </div>
       <div class="detail-item">
         <span class="label">Suffix:</span>
-        <span class="value">{{ serviceDetails.suffix || '-' }}</span>
+        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.suffix || '-' }}</span>
+        <input *ngIf="isEditMode" type="text" [value]="serviceDetails.suffix || ''" disabled class="edit-input input-disabled" />
       </div>
       <div class="detail-item">
         <span class="label">Email:</span>
-        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.email || '-' }}</span>
-        <input 
-          *ngIf="isEditMode" 
-          type="email" 
-          [(ngModel)]="editableData.email"
-          class="edit-input"
-          placeholder="email@example.com">
-      </div>
-      <div class="detail-item" *ngIf="isEditMode || serviceDetails.email">
-        <span class="label">Wyświetlaj email:</span>
         <span class="value" *ngIf="!isEditMode">
-          <span [class.badge-success]="serviceDetails.displayEmail" 
-                [class.badge-inactive]="!serviceDetails.displayEmail"
-                class="badge">
-            {{ serviceDetails.displayEmail ? 'Tak' : 'Nie' }}
+          {{ serviceDetails.email || '-' }}
+          <span *ngIf="serviceDetails.email"
+            [class.badge-success]="serviceDetails.displayEmail"
+            [class.badge-inactive]="!serviceDetails.displayEmail"
+            class="badge badge-inline">
+            {{ serviceDetails.displayEmail ? 'Publiczny' : 'Ukryty' }}
           </span>
         </span>
-        <label *ngIf="isEditMode" class="checkbox-label">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="editableData.displayEmail"
-            class="edit-checkbox">
-          <span class="checkbox-text">Pokaż email publicznie</span>
-        </label>
+        <div *ngIf="isEditMode" class="input-with-toggle">
+          <input
+            type="email"
+            [(ngModel)]="editableData.email"
+            class="edit-input"
+            placeholder="email@example.com" />
+          <label class="toggle-label">
+            <input type="checkbox" [(ngModel)]="editableData.displayEmail" class="toggle-input" />
+            <span class="toggle-slider"></span>
+            <span class="toggle-text" [class.toggle-text-on]="editableData.displayEmail" [class.toggle-text-off]="!editableData.displayEmail">
+              {{ editableData.displayEmail ? 'Publiczny' : 'Ukryty' }}
+            </span>
+          </label>
+        </div>
       </div>
       <div class="detail-item">
         <span class="label">Telefon:</span>
-        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.phoneNumber || '-' }}</span>
-        <input 
-          *ngIf="isEditMode" 
-          type="tel" 
-          [(ngModel)]="editableData.phoneNumber"
-          maxlength="9"
-          class="edit-input"
-          placeholder="123456789">
-      </div>
-      <div class="detail-item" *ngIf="isEditMode || serviceDetails.phoneNumber">
-        <span class="label">Wyświetlaj telefon:</span>
         <span class="value" *ngIf="!isEditMode">
-          <span [class.badge-success]="serviceDetails.displayPhoneNumber" 
-                [class.badge-inactive]="!serviceDetails.displayPhoneNumber"
-                class="badge">
-            {{ serviceDetails.displayPhoneNumber ? 'Tak' : 'Nie' }}
+          {{ serviceDetails.phoneNumber || '-' }}
+          <span *ngIf="serviceDetails.phoneNumber"
+            [class.badge-success]="serviceDetails.displayPhoneNumber"
+            [class.badge-inactive]="!serviceDetails.displayPhoneNumber"
+            class="badge badge-inline">
+            {{ serviceDetails.displayPhoneNumber ? 'Publiczny' : 'Ukryty' }}
           </span>
         </span>
-        <label *ngIf="isEditMode" class="checkbox-label">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="editableData.displayPhoneNumber"
-            class="edit-checkbox">
-          <span class="checkbox-text">Pokaż telefon publicznie</span>
-        </label>
+        <div *ngIf="isEditMode" class="input-with-toggle">
+          <input
+            type="tel"
+            [(ngModel)]="editableData.phoneNumber"
+            maxlength="9"
+            class="edit-input"
+            placeholder="123456789" />
+          <label class="toggle-label">
+            <input type="checkbox" [(ngModel)]="editableData.displayPhoneNumber" class="toggle-input" />
+            <span class="toggle-slider"></span>
+            <span class="toggle-text" [class.toggle-text-on]="editableData.displayPhoneNumber" [class.toggle-text-off]="!editableData.displayPhoneNumber">
+              {{ editableData.displayPhoneNumber ? 'Publiczny' : 'Ukryty' }}
+            </span>
+          </label>
+        </div>
       </div>
       <div class="detail-item">
         <span class="label">Osoba kontaktowa:</span>
         <span class="value" *ngIf="!isEditMode">{{ serviceDetails.contactPerson || '-' }}</span>
-        <input 
-          *ngIf="isEditMode" 
-          type="text" 
+        <input
+          *ngIf="isEditMode"
+          type="text"
           [(ngModel)]="editableData.contactPerson"
           class="edit-input"
-          placeholder="Jan Kowalski">
+          placeholder="Jan Kowalski" />
       </div>
     </div>
 
@@ -147,10 +145,152 @@
         <span class="label">Kod pocztowy:</span>
         <span class="value">{{ serviceDetails.postalCode }}</span>
       </div>
-      
       <div class="detail-item" *ngIf="serviceDetails.latitude && serviceDetails.longitude">
         <span class="label">Współrzędne:</span>
         <span class="value">{{ serviceDetails.latitude }}, {{ serviceDetails.longitude }}</span>
+      </div>
+      <p *ngIf="isEditMode" class="address-note">
+        Aby zmienić adres, skontaktuj się z administratorem.
+      </p>
+    </div>
+
+    <!-- Media społecznościowe + Strona WWW -->
+    <div class="detail-card">
+      <h2>Media społecznościowe</h2>
+
+      <!-- Strona WWW -->
+      <div class="detail-item">
+        <span class="label">Strona WWW:</span>
+        <span class="value" *ngIf="!isEditMode">
+          <a *ngIf="serviceDetails.website" [href]="serviceDetails.website" target="_blank">
+            {{ serviceDetails.website }}
+          </a>
+          <span *ngIf="!serviceDetails.website">-</span>
+        </span>
+        <div *ngIf="isEditMode" class="social-input-wrapper">
+          <span class="social-icon web-icon">
+            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+            </svg>
+          </span>
+          <input
+            type="url"
+            [(ngModel)]="editableData.website"
+            placeholder="https://example.com"
+            class="edit-input social-input"
+            [class.input-valid]="isValidUrl(editableData.website)"
+            [class.input-invalid]="editableData.website && !isValidUrl(editableData.website)" />
+          <span class="url-valid-icon" *ngIf="isValidUrl(editableData.website)">✓</span>
+          <span class="url-invalid-icon" *ngIf="editableData.website && !isValidUrl(editableData.website)">✗</span>
+        </div>
+      </div>
+
+      <!-- Facebook -->
+      <div class="detail-item">
+        <span class="label">Facebook:</span>
+        <span class="value" *ngIf="!isEditMode">
+          <a *ngIf="serviceDetails.facebook" [href]="serviceDetails.facebook" target="_blank">
+            {{ serviceDetails.facebook }}
+          </a>
+          <span *ngIf="!serviceDetails.facebook">-</span>
+        </span>
+        <div *ngIf="isEditMode" class="social-input-wrapper">
+          <span class="social-icon fb-icon">
+            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M24 12.073C24 5.445 18.627 0 12 0S0 5.445 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047v-2.66c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.265h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+            </svg>
+          </span>
+          <input
+            type="url"
+            [(ngModel)]="editableData.facebook"
+            placeholder="https://facebook.com/..."
+            class="edit-input social-input"
+            [class.input-valid]="isValidUrl(editableData.facebook)"
+            [class.input-invalid]="editableData.facebook && !isValidUrl(editableData.facebook)" />
+          <span class="url-valid-icon" *ngIf="isValidUrl(editableData.facebook)">✓</span>
+          <span class="url-invalid-icon" *ngIf="editableData.facebook && !isValidUrl(editableData.facebook)">✗</span>
+        </div>
+      </div>
+
+      <!-- Instagram -->
+      <div class="detail-item">
+        <span class="label">Instagram:</span>
+        <span class="value" *ngIf="!isEditMode">
+          <a *ngIf="serviceDetails.instagram" [href]="serviceDetails.instagram" target="_blank">
+            {{ serviceDetails.instagram }}
+          </a>
+          <span *ngIf="!serviceDetails.instagram">-</span>
+        </span>
+        <div *ngIf="isEditMode" class="social-input-wrapper">
+          <span class="social-icon ig-icon">
+            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+            </svg>
+          </span>
+          <input
+            type="url"
+            [(ngModel)]="editableData.instagram"
+            placeholder="https://instagram.com/..."
+            class="edit-input social-input"
+            [class.input-valid]="isValidUrl(editableData.instagram)"
+            [class.input-invalid]="editableData.instagram && !isValidUrl(editableData.instagram)" />
+          <span class="url-valid-icon" *ngIf="isValidUrl(editableData.instagram)">✓</span>
+          <span class="url-invalid-icon" *ngIf="editableData.instagram && !isValidUrl(editableData.instagram)">✗</span>
+        </div>
+      </div>
+
+      <!-- TikTok -->
+      <div class="detail-item">
+        <span class="label">TikTok:</span>
+        <span class="value" *ngIf="!isEditMode">
+          <a *ngIf="serviceDetails.tiktok" [href]="serviceDetails.tiktok" target="_blank">
+            {{ serviceDetails.tiktok }}
+          </a>
+          <span *ngIf="!serviceDetails.tiktok">-</span>
+        </span>
+        <div *ngIf="isEditMode" class="social-input-wrapper">
+          <span class="social-icon tt-icon">
+            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+            </svg>
+          </span>
+          <input
+            type="url"
+            [(ngModel)]="editableData.tiktok"
+            placeholder="https://tiktok.com/@..."
+            class="edit-input social-input"
+            [class.input-valid]="isValidUrl(editableData.tiktok)"
+            [class.input-invalid]="editableData.tiktok && !isValidUrl(editableData.tiktok)" />
+          <span class="url-valid-icon" *ngIf="isValidUrl(editableData.tiktok)">✓</span>
+          <span class="url-invalid-icon" *ngIf="editableData.tiktok && !isValidUrl(editableData.tiktok)">✗</span>
+        </div>
+      </div>
+
+      <!-- YouTube -->
+      <div class="detail-item">
+        <span class="label">YouTube:</span>
+        <span class="value" *ngIf="!isEditMode">
+          <a *ngIf="serviceDetails.youtube" [href]="serviceDetails.youtube" target="_blank">
+            {{ serviceDetails.youtube }}
+          </a>
+          <span *ngIf="!serviceDetails.youtube">-</span>
+        </span>
+        <div *ngIf="isEditMode" class="social-input-wrapper">
+          <span class="social-icon yt-icon">
+            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
+            </svg>
+          </span>
+          <input
+            type="url"
+            [(ngModel)]="editableData.youtube"
+            placeholder="https://youtube.com/..."
+            class="edit-input social-input"
+            [class.input-valid]="isValidUrl(editableData.youtube)"
+            [class.input-invalid]="editableData.youtube && !isValidUrl(editableData.youtube)" />
+          <span class="url-valid-icon" *ngIf="isValidUrl(editableData.youtube)">✓</span>
+          <span class="url-invalid-icon" *ngIf="editableData.youtube && !isValidUrl(editableData.youtube)">✗</span>
+        </div>
       </div>
     </div>
 
@@ -160,9 +300,10 @@
       <div class="detail-item">
         <span class="label">Status rejestracji:</span>
         <span class="value">
-          <span [class.badge-success]="serviceDetails.isRegistered" 
-                [class.badge-inactive]="!serviceDetails.isRegistered"
-                class="badge">
+          <span
+            [class.badge-success]="serviceDetails.isRegistered"
+            [class.badge-inactive]="!serviceDetails.isRegistered"
+            class="badge">
             {{ serviceDetails.isRegistered ? 'Zarejestrowany' : 'Oczekuje' }}
           </span>
         </span>
@@ -177,92 +318,13 @@
       </div>
     </div>
 
-    <!-- Strona WWW -->
-    <div class="detail-card full-width">
-      <h2>Strona WWW</h2>
-      <div class="detail-item">
-        <span class="label">Adres strony:</span>
-        <span class="value" *ngIf="!isEditMode">
-          <a *ngIf="serviceDetails.website" [href]="serviceDetails.website" target="_blank">
-            {{ serviceDetails.website }}
-          </a>
-          <span *ngIf="!serviceDetails.website">-</span>
-        </span>
-        <input 
-          *ngIf="isEditMode" 
-          type="url" 
-          [(ngModel)]="editableData.website"
-          placeholder="https://example.com"
-          class="edit-input">
-      </div>
-    </div>
+  </div>
 
-    <!-- Social Media -->
-    <div class="detail-card full-width">
-      <h2>Media społecznościowe</h2>
-      <div class="social-grid">
-        <div class="detail-item">
-          <span class="label">Facebook:</span>
-          <span class="value" *ngIf="!isEditMode">
-            <a *ngIf="serviceDetails.facebook" [href]="serviceDetails.facebook" target="_blank">
-              {{ serviceDetails.facebook }}
-            </a>
-            <span *ngIf="!serviceDetails.facebook">-</span>
-          </span>
-          <input 
-            *ngIf="isEditMode" 
-            type="url" 
-            [(ngModel)]="editableData.facebook"
-            placeholder="https://facebook.com/..."
-            class="edit-input">
-        </div>
-        <div class="detail-item">
-          <span class="label">Instagram:</span>
-          <span class="value" *ngIf="!isEditMode">
-            <a *ngIf="serviceDetails.instagram" [href]="serviceDetails.instagram" target="_blank">
-              {{ serviceDetails.instagram }}
-            </a>
-            <span *ngIf="!serviceDetails.instagram">-</span>
-          </span>
-          <input 
-            *ngIf="isEditMode" 
-            type="url" 
-            [(ngModel)]="editableData.instagram"
-            placeholder="https://instagram.com/..."
-            class="edit-input">
-        </div>
-        <div class="detail-item">
-          <span class="label">TikTok:</span>
-          <span class="value" *ngIf="!isEditMode">
-            <a *ngIf="serviceDetails.tiktok" [href]="serviceDetails.tiktok" target="_blank">
-              {{ serviceDetails.tiktok }}
-            </a>
-            <span *ngIf="!serviceDetails.tiktok">-</span>
-          </span>
-          <input 
-            *ngIf="isEditMode" 
-            type="url" 
-            [(ngModel)]="editableData.tiktok"
-            placeholder="https://tiktok.com/@..."
-            class="edit-input">
-        </div>
-        <div class="detail-item">
-          <span class="label">YouTube:</span>
-          <span class="value" *ngIf="!isEditMode">
-            <a *ngIf="serviceDetails.youtube" [href]="serviceDetails.youtube" target="_blank">
-              {{ serviceDetails.youtube }}
-            </a>
-            <span *ngIf="!serviceDetails.youtube">-</span>
-          </span>
-          <input 
-            *ngIf="isEditMode" 
-            type="url" 
-            [(ngModel)]="editableData.youtube"
-            placeholder="https://youtube.com/..."
-            class="edit-input">
-        </div>
-      </div>
-    </div>
-
+  <!-- Bottom action buttons (edit mode) -->
+  <div *ngIf="isEditMode" class="bottom-actions">
+    <button (click)="toggleEditMode()" class="cancel-btn">Anuluj</button>
+    <button (click)="saveChanges()" [disabled]="isSaving" class="save-btn">
+      {{ isSaving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+    </button>
   </div>
 </div>

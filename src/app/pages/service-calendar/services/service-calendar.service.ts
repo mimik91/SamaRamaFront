@@ -65,6 +65,14 @@ export interface OrderMessage {
   read: boolean;
 }
 
+export interface BicycleUpdateDto {
+  brand: string;
+  model?: string;
+  frameNumber?: string;
+  type?: string;
+  frameMaterial?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -166,6 +174,12 @@ export class ServiceCalendarService {
     const params = new HttpParams().set('serviceId', serviceId.toString());
     return this.http.put<CalendarOrder>(`${this.apiUrl}${this.endpoints.orders}/${orderId}`, data, { params })
       .pipe(catchError(this.handleError('updateOrder')));
+  }
+
+  updateBicycle(bikeId: number, serviceId: number, data: BicycleUpdateDto): Observable<unknown> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.patch<unknown>(`${this.apiUrl}${this.endpoints.bikes}/${bikeId}`, data, { params })
+      .pipe(catchError(this.handleError('updateBicycle')));
   }
 
   /**

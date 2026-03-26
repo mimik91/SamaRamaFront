@@ -10,8 +10,6 @@ import { authGuard, clientGuard, adminGuard, serviceGuard, moderatorGuard } from
 import { ClientPanelListComponent } from './pages/client-panel/client-panel-list/client-panel-list.component';
 import { ClientPanelFormComponent } from './pages/client-panel/client-panel-form/client-panel-form.component';
 import { ClientPanelDetailsComponent } from './pages/client-panel/client-panel-bicycle-details/client-panel-bicycle-details.component';
-import { ServiceOrderFormComponent } from './service-orders/service-order-form/service-order-form.component';
-import { GuestServiceOrderComponent } from './service-orders/guest-service-order/guest-service-order.component';
 import { TransportOrderFormComponent } from './transport-orders/transport-order-form.component';
 import { GuestReservationFormComponent } from './service-reservation/guest-reservation-form.component';
 import { ServiceHistoryPageComponent } from './pages/service-history-page/service-history-page.component';
@@ -26,8 +24,6 @@ import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { AdminServicesVerificationComponent } from './admin/admin-services-verification/admin-services-verification.component';
 import { AdminRegisteredServiceEditionComponent } from './admin/admin-registered-service-edition/admin-registered-service-edition.component';
 import { AccountComponent } from './account/account.component';
-import { ServiceAppointmentsComponent } from './service-orders/service-appointments/service-appointments.component';
-import { ServiceOrderDetailsComponent } from './service-orders/service-order-details/service-order-details.component';
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
@@ -116,13 +112,6 @@ export const routes: Routes = [
       path: 'cooperation', 
       component: CooperationComponent,
       title: 'CycloPick | mapa serwisów rowerowych'
-    },
-    
-    // Guest order route - dostępna dla niezalogowanych
-    { 
-      path: 'guest-order', 
-      component: GuestServiceOrderComponent,
-      title: 'Zamów Serwis jako Gość'
     },
     
     // Transport order - dostępna dla wszystkich (bez guarda)
@@ -306,32 +295,6 @@ export const routes: Routes = [
       canActivate: [moderatorGuard],
       title: 'Zamówienia - Admin'
     },
-    { 
-      path: 'order-service', 
-      component: ServiceOrderFormComponent, 
-      canActivate: [clientGuard],
-      title: 'Zamów Serwis'
-    },
-    { 
-      path: 'bicycles/:id/order-service', 
-      component: ServiceOrderFormComponent, 
-      canActivate: [clientGuard],
-      title: 'Zamów Serwis'
-    },
-    { 
-      path: 'service-appointments', 
-      component: ServiceAppointmentsComponent, 
-      canActivate: [clientGuard],
-      title: 'Moje Wizyty'
-    },
-    { 
-      path: 'service-appointments/:id', 
-      component: ServiceOrderDetailsComponent, 
-      canActivate: [clientGuard], 
-      data: { RenderMode: 'client' },
-      title: 'Szczegóły Wizyty'
-    },
-    
     // Account route - dostępna dla zalogowanych użytkowników
     { 
       path: 'account', 

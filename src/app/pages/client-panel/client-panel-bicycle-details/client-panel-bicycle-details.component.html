@@ -349,7 +349,7 @@
         >&#8249;</button>
 
         <div class="lightbox-content" (click)="$event.stopPropagation()">
-          <img [src]="galleryImages[lightboxIndex]?.url" alt="Zdjęcie roweru" class="lightbox-img">
+          <img [src]="galleryImages[lightboxIndex].url" alt="Zdjęcie roweru" class="lightbox-img">
           <div class="lightbox-toolbar">
             <button
               class="lightbox-delete-btn"
@@ -387,7 +387,7 @@
         >&#8249;</button>
 
         <div class="lightbox-content" (click)="$event.stopPropagation()">
-          <img [src]="serviceOrderImages[soLightboxIndex]?.url" alt="Zdjęcie zlecenia serwisowego" class="lightbox-img">
+          <img [src]="serviceOrderImages[soLightboxIndex].url" alt="Zdjęcie zlecenia serwisowego" class="lightbox-img">
         </div>
 
         <button

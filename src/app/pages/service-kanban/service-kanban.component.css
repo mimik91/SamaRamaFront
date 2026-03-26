@@ -157,13 +157,18 @@
 
 /* ===== Board ===== */
 .kanban-board {
-  display: flex;
-  gap: 14px;
   padding: 16px 20px 20px;
   overflow-x: auto;
   overflow-y: hidden;
   flex: 1;
+}
+
+.kanban-board-inner {
+  display: flex;
+  gap: 14px;
   align-items: flex-start;
+  width: max-content;
+  margin: 0 auto;
 }
 
 .kanban-board::-webkit-scrollbar { height: 6px; }
@@ -313,6 +318,24 @@
 }
 
 .card-client svg { flex-shrink: 0; color: var(--text-muted); }
+
+.card-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px 2px 6px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.card-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
 .card-desc {
   font-size: 0.78rem;
@@ -509,31 +532,10 @@
 
 .btn-undo-confirm:hover { background: #2563eb; }
 
-/* ===== Top scrollbar ===== */
-.top-scrollbar {
-  overflow-x: scroll;
-  overflow-y: hidden;
-  height: 12px;
-  flex-shrink: 0;
-  background: #f1f5f9;
-  border-bottom: 1px solid #e2e8f0;
-  scrollbar-width: thin;
-  scrollbar-color: #94a3b8 transparent;
-}
-
-.top-scrollbar::-webkit-scrollbar { height: 8px; }
-.top-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.top-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-.top-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
-
-.top-scrollbar-inner {
-  height: 1px;
-  min-width: 100%;
-}
-
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .kanban-title { font-size: 1rem; }
-  .kanban-board { padding: 12px; gap: 10px; }
+  .kanban-board { padding: 12px; }
+  .kanban-board-inner { gap: 10px; }
   .kanban-column { min-width: 230px; width: 240px; }
 }

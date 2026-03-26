@@ -615,13 +615,6 @@ export class ClientPanelDetailsComponent implements OnInit {
     this.previewUrl = null;
   }
 
-  orderService(): void {
-    if (this.bicycle) {
-      this.bicycleSelectionService.selectBicycles([this.bicycle]);
-      this.router.navigate(['/order-service']);
-    }
-  }
-
   handleImageError(): void {
     if (this.bicycleImages?.images) {
       this.bicycleImages.images.MAIN_PHOTO = [];

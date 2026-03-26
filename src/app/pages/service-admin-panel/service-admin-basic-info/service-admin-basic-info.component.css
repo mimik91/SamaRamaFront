@@ -15,7 +15,9 @@
   margin-bottom: 16px;
 }
 
-.edit-btn, .save-btn, .cancel-btn {
+.edit-btn,
+.save-btn,
+.cancel-btn {
   padding: 10px 20px;
   border: none;
   border-radius: var(--radius-md);
@@ -36,13 +38,12 @@
 }
 
 .save-btn {
-  background-color: var(--color-success);
+  background-color: var(--color-primary-dark);
   color: var(--color-white);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: var(--color-success-dark);
-  box-shadow: var(--shadow-success);
+  background-color: var(--color-primary);
 }
 
 .save-btn:disabled {
@@ -51,13 +52,13 @@
 }
 
 .cancel-btn {
-  background-color: var(--color-danger);
-  color: var(--color-white);
+  background-color: transparent;
+  color: var(--color-accent-orange);
+  border: 2px solid var(--color-accent-orange);
 }
 
 .cancel-btn:hover {
-  background-color: var(--color-danger-dark);
-  box-shadow: var(--shadow-danger-hover);
+  background-color: var(--color-accent-orange-bg);
 }
 
 .success-message {
@@ -76,9 +77,10 @@
   font-weight: 500;
 }
 
+/* 2-column grid: Opis spans full width, then 2x2 below */
 .details-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: 3fr 2fr;
   gap: 24px;
 }
 
@@ -117,7 +119,8 @@
 .label {
   font-weight: 600;
   color: var(--text-primary);
-  min-width: 150px;
+  min-width: 130px;
+  flex-shrink: 0;
 }
 
 .value {
@@ -138,16 +141,7 @@
   color: var(--color-primary-light);
 }
 
-.social-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0;
-}
-
-.social-grid .detail-item {
-  padding: 12px 16px;
-}
-
+/* --- Edit inputs --- */
 .edit-input {
   flex: 1;
   padding: 8px 12px;
@@ -162,6 +156,13 @@
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
+}
+
+.input-disabled {
+  background-color: var(--color-gray-100);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  border-color: var(--border-color-gray);
 }
 
 .edit-textarea {
@@ -183,44 +184,101 @@
   box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
 }
 
-.checkbox-label {
+/* --- Social media input with icon --- */
+.social-input-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
+  gap: 6px;
   flex: 1;
+}
+
+.social-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.social-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.web-icon {
+  background: var(--color-gray-500);
+}
+
+.fb-icon {
+  background: #1877f2;
+}
+
+.ig-icon {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+}
+
+.tt-icon {
+  background: #010101;
+}
+
+.yt-icon {
+  background: #ff0000;
+}
+
+/* URL validation icons */
+.url-valid-icon {
+  color: var(--color-success-text, #2f855a);
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.url-invalid-icon {
+  color: var(--color-danger-text, #e53e3e);
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.input-valid {
+  border-color: var(--color-success-text, #2f855a) !important;
+}
+
+.input-invalid {
+  border-color: var(--color-danger-text, #e53e3e) !important;
+}
+
+/* --- Input + toggle inline --- */
+.input-with-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.input-with-toggle .edit-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.input-with-toggle .toggle-label {
+  flex-shrink: 0;
   justify-content: flex-end;
 }
 
-.edit-checkbox {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--color-primary);
+.badge-inline {
+  margin-left: 8px;
+  vertical-align: middle;
 }
 
-.checkbox-text {
-  color: var(--text-primary);
-  font-size: 0.95rem;
-}
-
-.badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.badge-success {
-  background-color: var(--color-success-bg);
-  color: var(--color-success-text);
-}
-
-.badge-inactive {
-  background-color: var(--color-danger-bg);
-  color: var(--color-danger-text);
-}
-
+/* --- Toggle switch --- */
 .toggle-label {
   display: flex;
   align-items: center;
@@ -268,39 +326,104 @@
 }
 
 .toggle-text {
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  min-width: 70px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 65px;
 }
 
+.toggle-text-on {
+  color: var(--color-success-text, #2f855a);
+}
+
+.toggle-text-off {
+  color: var(--color-danger-text, #e53e3e);
+}
+
+/* --- Badges --- */
+.badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.badge-success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.badge-inactive {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+/* --- Address note --- */
+.address-note {
+  margin: 16px 0 0 0;
+  padding: 10px 14px;
+  background-color: var(--color-gray-100);
+  border-left: 3px solid var(--color-gray-400, #9ca3af);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* --- Description text --- */
 .description-text {
   line-height: 1.6;
   color: var(--text-primary);
   margin: 0;
 }
 
-@media (max-width: 968px) {
-  .social-grid {
-    grid-template-columns: 1fr;
-  }
+/* --- Bottom action bar --- */
+.bottom-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 2px solid var(--border-color-gray);
 }
 
-@media (max-width: 768px) {
+/* --- Responsive --- */
+@media (max-width: 900px) {
   .details-grid {
     grid-template-columns: 1fr;
   }
 
-  .header-actions {
-    flex-direction: column;
+  .detail-card.full-width {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .basic-info-container {
+    padding: 12px;
   }
 
-  .edit-btn, .save-btn, .cancel-btn {
+  .header-actions,
+  .bottom-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .edit-btn,
+  .save-btn,
+  .cancel-btn {
     width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .detail-card {
+    padding: 16px;
   }
 
   .detail-item {
     flex-direction: column;
     align-items: flex-start;
+    gap: 8px;
   }
 
   .label {
@@ -312,11 +435,38 @@
     width: 100%;
   }
 
-  .edit-input {
+  /* input-with-toggle: stack toggle below the input */
+  .input-with-toggle {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .input-with-toggle .edit-input {
     width: 100%;
   }
 
-  .checkbox-label {
+  .input-with-toggle .toggle-label {
     justify-content: flex-start;
+  }
+
+  /* Social inputs: full width, icon stays */
+  .social-input-wrapper {
+    width: 100%;
+  }
+
+  .social-input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .toggle-label {
+    justify-content: flex-start;
+  }
+
+  .edit-input {
+    width: 100%;
+    box-sizing: border-box;
   }
 }

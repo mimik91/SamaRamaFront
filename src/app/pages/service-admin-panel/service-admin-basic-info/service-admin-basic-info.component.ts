@@ -140,6 +140,16 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
     });
   }
 
+  isValidUrl(url: string | undefined): boolean {
+    if (!url) return false;
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleDateString('pl-PL', {

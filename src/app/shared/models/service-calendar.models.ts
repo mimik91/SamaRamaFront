@@ -239,9 +239,12 @@ export interface CalendarOrder {
   clientPhone?: string;
 
   // Dane roweru (plaska struktura z backendu)
+  bicycleId?: number;
   bicycleBrand: string;
   bicycleModel?: string;
   bicycleFrameNumber?: string;
+  bicycleType?: string;
+  bicycleFrameMaterial?: string;
 
   // Dane zlecenia
   plannedDate: string; // YYYY-MM-DD
@@ -341,6 +344,8 @@ export interface UpdateCalendarOrderDto {
   brand?: string;
   model?: string;
   frameNumber?: string;
+  type?: string;
+  frameMaterial?: string;
   // Dane klienta
   firstName?: string;
   lastName?: string;

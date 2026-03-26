@@ -21,11 +21,11 @@
 
         <!-- Menu dla zalogowanych serwisów -->
         <ng-container *ngIf="authService.isService()">
-          <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
-          <a href="javascript:void(0)" (click)="navigateToServicePanel($event)" class="nav-link">Kalendarz</a>
-          <a href="javascript:void(0)" (click)="navigateToKanban($event)" class="nav-link">Kanban</a>
           <a href="javascript:void(0)" (click)="navigateToProfileSettings($event)" class="nav-link">Ustawienia profilu</a>
+          <a href="javascript:void(0)" (click)="navigateToKanban($event)" class="nav-link">Kanban</a>
+          <a href="javascript:void(0)" (click)="navigateToServicePanel($event)" class="nav-link">Kalendarz</a>
           <a href="javascript:void(0)" (click)="navigateToServiceHistory($event)" class="nav-link">Historia zleceń</a>
+          <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
         </ng-container>
 
         <!-- Menu dla zalogowanych klientów -->

@@ -56,6 +56,17 @@
   transition: background-color 0.3s;
 }
 
+.nav-link--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-link--icon svg {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
 .navbar-menu a:hover, .navbar-menu a.active {
   background-color: var(--color-primary-darker);
   color: var(--color-white);

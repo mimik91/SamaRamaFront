@@ -34,6 +34,8 @@ import { TermsOfServiceComponent } from './core/terms-of-service.component'
 import { TermsOfServiceWorkshopsComponent } from './core/terms-of-service-workshops.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
 import { CookiePolicyComponent } from './core/cookie-policy.component';
+import { PricingCyclistsComponent } from './core/pricing-cyclists.component';
+import { PricingServicesComponent } from './core/pricing-services.component';
 import { suffixValidationGuard } from './auth/suffix-validation.guard';
 import { ServiceProfileTitleResolver} from './environments/service-profile-title.resolver';
 import { ServiceProfileResolver } from './pages/service-profile/service-profile.resolver';
@@ -105,6 +107,16 @@ export const routes: Routes = [
       path: 'cookie-policy',
       component: CookiePolicyComponent,
       title: 'CycloPick | Polityka Cookies'
+    },
+    {
+      path: 'cennik-rowerzysci',
+      component: PricingCyclistsComponent,
+      title: 'CycloPick | Cennik dla rowerzystów'
+    },
+    {
+      path: 'cennik-serwisy',
+      component: PricingServicesComponent,
+      title: 'CycloPick | Oferta dla serwisów rowerowych'
     },
     
     // Pricing route - dostępna dla wszystkich

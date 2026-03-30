@@ -22,7 +22,7 @@
 
       <h1>Serwis rowerowy Kraków<br>door-to-door –<br>z darmowym transportem!</h1>
 
-      <p class="hero-tagline">Serwis na jeden klik – wybierz <strong>CycloPick.pl</strong></p>
+      <p class="hero-tagline">Przyjedziemy po Twój rower i odwieziemy go gotowego – wieczorem, bez wychodzenia z domu.</p>
 
       <div class="hero-pins">
         <p class="hero-pin-line">
@@ -409,24 +409,23 @@
 
     <!-- ===== PASEK PARTNERÓW ===== -->
     <div class="partners-bar" *ngIf="partnerLogos.length > 0" aria-label="Partnerzy CycloPick">
-      <p class="partners-bar-label">Nasi Partnerzy</p>
-      <div class="partners-logos-wrapper">
-        <div class="partners-logos-track">
+      <p class="partners-bar-label">Zweryfikowane warsztaty z darmowym transportem CycloPick</p>
+      <div
+        class="partners-logos-wrapper"
+        [class.is-dragging]="isDragging"
+        (mousedown)="onMouseDown($event)"
+        (touchstart)="onTouchStart($event)"
+      >
+        <div class="partners-logos-track" #partnerTrack>
           <!-- oryginał -->
           <a
             *ngFor="let partner of partnerLogos"
             [routerLink]="'/' + partner.suffix"
             class="partner-logo-link"
             title="Serwis rowerowy – Partner CycloPick"
+            (click)="isDragging ? $event.preventDefault() : null"
           >
-            <img
-              [src]="partner.logoUrl"
-              alt="Logo partnera CycloPick"
-              class="partner-logo-img"
-              loading="lazy"
-              width="80"
-              height="56"
-            />
+            <img [src]="partner.logoUrl" alt="Logo partnera CycloPick" class="partner-logo-img" loading="lazy" width="80" height="56" />
           </a>
           <!-- duplikat dla seamless loop -->
           <a
@@ -436,15 +435,9 @@
             aria-hidden="true"
             tabindex="-1"
             title="Serwis rowerowy – Partner CycloPick"
+            (click)="isDragging ? $event.preventDefault() : null"
           >
-            <img
-              [src]="partner.logoUrl"
-              alt=""
-              class="partner-logo-img"
-              loading="lazy"
-              width="80"
-              height="56"
-            />
+            <img [src]="partner.logoUrl" alt="" class="partner-logo-img" loading="lazy" width="80" height="56" />
           </a>
         </div>
       </div>

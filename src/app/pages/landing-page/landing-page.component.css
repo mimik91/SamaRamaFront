@@ -1785,13 +1785,8 @@
 }
 
 /* =========================================
-   PASEK PARTNERÓW — marquee
+   PASEK PARTNERÓW — marquee (JS-driven)
    ========================================= */
-@keyframes scroll-logos {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
 .partners-bar {
   padding: 40px 0 32px;
 }
@@ -1808,9 +1803,14 @@
 
 .partners-logos-wrapper {
   overflow: hidden;
-  /* fade edges */
+  cursor: grab;
+  user-select: none;
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+
+.partners-logos-wrapper.is-dragging {
+  cursor: grabbing;
 }
 
 .partners-logos-track {
@@ -1818,11 +1818,7 @@
   align-items: center;
   gap: 12px;
   width: max-content;
-  animation: scroll-logos 28s linear infinite;
-}
-
-.partners-logos-track:hover {
-  animation-play-state: paused;
+  will-change: transform;
 }
 
 .partner-logo-link {

@@ -1,5 +1,5 @@
-import { Component, OnInit, Inject, inject } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { Component, OnInit, OnDestroy, AfterViewInit, Inject, inject, ViewChild, ElementRef, PLATFORM_ID, NgZone } from '@angular/core';
+import { isPlatformBrowser, CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { Meta, Title, DomSanitizer, SafeHtml, SafeStyle } from '@angular/platform-browser';
 import { ServiceProfileService } from '../service-profile/service-profile.service';
@@ -11,8 +11,29 @@ import { ServiceProfileService } from '../service-profile/service-profile.servic
   templateUrl: './landing-page.component.html',
   styleUrls: ['./landing-page.component.css']
 })
-export class LandingPageComponent implements OnInit {
+export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private serviceProfileService = inject(ServiceProfileService);
+  private platformId = inject(PLATFORM_ID);
+  private ngZone = inject(NgZone);
+
+  @ViewChild('partnerTrack') partnerTrackRef!: ElementRef<HTMLElement>;
+
+  // Marquee state
+  private rafId: number | null = null;
+  private marqueePos = 0;
+  private marqueeHalfWidth = 0;
+  private readonly MARQUEE_SPEED = 0.6;
+
+  // Drag state
+  isDragging = false;
+  private dragStartX = 0;
+  private dragStartPos = 0;
+
+  // Bound listeners for cleanup
+  private readonly onMouseMoveBound = (e: MouseEvent) => this.onMouseMove(e);
+  private readonly onMouseUpBound = () => this.onDragEnd();
+  private readonly onTouchMoveBound = (e: TouchEvent) => this.onTouchMove(e);
+  private readonly onTouchEndBound = () => this.onDragEnd();
 
   // Zmienna na bezpieczny JSON-LD
   schemaJson: SafeHtml | null = null;
@@ -45,7 +66,6 @@ export class LandingPageComponent implements OnInit {
     }
   ];
 
-  // Dane do FAQ (zoptymalizowane pod SEO: serwis rowerowy Kraków door-to-door + edukacja o pinezkach)
   faqData = [
     {
       question: 'Co oznacza niebieska pinezka na mapie CycloPick?',
@@ -72,6 +92,10 @@ export class LandingPageComponent implements OnInit {
       answer: 'Tak, przeglądanie mapy serwisów rowerowych i korzystanie z wyszukiwarki CycloPick jest całkowicie bezpłatne. Płacisz wyłącznie za naprawę roweru – transport do Partnerów CycloPick jest w cenie serwisu.'
     },
     {
+      question: 'Czy mój rower jest bezpieczny podczas transportu?',
+      answer: 'Tak – każdy rower przewożony przez CycloPick jest objęty ubezpieczeniem do 20 000 zł. Nasi kurierzy zabezpieczają sprzęt przed załadunkiem i transportują go dedykowanym pojazdem. W razie jakiejkolwiek szkody – choć jeszcze nigdy się to nie zdarzyło – jesteś w pełni chroniony.'
+    },
+    {
       question: 'Jak dodać swój serwis rowerowy do mapy CycloPick?',
       answer: 'Zarejestruj się przez formularz „Zarejestruj serwis". Podstawowa wizytówka na mapie jest darmowa. Jako Partner CycloPick zyskujesz klientów door-to-door, system rezerwacji online i cyfrową historię napraw dla Twoich klientów.'
     }
@@ -90,17 +114,131 @@ export class LandingPageComponent implements OnInit {
       "url('assets/images/pictures/Rowerzysta na tle wawelu.webp')"
     );
     this.setMetaTags();
-    this.setCanonicalUrl(); // Warto rozważyć przeniesienie tego do serwisu globalnego
+    this.setCanonicalUrl();
     this.generateSchemaMarkup();
     this.loadPartnerLogos();
   }
 
+  ngAfterViewInit(): void {
+    // Marquee uruchamiamy dopiero po załadowaniu logo z API – patrz startMarquee()
+  }
+
+  ngOnDestroy(): void {
+    this.stopMarquee();
+    if (isPlatformBrowser(this.platformId)) {
+      document.removeEventListener('mousemove', this.onMouseMoveBound);
+      document.removeEventListener('mouseup', this.onMouseUpBound);
+      document.removeEventListener('touchmove', this.onTouchMoveBound);
+      document.removeEventListener('touchend', this.onTouchEndBound);
+    }
+  }
+
+  // ============================================================
+  // PARTNER LOGOS
+  // ============================================================
+
   private loadPartnerLogos(): void {
     this.serviceProfileService.getReservationServicesLogos().subscribe({
-      next: (logos) => { this.partnerLogos = logos; },
+      next: (logos) => {
+        this.partnerLogos = logos;
+        // Dajemy czas na wyrenderowanie *ngFor przed pomiarem szerokości
+        setTimeout(() => this.startMarquee(), 100);
+      },
       error: () => { /* pasek po prostu nie wyświetli się */ }
     });
   }
+
+  // ============================================================
+  // MARQUEE (requestAnimationFrame)
+  // ============================================================
+
+  private startMarquee(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const track = this.partnerTrackRef?.nativeElement;
+    if (!track) return;
+
+    // Połowa szerokości tracka = szerokość jednego zestawu logo (oryginał)
+    this.marqueeHalfWidth = track.scrollWidth / 2;
+    if (this.marqueeHalfWidth === 0) return;
+
+    this.stopMarquee();
+
+    // Uruchamiamy poza strefą Angular – nie triggeruje change detection na każdą klatkę
+    this.ngZone.runOutsideAngular(() => {
+      const step = () => {
+        if (!this.isDragging) {
+          this.marqueePos += this.MARQUEE_SPEED;
+          // Gdy przesuniemy o dokładnie połowę – reset do 0 (seamless loop)
+          if (this.marqueePos >= this.marqueeHalfWidth) {
+            this.marqueePos = 0;
+          }
+          track.style.transform = `translateX(-${this.marqueePos}px)`;
+        }
+        this.rafId = requestAnimationFrame(step);
+      };
+      this.rafId = requestAnimationFrame(step);
+    });
+  }
+
+  private stopMarquee(): void {
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+  }
+
+  // ============================================================
+  // DRAG (mouse + touch)
+  // ============================================================
+
+  onMouseDown(e: MouseEvent): void {
+    this.startDrag(e.clientX);
+    document.addEventListener('mousemove', this.onMouseMoveBound);
+    document.addEventListener('mouseup', this.onMouseUpBound);
+  }
+
+  onTouchStart(e: TouchEvent): void {
+    this.startDrag(e.touches[0].clientX);
+    document.addEventListener('touchmove', this.onTouchMoveBound, { passive: true });
+    document.addEventListener('touchend', this.onTouchEndBound);
+  }
+
+  private startDrag(clientX: number): void {
+    this.isDragging = true;
+    this.dragStartX = clientX;
+    this.dragStartPos = this.marqueePos;
+  }
+
+  private onMouseMove(e: MouseEvent): void {
+    this.handleDragMove(e.clientX);
+  }
+
+  private onTouchMove(e: TouchEvent): void {
+    this.handleDragMove(e.touches[0].clientX);
+  }
+
+  private handleDragMove(clientX: number): void {
+    if (!this.isDragging) return;
+    const delta = this.dragStartX - clientX;
+    let newPos = this.dragStartPos + delta;
+    // Wrap within [0, halfWidth)
+    newPos = ((newPos % this.marqueeHalfWidth) + this.marqueeHalfWidth) % this.marqueeHalfWidth;
+    this.marqueePos = newPos;
+    const track = this.partnerTrackRef?.nativeElement;
+    if (track) track.style.transform = `translateX(-${this.marqueePos}px)`;
+  }
+
+  private onDragEnd(): void {
+    this.isDragging = false;
+    document.removeEventListener('mousemove', this.onMouseMoveBound);
+    document.removeEventListener('mouseup', this.onMouseUpBound);
+    document.removeEventListener('touchmove', this.onTouchMoveBound);
+    document.removeEventListener('touchend', this.onTouchEndBound);
+  }
+
+  // ============================================================
+  // META / SEO
+  // ============================================================
 
   private setMetaTags(): void {
     const pageTitle = 'Serwis Rowerowy Kraków Door-to-Door – Darmowy Transport | CycloPick';
@@ -111,7 +249,6 @@ export class LandingPageComponent implements OnInit {
     this.meta.updateTag({ name: 'keywords', content: 'serwis rowerowy Kraków, transport rowerów Kraków, serwis rowerowy door-to-door, naprawa roweru Kraków, warsztat rowerowy Kraków, CycloPick' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large' });
 
-    // Open Graph
     this.meta.updateTag({ property: 'og:title', content: pageTitle });
     this.meta.updateTag({ property: 'og:description', content: pageDescription });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
@@ -120,7 +257,6 @@ export class LandingPageComponent implements OnInit {
     this.meta.updateTag({ property: 'og:locale', content: 'pl_PL' });
     this.meta.updateTag({ property: 'og:site_name', content: 'CycloPick' });
 
-    // Twitter
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
     this.meta.updateTag({ name: 'twitter:description', content: pageDescription });
@@ -128,14 +264,8 @@ export class LandingPageComponent implements OnInit {
 
   private setCanonicalUrl(): void {
     const canonicalUrl = 'https://www.cyclopick.pl/';
-
-    // Usuń istniejący canonical link jeśli istnieje
     const existingLink = this.document.querySelector('link[rel="canonical"]');
-    if (existingLink) {
-      existingLink.remove();
-    }
-
-    // Dodaj nowy canonical link
+    if (existingLink) existingLink.remove();
     const link = this.document.createElement('link');
     link.setAttribute('rel', 'canonical');
     link.setAttribute('href', canonicalUrl);
@@ -143,7 +273,6 @@ export class LandingPageComponent implements OnInit {
   }
 
   private generateSchemaMarkup(): void {
-    // Rozbudowana schema łącząca WebSite, SoftwareApplication i FAQPage
     const schema = {
       '@context': 'https://schema.org',
       '@graph': [
@@ -156,17 +285,11 @@ export class LandingPageComponent implements OnInit {
           'publisher': {
             '@type': 'Organization',
             'name': 'CycloPick',
-            'logo': {
-              '@type': 'ImageObject',
-              'url': 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png'
-            }
+            'logo': { '@type': 'ImageObject', 'url': 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png' }
           },
           'potentialAction': {
             '@type': 'SearchAction',
-            'target': {
-              '@type': 'EntryPoint',
-              'urlTemplate': 'https://www.cyclopick.pl/serwisy/{city}'
-            },
+            'target': { '@type': 'EntryPoint', 'urlTemplate': 'https://www.cyclopick.pl/serwisy/{city}' },
             'query-input': 'required name=city'
           }
         },
@@ -175,11 +298,7 @@ export class LandingPageComponent implements OnInit {
           'name': 'CycloPick',
           'applicationCategory': 'LifestyleApplication',
           'operatingSystem': 'Web',
-          'offers': {
-            '@type': 'Offer',
-            'price': '0',
-            'priceCurrency': 'PLN'
-          },
+          'offers': { '@type': 'Offer', 'price': '0', 'priceCurrency': 'PLN' },
           'description': 'Aplikacja internetowa do znajdowania warsztatów rowerowych w Polsce.'
         },
         {
@@ -187,76 +306,37 @@ export class LandingPageComponent implements OnInit {
           'mainEntity': this.faqData.map(item => ({
             '@type': 'Question',
             'name': item.question,
-            'acceptedAnswer': {
-              '@type': 'Answer',
-              'text': item.answer
-            }
+            'acceptedAnswer': { '@type': 'Answer', 'text': item.answer }
           }))
-        }
-      ]
-    };
-
-    // Dane strukturalne: Usługa transportu rowerów w Krakowie (LocalBusiness + Service)
-    const transportServiceSchema = {
-      '@context': 'https://schema.org',
-      '@graph': [
+        },
         {
           '@type': 'Service',
           '@id': 'https://www.cyclopick.pl/#transport-service',
           'name': 'Transport roweru door-to-door Kraków',
           'serviceType': 'Serwis rowerowy z transportem door-to-door',
           'description': 'Kompleksowy serwis rowerowy door-to-door w Krakowie. Transport roweru od drzwi do drzwi. U Partnerów CycloPick transport gratis, do pozostałych serwisów 60 zł w obie strony.',
-          'areaServed': {
-            '@type': 'City',
-            'name': 'Kraków',
-            'addressCountry': 'PL'
-          },
-          'provider': {
-            '@type': 'Organization',
-            'name': 'CycloPick',
-            'url': 'https://www.cyclopick.pl'
-          },
+          'areaServed': { '@type': 'City', 'name': 'Kraków', 'addressCountry': 'PL' },
+          'provider': { '@type': 'Organization', 'name': 'CycloPick', 'url': 'https://www.cyclopick.pl' },
           'offers': [
-            {
-              '@type': 'Offer',
-              'name': 'Transport roweru do Partnera CycloPick',
-              'description': 'Darmowy transport roweru door-to-door do serwisów partnerskich CycloPick w Krakowie',
-              'price': '0',
-              'priceCurrency': 'PLN',
-              'availability': 'https://schema.org/InStock'
-            },
-            {
-              '@type': 'Offer',
-              'name': 'Transport roweru do dowolnego serwisu w Krakowie',
-              'description': 'Transport roweru do dowolnego serwisu rowerowego w Krakowie za stałą cenę',
-              'price': '60',
-              'priceCurrency': 'PLN',
-              'availability': 'https://schema.org/InStock'
-            }
+            { '@type': 'Offer', 'name': 'Transport roweru do Partnera CycloPick', 'price': '0', 'priceCurrency': 'PLN', 'availability': 'https://schema.org/InStock' },
+            { '@type': 'Offer', 'name': 'Transport roweru do dowolnego serwisu w Krakowie', 'price': '60', 'priceCurrency': 'PLN', 'availability': 'https://schema.org/InStock' }
           ]
         }
       ]
     };
 
-    const combinedSchema = {
-      '@context': 'https://schema.org',
-      '@graph': [
-        ...schema['@graph'],
-        ...transportServiceSchema['@graph']
-      ]
-    };
-
-    // Sanityzacja JSON-LD, aby można go było bezpiecznie wstrzyknąć do HTML
     this.schemaJson = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(combinedSchema)}</script>`
+      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
     );
   }
 
+  // ============================================================
+  // NAVIGATION
+  // ============================================================
+
   scrollToOptions(): void {
     const el = this.document.getElementById('options-section');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   navigateToMap(): void {
@@ -265,22 +345,15 @@ export class LandingPageComponent implements OnInit {
 
   navigateToKrakowMap(): void {
     const zoom = window.innerWidth < 768 ? '12' : '14';
-    this.router.navigate(['/mapa-serwisow'], {
-      queryParams: { lat: '50.0647', lng: '19.9450', zoom }
-    });
+    this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '50.0647', lng: '19.9450', zoom } });
   }
 
   navigateToKrakow(): void {
-    this.router.navigate(['/serwisy/krakow']).then(() => {
-      window.scrollTo({ top: 0 });
-    });
+    this.router.navigate(['/serwisy/krakow']).then(() => { window.scrollTo({ top: 0 }); });
   }
 
   navigateToKrakowMapPartner(): void {
     const zoom = window.innerWidth < 768 ? '12' : '14';
-    this.router.navigate(['/mapa-serwisow'], {
-      queryParams: { lat: '50.0647', lng: '19.9450', zoom, coverages: '342' }
-    });
+    this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '50.0647', lng: '19.9450', zoom, coverages: '342' } });
   }
-
 }

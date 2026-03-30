@@ -67,7 +67,8 @@ export const environment = {
       pricelist: '/bike-services/:id/pricelist',
       pricelistAvailableItems: '/bike-services/pricelist/available-items',
       packagesConfig: '/bike-services/service-packages-config',
-      packages: '/bike-services/service-packages'
+      packages: '/bike-services/service-packages',
+      logosReservationAvailable: '/bike-services/logos/reservation-available'
     },
 
     bikeServicesRegistered: {

@@ -82,12 +82,15 @@ export class OrderDetailsModalComponent implements OnDestroy {
   returnPickupMethod: 'self' | 'delivery' = 'self';
   returnDeliveryStreet: string = '';
   returnDeliveryBuilding: string = '';
-  returnDeliveryApartment: string = '';
+  returnDeliveryCity: string = 'Kraków';
   returnTransportNotes: string = '';
   isSavingReturnTransport: boolean = false;
   isLoadingReturnTransport: boolean = false;
   transportAddress: TransportAddressResponse | null = null;
   transportAddressLoaded: boolean = false;
+
+  // Cities
+  cities: string[] = [];
 
   // Statuses that allow image uploads (IN_PROGRESS and onwards)
   private readonly IMAGE_ALLOWED_STATUSES: CalendarOrderStatus[] = [
@@ -153,6 +156,12 @@ export class OrderDetailsModalComponent implements OnDestroy {
     this.notes = this.order.serviceNotes || '';
     this.maintenanceAdvice = this.order.maintenanceAdvice || '';
     this.recommendedRepairs = this.order.recommendedRepairs || '';
+
+    // Load cities for return transport
+    this.enumerationService.getCities().subscribe({
+      next: (cities) => { this.cities = cities; },
+      error: (err) => { console.error('Error loading cities:', err); }
+    });
 
     // Fetch full order details from API to get all fields (including bicycleBrand, bicycleModel)
     this.loadFullOrderDetails();
@@ -846,7 +855,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
 
   get isReturnDeliveryFormValid(): boolean {
     if (this.returnPickupMethod !== 'delivery') return true;
-    return !!(this.returnDeliveryStreet.trim() && this.returnDeliveryBuilding.trim());
+    return !!(this.returnDeliveryStreet.trim() && this.returnDeliveryBuilding.trim() && this.returnDeliveryCity.trim());
   }
 
   onReturnTabClick(): void {
@@ -880,7 +889,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
     const data: ReturnTransportRequestDto = {
       deliveryStreet: this.returnDeliveryStreet.trim(),
       deliveryBuilding: this.returnDeliveryBuilding.trim(),
-      deliveryApartment: this.returnDeliveryApartment.trim() || undefined,
+      deliveryCity: this.returnDeliveryCity.trim(),
       transportNotes: this.returnTransportNotes.trim() || undefined
     };
 

@@ -80,8 +80,10 @@
                 <input type="text" id="deliveryBuildingS" [(ngModel)]="deliveryBuilding" name="deliveryBuildingS" placeholder="np. 12A" required />
               </div>
               <div class="form-group">
-                <label for="deliveryApartmentS">Nr lokalu</label>
-                <input type="text" id="deliveryApartmentS" [(ngModel)]="deliveryApartment" name="deliveryApartmentS" placeholder="np. 5" />
+                <label for="deliveryCityS">Miasto *</label>
+                <select id="deliveryCityS" [(ngModel)]="deliveryCity" name="deliveryCityS" required>
+                  <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                </select>
               </div>
             </div>
             <div class="form-group">
@@ -339,14 +341,15 @@
                   />
                 </div>
                 <div class="form-group">
-                  <label for="deliveryApartment">Nr lokalu</label>
-                  <input
-                    type="text"
-                    id="deliveryApartment"
-                    [(ngModel)]="deliveryApartment"
-                    name="deliveryApartment"
-                    placeholder="np. 5"
-                  />
+                  <label for="deliveryCity">Miasto *</label>
+                  <select
+                    id="deliveryCity"
+                    [(ngModel)]="deliveryCity"
+                    name="deliveryCity"
+                    required
+                  >
+                    <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                  </select>
                 </div>
               </div>
               <div class="form-group">

@@ -1,7 +1,8 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { Meta, Title, DomSanitizer, SafeHtml, SafeStyle } from '@angular/platform-browser';
+import { ServiceProfileService } from '../service-profile/service-profile.service';
 
 @Component({
   selector: 'app-landing-page',
@@ -11,9 +12,12 @@ import { Meta, Title, DomSanitizer, SafeHtml, SafeStyle } from '@angular/platfor
   styleUrls: ['./landing-page.component.css']
 })
 export class LandingPageComponent implements OnInit {
-  
+  private serviceProfileService = inject(ServiceProfileService);
+
   // Zmienna na bezpieczny JSON-LD
   schemaJson: SafeHtml | null = null;
+
+  partnerLogos: { serviceId: number; logoUrl: string; suffix: string }[] = [];
 
   // Tło hero – przez sanitizer, żeby Angular nie blokował url() ze spacją w nazwie pliku
   heroBgStyle!: SafeStyle;
@@ -88,6 +92,14 @@ export class LandingPageComponent implements OnInit {
     this.setMetaTags();
     this.setCanonicalUrl(); // Warto rozważyć przeniesienie tego do serwisu globalnego
     this.generateSchemaMarkup();
+    this.loadPartnerLogos();
+  }
+
+  private loadPartnerLogos(): void {
+    this.serviceProfileService.getReservationServicesLogos().subscribe({
+      next: (logos) => { this.partnerLogos = logos; },
+      error: () => { /* pasek po prostu nie wyświetli się */ }
+    });
   }
 
   private setMetaTags(): void {

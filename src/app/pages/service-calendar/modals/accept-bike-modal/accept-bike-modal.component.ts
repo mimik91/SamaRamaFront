@@ -76,8 +76,11 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   pickupMethod: 'self' | 'delivery' = 'self';
   deliveryStreet: string = '';
   deliveryBuilding: string = '';
-  deliveryApartment: string = '';
+  deliveryCity: string = 'Kraków';
   transportNotes: string = '';
+
+  // Cities
+  cities: string[] = [];
 
   // Stolen check
   stolenCheckResult: StolenCheckResponse | null = null;
@@ -97,6 +100,12 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.enumerationService.getEnumeration('BRAND').subscribe({
       next: (brands) => { this.allBrands = brands; },
       error: (err) => { console.error('Error loading brands:', err); }
+    });
+
+    // Load cities
+    this.enumerationService.getCities().subscribe({
+      next: (cities) => { this.cities = cities; },
+      error: (err) => { console.error('Error loading cities:', err); }
     });
 
     // Setup stolen check debounce
@@ -344,7 +353,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
 
   get isDeliveryAddressValid(): boolean {
     if (this.pickupMethod !== 'delivery') return true;
-    return !!(this.deliveryStreet.trim() && this.deliveryBuilding.trim());
+    return !!(this.deliveryStreet.trim() && this.deliveryBuilding.trim() && this.deliveryCity.trim());
   }
 
   get isFormValid(): boolean {
@@ -436,7 +445,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     const data: ReturnTransportRequestDto = {
       deliveryStreet: this.deliveryStreet.trim(),
       deliveryBuilding: this.deliveryBuilding.trim(),
-      deliveryApartment: this.deliveryApartment.trim() || undefined,
+      deliveryCity: this.deliveryCity.trim(),
       transportNotes: this.transportNotes.trim() || undefined
     };
     this.calendarService.createReturnTransport(this.serviceId, orderId, data).subscribe({

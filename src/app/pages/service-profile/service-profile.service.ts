@@ -97,4 +97,12 @@ export class ServiceProfileService {
     const url = `${environment.apiUrl}${environment.endpoints.services.images.replace(':id', serviceId.toString()).replace(':type', imageType)}`;
     return this.http.get<ServiceImageResponse>(url);
   }
+
+  /**
+   * Pobiera loga serwisów z włączoną rezerwacją (Partnerzy CycloPick)
+   */
+  getReservationServicesLogos(): Observable<{ serviceId: number; logoUrl: string; suffix: string }[]> {
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.logosReservationAvailable}`;
+    return this.http.get<{ serviceId: number; logoUrl: string; suffix: string }[]>(url);
+  }
 }

@@ -467,9 +467,9 @@
                 <span class="detail-label">Nr budynku</span>
                 <span class="detail-value">{{ transportAddress!.building }}</span>
               </div>
-              <div class="detail-item" *ngIf="transportAddress!.apartment">
-                <span class="detail-label">Nr lokalu</span>
-                <span class="detail-value">{{ transportAddress!.apartment }}</span>
+              <div class="detail-item" *ngIf="transportAddress!.city">
+                <span class="detail-label">Miasto</span>
+                <span class="detail-value">{{ transportAddress!.city }}</span>
               </div>
               <div class="detail-item detail-item--full" *ngIf="transportAddress!.transportNotes">
                 <span class="detail-label">Uwagi</span>
@@ -524,14 +524,14 @@
                   />
                 </div>
                 <div class="form-group">
-                  <label for="retDeliveryApartment">Nr lokalu</label>
-                  <input
-                    type="text"
-                    id="retDeliveryApartment"
-                    [(ngModel)]="returnDeliveryApartment"
-                    name="retDeliveryApartment"
-                    placeholder="np. 5"
-                  />
+                  <label for="retDeliveryCity">Miasto *</label>
+                  <select
+                    id="retDeliveryCity"
+                    [(ngModel)]="returnDeliveryCity"
+                    name="retDeliveryCity"
+                  >
+                    <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                  </select>
                 </div>
               </div>
               <div class="form-group">

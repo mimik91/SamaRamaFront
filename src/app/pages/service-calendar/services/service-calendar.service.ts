@@ -46,14 +46,14 @@ export interface StolenCheckResponse {
 export interface ReturnTransportRequestDto {
   deliveryStreet: string;
   deliveryBuilding: string;
-  deliveryApartment?: string;
+  deliveryCity: string;
   transportNotes?: string;
 }
 
 export interface TransportAddressResponse {
   street: string;
   building: string;
-  apartment?: string;
+  city?: string;
   transportNotes?: string;
 }
 

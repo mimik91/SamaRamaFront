@@ -695,29 +695,33 @@ onCitySelected(city: CitySuggestion): void {
   }
 
   onOrderTransport(serviceDetails: ServiceDetails): void {
-    this.router.navigate(['/order-transport'], {
-      queryParams: {
-        serviceId: serviceDetails.id,
-        serviceName: serviceDetails.name,
-        serviceAddress: `${serviceDetails.street} ${serviceDetails.building}${serviceDetails.flat ? '/' + serviceDetails.flat : ''}, ${serviceDetails.city}`,
-        transportCost: serviceDetails.transportCost
-      }
-    });
+    if (serviceDetails.suffix) {
+      this.router.navigate(['/', serviceDetails.suffix, 'zamow-transport']);
+    } else {
+      this.mapService.getServiceSuffix(serviceDetails.id).subscribe(response => {
+        const suffix = response?.suffix;
+        if (suffix) {
+          this.router.navigate(['/', suffix, 'zamow-transport']);
+        }
+      });
+    }
   }
 
   onReserveService(serviceDetails: ServiceDetails): void {
-    this.mapService.getServiceSuffix(serviceDetails.id).subscribe(response => {
-      const suffix = response?.suffix;
-      if (suffix) {
-        this.router.navigate(['/reserve-service', suffix], {
-          state: { serviceId: serviceDetails.id }
-        });
-      } else {
-        this.router.navigate(['/reserve-service'], {
-          queryParams: { serviceId: serviceDetails.id }
-        });
-      }
-    });
+    if (serviceDetails.suffix) {
+      this.router.navigate(['/', serviceDetails.suffix, 'zarezerwuj'], {
+        state: { serviceId: serviceDetails.id }
+      });
+    } else {
+      this.mapService.getServiceSuffix(serviceDetails.id).subscribe(response => {
+        const suffix = response?.suffix;
+        if (suffix) {
+          this.router.navigate(['/', suffix, 'zarezerwuj'], {
+            state: { serviceId: serviceDetails.id }
+          });
+        }
+      });
+    }
   }
 
   onClusterClicked(data: { lat: number; lng: number; zoom: number }): void {

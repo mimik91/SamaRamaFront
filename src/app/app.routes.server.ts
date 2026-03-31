@@ -59,23 +59,6 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
 
-  // Transport/order routes - server render
-  {
-    path: 'order-transport',
-    renderMode: RenderMode.Server
-  },
-  {
-    path: 'order-transport/:suffix',
-    renderMode: RenderMode.Server
-  },
-  {
-    path: 'reserve-service',
-    renderMode: RenderMode.Server
-  },
-  {
-    path: 'reserve-service/:suffix',
-    renderMode: RenderMode.Server
-  },
 
   // === CLIENT ONLY ROUTES (Authenticated/interactive pages) ===
 
@@ -188,6 +171,26 @@ export const serverRoutes: ServerRoute[] = [
   // === PUBLIC SERVICE PROFILES (Server render for SEO) ===
 
   // Service profiles - server render (profiles can change, SEO important)
+  {
+    path: 'order-transport',
+    renderMode: RenderMode.Server
+  },
+  {
+    path: 'reserve-service',
+    renderMode: RenderMode.Server
+  },
+  {
+    path: 'reserve-service/:suffix',
+    renderMode: RenderMode.Server
+  },
+  {
+    path: ':suffix/zamow-transport',
+    renderMode: RenderMode.Server
+  },
+  {
+    path: ':suffix/zarezerwuj',
+    renderMode: RenderMode.Server
+  },
   {
     path: ':suffix/cennik',
     renderMode: RenderMode.Server

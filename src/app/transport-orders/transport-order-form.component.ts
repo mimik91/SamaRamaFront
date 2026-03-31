@@ -143,20 +143,30 @@ export class TransportOrderFormComponent implements OnInit {
   }
 
   private loadServiceInfo(): void {
-    // Najpierw sprawdź czy mamy suffix w path params (nowy format URL)
     const suffix = this.route.snapshot.paramMap.get('suffix');
 
     if (suffix) {
-      // Nowy format: /order-transport/:suffix
       this.serviceSuffix = suffix;
       this.loadServiceBySuffix(suffix);
     } else {
-      // Sprawdź stary format: /order-transport?serviceId=X
+      // Fallback dla starych URL-i: /order-transport?serviceId=X
       this.route.queryParams.subscribe(params => {
         const serviceId = params['serviceId'];
         if (serviceId) {
-          // Przekieruj na nowy format URL z suffixem
-          this.redirectToSuffixUrl(+serviceId);
+          this.transportOrderService.getSuffixByServiceId(+serviceId).subscribe({
+            next: (response) => {
+              if (response.suffix) {
+                this.router.navigate(['/', response.suffix, 'zamow-transport'], { replaceUrl: true });
+              } else {
+                this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
+                this.router.navigate([environment.links.servicesMap]);
+              }
+            },
+            error: () => {
+              this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
+              this.router.navigate([environment.links.servicesMap]);
+            }
+          });
         } else {
           this.selectedServiceInfo = { id: null, name: '', address: '' };
           this.notificationService.error(this.i18n.instant('transport_order.service_info.error_no_service'));
@@ -186,37 +196,15 @@ export class TransportOrderFormComponent implements OnInit {
     });
   }
 
-  private redirectToSuffixUrl(serviceId: number): void {
-    this.transportOrderService.getSuffixByServiceId(serviceId).subscribe({
-      next: (response) => {
-        if (response.suffix) {
-          // Przekieruj na nowy format URL
-          this.router.navigate(['/order-transport', response.suffix], { replaceUrl: true });
-        } else {
-          // Fallback - załaduj po serviceId jeśli suffix niedostępny
-          this.loadServiceDetails(serviceId.toString());
-        }
-      },
-      error: (error) => {
-        console.error('Error getting suffix for redirect:', error);
-        // Fallback - załaduj po serviceId jeśli nie udało się pobrać suffixu
-        this.loadServiceDetails(serviceId.toString());
-      }
-    });
-  }
-
   private loadServiceDetails(serviceId: string): void {
     this.loading = true;
     this.transportOrderService.getServiceDetails(+serviceId).subscribe({
       next: (serviceDetails) => {
         if (serviceDetails) {
           // Przekieruj na rezerwację jeśli dostępna
-          if (serviceDetails.reservationAvailable) {
-            const suffix = this.route.snapshot.paramMap.get('suffix');
-            if (suffix) {
-              this.router.navigate(['/reserve-service', suffix], { replaceUrl: true });
-              return;
-            }
+          if (serviceDetails.reservationAvailable && this.serviceSuffix) {
+            this.router.navigate(['/', this.serviceSuffix, 'zarezerwuj'], { replaceUrl: true });
+            return;
           }
 
           // Sprawdź dostępność transportu
@@ -334,7 +322,7 @@ export class TransportOrderFormComponent implements OnInit {
             }
           }
         },
-        error: (err) => {
+        error: () => {
           this.notificationService.error(this.i18n.instant('transport_order.validation.slots_check_error'));
           const dateControl = this.contactAndTransportForm.get('pickupDate');
           dateControl?.setErrors({ ...dateControl.errors, availabilityCheckFailed: true });

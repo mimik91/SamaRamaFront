@@ -295,6 +295,11 @@ export class GuestReservationFormComponent implements OnInit {
     const suffix = this.route.snapshot.paramMap.get('suffix');
 
     if (suffix) {
+      // Jeśli jesteśmy na starym URL /reserve-service/:suffix → przekieruj na /:suffix/zarezerwuj
+      if (this.route.snapshot.routeConfig?.path === 'reserve-service/:suffix') {
+        this.router.navigate(['/', suffix, 'zarezerwuj'], { replaceUrl: true });
+        return;
+      }
       this.serviceSuffix = suffix;
       const stateServiceId = window.history.state?.serviceId;
       if (stateServiceId) {
@@ -320,10 +325,25 @@ export class GuestReservationFormComponent implements OnInit {
         });
       }
     } else {
+      // Fallback dla starych URL-i: /reserve-service?serviceId=X
       this.route.queryParams.subscribe(params => {
         const serviceId = params['serviceId'];
         if (serviceId) {
-          this.loadServiceDetails(+serviceId);
+          const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/get-suffix`;
+          this.http.get<{ suffix: string }>(url, { params: { serviceId } }).subscribe({
+            next: (response) => {
+              if (response.suffix) {
+                this.router.navigate(['/', response.suffix, 'zarezerwuj'], { replaceUrl: true });
+              } else {
+                this.notificationService.error('Nie znaleziono serwisu.');
+                this.router.navigate([environment.links.servicesMap]);
+              }
+            },
+            error: () => {
+              this.notificationService.error('Nie znaleziono serwisu.');
+              this.router.navigate([environment.links.servicesMap]);
+            }
+          });
         } else {
           this.notificationService.error('Nie znaleziono serwisu.');
           this.router.navigate([environment.links.servicesMap]);

@@ -43,7 +43,10 @@ Disallow: /bicycles
 Disallow: /service-appointments
 Disallow: /order-service
 Disallow: /order-transport
+Disallow: /reserve-service
 Disallow: /guest-order
+Disallow: /*zarezerwuj
+Disallow: /*zamow-transport
 Disallow: /verify-account
 Disallow: /password-reset
 Disallow: /password-reset-request

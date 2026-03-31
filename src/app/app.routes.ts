@@ -126,31 +126,6 @@ export const routes: Routes = [
       title: 'CycloPick | mapa serwisów rowerowych'
     },
     
-    // Transport order - dostępna dla wszystkich (bez guarda)
-    // Route z suffix (nowy format URL)
-    {
-      path: 'order-transport/:suffix',
-      component: TransportOrderFormComponent,
-      title: 'Zamów Transport'
-    },
-    // Legacy route - przekierowuje na nowy format z suffixem
-    {
-      path: 'order-transport',
-      component: TransportOrderFormComponent,
-      title: 'Zamów Transport'
-    },
-
-    // Service reservation
-    {
-      path: 'reserve-service/:suffix',
-      component: GuestReservationFormComponent,
-      title: 'Zarezerwuj Serwis'
-    },
-    {
-      path: 'reserve-service',
-      component: GuestReservationFormComponent,
-      title: 'Zarezerwuj Serwis'
-    },
     { 
       path: 'ordersummary', 
       component: OrderSummaryComponent,
@@ -377,6 +352,41 @@ export const routes: Routes = [
     // WAŻNE: Trasy :suffix MUSZĄ być przed wildcard, ale PO wszystkich innych trasach
     // Angular dopasowuje trasy w kolejności, więc bardziej szczegółowe (:suffix/panel-administratora)
     // zostaną dopasowane przed mniej szczegółowymi (:suffix)
+
+    // Legacy redirect: /order-transport?serviceId=X → /:suffix/zamow-transport
+    {
+      path: 'order-transport',
+      component: TransportOrderFormComponent,
+      title: 'Zamów Transport'
+    },
+
+    // Legacy redirect: /reserve-service/:suffix → /:suffix/zarezerwuj
+    {
+      path: 'reserve-service/:suffix',
+      component: GuestReservationFormComponent,
+      title: 'Zarezerwuj Serwis'
+    },
+
+    // Legacy redirect: /reserve-service?serviceId=X → /:suffix/zarezerwuj
+    {
+      path: 'reserve-service',
+      component: GuestReservationFormComponent,
+      title: 'Zarezerwuj Serwis'
+    },
+
+    // Zamów transport (must be before base :suffix route)
+    {
+      path: ':suffix/zamow-transport',
+      component: TransportOrderFormComponent,
+      title: 'Zamów Transport'
+    },
+
+    // Zarezerwuj serwis (must be before base :suffix route)
+    {
+      path: ':suffix/zarezerwuj',
+      component: GuestReservationFormComponent,
+      title: 'Zarezerwuj Serwis'
+    },
 
     // Service profile - cennik section (must be before base :suffix route)
     {

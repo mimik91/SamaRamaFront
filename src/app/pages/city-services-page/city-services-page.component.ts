@@ -142,8 +142,21 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  getTransportLink(serviceId: number): string {
-    return `/order-transport?serviceId=${serviceId}`;
+  navigateToTransport(service: MapPin): void {
+    this.mapService.getServiceSuffix(service.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response && response.suffix) {
+            this.router.navigate(['/', response.suffix, 'zamow-transport']);
+          } else {
+            console.error('Could not retrieve suffix for service:', service.id);
+          }
+        },
+        error: (err) => {
+          console.error('Error during suffix fetch for transport:', err);
+        }
+      });
   }
 
   private updateMetaTags(): void {
@@ -227,7 +240,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (response && response.suffix) {
-            this.router.navigate(['/reserve-service', response.suffix], {
+            this.router.navigate(['/', response.suffix, 'zarezerwuj'], {
               state: { serviceId: service.id }
             });
           } else {

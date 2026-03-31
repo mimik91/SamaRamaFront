@@ -25,7 +25,7 @@
     </li>
 
     <li *ngIf="publicInfo.reservationAvailable">
-      <a [routerLink]="['/reserve-service', suffix]"
+      <a [routerLink]="['/', suffix, 'zarezerwuj']"
          routerLinkActive="active"
          [routerLinkActiveOptions]="{exact: true}">
         Zarezerwuj serwis
@@ -33,7 +33,7 @@
     </li>
 
     <li *ngIf="!publicInfo.reservationAvailable && publicInfo.transportAvailable">
-      <a [routerLink]="['/order-transport', suffix]"
+      <a [routerLink]="['/', suffix, 'zamow-transport']"
          routerLinkActive="active"
          [routerLinkActiveOptions]="{exact: true}">
         Zamów transport

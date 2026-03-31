@@ -9,12 +9,13 @@ import { EnumerationService } from '../core/enumeration.service';
 import { I18nService } from '../core/i18n.service';
 import { environment } from '../environments/environments';
 import { BicycleFormData, BicycleData } from '../shared/models/bicycle.model';
+import { ServiceNavComponent } from '../pages/service-profile/service-nav.component';
 
 
 @Component({
   selector: 'app-transport-order-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ServiceNavComponent],
   templateUrl: './transport-order-form.component.html',
   styleUrls: ['./transport-order-form.component.css']
 })
@@ -67,6 +68,9 @@ export class TransportOrderFormComponent implements OnInit {
   loading = false;
   submitting = false;
   error: string | null = null;
+
+  // Suffix serwisu (do nawigacji)
+  serviceSuffix: string | null = null;
 
   // Transport availability states
   transportNotAvailable = false;  // serwis za daleko (transportAvailable = false && city != Kraków)
@@ -144,6 +148,7 @@ export class TransportOrderFormComponent implements OnInit {
 
     if (suffix) {
       // Nowy format: /order-transport/:suffix
+      this.serviceSuffix = suffix;
       this.loadServiceBySuffix(suffix);
     } else {
       // Sprawdź stary format: /order-transport?serviceId=X

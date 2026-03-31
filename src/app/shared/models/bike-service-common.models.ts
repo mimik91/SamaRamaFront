@@ -81,6 +81,7 @@ export interface BikeServicePublicInfo {
   phoneNumber: string | null;
   transportCost: number | null;
   transportAvailable: boolean;
+  reservationAvailable?: boolean;
   website: string | null;
   facebook: string | null;
   instagram: string | null;

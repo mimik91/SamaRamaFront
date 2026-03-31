@@ -1,0 +1,43 @@
+<nav *ngIf="publicInfo && suffix" class="service-navigation">
+  <ul class="nav-links">
+    <li>
+      <a [routerLink]="['/', suffix]"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{exact: true}">
+        O nas
+      </a>
+    </li>
+
+    <li *ngIf="activeStatus?.pricelistActive">
+      <a [routerLink]="['/', suffix, 'cennik']"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{exact: true}">
+        Cennik
+      </a>
+    </li>
+
+    <li *ngIf="activeStatus?.openingHoursActive">
+      <a [routerLink]="['/', suffix, 'godziny-otwarcia']"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{exact: true}">
+        Godziny otwarcia
+      </a>
+    </li>
+
+    <li *ngIf="publicInfo.reservationAvailable">
+      <a [routerLink]="['/reserve-service', suffix]"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{exact: true}">
+        Zarezerwuj serwis
+      </a>
+    </li>
+
+    <li *ngIf="!publicInfo.reservationAvailable && publicInfo.transportAvailable">
+      <a [routerLink]="['/order-transport', suffix]"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{exact: true}">
+        Zamów transport
+      </a>
+    </li>
+  </ul>
+</nav>

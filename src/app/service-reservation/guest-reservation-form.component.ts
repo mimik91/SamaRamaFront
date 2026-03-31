@@ -17,6 +17,7 @@ import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/cor
 import { NotificationService } from '../core/notification.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { environment } from '../environments/environments';
+import { ServiceNavComponent } from '../pages/service-profile/service-nav.component';
 
 interface ServiceInfo {
   id: number;
@@ -42,7 +43,7 @@ const DAY_LABELS: { [key: string]: string } = {
 @Component({
   selector: 'app-guest-reservation-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule],
+  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule, ServiceNavComponent],
   providers: [
     provideNativeDateAdapter(),
     { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' }
@@ -61,6 +62,7 @@ export class GuestReservationFormComponent implements OnInit {
   currentStep = 1;
   loading = false;
   submitting = false;
+  serviceSuffix: string | null = null;
 
   serviceInfo: ServiceInfo | null = null;
   reservationSettings: ReservationSettings | null = null;
@@ -293,6 +295,7 @@ export class GuestReservationFormComponent implements OnInit {
     const suffix = this.route.snapshot.paramMap.get('suffix');
 
     if (suffix) {
+      this.serviceSuffix = suffix;
       const stateServiceId = window.history.state?.serviceId;
       if (stateServiceId) {
         this.loadServiceDetails(+stateServiceId);

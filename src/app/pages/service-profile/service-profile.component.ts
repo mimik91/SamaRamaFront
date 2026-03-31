@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ServiceNavComponent } from './service-nav.component';
 import { Subject, takeUntil } from 'rxjs';
 import { ServiceProfileResolvedData } from './service-profile.resolver';
 import { I18nService } from '../../core/i18n.service';
@@ -32,7 +33,7 @@ type TabType = 'info' | 'hours' | 'pricelist' | 'packages';
 @Component({
   selector: 'app-service-profile-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ServiceNavComponent],
   templateUrl: './service-profile.component.html',
   styleUrls: ['./service-profile.component.css']
 })

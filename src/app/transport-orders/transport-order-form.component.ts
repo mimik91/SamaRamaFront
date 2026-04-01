@@ -158,13 +158,12 @@ export class TransportOrderFormComponent implements OnInit {
               if (response.suffix) {
                 this.router.navigate(['/', response.suffix, 'zamow-transport'], { replaceUrl: true });
               } else {
-                this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
-                this.router.navigate([environment.links.servicesMap]);
+                this.loadServiceDetails(serviceId);
               }
             },
             error: () => {
-              this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
-              this.router.navigate([environment.links.servicesMap]);
+              // Serwis niezarejestrowany — brak sufixu, ładuj szczegóły bezpośrednio po serviceId
+              this.loadServiceDetails(serviceId);
             }
           });
         } else {

@@ -702,6 +702,8 @@ onCitySelected(city: CitySuggestion): void {
         const suffix = response?.suffix;
         if (suffix) {
           this.router.navigate(['/', suffix, 'zamow-transport']);
+        } else {
+          this.router.navigate(['/order-transport'], { queryParams: { serviceId: serviceDetails.id } });
         }
       });
     }

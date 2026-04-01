@@ -1,0 +1,92 @@
+.success-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: var(--spacing-8);
+}
+
+.success-card {
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+}
+
+.checkmark {
+  margin: 0 auto var(--spacing-8);
+  width: 80px;
+  height: 80px;
+}
+
+.checkmark-svg {
+  width: 80px;
+  height: 80px;
+}
+
+.checkmark-circle {
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 0;
+}
+
+.checkmark-check {
+  stroke: var(--color-primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+h1 {
+  font-size: var(--font-size-2xl);
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.subtitle {
+  color: var(--color-gray-600);
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-10);
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  align-items: center;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--spacing-3) var(--spacing-8);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  transition: var(--transition-opacity);
+}
+
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+  padding: var(--spacing-3) var(--spacing-8);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  transition: var(--transition-opacity);
+}
+
+.btn-secondary:hover {
+  opacity: 0.7;
+}

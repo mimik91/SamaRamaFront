@@ -192,6 +192,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
   {
+    path: ':suffix/rezerwacja-potwierdzona',
+    renderMode: RenderMode.Client
+  },
+  {
     path: ':suffix/cennik',
     renderMode: RenderMode.Server
   },

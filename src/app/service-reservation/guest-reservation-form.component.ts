@@ -641,8 +641,11 @@ export class GuestReservationFormComponent implements OnInit {
 
   private onSuccess(): void {
     this.submitting = false;
-    this.notificationService.success('Rezerwacja złożona pomyślnie! Serwis skontaktuje się z Tobą wkrótce.');
-    this.router.navigate([environment.links.homepage]);
+    if (this.serviceSuffix) {
+      this.router.navigate(['/', this.serviceSuffix, 'rezerwacja-potwierdzona']);
+    } else {
+      this.router.navigate([environment.links.homepage]);
+    }
   }
 
   goBack(): void {

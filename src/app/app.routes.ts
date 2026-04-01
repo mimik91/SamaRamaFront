@@ -39,6 +39,7 @@ import { PricingServicesComponent } from './core/pricing-services.component';
 import { suffixValidationGuard } from './auth/suffix-validation.guard';
 import { ServiceProfileTitleResolver} from './environments/service-profile-title.resolver';
 import { ServiceProfileResolver } from './pages/service-profile/service-profile.resolver';
+import { ReservationSuccessComponent } from './pages/reservation-success/reservation-success.component';
 import { CityServicesResolver } from './pages/city-services-page/city-services-page.resolver';
 import { ServicesMapResolver } from './pages/services-map-page/services-map-page.resolver';
 
@@ -386,6 +387,13 @@ export const routes: Routes = [
       path: ':suffix/zarezerwuj',
       component: GuestReservationFormComponent,
       title: 'Zarezerwuj Serwis'
+    },
+
+    // Potwierdzenie rezerwacji serwisu
+    {
+      path: ':suffix/rezerwacja-potwierdzona',
+      component: ReservationSuccessComponent,
+      title: 'Rezerwacja złożona!'
     },
 
     // Service profile - cennik section (must be before base :suffix route)

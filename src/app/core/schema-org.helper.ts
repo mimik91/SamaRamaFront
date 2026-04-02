@@ -463,6 +463,161 @@ export class SchemaOrgHelper {
   }
 
   /**
+   * Generuje LocalBusiness (BikeStore) z potentialAction ReserveAction
+   * Wymagane przez Google Reserve with Google do wykrycia możliwości rezerwacji
+   *
+   * @param data Dane serwisu (może być ten sam obiekt co dla generateBikeRepairShop)
+   * @param bookingUrl Pełny URL formularza rezerwacji (np. https://cyclopick.pl/:suffix/zarezerwuj)
+   * @param mapsUrl Opcjonalny URL do Google Maps (jeśli brak — konstruowany z koordynatów)
+   * @returns Obiekt JSON-LD z potentialAction i hasMap
+   */
+  static generateBookableLocalBusiness(
+    data: BikeRepairShopData,
+    bookingUrl: string,
+    mapsUrl?: string
+  ): any {
+    if (!data || !data.name || !data.url || !bookingUrl) {
+      console.error('[SchemaOrgHelper] Brak wymaganych danych dla BookableLocalBusiness');
+      return null;
+    }
+
+    const resolvedMapsUrl =
+      mapsUrl ||
+      (data.geo && this.isValidGeoCoordinates(data.geo)
+        ? `https://www.google.com/maps?q=${data.geo.latitude},${data.geo.longitude}`
+        : `https://www.google.com/maps/search/${encodeURIComponent(data.name + ' ' + data.address.city)}`);
+
+    const schema: any = {
+      '@context': 'https://schema.org',
+      '@type': 'BikeStore',
+      '@id': `${data.url}#rwg-business`,
+      name: data.name,
+      url: data.url,
+      hasMap: resolvedMapsUrl,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: data.address.street,
+        addressLocality: data.address.city,
+        postalCode: data.address.postalCode,
+        addressCountry: data.address.country || 'PL'
+      },
+      potentialAction: {
+        '@type': 'ReserveAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: bookingUrl,
+          inLanguage: 'pl',
+          actionPlatform: [
+            'http://schema.org/DesktopWebPlatform',
+            'http://schema.org/MobileWebPlatform',
+            'http://schema.org/IOSPlatform',
+            'http://schema.org/AndroidPlatform'
+          ]
+        },
+        result: {
+          '@type': 'Reservation',
+          name: `Rezerwacja serwisu rowerowego ${data.name}`
+        }
+      }
+    };
+
+    if (data.telephone) {
+      schema.telephone = data.telephone;
+    }
+
+    if (data.geo && this.isValidGeoCoordinates(data.geo)) {
+      schema.geo = {
+        '@type': 'GeoCoordinates',
+        latitude: data.geo.latitude,
+        longitude: data.geo.longitude
+      };
+    }
+
+    if (data.openingHours && data.openingHours.length > 0) {
+      schema.openingHoursSpecification = data.openingHours
+        .filter(hours => this.isValidOpeningHours(hours))
+        .map(hours => ({
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: Array.isArray(hours.dayOfWeek) ? hours.dayOfWeek : [hours.dayOfWeek],
+          opens: hours.opens,
+          closes: hours.closes
+        }));
+    }
+
+    return schema;
+  }
+
+  /**
+   * Generuje Event + Offer schema dla rezerwacji serwisu rowerowego
+   * Używane przez Google RwG do wyświetlania dostępnych ofert z możliwością rezerwacji
+   *
+   * @param serviceName Nazwa serwisu
+   * @param serviceUrl URL profilu serwisu
+   * @param bookingUrl URL formularza rezerwacji
+   * @param address Adres serwisu
+   * @param offers Lista ofert (pakiety serwisowe z cenami)
+   * @param description Opcjonalny opis serwisu
+   */
+  static generateBookableEvent(
+    serviceName: string,
+    serviceUrl: string,
+    bookingUrl: string,
+    address: SchemaAddress,
+    offers: SchemaOffer[],
+    description?: string
+  ): any {
+    if (!serviceName || !serviceUrl || !bookingUrl || !address) {
+      console.error('[SchemaOrgHelper] Brak wymaganych danych dla BookableEvent');
+      return null;
+    }
+
+    const schemaOffers = offers.length > 0
+      ? offers.map(offer => ({
+          '@type': 'Offer',
+          name: offer.name,
+          description: offer.description,
+          url: bookingUrl,
+          price: offer.price,
+          priceCurrency: offer.priceCurrency || 'PLN',
+          availability: 'https://schema.org/InStock',
+          validFrom: new Date().toISOString().split('T')[0]
+        }))
+      : [{
+          '@type': 'Offer',
+          url: bookingUrl,
+          availability: 'https://schema.org/InStock',
+          priceCurrency: 'PLN'
+        }];
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Event',
+      name: `Rezerwacja serwisu rowerowego — ${serviceName}`,
+      description: description || `Umów wizytę w serwisie rowerowym ${serviceName}`,
+      url: bookingUrl,
+      eventStatus: 'https://schema.org/EventScheduled',
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      location: {
+        '@type': 'Place',
+        name: serviceName,
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: address.street,
+          addressLocality: address.city,
+          postalCode: address.postalCode,
+          addressCountry: address.country || 'PL'
+        }
+      },
+      organizer: {
+        '@type': 'Organization',
+        name: serviceName,
+        url: serviceUrl
+      },
+      offers: schemaOffers
+    };
+  }
+
+  /**
    * Helper: Konwertuje skrót dnia (Mo, Tu, etc.) na pełną nazwę Schema.org
    *
    * @deprecated Użyj enum SchemaDayOfWeek zamiast stringów

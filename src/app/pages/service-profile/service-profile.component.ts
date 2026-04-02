@@ -480,21 +480,50 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     const bikeShopSchema = SchemaOrgHelper.generateBikeRepairShop(bikeShopData);
 
     if (bikeShopSchema) {
+      const serviceUrl = `https://www.cyclopick.pl/${this.suffix}`;
+      const bookingUrl = `https://www.cyclopick.pl/${this.suffix}/zarezerwuj`;
+
       // 9. Opcjonalnie: Dodaj breadcrumb
       const breadcrumb = SchemaOrgHelper.generateBreadcrumb([
         { name: 'CycloPick', url: 'https://www.cyclopick.pl' },
         { name: city, url: `https://www.cyclopick.pl?city=${encodeURIComponent(city)}` },
-        { name: serviceName, url: `https://www.cyclopick.pl/${this.suffix}` }
+        { name: serviceName, url: serviceUrl }
       ]);
 
-      // 8. Dodaj oba schematy jednocześnie (BikeRepairShop + Breadcrumb)
+      const schemas: any[] = [bikeShopSchema];
+
       if (breadcrumb) {
-        this.seoService.addMultipleStructuredData([bikeShopSchema, breadcrumb]);
-      } else {
-        this.seoService.addStructuredData(bikeShopSchema);
+        schemas.push(breadcrumb);
       }
 
-      console.log('[ServiceProfile] ✅ Structured data added:', bikeShopSchema);
+      // 10. Google Reserve with Google — dodaj schematy rezerwacji gdy serwis ma aktywną rezerwację
+      if (this.publicInfo.reservationAvailable) {
+        const bookableSchema = SchemaOrgHelper.generateBookableLocalBusiness(
+          bikeShopData,
+          bookingUrl
+        );
+        if (bookableSchema) {
+          schemas.push(bookableSchema);
+        }
+
+        // Event + Offer — tylko gdy mamy oferty (pakiety lub cennik)
+        const bookableOffers: SchemaOffer[] = bikeShopData.offers ?? [];
+        const eventSchema = SchemaOrgHelper.generateBookableEvent(
+          serviceName,
+          serviceUrl,
+          bookingUrl,
+          bikeShopData.address,
+          bookableOffers,
+          description || undefined
+        );
+        if (eventSchema) {
+          schemas.push(eventSchema);
+        }
+      }
+
+      this.seoService.addMultipleStructuredData(schemas);
+
+      console.log('[ServiceProfile] ✅ Structured data added, schemas count:', schemas.length);
     }
   }
 

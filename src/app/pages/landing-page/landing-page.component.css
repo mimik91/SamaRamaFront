@@ -221,7 +221,6 @@
 .option-card {
   border-radius: 16px;
   padding: 32px;
-  overflow: hidden;
   min-width: 0;
   display: flex;
   flex-direction: column;

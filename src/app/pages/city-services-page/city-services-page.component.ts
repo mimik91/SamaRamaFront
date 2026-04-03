@@ -150,11 +150,11 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
           if (response && response.suffix) {
             this.router.navigate(['/', response.suffix, 'zamow-transport']);
           } else {
-            console.error('Could not retrieve suffix for service:', service.id);
+            this.router.navigate(['/order-transport'], { queryParams: { serviceId: service.id } });
           }
         },
-        error: (err) => {
-          console.error('Error during suffix fetch for transport:', err);
+        error: () => {
+          this.router.navigate(['/order-transport'], { queryParams: { serviceId: service.id } });
         }
       });
   }

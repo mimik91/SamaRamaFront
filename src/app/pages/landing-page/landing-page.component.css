@@ -212,8 +212,8 @@
 
 .options-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
   text-align: left;
   align-items: stretch;
 }
@@ -221,6 +221,8 @@
 .option-card {
   border-radius: 16px;
   padding: 32px;
+  overflow: hidden;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -252,6 +254,49 @@
   box-shadow: 0 8px 32px rgba(27, 94, 32, 0.18);
 }
 
+.option-card--reservation {
+  background: linear-gradient(160deg, #e8edf5 0%, #ffffff 100%);
+  border: 2px solid #1B3A5E;
+  box-shadow: 0 4px 24px rgba(27, 58, 94, 0.10);
+}
+
+.option-card--reservation:hover {
+  box-shadow: 0 8px 32px rgba(27, 58, 94, 0.20);
+}
+
+.option-card--reservation h3 {
+  color: #1B3A5E;
+}
+
+.option-card--reservation .option-price-main {
+  color: #1B3A5E;
+}
+
+.btn-option-reservation {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 24px;
+  background: #1B3A5E;
+  color: var(--color-white);
+  border: none;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: auto;
+  text-decoration: none;
+}
+
+.btn-option-reservation:hover {
+  background: #0f2440;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(27, 58, 94, 0.35);
+}
+
 .option-tag {
   position: absolute;
   top: -14px;
@@ -278,7 +323,7 @@
   font-weight: 700;
   line-height: 1.35;
   margin: 0;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .option-card--partner h3 {
@@ -319,6 +364,8 @@
   color: var(--text-muted);
   line-height: 1.65;
   margin: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .option-benefits {
@@ -326,6 +373,7 @@
   padding: 0;
   margin: 0 auto;
   width: fit-content;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -337,6 +385,8 @@
   gap: 10px;
   font-size: 0.92rem;
   line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .benefit-yes {
@@ -1213,6 +1263,17 @@
     gap: 40px;
   }
 
+  .options-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .options-grid .option-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
 }
 
 /* =========================================
@@ -1281,10 +1342,21 @@
 
   .options-grid {
     grid-template-columns: 1fr;
+    overflow-x: hidden;
+  }
+
+  .options-grid .option-card:last-child:nth-child(odd) {
+    grid-column: auto;
+    max-width: 100%;
+    width: auto;
+    margin: 0;
   }
 
   .option-card {
     padding: 28px 20px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
   }
 
   .option-card h3 {

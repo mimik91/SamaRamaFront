@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { CourierService } from './courier-service';
 import { CourierOrder } from '../shared/models/courier.models';
 import { NotificationService } from '../core/notification.service';
@@ -9,7 +10,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-courier-panel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './courier-panel.component.html',
   styleUrls: ['./courier-panel.component.css']
 })
@@ -22,10 +23,18 @@ export class CourierPanelComponent implements OnInit {
   orders: CourierOrder[] = [];
   isLoading = false;
   error = '';
-  
+
   // Sorting state
   sortField: 'pickupDate' | 'brand' | 'status' | 'orderDate' = 'pickupDate';
   sortDirection: 'asc' | 'desc' = 'asc';
+
+  // Stan modala weryfikacji kodu odbioru
+  pickupCodeModal: {
+    orderId: number;
+    code: string;
+    isVerifying: boolean;
+    error: string;
+  } | null = null;
 
   ngOnInit(): void {
     // Check if user has admin privileges
@@ -91,6 +100,47 @@ export class CourierPanelComponent implements OnInit {
     this.changeStatus(orderId, 'DELIVERED');
   }
 
+  markAsReturning(orderId: number): void {
+    this.changeStatus(orderId, 'RETURNING');
+  }
+
+  openPickupCodeModal(orderId: number): void {
+    this.pickupCodeModal = { orderId, code: '', isVerifying: false, error: '' };
+  }
+
+  closePickupCodeModal(): void {
+    this.pickupCodeModal = null;
+  }
+
+  confirmPickupCode(): void {
+    if (!this.pickupCodeModal) return;
+    const { orderId, code } = this.pickupCodeModal;
+
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+      this.pickupCodeModal.error = 'Kod musi składać się z dokładnie 6 cyfr';
+      return;
+    }
+
+    this.pickupCodeModal.isVerifying = true;
+    this.pickupCodeModal.error = '';
+
+    this.courierService.verifyPickupCode(orderId, code).subscribe({
+      next: (result) => {
+        if (result.valid) {
+          this.pickupCodeModal = null;
+          this.changeStatus(orderId, 'COMPLETED');
+        } else {
+          this.pickupCodeModal!.isVerifying = false;
+          this.pickupCodeModal!.error = 'Nieprawidłowy kod odbioru. Spróbuj ponownie.';
+        }
+      },
+      error: () => {
+        this.pickupCodeModal!.isVerifying = false;
+        this.pickupCodeModal!.error = 'Błąd weryfikacji kodu. Spróbuj ponownie.';
+      }
+    });
+  }
+
   setSortField(field: 'pickupDate' | 'brand' | 'status' | 'orderDate'): void {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -152,10 +202,15 @@ export class CourierPanelComponent implements OnInit {
         return 'status-picked-up';
       case 'ON_THE_WAY':
         return 'status-on-the-way';
-      case 'ON_THE_WAY_BACK':
-        return 'status-returning';
       case 'DELIVERED':
         return 'status-delivered';
+      case 'READY_FOR_RETURN':
+        return 'status-ready-for-return';
+      case 'RETURNING':
+      case 'ON_THE_WAY_BACK':
+        return 'status-returning';
+      case 'COMPLETED':
+        return 'status-completed';
       default:
         return 'status-default';
     }
@@ -169,10 +224,15 @@ export class CourierPanelComponent implements OnInit {
         return 'Odebrany';
       case 'ON_THE_WAY':
         return 'W drodze';
+      case 'DELIVERED':
+        return 'Dostarczony do serwisu';
+      case 'READY_FOR_RETURN':
+        return 'Gotowe do zwrotu';
+      case 'RETURNING':
       case 'ON_THE_WAY_BACK':
         return 'W drodze powrotnej';
-      case 'DELIVERED':
-        return 'Dostarczony';
+      case 'COMPLETED':
+        return 'Zakończone';
       default:
         return status;
     }

@@ -1,5 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, OnInit, OnDestroy, HostListener, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -20,7 +20,9 @@ interface OpeningHoursData {
   templateUrl: './service-admin-opening-hours.component.html',
   styleUrls: ['./service-admin-opening-hours.component.css']
 })
-export class ServiceAdminOpeningHoursComponent implements OnInit {
+export class ServiceAdminOpeningHoursComponent implements OnInit, OnDestroy {
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
   @Input() serviceId!: number;
 
   private apiUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}`;
@@ -145,21 +147,12 @@ export class ServiceAdminOpeningHoursComponent implements OnInit {
     }
   }
 
-  saveOpeningHours(): void {
-    if (this.openingHoursForm.invalid) {
-      this.showError('Formularz zawiera błędy');
-      return;
-    }
-
-    this.isSaving = true;
+  private buildPayload(): OpeningHoursData {
     const formValue = this.openingHoursForm.value;
-    const daysValue = formValue.days;
-
-    // Przygotuj dane do wysłania
     const intervals: { [key: string]: DayInterval } = {};
-    
+
     this.daysOfWeek.forEach(day => {
-      const dayValue = daysValue[day.key];
+      const dayValue = formValue.days[day.key];
       if (dayValue.enabled) {
         intervals[day.key] = {
           openTime: dayValue.openTime,
@@ -168,19 +161,26 @@ export class ServiceAdminOpeningHoursComponent implements OnInit {
       }
     });
 
-    const payload: OpeningHoursData = {
-      intervals: intervals,
+    return {
+      intervals,
       openingHoursInfo: formValue.openingHoursInfo || '',
       openingHoursNote: formValue.openingHoursNote || '',
       openingHoursActive: formValue.openingHoursActive || false
     };
+  }
 
-    // Użyj POST jeśli nie ma danych, PUT jeśli już istnieją
+  saveOpeningHours(): void {
+    if (this.openingHoursForm.invalid) {
+      this.showError('Formularz zawiera błędy');
+      return;
+    }
+
+    this.isSaving = true;
     const method = this.hasExistingHours ? 'put' : 'post';
     const url = `${this.apiUrl}/my-service/opening-hours`;
 
     this.http.request<OpeningHoursData>(method, url, {
-      body: payload,
+      body: this.buildPayload(),
       params: { serviceId: this.serviceId.toString() }
     }).subscribe({
       next: (response) => {
@@ -196,6 +196,38 @@ export class ServiceAdminOpeningHoursComponent implements OnInit {
         this.isSaving = false;
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.isEditMode && this.openingHoursForm?.dirty) {
+      const method = this.hasExistingHours ? 'put' : 'post';
+      this.http.request(method, `${this.apiUrl}/my-service/opening-hours`, {
+        body: this.buildPayload(),
+        params: { serviceId: this.serviceId.toString() }
+      }).subscribe();
+    }
+  }
+
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    if (!this.isBrowser || !this.isEditMode || !this.openingHoursForm?.dirty) return;
+
+    const sessionStr = localStorage.getItem('auth_session');
+    if (!sessionStr) return;
+
+    try {
+      const session = JSON.parse(sessionStr) as { token: string };
+      const method = this.hasExistingHours ? 'PUT' : 'POST';
+      fetch(`${this.apiUrl}/my-service/opening-hours?serviceId=${this.serviceId}`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.token}`
+        },
+        body: JSON.stringify(this.buildPayload()),
+        keepalive: true
+      });
+    } catch { /* best-effort */ }
   }
 
   getDayControl(dayKey: string): FormGroup {

@@ -356,4 +356,9 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     const zoom = window.innerWidth < 768 ? '12' : '14';
     this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '50.0647', lng: '19.9450', zoom, coverages: '342' } });
   }
+
+  navigateToPolandMapPartner(): void {
+    const zoom = window.innerWidth < 768 ? '6' : '8';
+    this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '52.0', lng: '19.4', zoom, coverages: '342' } });
+  }
 }

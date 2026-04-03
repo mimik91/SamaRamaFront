@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AsyncValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -38,6 +38,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
+  private platformId = inject(PLATFORM_ID);
 
   // Formularze dla różnych etapów
   basicInfoForm!: FormGroup;
@@ -321,6 +322,12 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
     return field ? (field.value?.length || 0) : 0;
   }
 
+  private scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }
+
   // Metody zarządzania krokami
   nextStep(): void {
     if (this.currentStep === 1 && this.basicInfoForm.valid) {
@@ -329,12 +336,14 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
         this.loadAvailableCoverages();
       }
       this.currentStep = 2;
+      this.scrollToTop();
     } else if (this.currentStep === 2) {
       // Przejście do kroku 3 - skopiuj email z kroku 1 do pola userEmail
       this.passwordForm.patchValue({
         userEmail: this.basicInfoForm.value.email
       });
       this.currentStep = 3;
+      this.scrollToTop();
     } else if (this.currentStep === 1) {
       // Oznacz wszystkie pola jako dotknięte, aby pokazać błędy walidacji
       Object.keys(this.basicInfoForm.controls).forEach(key => {
@@ -348,6 +357,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   prevStep(): void {
     if (this.currentStep > 1) {
       this.currentStep--;
+      this.scrollToTop();
     }
   }
 

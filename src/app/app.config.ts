@@ -1,6 +1,6 @@
 // src/app/app.config.ts
 import { ApplicationConfig, APP_INITIALIZER } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors, withFetch, withJsonpSupport } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideClientHydration, withHttpTransferCacheOptions } from '@angular/platform-browser';
@@ -28,7 +28,7 @@ export function initializeI18n(i18nService: I18nService) {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
     
     // HttpClient z WSZYSTKIMI twoimi interceptorami
     provideHttpClient(

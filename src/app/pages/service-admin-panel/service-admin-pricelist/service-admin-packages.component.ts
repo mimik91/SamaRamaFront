@@ -1,7 +1,8 @@
-import { Component, OnInit, Input, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, HostListener, Input, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { I18nService } from '../../../core/i18n.service';
+import { environment } from '../../../environments/environments';
 import { ServicePackagesService } from './service-packages.service';
 import { parsePrice, formatPrice } from '../../../shared/models/service-pricelist.models';
 import {  
@@ -21,9 +22,11 @@ import {
   templateUrl: './service-admin-packages.component.html',
   styleUrls: ['./service-admin-packages.component.css']
 })
-export class ServiceAdminPackagesComponent implements OnInit {
+export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
   private packagesService = inject(ServicePackagesService);
   private i18nService = inject(I18nService);
+  private platformId = inject(PLATFORM_ID);
+  private readonly apiUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}`;
 
   @Input() serviceId!: number;
 
@@ -184,6 +187,7 @@ export class ServiceAdminPackagesComponent implements OnInit {
     };
     this.successMessage = '';
     this.error = '';
+    this.initTextareaHeights();
   }
 
   startEditingPackage(pkg: ServicePackageDto): void {
@@ -198,6 +202,99 @@ export class ServiceAdminPackagesComponent implements OnInit {
     };
     this.successMessage = '';
     this.error = '';
+    this.initTextareaHeights();
+  }
+
+  private initTextareaHeights(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    setTimeout(() => {
+      document.querySelectorAll('.package-form textarea').forEach(el => {
+        const ta = el as HTMLTextAreaElement;
+        ta.style.height = 'auto';
+        ta.style.height = ta.scrollHeight + 'px';
+      });
+    }, 0);
+  }
+
+  autoResizeTextarea(event: Event): void {
+    const ta = event.target as HTMLTextAreaElement;
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+
+  ngOnDestroy(): void {
+    if (!this.editingPackage) return;
+    const pkg = this.editingPackage;
+    if (pkg.bikeTypes.size === 0 || !pkg.price || pkg.price <= 0) return;
+
+    const bikeTypesArray = Array.from(pkg.bikeTypes);
+
+    if (pkg.packageId === null) {
+      this.packagesService.createPackage(this.serviceId, {
+        packageLevel: pkg.packageLevel,
+        customName: pkg.customName || null,
+        bikeTypes: bikeTypesArray,
+        price: pkg.price,
+        description: pkg.description || null,
+        active: pkg.active
+      }).subscribe();
+    } else {
+      this.packagesService.updatePackage(pkg.packageId, {
+        customName: pkg.customName || null,
+        bikeTypes: bikeTypesArray,
+        price: pkg.price,
+        description: pkg.description || null,
+        active: pkg.active
+      }).subscribe();
+    }
+  }
+
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    if (!isPlatformBrowser(this.platformId) || !this.editingPackage) return;
+    const pkg = this.editingPackage;
+    if (pkg.bikeTypes.size === 0 || !pkg.price || pkg.price <= 0) return;
+
+    const sessionStr = localStorage.getItem('auth_session');
+    if (!sessionStr) return;
+
+    try {
+      const session = JSON.parse(sessionStr) as { token: string };
+      const bikeTypesArray = Array.from(pkg.bikeTypes);
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.token}`
+      };
+
+      if (pkg.packageId === null) {
+        fetch(`${this.apiUrl}/my-service/packages?serviceId=${this.serviceId}`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            packageLevel: pkg.packageLevel,
+            customName: pkg.customName || null,
+            bikeTypes: bikeTypesArray,
+            price: pkg.price,
+            description: pkg.description || null,
+            active: pkg.active
+          }),
+          keepalive: true
+        });
+      } else {
+        fetch(`${this.apiUrl}/my-service/packages/${pkg.packageId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            customName: pkg.customName || null,
+            bikeTypes: bikeTypesArray,
+            price: pkg.price,
+            description: pkg.description || null,
+            active: pkg.active
+          }),
+          keepalive: true
+        });
+      }
+    } catch { /* best-effort */ }
   }
 
   cancelEditingPackage(): void {

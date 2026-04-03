@@ -25,6 +25,16 @@ export class CourierService {
     );
   }
 
+  verifyPickupCode(orderId: number, pickupCode: string): Observable<{ valid: boolean }> {
+    const url = `${environment.apiUrl}/orders/${orderId}/verify-pickup-code`;
+    return this.http.get<{ valid: boolean }>(url, { params: { pickupCode } }).pipe(
+      catchError(error => {
+        console.error('Error verifying pickup code:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   updateOrderStatus(orderId: number, status: string): Observable<any> {
     const url = `${environment.apiUrl}${environment.endpoints.admin.orderTransportStatus.replace(':id', orderId.toString())}`;
     return this.http.patch(url, { status }).pipe(

@@ -261,18 +261,19 @@
 
               <div class="form-group">
                 <label>{{ t('pricelist.packages.description') }}</label>
-                <textarea 
+                <textarea
                   class="form-input"
                   [(ngModel)]="editingPackage!.description"
                   rows="3"
                   maxlength="500"
+                  (input)="autoResizeTextarea($event)"
                   [placeholder]="t('pricelist.packages.description_placeholder')">
                 </textarea>
               </div>
 
               <div class="form-group">
                 <label class="checkbox-label-inline">
-                  <input 
+                  <input
                     type="checkbox"
                     [(ngModel)]="editingPackage!.active">
                   <span>{{ t('pricelist.packages.package_active') }}</span>
@@ -284,19 +285,9 @@
               </div>
 
               <div class="form-actions">
-                <button 
-                  class="btn btn-success" 
-                  (click)="savePackage()"
-                  [disabled]="isSaving">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                  {{ t('common.save') }}
-                </button>
-                <button 
-                  class="btn btn-secondary" 
-                  (click)="cancelEditingPackage()"
-                  [disabled]="isSaving">
+                <button
+                  class="btn btn-secondary"
+                  (click)="cancelEditingPackage()">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -367,18 +358,19 @@
 
           <div class="form-group">
             <label>{{ t('pricelist.packages.description') }}</label>
-            <textarea 
+            <textarea
               class="form-input"
               [(ngModel)]="editingPackage!.description"
               rows="3"
               maxlength="500"
+              (input)="autoResizeTextarea($event)"
               [placeholder]="t('pricelist.packages.description')">
             </textarea>
           </div>
 
           <div class="form-group">
             <label class="checkbox-label-inline">
-              <input 
+              <input
                 type="checkbox"
                 [(ngModel)]="editingPackage!.active">
               <span>{{ t('pricelist.packages.active') }}</span>
@@ -390,19 +382,9 @@
           </div>
 
           <div class="form-actions">
-            <button 
-              class="btn btn-success" 
-              (click)="savePackage()"
-              [disabled]="isSaving">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              {{ t('common.create') }}
-            </button>
-            <button 
-              class="btn btn-secondary" 
-              (click)="cancelEditingPackage()"
-              [disabled]="isSaving">
+            <button
+              class="btn btn-secondary"
+              (click)="cancelEditingPackage()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>

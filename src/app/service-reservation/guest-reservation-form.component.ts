@@ -357,6 +357,11 @@ export class GuestReservationFormComponent implements OnInit {
     const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/${serviceId}`;
     this.http.get<any>(url).subscribe({
       next: (d) => {
+        if (d.reservationAvailable === false) {
+          this.router.navigate(['/', this.serviceSuffix, 'zamow-transport'], { replaceUrl: true });
+          return;
+        }
+
         const parts: string[] = [];
         if (d.street) parts.push(d.street);
         if (d.building) parts.push(d.building);
@@ -641,11 +646,8 @@ export class GuestReservationFormComponent implements OnInit {
 
   private onSuccess(): void {
     this.submitting = false;
-    if (this.serviceSuffix) {
-      this.router.navigate(['/', this.serviceSuffix, 'rezerwacja-potwierdzona']);
-    } else {
-      this.router.navigate([environment.links.homepage]);
-    }
+    this.notificationService.success('Rezerwacja złożona pomyślnie! Serwis skontaktuje się z Tobą wkrótce.');
+    this.router.navigate([environment.links.homepage]);
   }
 
   goBack(): void {

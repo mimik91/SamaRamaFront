@@ -1,6 +1,7 @@
-import { Component, OnInit, Input, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, HostListener, Input, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environments';
 import { PricelistService } from './pricelist.service';
 import {
   CategoryWithPrices,
@@ -16,8 +17,11 @@ import {
   templateUrl: './service-admin-pricelist.component.html',
   styleUrls: ['./service-admin-pricelist.component.css']
 })
-export class ServiceAdminPricelistComponent implements OnInit {
+export class ServiceAdminPricelistComponent implements OnInit, OnDestroy {
   private pricelistService = inject(PricelistService);
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
+  private readonly autoSaveUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}/my-service/pricelist`;
 
   @Input() serviceId!: number;
 
@@ -126,12 +130,7 @@ export class ServiceAdminPricelistComponent implements OnInit {
     this.error = '';
   }
 
-  savePricelist(): void {
-    this.isSaving = true;
-    this.error = '';
-    this.successMessage = '';
-
-    // Przygotuj dane do wysłania - tylko itemy z ceną
+  private buildPricelistPayload(): ServicePricelistUpdateDto {
     const itemsToSend: { [itemId: number]: number } = {};
 
     this.categoriesWithPrices.forEach(category => {
@@ -142,14 +141,20 @@ export class ServiceAdminPricelistComponent implements OnInit {
       });
     });
 
-    const updateDto: ServicePricelistUpdateDto = {
+    return {
       items: itemsToSend,
       pricelistInfo: this.pricelistInfo || null,
       pricelistNote: this.pricelistNote || null,
       pricelistActive: this.pricelistActive
     };
+  }
 
-    this.pricelistService.updateMyPricelist(this.serviceId, updateDto)
+  savePricelist(): void {
+    this.isSaving = true;
+    this.error = '';
+    this.successMessage = '';
+
+    this.pricelistService.updateMyPricelist(this.serviceId, this.buildPricelistPayload())
       .subscribe({
         next: (response) => {
           this.successMessage = 'Cennik został zaktualizowany pomyślnie!';
@@ -171,6 +176,33 @@ export class ServiceAdminPricelistComponent implements OnInit {
           this.isSaving = false;
         }
       });
+  }
+
+  ngOnDestroy(): void {
+    if (this.isEditing) {
+      this.pricelistService.updateMyPricelist(this.serviceId, this.buildPricelistPayload()).subscribe();
+    }
+  }
+
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    if (!this.isBrowser || !this.isEditing) return;
+
+    const sessionStr = localStorage.getItem('auth_session');
+    if (!sessionStr) return;
+
+    try {
+      const session = JSON.parse(sessionStr) as { token: string };
+      fetch(`${this.autoSaveUrl}?serviceId=${this.serviceId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.token}`
+        },
+        body: JSON.stringify(this.buildPricelistPayload()),
+        keepalive: true
+      });
+    } catch { /* best-effort */ }
   }
 
     /**

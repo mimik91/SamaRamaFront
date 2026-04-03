@@ -411,6 +411,7 @@
 .package-column {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .package-level-header {
@@ -572,11 +573,19 @@
 
 .form-input {
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: var(--spacing-3);
     border: 1px solid var(--border-color-slate);
     border-radius: var(--radius-input);
     font-size: var(--font-size-label);
     transition: var(--transition-colors);
+}
+
+.package-form textarea.form-input {
+    resize: none;
+    overflow: hidden;
+    min-height: 60px;
 }
 
 .form-input:focus {

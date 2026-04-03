@@ -85,7 +85,7 @@
     <section id="options-section" class="options-section" aria-labelledby="options-heading">
       <div class="section-eyebrow">Transport roweru · Kraków</div>
       <h2 id="options-heading">Jak zamówić transport rowerów w Krakowie?</h2>
-      <p class="section-subtitle">Wybierz model dopasowany do Twoich potrzeb – darmowy u Partnerów lub stały koszt 60&nbsp;zł do dowolnego warsztatu.</p>
+      <p class="section-subtitle">Wybierz model dopasowany do Twoich potrzeb – darmowy u Partnerów, stały koszt 60&nbsp;zł do dowolnego warsztatu, lub zarezerwuj online i przywieź rower sam.</p>
       <div class="options-grid">
 
         <!-- Opcja 1: Serwis partnerski -->
@@ -148,7 +148,38 @@
               Płatność gotówką lub BLIKIEM przy odbiorze
             </li>
           </ul>
-          <a routerLink="/serwisy/krakow" class="btn-option-outline">Zamów transport dowolny</a>
+          <button (click)="navigateToKrakow()" class="btn-option-outline">Zamów transport dowolny</button>
+        </article>
+
+        <!-- Opcja 3: Rezerwacja online, dowóz własny -->
+        <article class="option-card option-card--reservation" aria-labelledby="option3-heading">
+          <div class="option-header">
+            <h3 id="option3-heading">Rezerwacja online u Partnera CycloPick (dowozisz sam)</h3>
+            <div class="option-price-box">
+              <span class="option-price-main option-price-main--reservation">0 zł</span>
+              <span class="option-price-label">rezerwacja bezpłatna</span>
+            </div>
+          </div>
+          <p class="option-desc">Mieszkasz blisko warsztatu? Zarezerwuj termin online u Partnera CycloPick i przywieź rower samodzielnie. Zero kosztów transportu, pełna wygoda cyfrowej rezerwacji. <strong>Wizyta zaklepana.</strong></p>
+          <ul class="option-benefits" aria-label="Korzyści rezerwacji online bez transportu">
+            <li class="benefit-yes">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Rezerwacja terminu online — bez dzwonienia
+            </li>
+            <li class="benefit-yes">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Potwierdzenie wizyty od warsztatu
+            </li>
+            <li class="benefit-yes">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Cyfrowa historia napraw roweru
+            </li>
+            <li class="benefit-yes">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Zweryfikowani Partnerzy CycloPick
+            </li>
+          </ul>
+          <button class="btn-option-reservation" (click)="navigateToPolandMapPartner()">Znajdź serwis i zarezerwuj</button>
         </article>
 
       </div>

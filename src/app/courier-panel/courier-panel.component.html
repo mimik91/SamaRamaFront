@@ -128,7 +128,37 @@
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
               </svg>
-              Dostarczony
+              Dostarczony do serwisu
+            </span>
+
+            <button
+              *ngIf="order.status === 'READY_FOR_RETURN'"
+              class="action-btn returning-btn"
+              (click)="markAsReturning(order.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 .49-3"></path>
+              </svg>
+              W drodze powrotnej
+            </button>
+
+            <button
+              *ngIf="order.status === 'RETURNING' || order.status === 'ON_THE_WAY_BACK'"
+              class="action-btn complete-btn"
+              (click)="openPickupCodeModal(order.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              Zakończ — wpisz kod
+            </button>
+
+            <span *ngIf="order.status === 'COMPLETED'" class="completed-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              Zakończone
             </span>
           </div>
 
@@ -146,6 +176,54 @@
         <h3>Brak zamówień</h3>
         <p>Nie ma obecnie żadnych aktywnych zamówień.</p>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal weryfikacji kodu odbioru -->
+<div *ngIf="pickupCodeModal" class="modal-overlay" (click)="closePickupCodeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Weryfikacja odbioru</h3>
+      <button class="modal-close-btn" (click)="closePickupCodeModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc">Poproś klienta o podanie 6-cyfrowego kodu odbioru roweru.</p>
+      <div class="code-input-group">
+        <input
+          type="text"
+          [(ngModel)]="pickupCodeModal.code"
+          maxlength="6"
+          inputmode="numeric"
+          placeholder="000000"
+          class="code-input"
+          [disabled]="pickupCodeModal.isVerifying"
+          (keydown.enter)="confirmPickupCode()" />
+      </div>
+      <p *ngIf="pickupCodeModal.error" class="modal-error">{{ pickupCodeModal.error }}</p>
+    </div>
+    <div class="modal-footer">
+      <button
+        class="btn-modal-cancel"
+        (click)="closePickupCodeModal()"
+        [disabled]="pickupCodeModal.isVerifying">
+        Anuluj
+      </button>
+      <button
+        class="btn-modal-confirm"
+        (click)="confirmPickupCode()"
+        [disabled]="pickupCodeModal.isVerifying || pickupCodeModal.code.length !== 6">
+        <span *ngIf="!pickupCodeModal.isVerifying">Potwierdź odbiór</span>
+        <span *ngIf="pickupCodeModal.isVerifying" class="verifying-inner">
+          <div class="button-spinner"></div>
+          Weryfikacja...
+        </span>
+      </button>
     </div>
   </div>
 </div>

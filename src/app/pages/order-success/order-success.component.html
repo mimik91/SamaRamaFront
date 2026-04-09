@@ -1,0 +1,24 @@
+<div class="success-wrapper">
+  <div class="success-card">
+    <div class="success-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="8 12 11 15 16 9"/>
+      </svg>
+    </div>
+
+    <h1 class="success-heading">{{ heading }}</h1>
+    <p class="success-message">{{ message }}</p>
+
+    <div class="countdown-row">
+      <span class="countdown-label">Przekierowanie na stronę główną za</span>
+      <span class="countdown-number">{{ countdown }}</span>
+      <span class="countdown-label">s</span>
+    </div>
+
+    <button class="btn-home" (click)="goHome()">
+      Przejdź teraz
+    </button>
+  </div>
+</div>

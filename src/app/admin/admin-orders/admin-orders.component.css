@@ -364,6 +364,13 @@
   text-align: right;
 }
 
+.office-name-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-primary, #1B5E20);
+  margin-bottom: 2px;
+}
+
 .delivery-address {
   padding: 2px 6px;
   border-radius: 4px;

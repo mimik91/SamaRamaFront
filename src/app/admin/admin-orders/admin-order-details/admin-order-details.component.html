@@ -137,6 +137,10 @@
             <span class="label">Data odbioru:</span>
             <span class="value">{{ formatDate(order.pickupDate) }}</span>
           </div>
+          <div class="detail-row" *ngIf="order.pickupOfficeName">
+            <span class="label">Kompleks biurowy:</span>
+            <span class="value office-name">{{ order.pickupOfficeName }}</span>
+          </div>
           <div class="detail-row">
             <span class="label">Ulica:</span>
             <span class="value">{{ order.pickupStreet }}</span>

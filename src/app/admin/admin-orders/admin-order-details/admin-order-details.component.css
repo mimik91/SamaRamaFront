@@ -281,6 +281,11 @@
   word-break: break-word;
 }
 
+.detail-row .value.office-name {
+  font-weight: 600;
+  color: var(--color-primary, #1B5E20);
+}
+
 .detail-row .value.price {
   color: var(--color-success-call);
   font-weight: var(--font-weight-semibold);

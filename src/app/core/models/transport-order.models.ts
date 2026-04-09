@@ -59,7 +59,8 @@ export interface TransportOrder {
   pickupDate: string;
   pickupAddress: string;
   pickupTimeWindow?: string;
-  
+  pickupOfficeName?: string | null;
+
   // Pickup info - detailed
   pickupStreet?: string;
   pickupBuildingNumber?: string;

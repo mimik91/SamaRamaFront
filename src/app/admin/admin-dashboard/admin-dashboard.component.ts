@@ -120,4 +120,8 @@ export class AdminDashboardComponent implements OnInit {
   navigateToServiceSlots(): void {
     this.router.navigate(['/admin-service-slots']);
   }
+
+  navigateToOfficeAddresses(): void {
+    this.router.navigate(['/admin-office-addresses']);
+  }
 }

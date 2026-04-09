@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -10,14 +11,18 @@ import {
   AbstractControl,
   ValidationErrors
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { SessionSyncService } from '../core/session-sync.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { NotificationService } from '../core/notification.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { environment } from '../environments/environments';
 import { ServiceNavComponent } from '../pages/service-profile/service-nav.component';
+import { OfficeAddressDto } from '../shared/models/office-address.model';
 
 interface ServiceInfo {
   id: number;
@@ -33,6 +38,8 @@ interface ReservationSettings {
   formSchedule: { [key: string]: { fromTime: string | null; toTime: string | null } };
   estimatedReservationDay?: string | null;
 }
+
+type DeliveryType = 'SELF' | 'DOOR_TO_DOOR' | 'OFFICE';
 
 const DAY_KEYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 const DAY_LABELS: { [key: string]: string } = {
@@ -51,13 +58,18 @@ const DAY_LABELS: { [key: string]: string } = {
   templateUrl: './guest-reservation-form.component.html',
   styleUrls: ['./guest-reservation-form.component.css']
 })
-export class GuestReservationFormComponent implements OnInit {
+export class GuestReservationFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
   private enumerationService = inject(EnumerationService);
+  private sessionSyncService = inject(SessionSyncService);
+  private platformId = inject(PLATFORM_ID);
+
+  private routerSub: Subscription | null = null;
+  private sessionSyncSent = false;
 
   currentStep = 1;
   loading = false;
@@ -96,6 +108,13 @@ export class GuestReservationFormComponent implements OnInit {
   isCouponInvalid = false;
   finalTransportPrice: number | null = null;
 
+  // Office address autocomplete
+  officeAddresses: OfficeAddressDto[] = [];
+  filteredOffices: OfficeAddressDto[] = [];
+  showOfficeDropdown = false;
+  selectedOffice: OfficeAddressDto | null = null;
+  officeNameControl = new FormControl('');
+
   readonly links = environment.links;
 
   reservationForm!: FormGroup;
@@ -123,7 +142,7 @@ export class GuestReservationFormComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.pattern(/^\d{9}$/)]],
       plannedDate: ['', [Validators.required, this.acceptedDayValidator.bind(this)]],
-      withTransport: [false]
+      deliveryType: ['SELF' as DeliveryType]
     });
 
     this.transportForm = this.fb.group({
@@ -199,6 +218,69 @@ export class GuestReservationFormComponent implements OnInit {
     this.bikeBrandStates[index].showDropdown = true;
   }
 
+  // ===== Office autocomplete =====
+
+  onOfficeInput(event: Event): void {
+    const q = (event.target as HTMLInputElement).value;
+    this.officeNameControl.setValue(q, { emitEvent: false });
+    if (q.length >= 3) {
+      this.filteredOffices = this.officeAddresses.filter(o =>
+        o.name.toLowerCase().includes(q.toLowerCase())
+      );
+      this.showOfficeDropdown = this.filteredOffices.length > 0;
+    } else {
+      this.showOfficeDropdown = false;
+      this.filteredOffices = [];
+    }
+    if (this.selectedOffice) {
+      this.selectedOffice = null;
+      this.transportForm.get('pickupStreet')?.setValue('');
+      this.transportForm.get('pickupBuildingNumber')?.setValue('');
+      this.transportForm.get('pickupCity')?.setValue('');
+      this.transportForm.get('pickupPostalCode')?.setValue('');
+    }
+  }
+
+  onOfficeFocus(): void {
+    const q = this.officeNameControl.value || '';
+    if (q.length >= 3) {
+      this.filteredOffices = this.officeAddresses.filter(o =>
+        o.name.toLowerCase().includes(q.toLowerCase())
+      );
+      this.showOfficeDropdown = this.filteredOffices.length > 0;
+    }
+  }
+
+  expandAllOffices(): void {
+    this.filteredOffices = [...this.officeAddresses];
+    this.showOfficeDropdown = this.filteredOffices.length > 0;
+  }
+
+  onOfficeBlur(): void {
+    setTimeout(() => { this.showOfficeDropdown = false; }, 200);
+  }
+
+  clearOfficeSelection(): void {
+    this.selectedOffice = null;
+    this.officeNameControl.setValue('');
+    this.showOfficeDropdown = false;
+    this.filteredOffices = [];
+    this.transportForm.get('pickupStreet')?.setValue('');
+    this.transportForm.get('pickupBuildingNumber')?.setValue('');
+    this.transportForm.get('pickupCity')?.setValue('');
+    this.transportForm.get('pickupPostalCode')?.setValue('');
+  }
+
+  selectOffice(office: OfficeAddressDto): void {
+    this.selectedOffice = office;
+    this.officeNameControl.setValue(office.name);
+    this.transportForm.get('pickupStreet')?.setValue(office.street);
+    this.transportForm.get('pickupBuildingNumber')?.setValue(office.building);
+    this.transportForm.get('pickupCity')?.setValue(office.city);
+    this.transportForm.get('pickupPostalCode')?.setValue(office.postalCode || '');
+    this.showOfficeDropdown = false;
+  }
+
   // ===== Validators =====
 
   acceptedDayValidator(control: AbstractControl): ValidationErrors | null {
@@ -222,30 +304,55 @@ export class GuestReservationFormComponent implements OnInit {
     return 'Dostępne dni: ' + accepted.map(d => DAY_LABELS[d] || d).join(', ');
   }
 
-  get withTransport(): boolean {
-    return this.reservationForm.get('withTransport')?.value === true;
+  get deliveryType(): DeliveryType {
+    return this.reservationForm.get('deliveryType')?.value as DeliveryType;
   }
 
-  setTransport(val: boolean): void {
-    this.reservationForm.get('withTransport')?.setValue(val);
+  get withTransport(): boolean {
+    return this.deliveryType !== 'SELF';
+  }
+
+  get isOfficePick(): boolean {
+    return this.deliveryType === 'OFFICE';
+  }
+
+  setDeliveryType(type: DeliveryType): void {
+    this.reservationForm.get('deliveryType')?.setValue(type);
+    // Reset office selection and clear address when switching type
+    this.selectedOffice = null;
+    this.officeNameControl.setValue('');
+    this.showOfficeDropdown = false;
+    this.transportForm.get('pickupStreet')?.setValue('');
+    this.transportForm.get('pickupBuildingNumber')?.setValue('');
+    this.transportForm.get('pickupCity')?.setValue('');
+    this.transportForm.get('pickupPostalCode')?.setValue('');
   }
 
   get transportDate(): string {
     const planned = this.reservationForm.get('plannedDate')?.value;
     if (!planned) return '';
     const d = planned instanceof Date ? new Date(planned) : new Date(planned + 'T00:00:00');
-    d.setDate(d.getDate() - 1);
+    if (!this.isOfficePick) {
+      d.setDate(d.getDate() - 1);
+    }
     return this.dateToStr(d);
   }
 
   ngOnInit(): void {
     this.loadBrands();
     this.loadCities();
+    this.loadOfficeAddresses();
     this.loadServiceInfo();
 
-    this.reservationForm.get('withTransport')?.valueChanges.subscribe(val => {
+    if (isPlatformBrowser(this.platformId)) {
+      this.routerSub = this.router.events.pipe(
+        filter(e => e instanceof NavigationStart)
+      ).subscribe(() => this.sendSessionSync());
+    }
+
+    this.reservationForm.get('deliveryType')?.valueChanges.subscribe((val: DeliveryType) => {
       const phoneCtrl = this.reservationForm.get('phone')!;
-      if (val) {
+      if (val !== 'SELF') {
         this.transportForm.enable();
         phoneCtrl.addValidators(Validators.required);
       } else {
@@ -280,6 +387,14 @@ export class GuestReservationFormComponent implements OnInit {
         this.cities = this.sortCitiesKrakowFirst(environment.settings.fallback.cities);
         this.loadingCities = false;
       }
+    });
+  }
+
+  private loadOfficeAddresses(): void {
+    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.officeAddresses}`;
+    this.http.get<OfficeAddressDto[]>(url).subscribe({
+      next: (offices) => { this.officeAddresses = offices; },
+      error: () => { this.officeAddresses = []; }
     });
   }
 
@@ -492,7 +607,9 @@ export class GuestReservationFormComponent implements OnInit {
   }
 
   isStep1Valid(): boolean {
-    return this.reservationForm.valid && this.bikesArray.valid && (!this.withTransport || this.transportForm.valid);
+    const officeNameFilled = !this.isOfficePick || !!this.officeNameControl.value?.trim();
+    const transportValid = !this.withTransport || (this.transportForm.valid && officeNameFilled);
+    return this.reservationForm.valid && this.bikesArray.valid && transportValid;
   }
 
   isStepCompleted(step: number): boolean {
@@ -615,6 +732,9 @@ export class GuestReservationFormComponent implements OnInit {
       additionalInfo: b.additionalInfo?.trim() || ''
     }));
 
+    const officeLabel = this.isOfficePick ? this.officeNameControl.value?.trim() : null;
+    const transportNotes = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
+
     const payload = {
       serviceOrderIds,
       bicycles: bikesPayload,
@@ -627,9 +747,10 @@ export class GuestReservationFormComponent implements OnInit {
       pickupDate: this.transportDate,
       targetServiceId: this.serviceInfo!.id,
       transportPrice: this.effectiveTransportPrice,
-      transportNotes: '',
+      transportNotes,
       additionalNotes: '',
-      discountCoupon: this.finalTransportPrice !== null ? this.couponControl.value : null
+      discountCoupon: this.finalTransportPrice !== null ? this.couponControl.value : null,
+      pickupOfficeName: officeLabel || null
     };
 
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.transport}`;
@@ -646,8 +767,7 @@ export class GuestReservationFormComponent implements OnInit {
 
   private onSuccess(): void {
     this.submitting = false;
-    this.notificationService.success('Rezerwacja złożona pomyślnie! Serwis skontaktuje się z Tobą wkrótce.');
-    this.router.navigate([environment.links.homepage]);
+    this.router.navigate(['/sukces'], { queryParams: { typ: 'rezerwacja' }, replaceUrl: true });
   }
 
   goBack(): void {
@@ -662,6 +782,29 @@ export class GuestReservationFormComponent implements OnInit {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
+    });
+  }
+
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    this.sendSessionSync();
+  }
+
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
+  }
+
+  private sendSessionSync(): void {
+    if (this.sessionSyncSent) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.sessionSyncSent = true;
+
+    const rv = this.reservationForm.value;
+    this.sessionSyncService.send({
+      firstName: rv.firstName?.trim() || '',
+      lastName: rv.lastName?.trim() || '',
+      email: rv.email?.trim() || '',
+      phone: rv.phone?.trim() || ''
     });
   }
 }

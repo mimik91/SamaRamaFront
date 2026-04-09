@@ -1,15 +1,22 @@
 // src/app/transport-orders/transport-order-form.component.ts
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { NotificationService } from '../core/notification.service';
 import { TransportOrderService } from './transport-order.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { I18nService } from '../core/i18n.service';
+import { SessionSyncService } from '../core/session-sync.service';
 import { environment } from '../environments/environments';
 import { BicycleFormData, BicycleData } from '../shared/models/bicycle.model';
 import { ServiceNavComponent } from '../pages/service-profile/service-nav.component';
+import { OfficeAddressDto } from '../shared/models/office-address.model';
+
+type PickupType = 'ADDRESS' | 'OFFICE';
 
 
 @Component({
@@ -19,7 +26,7 @@ import { ServiceNavComponent } from '../pages/service-profile/service-nav.compon
   templateUrl: './transport-order-form.component.html',
   styleUrls: ['./transport-order-form.component.css']
 })
-export class TransportOrderFormComponent implements OnInit {
+export class TransportOrderFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -27,6 +34,11 @@ export class TransportOrderFormComponent implements OnInit {
   private transportOrderService = inject(TransportOrderService);
   private enumerationService = inject(EnumerationService);
   private i18n = inject(I18nService);
+  private sessionSyncService = inject(SessionSyncService);
+  private platformId = inject(PLATFORM_ID);
+
+  private routerSub: Subscription | null = null;
+  private sessionSyncSent = false;
 
   // Multi-step form management
   currentStep = 1;
@@ -75,6 +87,16 @@ export class TransportOrderFormComponent implements OnInit {
   // Transport availability states
   transportNotAvailable = false;  // serwis za daleko (transportAvailable = false && city != Kraków)
   transportComingSoon = false;    // serwis w Krakowie ale transport jeszcze niedostępny
+
+  // Pickup type selection
+  pickupType: PickupType = 'ADDRESS';
+
+  // Office address autocomplete
+  officeAddresses: OfficeAddressDto[] = [];
+  filteredOffices: OfficeAddressDto[] = [];
+  showOfficeDropdown = false;
+  selectedOffice: OfficeAddressDto | null = null;
+  officeNameControl = new FormControl('');
 
   // Expose environment links for template
   readonly links = environment.links;
@@ -133,7 +155,14 @@ export class TransportOrderFormComponent implements OnInit {
     this.loadServiceInfo();
     this.loadBrands();
     this.loadCities();
+    this.loadOfficeAddresses();
     this.addBicycleToForm();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.routerSub = this.router.events.pipe(
+        filter(e => e instanceof NavigationStart)
+      ).subscribe(() => this.sendSessionSync());
+    }
 
     this.contactAndTransportForm.get('pickupDate')?.valueChanges.subscribe(date => {
       if (date) {
@@ -293,6 +322,70 @@ export class TransportOrderFormComponent implements OnInit {
     });
   }
 
+  private loadOfficeAddresses(): void {
+    this.transportOrderService.getOfficeAddresses().subscribe({
+      next: (offices) => { this.officeAddresses = offices; },
+      error: () => { this.officeAddresses = []; }
+    });
+  }
+
+  setPickupType(type: PickupType): void {
+    this.pickupType = type;
+    this.selectedOffice = null;
+    this.officeNameControl.setValue('');
+    this.showOfficeDropdown = false;
+    this.contactAndTransportForm.get('pickupStreet')?.setValue('');
+    this.contactAndTransportForm.get('pickupBuildingNumber')?.setValue('');
+    this.contactAndTransportForm.get('pickupCity')?.setValue('');
+    this.contactAndTransportForm.get('pickupPostalCode')?.setValue('');
+  }
+
+  onOfficeInput(event: Event): void {
+    const q = (event.target as HTMLInputElement).value;
+    this.officeNameControl.setValue(q, { emitEvent: false });
+    if (q.length >= 3) {
+      this.filteredOffices = this.officeAddresses.filter(o =>
+        o.name.toLowerCase().includes(q.toLowerCase())
+      );
+      this.showOfficeDropdown = this.filteredOffices.length > 0;
+    } else {
+      this.showOfficeDropdown = false;
+      this.filteredOffices = [];
+    }
+    if (this.selectedOffice) {
+      this.selectedOffice = null;
+      this.contactAndTransportForm.get('pickupStreet')?.setValue('');
+      this.contactAndTransportForm.get('pickupBuildingNumber')?.setValue('');
+      this.contactAndTransportForm.get('pickupCity')?.setValue('');
+      this.contactAndTransportForm.get('pickupPostalCode')?.setValue('');
+    }
+  }
+
+  onOfficeBlur(): void {
+    setTimeout(() => { this.showOfficeDropdown = false; }, 200);
+  }
+
+  clearOfficeSelection(): void {
+    this.selectedOffice = null;
+    this.officeNameControl.setValue('');
+    this.showOfficeDropdown = false;
+    this.filteredOffices = [];
+    this.contactAndTransportForm.get('pickupStreet')?.setValue('');
+    this.contactAndTransportForm.get('pickupBuildingNumber')?.setValue('');
+    this.contactAndTransportForm.get('pickupCity')?.setValue('');
+    this.contactAndTransportForm.get('pickupPostalCode')?.setValue('');
+  }
+
+  selectOffice(office: OfficeAddressDto): void {
+    this.selectedOffice = office;
+    this.officeNameControl.setValue(office.name);
+    this.contactAndTransportForm.get('pickupStreet')?.setValue(office.street);
+    this.contactAndTransportForm.get('pickupBuildingNumber')?.setValue(office.building);
+    this.contactAndTransportForm.get('pickupCity')?.setValue(office.city);
+    this.contactAndTransportForm.get('pickupPostalCode')?.setValue(office.postalCode || '');
+    this.showOfficeDropdown = false;
+  }
+
   private sortCitiesKrakowFirst(cities: string[]): string[] {
     return [...cities].sort((a, b) => {
       if (a === 'Kraków') return -1;
@@ -375,7 +468,8 @@ export class TransportOrderFormComponent implements OnInit {
   isStepValid(step: number): boolean {
     switch (step) {
       case 1: return this.bicyclesForm.valid && this.bicyclesArray.length > 0;
-      case 2: return this.contactAndTransportForm.valid;
+      case 2: return this.contactAndTransportForm.valid &&
+        (this.pickupType !== 'OFFICE' || !!this.officeNameControl.value?.trim());
       case 3: return true;
       default: return false;
     }
@@ -577,6 +671,13 @@ export class TransportOrderFormComponent implements OnInit {
 
     const finalPrice = this.getFinalPriceToSend();
 
+    const userNotes = contactAndTransportData.additionalNotes?.trim() || '';
+    const officeLabel = this.pickupType === 'OFFICE' ? this.officeNameControl.value?.trim() : null;
+    const officePart = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
+    const transportNotes = officePart
+      ? (userNotes ? `${officePart}\n${userNotes}` : officePart)
+      : userNotes;
+
     const transportOrder = {
       bicycles: bicyclesData.map(bike => ({
         brand: bike.brand,
@@ -594,19 +695,15 @@ export class TransportOrderFormComponent implements OnInit {
       pickupDate: contactAndTransportData.pickupDate,
       targetServiceId: this.selectedServiceInfo.id,
       transportPrice: finalPrice,
-      transportNotes: contactAndTransportData.additionalNotes || '',
+      transportNotes,
       additionalNotes: bicycleInfo,
       discountCoupon: this.finalTransportPrice !== null ? this.discountCouponControl.value : null
     };
 
     this.transportOrderService.createGuestTransportOrder(transportOrder).subscribe({
-      next: (response) => {
-        this.notificationService.success(this.i18n.instant('transport_order.messages.order_success'));
+      next: () => {
         this.submitting = false;
-        const orderIds = response.orderIds || (response.id ? [response.id] : []);
-        this.router.navigate([environment.links.orderSummary], { 
-          queryParams: { orderIds: orderIds.join(',') } 
-        });
+        this.router.navigate(['/sukces'], { queryParams: { typ: 'transport' }, replaceUrl: true });
       },
       error: (err) => {
         this.submitting = false;
@@ -698,5 +795,28 @@ export class TransportOrderFormComponent implements OnInit {
   // Translation helper for template
   t(key: string, params?: any): string {
     return this.i18n.instant(key, params);
+  }
+
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    this.sendSessionSync();
+  }
+
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
+  }
+
+  private sendSessionSync(): void {
+    if (this.sessionSyncSent) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.sessionSyncSent = true;
+
+    const contact = this.contactAndTransportForm.value;
+    this.sessionSyncService.send({
+      firstName: '',
+      lastName: '',
+      email: contact.clientEmail?.trim() || '',
+      phone: contact.clientPhone?.trim() || ''
+    });
   }
 }

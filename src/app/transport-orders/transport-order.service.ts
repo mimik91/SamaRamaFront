@@ -3,13 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, throwError, map } from 'rxjs';
 import { environment } from '../environments/environments';
-import { 
-  TransportOrderRequest, 
-  TransportOrderResponse, 
+import {
+  TransportOrderRequest,
+  TransportOrderResponse,
   TransportOrderSummaryDto,
-  TransportOrderCreateResponse 
+  TransportOrderCreateResponse
 } from '../shared/models/transport-order.model';
 import { BikeService } from '../shared/models/bike-service.models';
+import { OfficeAddressDto } from '../shared/models/office-address.model';
 
 @Injectable({
   providedIn: 'root'
@@ -203,6 +204,16 @@ export class TransportOrderService {
         console.error('Error fetching suffix for service:', error);
         return throwError(() => error);
       })
+    );
+  }
+
+  /**
+   * Pobiera aktywne adresy biurowców
+   */
+  getOfficeAddresses(): Observable<OfficeAddressDto[]> {
+    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.officeAddresses}`;
+    return this.http.get<OfficeAddressDto[]>(url).pipe(
+      catchError(error => throwError(() => error))
     );
   }
 

@@ -140,6 +140,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
   {
+    path: 'admin-office-addresses',
+    renderMode: RenderMode.Client
+  },
+  {
     path: 'mistrzauta',
     renderMode: RenderMode.Client
   },
@@ -192,16 +196,22 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
   {
-    path: ':suffix/rezerwacja-potwierdzona',
-    renderMode: RenderMode.Client
-  },
-  {
     path: ':suffix/cennik',
     renderMode: RenderMode.Server
   },
   {
     path: ':suffix/godziny-otwarcia',
     renderMode: RenderMode.Server
+  },
+  // Strona przekierowania z ulotek — renderowana po stronie klienta
+  {
+    path: 'ulotka',
+    renderMode: RenderMode.Client
+  },
+  // Strona sukcesu — renderowana po stronie klienta (countdown + GA4)
+  {
+    path: 'sukces',
+    renderMode: RenderMode.Client
   },
   {
     path: ':suffix',

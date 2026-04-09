@@ -28,9 +28,9 @@ export const environment = {
       bikeServices: '/admin/bike-services',
       orders: '/admin/orders',
       orderById: '/admin/orders/:id',
-      orderTransportStatus: '/admin/orders/transport/:id/status'
+      orderTransportStatus: '/admin/orders/transport/:id/status',
+      officeAddresses: '/admin/office-addresses'
     },
-
 
     orders: {
       service: '/orders/service',
@@ -40,7 +40,9 @@ export const environment = {
     guestOrders: {
       transport: '/guest-orders/transport',
       discounts: '/guest-orders/discounts',
-      serviceReservation: '/guest-orders/service-reservation'
+      serviceReservation: '/guest-orders/service-reservation',
+      officeAddresses: '/guest-orders/office-addresses',
+      sessionSync: '/guest-orders/session-sync'
     },
 
     serviceSlots: {

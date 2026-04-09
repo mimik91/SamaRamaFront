@@ -372,32 +372,107 @@
             </div>
           </div>
           
+          <!-- Wybór typu odbioru -->
+          <div class="pickup-type-section">
+            <h4>Skąd odbieramy rower?</h4>
+            <div class="pickup-type-cards">
+              <!-- Własny adres -->
+              <div
+                class="pickup-type-card"
+                [class.selected]="pickupType === 'ADDRESS'"
+                (click)="setPickupType('ADDRESS')"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <div class="pickup-type-card-content">
+                  <span class="pickup-type-card-title">Adres własny</span>
+                  <span class="pickup-type-card-desc">Dom, osiedle lub inny adres w Krakowie</span>
+                </div>
+              </div>
+              <!-- Biurowiec -->
+              <div
+                class="pickup-type-card pickup-type-card--office"
+                [class.selected]="pickupType === 'OFFICE'"
+                (click)="setPickupType('OFFICE')"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h2M7 12h2M11 8h2M11 12h2M15 8h2M15 12h2"/></svg>
+                <div class="pickup-type-card-content">
+                  <span class="pickup-type-card-title">Spod biurowca</span>
+                  <span class="pickup-type-card-desc">Odbierzemy rower z parkingu lub recepcji biurowca w Krakowie</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Office autocomplete (only for OFFICE type) -->
+          <div class="office-autocomplete-section" *ngIf="pickupType === 'OFFICE'">
+            <h4>Nazwa kompleksu biurowego *</h4>
+            <div class="office-input-wrapper">
+              <input
+                type="text"
+                [formControl]="officeNameControl"
+                class="form-input-office"
+                [class.is-invalid]="!officeNameControl.value?.trim() && officeNameControl.dirty"
+                [class.input-readonly]="!!selectedOffice"
+                [readonly]="!!selectedOffice"
+                placeholder="Wpisz nazwę kompleksu biurowego..."
+                (input)="onOfficeInput($event)"
+                (blur)="onOfficeBlur()"
+                autocomplete="off"
+              />
+              <button
+                *ngIf="selectedOffice"
+                type="button"
+                class="office-clear-btn"
+                (click)="clearOfficeSelection()"
+                title="Zmień biurowiec"
+              >✕</button>
+              <ul *ngIf="showOfficeDropdown && filteredOffices.length > 0" class="office-suggestions-list">
+                <li
+                  *ngFor="let office of filteredOffices"
+                  class="office-suggestion-item"
+                  (mousedown)="selectOffice(office)"
+                >
+                  <span class="office-suggestion-name">{{ office.name }}</span>
+                  <span class="office-suggestion-addr">{{ office.street }} {{ office.building }}, {{ office.city }}</span>
+                </li>
+              </ul>
+            </div>
+            <div class="help-text">Wpisz min. 3 znaki — wybierz z listy lub wpisz własną nazwę</div>
+          </div>
+
           <!-- ROZBITY ADRES -->
           <div class="address-section">
-            <h4>{{ t('transport_order.transport_form.address_section_title') }} *</h4>
-            
+            <h4>
+              {{ pickupType === 'OFFICE' ? 'Adres biurowca' : (t('transport_order.transport_form.address_section_title') + ' *') }}
+              <span *ngIf="pickupType === 'OFFICE' && selectedOffice" class="address-from-list-badge">z listy</span>
+            </h4>
+
             <div class="form-row">
               <div class="form-group">
                 <label for="pickupStreet">{{ t('transport_order.transport_form.street_label') }} *</label>
-                <input 
-                  type="text" 
-                  id="pickupStreet" 
+                <input
+                  type="text"
+                  id="pickupStreet"
                   formControlName="pickupStreet"
                   [class.is-invalid]="isFieldInvalid('pickupStreet')"
+                  [class.input-readonly]="pickupType === 'OFFICE' && !!selectedOffice"
+                  [readonly]="pickupType === 'OFFICE' && !!selectedOffice"
                   [placeholder]="t('transport_order.transport_form.street_placeholder')"
                 >
                 <div *ngIf="isFieldInvalid('pickupStreet')" class="error-message">
                   {{ t('transport_order.transport_form.street_required') }}
                 </div>
               </div>
-              
+
               <div class="form-group">
                 <label for="pickupBuildingNumber">{{ t('transport_order.transport_form.building_number_label') }} *</label>
-                <input 
-                  type="text" 
-                  id="pickupBuildingNumber" 
+                <input
+                  type="text"
+                  id="pickupBuildingNumber"
                   formControlName="pickupBuildingNumber"
                   [class.is-invalid]="isFieldInvalid('pickupBuildingNumber')"
+                  [class.input-readonly]="pickupType === 'OFFICE' && !!selectedOffice"
+                  [readonly]="pickupType === 'OFFICE' && !!selectedOffice"
                   [placeholder]="t('transport_order.transport_form.building_number_placeholder')"
                 >
                 <div *ngIf="isFieldInvalid('pickupBuildingNumber')" class="error-message">
@@ -405,25 +480,34 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="form-row">
               <div class="form-group">
                 <label for="pickupCity">{{ t('transport_order.transport_form.city_label') }} *</label>
-                <select 
-                  id="pickupCity" 
+                <ng-container *ngIf="!(pickupType === 'OFFICE' && !!selectedOffice)">
+                  <select
+                    id="pickupCity"
+                    formControlName="pickupCity"
+                    [class.is-invalid]="isFieldInvalid('pickupCity')"
+                    [attr.disabled]="loadingCities ? '' : null"
+                  >
+                    <option value="" disabled>{{ t('transport_order.transport_form.city_placeholder') }}</option>
+                    <option *ngIf="loadingCities" value="" disabled>{{ t('transport_order.transport_form.city_loading') }}</option>
+                    <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                  </select>
+                </ng-container>
+                <input
+                  *ngIf="pickupType === 'OFFICE' && !!selectedOffice"
+                  type="text"
                   formControlName="pickupCity"
-                  [class.is-invalid]="isFieldInvalid('pickupCity')"
-                  [attr.disabled]="loadingCities ? '' : null"
-                >
-                  <option value="" disabled>{{ t('transport_order.transport_form.city_placeholder') }}</option>
-                  <option *ngIf="loadingCities" value="" disabled>{{ t('transport_order.transport_form.city_loading') }}</option>
-                  <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
-                </select>
+                  class="input-readonly"
+                  readonly
+                />
                 <div *ngIf="isFieldInvalid('pickupCity')" class="error-message">
                   {{ t('transport_order.transport_form.city_required') }}
                 </div>
               </div>
-              
+
               <div class="form-group">
                 <label for="pickupPostalCode">{{ t('transport_order.transport_form.postal_code_label') }}</label>
                 <input
@@ -431,6 +515,8 @@
                   id="pickupPostalCode"
                   formControlName="pickupPostalCode"
                   [class.is-invalid]="isFieldInvalid('pickupPostalCode')"
+                  [class.input-readonly]="pickupType === 'OFFICE' && !!selectedOffice"
+                  [readonly]="pickupType === 'OFFICE' && !!selectedOffice"
                   [placeholder]="t('transport_order.transport_form.postal_code_placeholder')"
                 >
                 <div *ngIf="isFieldInvalid('pickupPostalCode')" class="error-message">
@@ -439,11 +525,11 @@
               </div>
             </div>
           </div>
-          
+
           <div class="form-group">
             <label for="additionalNotes">{{ t('transport_order.transport_form.additional_notes_label') }}</label>
-            <textarea 
-              id="additionalNotes" 
+            <textarea
+              id="additionalNotes"
               formControlName="additionalNotes"
               rows="4"
               [placeholder]="t('transport_order.transport_form.additional_notes_placeholder')"
@@ -503,6 +589,10 @@
             <div class="summary-row">
               <span class="label">{{ t('transport_order.summary.pickup_date') }}</span>
               <span class="value">{{ contactAndTransportForm.get('pickupDate')?.value | date:'dd.MM.yyyy' }}</span>
+            </div>
+            <div class="summary-row" *ngIf="pickupType === 'OFFICE' && selectedOffice">
+              <span class="label">Kompleks biurowy</span>
+              <span class="value">{{ selectedOffice.name }}</span>
             </div>
             <div class="summary-row">
               <span class="label">{{ t('transport_order.summary.pickup_address') }}</span>

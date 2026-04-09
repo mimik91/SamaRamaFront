@@ -9,6 +9,7 @@ import {
   PaginatedResponse
 } from '../shared/models/admin.models';
 import { BikeServiceRegisteredDto } from '../shared/models/bike-service.models';
+import { OfficeAddressDto } from '../shared/models/office-address.model';
 
 
 @Injectable({
@@ -192,6 +193,48 @@ export class AdminService {
     return this.http.delete(`${this.apiUrl}/bike-services/${serviceId}`).pipe(
       catchError(error => {
         console.error(`Error deleting bike service ${serviceId}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // =================== OFFICE ADDRESSES ===================
+
+  private get officeAddressesUrl(): string {
+    return `${environment.apiUrl}${environment.endpoints.admin.officeAddresses}`;
+  }
+
+  getAllOfficeAddresses(): Observable<OfficeAddressDto[]> {
+    return this.http.get<OfficeAddressDto[]>(this.officeAddressesUrl).pipe(
+      catchError(error => {
+        console.error('Error fetching office addresses:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  createOfficeAddress(dto: Omit<OfficeAddressDto, 'id'>): Observable<OfficeAddressDto> {
+    return this.http.post<OfficeAddressDto>(this.officeAddressesUrl, dto).pipe(
+      catchError(error => {
+        console.error('Error creating office address:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  updateOfficeAddress(id: number, dto: OfficeAddressDto): Observable<OfficeAddressDto> {
+    return this.http.put<OfficeAddressDto>(`${this.officeAddressesUrl}/${id}`, dto).pipe(
+      catchError(error => {
+        console.error(`Error updating office address ${id}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  deleteOfficeAddress(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.officeAddressesUrl}/${id}`).pipe(
+      catchError(error => {
+        console.error(`Error deleting office address ${id}:`, error);
         return throwError(() => error);
       })
     );

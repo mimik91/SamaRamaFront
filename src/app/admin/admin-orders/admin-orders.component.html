@@ -137,7 +137,10 @@
                 </div>
               </td>
               
-              <td>{{ order.pickupAddress }}</td>
+              <td>
+                <div *ngIf="order.pickupOfficeName" class="office-name-badge">{{ order.pickupOfficeName }}</div>
+                {{ order.pickupAddress }}
+              </td>
               
               <td>
                 <span class="delivery-address" [ngClass]="{'service-delivery': order.deliveryAddress === 'SERWIS'}">

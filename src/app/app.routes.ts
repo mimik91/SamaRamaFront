@@ -23,6 +23,7 @@ import { AdminOrderDetailsComponent } from './admin/admin-orders/admin-order-det
 import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { AdminServicesVerificationComponent } from './admin/admin-services-verification/admin-services-verification.component';
 import { AdminRegisteredServiceEditionComponent } from './admin/admin-registered-service-edition/admin-registered-service-edition.component';
+import { AdminOfficeAddressesComponent } from './admin/admin-office-addresses/admin-office-addresses.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
@@ -39,7 +40,6 @@ import { PricingServicesComponent } from './core/pricing-services.component';
 import { suffixValidationGuard } from './auth/suffix-validation.guard';
 import { ServiceProfileTitleResolver} from './environments/service-profile-title.resolver';
 import { ServiceProfileResolver } from './pages/service-profile/service-profile.resolver';
-import { ReservationSuccessComponent } from './pages/reservation-success/reservation-success.component';
 import { CityServicesResolver } from './pages/city-services-page/city-services-page.resolver';
 import { ServicesMapResolver } from './pages/services-map-page/services-map-page.resolver';
 
@@ -50,6 +50,8 @@ import { CooperationComponent } from './cooperation/cooperation.component';
 import { ServiceProfilePageComponent } from './pages/service-profile/service-profile.component';
 import { CityServicesPageComponent } from './pages/city-services-page/city-services-page.component';
 import { LandingPageComponent } from './pages/landing-page/landing-page.component';
+import { FlyerRedirectComponent } from './pages/flyer-redirect/flyer-redirect.component';
+import { OrderSuccessComponent } from './pages/order-success/order-success.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
@@ -335,11 +337,17 @@ export const routes: Routes = [
       canActivate: [adminGuard],
       title: 'Sloty Czasowe - Admin'
     },
-    { 
-      path: 'admin-bike-services', 
-      component: AdminBikeServicesComponent, 
+    {
+      path: 'admin-bike-services',
+      component: AdminBikeServicesComponent,
       canActivate: [adminGuard],
       title: 'Serwisy - Admin'
+    },
+    {
+      path: 'admin-office-addresses',
+      component: AdminOfficeAddressesComponent,
+      canActivate: [adminGuard],
+      title: 'Kompleksy biurowe - Admin'
     },
     
     {
@@ -389,13 +397,6 @@ export const routes: Routes = [
       title: 'Zarezerwuj Serwis'
     },
 
-    // Potwierdzenie rezerwacji serwisu
-    {
-      path: ':suffix/rezerwacja-potwierdzona',
-      component: ReservationSuccessComponent,
-      title: 'Rezerwacja złożona!'
-    },
-
     // Service profile - cennik section (must be before base :suffix route)
     {
       path: ':suffix/cennik',
@@ -412,6 +413,20 @@ export const routes: Routes = [
       title: ServiceProfileTitleResolver,
       resolve: { profileData: ServiceProfileResolver },
       data: { section: 'hours' }
+    },
+
+    // Strona przekierowania z ulotek (QR kod) — zlicza odwiedziny w GA4
+    {
+      path: 'ulotka',
+      component: FlyerRedirectComponent,
+      title: 'CycloPick'
+    },
+
+    // Strona sukcesu po złożeniu rezerwacji lub zamówienia transportu
+    {
+      path: 'sukces',
+      component: OrderSuccessComponent,
+      title: 'Dziękujemy! | CycloPick'
     },
 
     // Service profile - base route (default - "O nas" section)

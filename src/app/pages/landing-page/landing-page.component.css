@@ -1341,7 +1341,6 @@
 
   .options-grid {
     grid-template-columns: 1fr;
-    overflow-x: hidden;
   }
 
   .options-grid .option-card:last-child:nth-child(odd) {

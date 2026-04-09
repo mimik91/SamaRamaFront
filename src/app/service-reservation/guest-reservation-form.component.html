@@ -261,8 +261,8 @@
           <div class="delivery-cards">
             <!-- Card: Self delivery -->
             <div class="delivery-card"
-                 [class.selected]="!withTransport"
-                 (click)="setTransport(false)">
+                 [class.selected]="deliveryType === 'SELF'"
+                 (click)="setDeliveryType('SELF')">
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1 1v5.5H5.5l3-5.5m7.5 0H17m-5 0H9"/></svg>
               <div class="delivery-card-content">
                 <span class="delivery-card-title">Przywiozę rower sam</span>
@@ -271,30 +271,94 @@
             </div>
             <!-- Card: Transport door-to-door -->
             <div class="delivery-card delivery-card--transport"
-                 [class.selected]="withTransport"
-                 (click)="setTransport(true)">
+                 [class.selected]="deliveryType === 'DOOR_TO_DOOR'"
+                 (click)="setDeliveryType('DOOR_TO_DOOR')">
               <span class="delivery-card-badge">&#9733; Polecane</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
               <div class="delivery-card-content">
                 <span class="delivery-card-title">Transport door-to-door
                   <span class="transport-cost-badge" *ngIf="serviceInfo.transportCost">{{ serviceInfo.transportCost }} PLN</span>
                 </span>
-                <span class="delivery-card-desc">Oszczędź czas, odbierzemy rower od Ciebie</span>
+                <span class="delivery-card-desc">Odbierzemy rower spod Twojego domu między 18:00 a 22:00</span>
+              </div>
+            </div>
+            <!-- Card: Transport spod biurowca -->
+            <div class="delivery-card delivery-card--office"
+                 [class.selected]="deliveryType === 'OFFICE'"
+                 (click)="setDeliveryType('OFFICE')">
+              <span class="delivery-card-badge delivery-card-badge--office">&#127970; Biurowce</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h2M7 12h2M11 8h2M11 12h2M15 8h2M15 12h2"/></svg>
+              <div class="delivery-card-content">
+                <span class="delivery-card-title">Transport spod biurowca
+                  <span class="transport-cost-badge" *ngIf="serviceInfo.transportCost">{{ serviceInfo.transportCost }} PLN</span>
+                </span>
+                <span class="delivery-card-desc">Odbierzemy rower spod Twojej pracy 10:00 – 16:00</span>
               </div>
             </div>
           </div>
           <p class="transport-toggle-hint">
-            Transport zostanie zarezerwowany na dzień przed serwisem
+            {{ isOfficePick ? 'Transport odbędzie się w dniu serwisu (10:00–16:00)' : 'Transport zostanie zarezerwowany na dzień przed serwisem' }}
           </p>
 
-          <!-- Transport address (shown when withTransport is checked) -->
+          <!-- Transport address section (shown when transport selected) -->
           <div class="transport-address-section" *ngIf="withTransport" [formGroup]="transportForm">
             <div class="transport-date-info" *ngIf="transportDate">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               <span>Data odbioru roweru: <strong>{{ formatDatePL(transportDate) }}</strong></span>
             </div>
 
-            <h4 class="transport-address-title">Adres odbioru roweru</h4>
+            <!-- Office autocomplete (only for OFFICE type) -->
+            <div class="office-autocomplete-section" *ngIf="isOfficePick">
+              <h4 class="transport-address-title">Nazwa kompleksu biurowego <span class="required">*</span></h4>
+              <div class="brand-input-wrapper">
+                <input
+                  type="text"
+                  [formControl]="officeNameControl"
+                  class="form-input"
+                  [class.invalid]="!officeNameControl.value?.trim() && officeNameControl.dirty"
+                  [class.input-readonly]="!!selectedOffice"
+                  [readonly]="!!selectedOffice"
+                  placeholder="Wpisz lub wybierz kompleks biurowy..."
+                  (input)="onOfficeInput($event)"
+                  (focus)="onOfficeFocus()"
+                  (blur)="onOfficeBlur()"
+                  autocomplete="off"
+                />
+                <button
+                  *ngIf="!selectedOffice"
+                  type="button"
+                  class="brand-toggle-btn"
+                  (click)="expandAllOffices()"
+                  tabindex="-1"
+                  title="Pokaż wszystkie kompleksy"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <button
+                  *ngIf="selectedOffice"
+                  type="button"
+                  class="office-clear-btn"
+                  (click)="clearOfficeSelection()"
+                  title="Zmień kompleks"
+                >✕</button>
+                <div *ngIf="showOfficeDropdown" class="office-dropdown">
+                  <div
+                    *ngFor="let office of filteredOffices"
+                    class="office-option"
+                    (mousedown)="selectOffice(office)"
+                  >
+                    <span class="office-option-name">{{ office.name }}</span>
+                    <span class="office-option-addr">{{ office.street }} {{ office.building }}, {{ office.city }}</span>
+                  </div>
+                </div>
+              </div>
+              <span class="field-hint">Wpisz min. 3 znaki lub kliknij ▾ aby zobaczyć wszystkie</span>
+            </div>
+
+            <h4 class="transport-address-title">
+              {{ isOfficePick ? 'Adres biurowca' : 'Adres odbioru roweru' }}
+              <span *ngIf="isOfficePick && selectedOffice" class="address-from-list-badge">z listy</span>
+            </h4>
 
             <div class="form-row">
               <div class="form-group form-group--wide">
@@ -304,6 +368,8 @@
                   formControlName="pickupStreet"
                   class="form-input"
                   [class.invalid]="isFieldInvalid('pickupStreet', transportForm)"
+                  [readonly]="isOfficePick && !!selectedOffice"
+                  [class.input-readonly]="isOfficePick && !!selectedOffice"
                   placeholder="ul. Kwiatowa"
                 />
                 <span *ngIf="isFieldInvalid('pickupStreet', transportForm)" class="field-error">Ulica jest wymagana</span>
@@ -315,6 +381,8 @@
                   formControlName="pickupBuildingNumber"
                   class="form-input"
                   [class.invalid]="isFieldInvalid('pickupBuildingNumber', transportForm)"
+                  [readonly]="isOfficePick && !!selectedOffice"
+                  [class.input-readonly]="isOfficePick && !!selectedOffice"
                   placeholder="12a"
                 />
                 <span *ngIf="isFieldInvalid('pickupBuildingNumber', transportForm)" class="field-error">Numer wymagany</span>
@@ -324,16 +392,25 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Miasto <span class="required">*</span></label>
-                <select
+                <ng-container *ngIf="!(isOfficePick && !!selectedOffice)">
+                  <select
+                    formControlName="pickupCity"
+                    class="form-input"
+                    [class.invalid]="isFieldInvalid('pickupCity', transportForm)"
+                    [attr.disabled]="loadingCities ? '' : null"
+                  >
+                    <option value="" disabled selected>-- Wybierz miasto --</option>
+                    <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
+                    <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                  </select>
+                </ng-container>
+                <input
+                  *ngIf="isOfficePick && !!selectedOffice"
+                  type="text"
                   formControlName="pickupCity"
-                  class="form-input"
-                  [class.invalid]="isFieldInvalid('pickupCity', transportForm)"
-                  [attr.disabled]="loadingCities ? '' : null"
-                >
-                  <option value="" disabled selected>-- Wybierz miasto --</option>
-                  <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
-                  <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
-                </select>
+                  class="form-input input-readonly"
+                  readonly
+                />
                 <span *ngIf="isFieldInvalid('pickupCity', transportForm)" class="field-error">Wybierz miasto z listy</span>
               </div>
               <div class="form-group">
@@ -343,6 +420,8 @@
                   formControlName="pickupPostalCode"
                   class="form-input"
                   [class.invalid]="isFieldInvalid('pickupPostalCode', transportForm)"
+                  [readonly]="isOfficePick && !!selectedOffice"
+                  [class.input-readonly]="isOfficePick && !!selectedOffice"
                   placeholder="30-001"
                   maxlength="6"
                 />
@@ -471,6 +550,10 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
             Transport roweru
           </h3>
+          <div class="summary-row" *ngIf="isOfficePick && selectedOffice">
+            <span class="summary-label">Kompleks biurowy:</span>
+            <span class="summary-value">{{ selectedOffice.name }}</span>
+          </div>
           <div class="summary-row">
             <span class="summary-label">Data odbioru:</span>
             <span class="summary-value highlight-date">{{ formatDatePL(transportDate) }}</span>

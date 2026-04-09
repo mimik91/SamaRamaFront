@@ -1,0 +1,90 @@
+.success-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--color-white);
+}
+
+.success-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 480px;
+  width: 100%;
+  padding: 48px 32px;
+  border-radius: var(--radius-card, 16px);
+  box-shadow: var(--shadow-lg, 0 8px 32px rgba(0,0,0,0.12));
+  text-align: center;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #e8f5e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary, #1B5E20);
+  animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.success-icon svg {
+  width: 44px;
+  height: 44px;
+}
+
+@keyframes pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.success-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-primary, #1B5E20);
+  margin: 0;
+}
+
+.success-message {
+  font-size: 1rem;
+  color: var(--color-gray-600, #475569);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.countdown-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-gray-500, #64748b);
+  font-size: 0.95rem;
+}
+
+.countdown-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary, #1B5E20);
+  min-width: 28px;
+  text-align: center;
+}
+
+.btn-home {
+  margin-top: 8px;
+  padding: 12px 32px;
+  background: var(--color-primary, #1B5E20);
+  color: var(--color-white, #fff);
+  border: none;
+  border-radius: var(--radius-btn, 8px);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-home:hover {
+  background: var(--color-success-dark, #27ae60);
+}

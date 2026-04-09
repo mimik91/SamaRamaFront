@@ -73,6 +73,10 @@
                 <span *ngIf="order.pickupTimeWindow" class="time-window"> · {{ order.pickupTimeWindow }}</span>
               </span>
             </div>
+            <div class="info-row" *ngIf="order.pickupOfficeName">
+              <span class="info-label">Kompleks biurowy</span>
+              <span class="info-value office-name">{{ order.pickupOfficeName }}</span>
+            </div>
             <div class="info-row">
               <span class="info-label">Adres odbioru</span>
               <span class="info-value">{{ order.pickupAddress }}</span>

@@ -212,6 +212,11 @@
   font-weight: 600;
 }
 
+.office-name {
+  font-weight: 600;
+  color: var(--color-primary, #1B5E20);
+}
+
 .bike-model {
   font-weight: 400;
   color: #7f8c8d;

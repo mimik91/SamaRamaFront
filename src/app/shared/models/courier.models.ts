@@ -12,6 +12,7 @@ export interface CourierOrder {
   pickupDate: string;
   pickupTimeWindow?: string;
   pickupAddress: string;
+  pickupOfficeName?: string | null;
   deliveryAddress: string;
   bikeBrand?: string;
   bikeModel?: string;

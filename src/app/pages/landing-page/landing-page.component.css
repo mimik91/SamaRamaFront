@@ -654,6 +654,64 @@
   object-fit: contain;
 }
 
+/* KROK 2: rozgałęzienie opcji odbioru */
+.how-v2-pickup-options {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 10px;
+}
+
+.how-v2-pickup-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--color-primary-alpha-08);
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 14px 12px;
+  gap: 10px;
+}
+
+.how-v2-pickup-img {
+  height: 64px;
+  width: auto;
+  object-fit: contain;
+}
+
+.how-v2-pickup-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 2px;
+}
+
+.how-v2-pickup-time {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0 0 4px;
+}
+
+.how-v2-pickup-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.how-v2-pickup-divider {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+
 /* KROK 3 i 4: obrazek po lewej, tekst po prawej */
 .how-v2-step-side {
   display: flex;
@@ -1421,6 +1479,15 @@
 
   .how-v2-body-text {
     font-size: 0.82rem;
+  }
+
+  .how-v2-pickup-options {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .how-v2-pickup-divider {
+    justify-content: center;
   }
 
   .how-v2-cta {

@@ -140,7 +140,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.pattern(/^\d{9}$/)]],
+      phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
       plannedDate: ['', [Validators.required, this.acceptedDayValidator.bind(this)]],
       deliveryType: ['SELF' as DeliveryType]
     });
@@ -149,7 +149,8 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       pickupStreet: ['', Validators.required],
       pickupBuildingNumber: ['', Validators.required],
       pickupCity: ['', Validators.required],
-      pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]]
+      pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]],
+      transportNotes: ['']
     });
   }
 
@@ -351,19 +352,15 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     }
 
     this.reservationForm.get('deliveryType')?.valueChanges.subscribe((val: DeliveryType) => {
-      const phoneCtrl = this.reservationForm.get('phone')!;
       if (val !== 'SELF') {
         this.transportForm.enable();
-        phoneCtrl.addValidators(Validators.required);
       } else {
         this.transportForm.disable();
-        phoneCtrl.removeValidators(Validators.required);
         this.couponControl.setValue('');
         this.couponMessage = null;
         this.isCouponInvalid = false;
         this.finalTransportPrice = null;
       }
-      phoneCtrl.updateValueAndValidity();
     });
 
     this.transportForm.disable();
@@ -733,7 +730,9 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     }));
 
     const officeLabel = this.isOfficePick ? this.officeNameControl.value?.trim() : null;
-    const transportNotes = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
+    const userNotes = tv.transportNotes?.trim() || '';
+    const officePrefix = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
+    const transportNotes = [officePrefix, userNotes].filter(Boolean).join('\n');
 
     const payload = {
       serviceOrderIds,

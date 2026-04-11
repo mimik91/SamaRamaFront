@@ -113,11 +113,7 @@
               <span *ngIf="isFieldInvalid('email')" class="field-error">Podaj poprawny adres email</span>
             </div>
             <div class="form-group">
-              <label class="form-label">
-                Telefon
-                <span class="required" *ngIf="withTransport"> *</span>
-                <span class="optional-label" *ngIf="!withTransport">(opcjonalnie)</span>
-              </label>
+              <label class="form-label">Telefon <span class="required">*</span></label>
               <input
                 type="tel"
                 formControlName="phone"
@@ -126,9 +122,7 @@
                 placeholder="600123456"
                 maxlength="9"
               />
-              <span *ngIf="isFieldInvalid('phone')" class="field-error">
-                {{ withTransport ? 'Telefon jest wymagany przy zamówieniu transportu' : 'Podaj 9-cyfrowy numer telefonu' }}
-              </span>
+              <span *ngIf="isFieldInvalid('phone')" class="field-error">Podaj 9-cyfrowy numer telefonu</span>
             </div>
           </div>
         </div>
@@ -429,6 +423,17 @@
               </div>
             </div>
 
+            <!-- Uwagi dotyczące transportu -->
+            <div class="transport-notes-section">
+              <h4 class="transport-address-title">Uwagi dotyczące transportu <span class="optional-label"></span></h4>
+              <textarea
+                formControlName="transportNotes"
+                class="form-input form-textarea"
+                rows="3"
+                placeholder="Tutaj możesz wpisać uwagi dotyczące transportu np. preferowane godziny albo wskazówki dotyczące dojazdu"
+              ></textarea>
+            </div>
+
             <!-- Kupon rabatowy -->
             <div class="coupon-section">
               <h4 class="transport-address-title">Kupon rabatowy <span class="optional-label">(opcjonalnie)</span></h4>
@@ -572,6 +577,10 @@
               <span *ngIf="finalTransportPrice !== null" class="summary-price-original">{{ serviceInfo.transportCost }} PLN</span>
               <span class="summary-price">{{ effectiveTransportPrice }} PLN</span>
             </span>
+          </div>
+          <div class="summary-row" *ngIf="transportForm.value.transportNotes?.trim()">
+            <span class="summary-label">Uwagi:</span>
+            <span class="summary-value">{{ transportForm.value.transportNotes }}</span>
           </div>
         </div>
 

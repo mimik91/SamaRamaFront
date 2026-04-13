@@ -91,6 +91,10 @@
                 <a href="tel:{{ order.clientPhone }}">{{ order.clientPhone }}</a>
               </span>
             </div>
+            <div class="info-row transport-notes-row" *ngIf="order.transportNotes">
+              <span class="info-label">Uwagi</span>
+              <span class="info-value transport-notes">{{ order.transportNotes }}</span>
+            </div>
           </div>
 
           <!-- Card action -->

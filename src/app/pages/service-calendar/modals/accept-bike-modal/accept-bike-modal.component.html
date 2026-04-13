@@ -111,7 +111,7 @@
             <h3 class="section-title">{{ t('service_calendar.accept_bike_modal.contact_section') }}</h3>
             <p class="section-hint">{{ t('service_calendar.accept_bike_modal.contact_hint') }}</p>
 
-            <div class="form-row">
+            <div class="form-row" [class.field-error-group]="showValidation && !foundClient && !clientEmail.trim() && !clientPhone.trim()">
               <div class="form-group">
                 <label for="clientEmail">{{ t('service_calendar.create_order.email') }}</label>
                 <input
@@ -122,6 +122,7 @@
                   name="clientEmail"
                   [placeholder]="t('service_calendar.create_order.email_placeholder')"
                   [disabled]="!!(clientLookingBy === 'phone' || (foundClient && clientFoundBy === 'phone'))"
+                  [class.input-error]="showValidation && !foundClient && !clientEmail.trim() && !clientPhone.trim()"
                 />
               </div>
               <div class="form-group">
@@ -134,8 +135,12 @@
                   name="clientPhone"
                   [placeholder]="t('service_calendar.create_order.phone_placeholder')"
                   [disabled]="!!(clientLookingBy === 'email' || (foundClient && clientFoundBy === 'email'))"
+                  [class.input-error]="showValidation && !foundClient && !clientEmail.trim() && !clientPhone.trim()"
                 />
               </div>
+            </div>
+            <div class="validation-msg" *ngIf="showValidation && !foundClient && !clientEmail.trim() && !clientPhone.trim()">
+              Podaj e-mail lub telefon klienta.
             </div>
 
             <!-- Client lookup status -->
@@ -198,6 +203,7 @@
                     autocomplete="off"
                     [placeholder]="t('service_calendar.brand_autocomplete.placeholder')"
                     [disabled]="selectedBikeId !== null"
+                    [class.input-error]="showValidation && !selectedBikeId && !bikeBrand.trim()"
                   />
                   <button
                     type="button"
@@ -232,17 +238,34 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="frameNumber">{{ t('service_calendar.create_order.frame_number') }}</label>
-              <input
-                type="text"
-                id="frameNumber"
-                [ngModel]="frameNumber"
-                (ngModelChange)="onFrameNumberChange($event)"
-                name="frameNumber"
-                [placeholder]="t('service_calendar.create_order.frame_number_placeholder')"
-                [disabled]="selectedBikeId !== null"
-              />
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bikeType">Typ roweru *</label>
+                <select
+                  id="bikeType"
+                  [(ngModel)]="bikeType"
+                  name="bikeType"
+                  required
+                  [disabled]="selectedBikeId !== null"
+                  [class.input-error]="showValidation && !selectedBikeId && !bikeType.trim()"
+                >
+                  <option value="">-- Wybierz typ --</option>
+                  <option *ngFor="let type of bikeTypes" [value]="type">{{ type }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="frameNumber">{{ t('service_calendar.create_order.frame_number') }}</label>
+                <input
+                  type="text"
+                  id="frameNumber"
+                  [ngModel]="frameNumber"
+                  (ngModelChange)="onFrameNumberChange($event)"
+                  name="frameNumber"
+                  [placeholder]="t('service_calendar.create_order.frame_number_placeholder')"
+                  [disabled]="selectedBikeId !== null"
+                />
+              </div>
+            </div>
 
               <!-- Stolen check: loading -->
               <div class="stolen-check checking" *ngIf="isCheckingStolen">
@@ -274,7 +297,6 @@
                   </ol>
                 </div>
               </div>
-            </div>
           </div>
 
           <!-- Notes -->
@@ -375,7 +397,7 @@
       <button
         class="btn-submit"
         (click)="onSubmit()"
-        [disabled]="!isFormValid || isSubmitting || isLoadingOrder"
+        [disabled]="isSubmitting || isLoadingOrder"
       >
         <span *ngIf="isSubmitting">{{ t('common.saving') }}</span>
         <span *ngIf="!isSubmitting">{{ t('service_calendar.buttons.accept_bike') }}</span>

@@ -49,6 +49,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   // New walk-in mode
   bikeBrand: string = '';
   bikeModel: string = '';
+  bikeType: string = '';
   frameNumber: string = '';
   clientEmail: string = '';
   clientPhone: string = '';
@@ -58,11 +59,15 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   // State
   isSubmitting: boolean = false;
   isLoadingOrder: boolean = false;
+  showValidation: boolean = false;
 
   // Brand autocomplete
   allBrands: string[] = [];
   filteredBrands: string[] = [];
   showBrandDropdown: boolean = false;
+
+  // Bike types
+  bikeTypes: string[] = [];
 
   // Client lookup
   foundClient: ClientLookupResult | null = null;
@@ -100,6 +105,12 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.enumerationService.getEnumeration('BRAND').subscribe({
       next: (brands) => { this.allBrands = brands; },
       error: (err) => { console.error('Error loading brands:', err); }
+    });
+
+    // Load bike types
+    this.enumerationService.getEnumeration('BIKE_TYPE').subscribe({
+      next: (types) => { this.bikeTypes = types; },
+      error: (err) => { console.error('Error loading bike types:', err); }
     });
 
     // Load cities
@@ -232,12 +243,14 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     if (bikeId === null) {
       this.bikeBrand = '';
       this.bikeModel = '';
+      this.bikeType = '';
       return;
     }
     const bike = this.clientBikes.find(b => b.id === bikeId);
     if (bike) {
       this.bikeBrand = bike.brand;
       this.bikeModel = bike.model;
+      this.bikeType = '';
     }
   }
 
@@ -249,6 +262,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.selectedBikeId = null;
     this.bikeBrand = '';
     this.bikeModel = '';
+    this.bikeType = '';
   }
 
   // ============================================
@@ -306,6 +320,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   private prefillFromOrder(order: any): void {
     this.bikeBrand = order.bicycle?.brand || order.bicycleBrand || '';
     this.bikeModel = order.bicycle?.model || order.bicycleModel || '';
+    this.bikeType = order.bicycle?.type || order.bicycleType || '';
     this.frameNumber = order.bicycle?.frameNumber || order.bicycleFrameNumber || '';
 
     if (order.client) {
@@ -365,12 +380,17 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
         (this.clientEmail.trim() || this.clientPhone.trim())
       );
       const hasBike = !!(this.selectedBikeId || this.bikeBrand.trim());
-      return !!(hasClient && hasBike && this.isDeliveryAddressValid);
+      const hasType = !!(this.selectedBikeId || this.bikeType.trim());
+      return !!(hasClient && hasBike && hasType && this.isDeliveryAddressValid);
     }
   }
 
   onSubmit(): void {
-    if (!this.isFormValid || this.isSubmitting) return;
+    if (this.isSubmitting) return;
+    if (!this.isFormValid) {
+      this.showValidation = true;
+      return;
+    }
 
     this.isSubmitting = true;
 
@@ -403,6 +423,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
         : {
             brand: this.bikeBrand.trim(),
             model: this.bikeModel.trim() || undefined,
+            type: this.bikeType.trim() || undefined,
             frameNumber: this.frameNumber.trim() || undefined
           }
       ),
@@ -480,6 +501,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
         : {
             brand: this.bikeBrand.trim(),
             model: this.bikeModel.trim() || undefined,
+            type: this.bikeType.trim() || undefined,
             frameNumber: this.frameNumber.trim() || undefined
           }
       ),

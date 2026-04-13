@@ -94,31 +94,35 @@
 
         <!-- Dane roweru -->
         <div class="detail-section">
-          <div class="section-header">
-            <h3 class="section-title">{{ t('service_calendar.order_details.bike') }}</h3>
-            <button
-              *ngIf="!isBikeEditMode"
-              class="bike-edit-btn"
-              (click)="toggleBikeEdit()"
-              title="Edytuj dane roweru"
-            >&#9998;</button>
-          </div>
-
-          <!-- Tryb podglądu -->
-          <ng-container *ngIf="!isBikeEditMode">
-            <div class="detail-grid detail-grid--cols">
-              <div class="detail-item">
-                <span class="detail-label">{{ t('service_calendar.order_details.brand_model') }}</span>
-                <span class="detail-value">{{ fullOrder.bicycleBrand }} {{ fullOrder.bicycleModel }}</span>
+          <h3 class="section-title">{{ t('service_calendar.order_details.bike') }}</h3>
+          <div class="bike-edit-form">
+            <div class="bike-edit-row">
+              <div class="bike-edit-field">
+                <label class="bike-edit-label">Marka</label>
+                <input type="text" [(ngModel)]="editBikeBrand" class="bike-edit-input" placeholder="np. Trek" />
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Typ roweru</span>
-                <span class="detail-value" [class.detail-value--empty]="!fullOrder.bicycleType">{{ fullOrder.bicycleType || 'Nie podano' }}</span>
+              <div class="bike-edit-field">
+                <label class="bike-edit-label">Model</label>
+                <input type="text" [(ngModel)]="editBikeModel" class="bike-edit-input" placeholder="np. FX3" />
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Materiał ramy</span>
-                <span class="detail-value" [class.detail-value--empty]="!fullOrder.bicycleFrameMaterial">{{ fullOrder.bicycleFrameMaterial || 'Nie podano' }}</span>
+            </div>
+            <div class="bike-edit-row">
+              <div class="bike-edit-field">
+                <label class="bike-edit-label">Typ roweru</label>
+                <select [(ngModel)]="editBikeType" class="bike-edit-input">
+                  <option value="">— brak —</option>
+                  <option *ngFor="let bt of bikeTypes" [value]="bt">{{ bt }}</option>
+                </select>
               </div>
+              <div class="bike-edit-field">
+                <label class="bike-edit-label">Materiał ramy</label>
+                <select [(ngModel)]="editBikeFrameMaterial" class="bike-edit-input">
+                  <option value="">— brak —</option>
+                  <option *ngFor="let fm of frameMaterials" [value]="fm">{{ fm }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="bike-frame-info" *ngIf="fullOrder.bicycleFrameNumber || fullOrder.description">
               <div class="detail-item" *ngIf="fullOrder.bicycleFrameNumber">
                 <span class="detail-label">{{ t('service_calendar.order_details.frame_number') }}</span>
                 <span class="detail-value">{{ fullOrder.bicycleFrameNumber }}</span>
@@ -128,45 +132,7 @@
                 <span class="detail-value">{{ fullOrder.description }}</span>
               </div>
             </div>
-          </ng-container>
-
-          <!-- Tryb edycji -->
-          <ng-container *ngIf="isBikeEditMode">
-            <div class="bike-edit-form">
-              <div class="bike-edit-row">
-                <div class="bike-edit-field">
-                  <label class="bike-edit-label">Marka</label>
-                  <input type="text" [(ngModel)]="editBikeBrand" class="bike-edit-input" placeholder="np. Trek" />
-                </div>
-                <div class="bike-edit-field">
-                  <label class="bike-edit-label">Model</label>
-                  <input type="text" [(ngModel)]="editBikeModel" class="bike-edit-input" placeholder="np. FX3" />
-                </div>
-              </div>
-              <div class="bike-edit-row">
-                <div class="bike-edit-field">
-                  <label class="bike-edit-label">Typ roweru</label>
-                  <select [(ngModel)]="editBikeType" class="bike-edit-input">
-                    <option value="">— brak —</option>
-                    <option *ngFor="let bt of bikeTypes" [value]="bt">{{ bt }}</option>
-                  </select>
-                </div>
-                <div class="bike-edit-field">
-                  <label class="bike-edit-label">Materiał ramy</label>
-                  <select [(ngModel)]="editBikeFrameMaterial" class="bike-edit-input">
-                    <option value="">— brak —</option>
-                    <option *ngFor="let fm of frameMaterials" [value]="fm">{{ fm }}</option>
-                  </select>
-                </div>
-              </div>
-              <div class="bike-edit-actions">
-                <button class="bike-edit-cancel" (click)="cancelBikeEdit()" [disabled]="isUpdating">Anuluj</button>
-                <button class="bike-edit-save" (click)="saveBikeData()" [disabled]="isUpdating">
-                  {{ isUpdating ? '...' : 'Zapisz' }}
-                </button>
-              </div>
-            </div>
-          </ng-container>
+          </div>
         </div>
 
         <!-- Akcje potwierdzenia (tylko dla PENDING_CONFIRMATION) -->
@@ -215,9 +181,7 @@
               <input
                 type="date"
                 [(ngModel)]="selectedDate"
-                (change)="onDateChange()"
                 [min]="minDate"
-                [disabled]="isUpdating"
                 class="date-input"
               />
             </div>
@@ -225,8 +189,6 @@
               <span class="detail-label">{{ t('service_calendar.order_details.technician') }}</span>
               <select
                 [(ngModel)]="selectedTechnicianId"
-                (change)="onTechnicianChange()"
-                [disabled]="isUpdating"
                 class="technician-select"
               >
                 <option [ngValue]="null">{{ t('service_calendar.order_details.no_technician') }}</option>
@@ -323,35 +285,23 @@
         <!-- Notatki -->
         <div class="detail-section" *ngIf="!isPendingConfirmation">
           <h3 class="section-title">{{ t('service_calendar.order_details.notes') }}</h3>
-          <div class="notes-fields">
-            <div class="notes-field">
-              <label class="notes-label">Co zostało zrobione</label>
+          <div class="notes-two-col">
+            <div class="notes-col">
+              <label class="notes-label notes-label--client">Notatka serwisowa dla klienta</label>
               <textarea
                 #noteTextarea
                 [(ngModel)]="notes"
-                placeholder="Co zostało zrobione"
-                rows="1"
-                (input)="autoResize($event)"
+                placeholder="Widoczna dla klienta po zakończeniu serwisu..."
+                rows="6"
               ></textarea>
             </div>
-            <div class="notes-field">
-              <label class="notes-label notes-label--advice">Zalecenia pielęgnacyjne roweru</label>
+            <div class="notes-col">
+              <label class="notes-label notes-label--internal">Notatka dla serwisu <span class="notes-label-hint">(niewidoczna dla klienta)</span></label>
               <textarea
                 #noteTextarea
                 [(ngModel)]="maintenanceAdvice"
-                placeholder="Zalecenia pielęgnacyjne roweru"
-                rows="1"
-                (input)="autoResize($event)"
-              ></textarea>
-            </div>
-            <div class="notes-field">
-              <label class="notes-label notes-label--repairs">Zalecane naprawy w najbliższej przyszłości</label>
-              <textarea
-                #noteTextarea
-                [(ngModel)]="recommendedRepairs"
-                placeholder="Zalecane naprawy w najbliższej przyszłości"
-                rows="1"
-                (input)="autoResize($event)"
+                placeholder="Notatki wewnętrzne, uwagi dla mechanika..."
+                rows="6"
               ></textarea>
             </div>
           </div>
@@ -545,6 +495,16 @@
                 ></textarea>
               </div>
             </div>
+
+            <div class="return-save-action" *ngIf="returnPickupMethod === 'delivery'">
+              <button
+                class="btn-save-return"
+                (click)="onSaveReturnTransport()"
+                [disabled]="!isReturnDeliveryFormValid || isSavingReturnTransport"
+              >
+                {{ isSavingReturnTransport ? 'Zlecanie...' : 'Zlec transport zwrotny' }}
+              </button>
+            </div>
           </div>
         </ng-template>
 
@@ -555,11 +515,12 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn-cancel" (click)="onCancelNotes()">Anuluj</button>
-      <button class="btn-save-all" (click)="onSaveAllNotes()" [disabled]="isSaveDisabled">
-        {{ isSavingReturnTransport ? 'Zlecanie...' : isUpdating ? '...' : 'Zapisz' }}
+      <button class="btn-cancel" (click)="onCancelAndClose()" [disabled]="isUpdating">Anuluj</button>
+      <button class="btn-save" (click)="onSaveAndClose()" [disabled]="isUpdating">
+        {{ isUpdating ? 'Zapisywanie...' : 'Zapisz' }}
       </button>
     </div>
+
   </div>
 </div>
 

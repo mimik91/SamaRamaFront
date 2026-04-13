@@ -27,8 +27,6 @@
         [order]="order"
         [showTechnician]="false"
         (orderClick)="onOrderClick($event)"
-        (cancelOrder)="onCancelOrder($event)"
-        (confirmOrder)="onConfirmOrder($event)"
         (acceptBike)="onAcceptBike($event)"
         (markReadyForPickup)="onMarkReadyForPickup($event)"
         (markCompleted)="onMarkCompleted($event)"
@@ -60,12 +58,6 @@
             [order]="order"
             [showTechnician]="false"
             (orderClick)="onOrderClick($event)"
-            (cancelOrder)="onCancelOrder($event)"
-            (confirmOrder)="onConfirmOrder($event)"
-            (acceptBike)="onAcceptBike($event)"
-            (markReadyForPickup)="onMarkReadyForPickup($event)"
-            (markCompleted)="onMarkCompleted($event)"
-            (backToProgress)="onBackToProgress($event)"
           ></app-order-bar>
 
           <div class="column-empty" *ngIf="unassignedOrders.length === 0">
@@ -89,12 +81,6 @@
             [order]="order"
             [showTechnician]="false"
             (orderClick)="onOrderClick($event)"
-            (cancelOrder)="onCancelOrder($event)"
-            (confirmOrder)="onConfirmOrder($event)"
-            (acceptBike)="onAcceptBike($event)"
-            (markReadyForPickup)="onMarkReadyForPickup($event)"
-            (markCompleted)="onMarkCompleted($event)"
-            (backToProgress)="onBackToProgress($event)"
           ></app-order-bar>
 
           <div class="column-empty" *ngIf="getOrdersForTechnician(technician.id).length === 0">

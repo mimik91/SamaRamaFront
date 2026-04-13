@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { I18nService } from '../../../../core/i18n.service';
 import {
   CalendarOrder,
+  CalendarOrderStatus,
   getStatusColor,
   getStatusI18nKey
 } from '../../../../shared/models/service-calendar.models';
-
-export type OrderAction = 'cancel' | 'confirm' | 'acceptBike' | 'readyForPickup' | 'completed' | 'backToProgress';
 
 @Component({
   selector: 'app-order-bar',
@@ -22,11 +21,8 @@ export class OrderBarComponent {
   @Input() order!: CalendarOrder;
   @Input() compact: boolean = false;
   @Input() showTechnician: boolean = false;
-  @Input() showActions: boolean = true;
 
   @Output() orderClick = new EventEmitter<CalendarOrder>();
-  @Output() cancelOrder = new EventEmitter<CalendarOrder>();
-  @Output() confirmOrder = new EventEmitter<CalendarOrder>();
   @Output() acceptBike = new EventEmitter<CalendarOrder>();
   @Output() markReadyForPickup = new EventEmitter<CalendarOrder>();
   @Output() markCompleted = new EventEmitter<CalendarOrder>();
@@ -36,30 +32,39 @@ export class OrderBarComponent {
     return this.i18nService.translate(key, params);
   }
 
-  get statusColor(): string {
-    return getStatusColor(this.order.status);
+  get barStatusColor(): string {
+    const s = this.order.status;
+    if (s === 'CANCELLED' || s === 'REJECTED' || s === 'AWAITING_CLIENT_DATE_CONFIRMATION') {
+      return 'var(--color-slate-400)';
+    }
+    if (s === 'PENDING_CONFIRMATION') {
+      return 'var(--color-navy)';
+    }
+    if (s === 'WAITING_FOR_BIKE' || s === 'CONFIRMED') {
+      return 'var(--color-info)';
+    }
+    if (s === 'IN_PROGRESS' || s === 'READY_FOR_PICKUP') {
+      return 'var(--color-accent)';
+    }
+    if (s === 'WAITING_FOR_PARTS') return 'var(--status-waiting-parts)';
+    if (s === 'AWAITING_CLIENT_DECISION') return 'var(--status-awaiting-decision)';
+    return getStatusColor(s);
   }
 
-  get statusLabel(): string {
-    const key = getStatusI18nKey(this.order.status);
-    return this.t(key);
+  get bikeBrand(): string {
+    return (this.order?.bicycleBrand ?? '').toString().trim().toUpperCase();
+  }
+
+  get bikeModel(): string {
+    return (this.order?.bicycleModel ?? '').toString().trim();
   }
 
   get bikeInfo(): string {
-    // Safely get brand and model, handling null/undefined
-    const brand = (this.order?.bicycleBrand ?? '').toString().trim();
-    const model = (this.order?.bicycleModel ?? '').toString().trim();
-
-    if (brand && model) {
-      return `${brand} ${model}`;
-    }
-    if (brand) {
-      return brand;
-    }
-    if (model) {
-      return model;
-    }
-    // Fallback - show order ID if no bike info
+    const brand = this.bikeBrand;
+    const model = this.bikeModel;
+    if (brand && model) return `${brand} ${model}`;
+    if (brand) return brand;
+    if (model) return model;
     return `Zlecenie #${this.order?.id || '?'}`;
   }
 
@@ -67,26 +72,36 @@ export class OrderBarComponent {
     return this.order.clientName || '';
   }
 
-  get availableActions(): OrderAction[] {
-    if (this.compact) return [];
+  /** Przycisk w prawym dolnym rogu */
+  get actionButton(): 'respond' | 'acceptBike' | 'readyForPickup' | 'markCompleted' | 'backToProgress' | null {
+    const s = this.order.status;
+    if (s === 'PENDING_CONFIRMATION') return 'respond';
+    if (s === 'CONFIRMED' || s === 'WAITING_FOR_BIKE') return 'acceptBike';
+    if (s === 'IN_PROGRESS') return 'readyForPickup';
+    if (s === 'READY_FOR_PICKUP') return 'markCompleted';
+    if (s === 'WAITING_FOR_PARTS' || s === 'AWAITING_CLIENT_DECISION') return 'backToProgress';
+    return null;
+  }
 
-    switch (this.order.status) {
-      case 'PENDING_CONFIRMATION':
-        return ['cancel', 'confirm'];
-      case 'CONFIRMED':
-      case 'WAITING_FOR_BIKE':
-        return ['cancel', 'acceptBike'];
-      case 'IN_PROGRESS':
-        return ['readyForPickup'];
-      case 'WAITING_FOR_PARTS':
-        return ['backToProgress', 'readyForPickup'];
-      case 'AWAITING_CLIENT_DECISION':
-        return ['backToProgress', 'readyForPickup'];
-      case 'READY_FOR_PICKUP':
-        return ['completed'];
-      default:
-        return [];
-    }
+  // Kolor przycisku = kolor statusu DOCELOWEGO
+  get actionButtonColor(): string {
+    const btn = this.actionButton;
+    if (btn === 'respond') return 'var(--color-accent-orange)';
+    if (btn === 'acceptBike') return 'var(--status-in-progress)';    // → IN_PROGRESS
+    if (btn === 'readyForPickup') return 'var(--status-ready)';      // → READY_FOR_PICKUP
+    if (btn === 'markCompleted') return 'var(--status-completed)';   // → COMPLETED
+    if (btn === 'backToProgress') return 'var(--status-confirmed)';  // → IN_PROGRESS (niebieski)
+    return 'var(--status-in-progress)';
+  }
+
+  get actionButtonLabel(): string {
+    const btn = this.actionButton;
+    if (btn === 'respond') return 'ODPOWIEDZ';
+    if (btn === 'acceptBike') return 'PRZYJMIJ';
+    if (btn === 'readyForPickup') return 'GOTOWY';
+    if (btn === 'markCompleted') return 'ODEBRANY';
+    if (btn === 'backToProgress') return 'WZNÓW';
+    return '';
   }
 
   onClick(event: Event): void {
@@ -94,43 +109,13 @@ export class OrderBarComponent {
     this.orderClick.emit(this.order);
   }
 
-  onCancelClick(event: Event): void {
+  onActionClick(event: Event): void {
     event.stopPropagation();
-    if (confirm(this.t('service_calendar.confirm.cancel_order'))) {
-      this.cancelOrder.emit(this.order);
-    }
-  }
-
-  onConfirmClick(event: Event): void {
-    event.stopPropagation();
-    if (confirm(this.t('service_calendar.confirm.confirm_order'))) {
-      this.confirmOrder.emit(this.order);
-    }
-  }
-
-  onAcceptBikeClick(event: Event): void {
-    event.stopPropagation();
-    // Otwiera modal przyjęcia roweru z danymi zlecenia (bez potwierdzenia)
-    this.acceptBike.emit(this.order);
-  }
-
-  onReadyForPickupClick(event: Event): void {
-    event.stopPropagation();
-    if (confirm(this.t('service_calendar.confirm.ready_for_pickup'))) {
-      this.markReadyForPickup.emit(this.order);
-    }
-  }
-
-  onCompletedClick(event: Event): void {
-    event.stopPropagation();
-    if (confirm(this.t('service_calendar.confirm.completed'))) {
-      this.markCompleted.emit(this.order);
-    }
-  }
-
-  onBackToProgressClick(event: Event): void {
-    event.stopPropagation();
-    // Wznów nie wymaga potwierdzenia
-    this.backToProgress.emit(this.order);
+    const btn = this.actionButton;
+    if (btn === 'respond') this.orderClick.emit(this.order);
+    else if (btn === 'acceptBike') this.acceptBike.emit(this.order);
+    else if (btn === 'readyForPickup') this.markReadyForPickup.emit(this.order);
+    else if (btn === 'markCompleted') this.markCompleted.emit(this.order);
+    else if (btn === 'backToProgress') this.backToProgress.emit(this.order);
   }
 }

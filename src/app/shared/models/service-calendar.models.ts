@@ -81,68 +81,68 @@ export const CALENDAR_ORDER_STATUSES: OrderStatusConfig[] = [
   {
     value: 'PENDING_CONFIRMATION',
     i18nKey: 'service_calendar.statuses.pending_confirmation',
+    cssVar: '--color-navy',
+    fallbackColor: '#1B3A5E'
+  },
+  {
+    value: 'AWAITING_CLIENT_DATE_CONFIRMATION',
+    i18nKey: 'service_calendar.statuses.awaiting_client_date_confirmation',
     cssVar: '--color-slate-400',
     fallbackColor: '#94a3b8'
   },
   {
     value: 'CONFIRMED',
     i18nKey: 'service_calendar.statuses.confirmed',
-    cssVar: '--color-success',
-    fallbackColor: '#27ae60'
-  },
-  {
-    value: 'REJECTED',
-    i18nKey: 'service_calendar.statuses.rejected',
-    cssVar: '--color-danger',
-    fallbackColor: '#e74c3c'
-  },
-  {
-    value: 'CANCELLED',
-    i18nKey: 'service_calendar.statuses.cancelled',
-    cssVar: '--color-slate-500',
-    fallbackColor: '#64748b'
-  },
-  {
-    value: 'WAITING_FOR_BIKE',
-    i18nKey: 'service_calendar.statuses.waiting_for_bike',
-    cssVar: '--color-warning',
-    fallbackColor: '#f59e0b'
-  },
-  {
-    value: 'IN_PROGRESS',
-    i18nKey: 'service_calendar.statuses.in_progress',
     cssVar: '--color-info',
     fallbackColor: '#4299e1'
   },
   {
+    value: 'WAITING_FOR_BIKE',
+    i18nKey: 'service_calendar.statuses.waiting_for_bike',
+    cssVar: '--color-blue-200',
+    fallbackColor: '#bfdbfe'
+  },
+  {
+    value: 'IN_PROGRESS',
+    i18nKey: 'service_calendar.statuses.in_progress',
+    cssVar: '--status-in-progress',
+    fallbackColor: '#A5D6A7'
+  },
+  {
     value: 'WAITING_FOR_PARTS',
     i18nKey: 'service_calendar.statuses.waiting_for_parts',
-    cssVar: '--color-warning-orange',
-    fallbackColor: '#e65100'
+    cssVar: '--status-waiting-parts',
+    fallbackColor: '#FFD54F'
   },
   {
     value: 'AWAITING_CLIENT_DECISION',
     i18nKey: 'service_calendar.statuses.awaiting_client_decision',
-    cssVar: '--color-warning',
-    fallbackColor: '#f59e0b'
-  },
-  {
-    value: 'AWAITING_CLIENT_DATE_CONFIRMATION',
-    i18nKey: 'service_calendar.statuses.awaiting_client_date_confirmation',
-    cssVar: '--color-warning',
-    fallbackColor: '#f59e0b'
+    cssVar: '--status-awaiting-decision',
+    fallbackColor: '#FF8A65'
   },
   {
     value: 'READY_FOR_PICKUP',
     i18nKey: 'service_calendar.statuses.ready_for_pickup',
-    cssVar: '--color-accent',
+    cssVar: '--status-ready',
     fallbackColor: '#4CAF50'
   },
   {
     value: 'COMPLETED',
     i18nKey: 'service_calendar.statuses.completed',
-    cssVar: '--color-slate-600',
-    fallbackColor: '#475569'
+    cssVar: '--status-completed',
+    fallbackColor: '#2E7D32'
+  },
+  {
+    value: 'REJECTED',
+    i18nKey: 'service_calendar.statuses.rejected',
+    cssVar: '--status-rejected',
+    fallbackColor: '#94A3B8'
+  },
+  {
+    value: 'CANCELLED',
+    i18nKey: 'service_calendar.statuses.cancelled',
+    cssVar: '--status-cancelled',
+    fallbackColor: '#CBD5E1'
   }
 ];
 
@@ -206,6 +206,32 @@ export function getStatusColor(status: CalendarOrderStatus): string {
  */
 export function getStatusI18nKey(status: CalendarOrderStatus): string {
   return getStatusConfig(status)?.i18nKey || `service_calendar.statuses.${status.toLowerCase()}`;
+}
+
+/**
+ * Priorytet wyświetlania zleceń w kolumnie dnia (niższy = wyżej na liście)
+ * IN_PROGRESS na górze, COMPLETED/REJECTED/CANCELLED na dole
+ */
+const STATUS_DISPLAY_PRIORITY: Record<CalendarOrderStatus, number> = {
+  'PENDING_CONFIRMATION':             0,
+  'IN_PROGRESS':                      1,
+  'WAITING_FOR_PARTS':                2,
+  'AWAITING_CLIENT_DECISION':         3,
+  'READY_FOR_PICKUP':                 4,
+  'WAITING_FOR_BIKE':                 5,
+  'CONFIRMED':                        6,
+  'AWAITING_CLIENT_DATE_CONFIRMATION':7,
+  'COMPLETED':                        8,
+  'REJECTED':                         9,
+  'CANCELLED':                        10,
+};
+
+export function sortOrdersByStatus(orders: CalendarOrder[]): CalendarOrder[] {
+  return [...orders].sort((a, b) => {
+    const pa = STATUS_DISPLAY_PRIORITY[a.status] ?? 99;
+    const pb = STATUS_DISPLAY_PRIORITY[b.status] ?? 99;
+    return pa !== pb ? pa - pb : a.id - b.id;
+  });
 }
 
 // ============================================

@@ -240,6 +240,29 @@
   --map-shadow-hover-unverified: rgba(165, 214, 167, 0.5);
 
   /* ============================================
+     STATUS COLORS - Kolory statusów zleceń
+     ============================================ */
+
+  /* Grupa I — Rezerwacje (błękity) */
+  --status-pending:       #E3F2FD;   /* Oczekuje na potwierdzenie */
+  --status-awaiting-date: #90CAF9;   /* Oczekuje na potwierdzenie daty */
+  --status-confirmed:     #42A5F5;   /* Potwierdzone */
+  --status-waiting-bike:  #1E88E5;   /* Oczekuje na rower */
+
+  /* Grupa II — W toku (zielenie) */
+  --status-in-progress:   #A5D6A7;   /* W trakcie */
+  --status-ready:         #4CAF50;   /* Gotowe do odbioru */
+  --status-completed:     #2E7D32;   /* Zakończone */
+
+  /* Grupa III — Zablokowane */
+  --status-waiting-parts: #FFD54F;   /* Oczekuje na części */
+  --status-awaiting-decision: #FF8A65; /* Oczekuje na decyzję klienta */
+
+  /* Grupa IV — Zakończone negatywnie */
+  --status-rejected:      #94A3B8;   /* Odrzucone */
+  --status-cancelled:     #CBD5E1;   /* Anulowane */
+
+  /* ============================================
      TYPOGRAPHY - FONT SIZES
      ============================================ */
   

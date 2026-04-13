@@ -108,22 +108,41 @@ export class OrderDetailsModalComponent implements OnDestroy {
   // Local copy of order (will be updated with full data from API)
   fullOrder!: CalendarOrder;
 
-  // Editable fields
+  // Editable fields (local — saved only on close/save)
   selectedStatus: CalendarOrderStatus = 'CONFIRMED';
   selectedTechnicianId: number | null = null;
   selectedDate: string = '';
   notes: string = '';
   maintenanceAdvice: string = '';
-  recommendedRepairs: string = '';
 
-  // Bike edit mode
-  isBikeEditMode = false;
+  // Original values — used to detect dirty state and revert on cancel
+  private originalTechnicianId: number | null = null;
+  private originalDate: string = '';
+  private originalNotes: string = '';
+  private originalMaintenanceAdvice: string = '';
+  private originalBikeBrand: string = '';
+  private originalBikeModel: string = '';
+  private originalBikeType: string = '';
+  private originalBikeFrameMaterial: string = '';
+
+  // Bike edit fields (always active)
   editBikeBrand: string = '';
   editBikeModel: string = '';
   editBikeType: string = '';
   editBikeFrameMaterial: string = '';
   bikeTypes: string[] = [];
   frameMaterials: string[] = [];
+
+  get isDirty(): boolean {
+    return this.notes !== this.originalNotes
+      || this.maintenanceAdvice !== this.originalMaintenanceAdvice
+      || this.selectedDate !== this.originalDate
+      || this.selectedTechnicianId !== this.originalTechnicianId
+      || this.editBikeBrand.trim() !== this.originalBikeBrand
+      || this.editBikeModel.trim() !== this.originalBikeModel
+      || this.editBikeType !== this.originalBikeType
+      || this.editBikeFrameMaterial !== this.originalBikeFrameMaterial;
+  }
 
   // Min date for date picker (today)
   get minDate(): string {
@@ -147,6 +166,17 @@ export class OrderDetailsModalComponent implements OnDestroy {
     return this.i18nService.translate(key, params);
   }
 
+  private initOriginals(): void {
+    this.originalTechnicianId = this.selectedTechnicianId;
+    this.originalDate = this.selectedDate;
+    this.originalNotes = this.notes;
+    this.originalMaintenanceAdvice = this.maintenanceAdvice;
+    this.originalBikeBrand = this.editBikeBrand;
+    this.originalBikeModel = this.editBikeModel;
+    this.originalBikeType = this.editBikeType;
+    this.originalBikeFrameMaterial = this.editBikeFrameMaterial;
+  }
+
   ngOnInit(): void {
     // Initialize with passed order data
     this.fullOrder = { ...this.order };
@@ -155,13 +185,16 @@ export class OrderDetailsModalComponent implements OnDestroy {
     this.selectedDate = this.order.plannedDate || '';
     this.notes = this.order.serviceNotes || '';
     this.maintenanceAdvice = this.order.maintenanceAdvice || '';
-    this.recommendedRepairs = this.order.recommendedRepairs || '';
 
     // Load cities for return transport
     this.enumerationService.getCities().subscribe({
       next: (cities) => { this.cities = cities; },
       error: (err) => { console.error('Error loading cities:', err); }
     });
+
+    // Load bike enumerations
+    this.enumerationService.getEnumeration('BIKE_TYPE').subscribe(types => (this.bikeTypes = types));
+    this.enumerationService.getEnumeration('FRAME_MATERIAL').subscribe(mats => (this.frameMaterials = mats));
 
     // Fetch full order details from API to get all fields (including bicycleBrand, bicycleModel)
     this.loadFullOrderDetails();
@@ -183,7 +216,11 @@ export class OrderDetailsModalComponent implements OnDestroy {
         this.selectedDate = this.fullOrder.plannedDate || '';
         this.notes = this.fullOrder.serviceNotes || '';
         this.maintenanceAdvice = this.fullOrder.maintenanceAdvice || '';
-        this.recommendedRepairs = this.fullOrder.recommendedRepairs || '';
+        this.editBikeBrand = this.fullOrder.bicycleBrand || '';
+        this.editBikeModel = this.fullOrder.bicycleModel || '';
+        this.editBikeType = this.fullOrder.bicycleType || '';
+        this.editBikeFrameMaterial = this.fullOrder.bicycleFrameMaterial || '';
+        this.initOriginals();
         this.isLoading = false;
         this.resizeAllNoteTextareas();
         // Laduj zdjecia jesli status na to pozwala
@@ -251,6 +288,8 @@ export class OrderDetailsModalComponent implements OnDestroy {
         this.notificationService.success('Zlecenie zostało potwierdzone.');
         this.isUpdating = false;
         this.orderUpdated.emit();
+        // Przeładuj szczegóły zlecenia, aby modal przełączył się na widok potwierdzonego zlecenia
+        this.loadFullOrderDetails();
       },
       error: () => {
         this.notificationService.error(this.t('service_calendar.errors.update_status_failed'));
@@ -266,6 +305,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
         this.notificationService.success('Zlecenie zostało odrzucone.');
         this.isUpdating = false;
         this.orderUpdated.emit();
+        this.onClose();
       },
       error: () => {
         this.notificationService.error(this.t('service_calendar.errors.update_status_failed'));
@@ -279,9 +319,14 @@ export class OrderDetailsModalComponent implements OnDestroy {
     this.isUpdating = true;
     this.calendarService.proposeDate(this.serviceId, this.fullOrder.id, this.proposedDate).subscribe({
       next: () => {
+        // Równolegle zapisz proponowaną datę jako plannedDate zlecenia
+        this.calendarService.updateOrder(this.serviceId, this.fullOrder.id, {
+          plannedDate: this.proposedDate
+        }).subscribe();
         this.notificationService.success('Propozycja daty została wysłana do klienta.');
         this.isUpdating = false;
         this.orderUpdated.emit();
+        this.onClose();
       },
       error: () => {
         this.notificationService.error('Nie udało się wysłać propozycji daty.');
@@ -320,18 +365,88 @@ export class OrderDetailsModalComponent implements OnDestroy {
 
   onOverlayClick(event: Event): void {
     if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.onClose();
+      this.onSaveAndClose();
     }
   }
 
-  onClose(): void {
+  async onSaveAndClose(): Promise<void> {
+    if (!this.isDirty) {
+      this.close.emit();
+      return;
+    }
+    this.isUpdating = true;
+    try {
+      await this.savePendingChanges();
+      this.notificationService.success('Zmiany zostały zapisane.');
+      this.orderUpdated.emit();
+    } catch {
+      this.notificationService.error('Nie udało się zapisać zmian.');
+    } finally {
+      this.isUpdating = false;
+      this.close.emit();
+    }
+  }
+
+  onCancelAndClose(): void {
+    this.notes = this.originalNotes;
+    this.maintenanceAdvice = this.originalMaintenanceAdvice;
+    this.selectedDate = this.originalDate;
+    this.selectedTechnicianId = this.originalTechnicianId;
+    this.editBikeBrand = this.originalBikeBrand;
+    this.editBikeModel = this.originalBikeModel;
+    this.editBikeType = this.originalBikeType;
+    this.editBikeFrameMaterial = this.originalBikeFrameMaterial;
     this.close.emit();
   }
 
-  onStatusChange(): void {
+  onClose(): void {
+    this.onSaveAndClose();
+  }
+
+  private async savePendingChanges(): Promise<void> {
+    const saves: Promise<unknown>[] = [];
+
+    const orderPayload: Record<string, unknown> = {};
+    if (this.notes !== this.originalNotes) orderPayload['serviceNotes'] = this.notes;
+    if (this.maintenanceAdvice !== this.originalMaintenanceAdvice) orderPayload['maintenanceAdvice'] = this.maintenanceAdvice;
+    if (this.selectedDate !== this.originalDate) orderPayload['plannedDate'] = this.selectedDate;
+    if (this.selectedTechnicianId !== this.originalTechnicianId) orderPayload['assignedTechnicianId'] = this.selectedTechnicianId;
+
+    if (Object.keys(orderPayload).length > 0) {
+      saves.push(firstValueFrom(this.calendarService.updateOrder(this.serviceId, this.fullOrder.id, orderPayload)));
+    }
+
+    const bikeChanged = this.editBikeBrand.trim() !== this.originalBikeBrand
+      || this.editBikeModel.trim() !== this.originalBikeModel
+      || this.editBikeType !== this.originalBikeType
+      || this.editBikeFrameMaterial !== this.originalBikeFrameMaterial;
+
+    if (bikeChanged && this.fullOrder.bicycleId) {
+      const dto: BicycleUpdateDto = {
+        brand: this.editBikeBrand.trim(),
+        model: this.editBikeModel.trim() || undefined,
+        type: this.editBikeType || undefined,
+        frameMaterial: this.editBikeFrameMaterial || undefined
+      };
+      saves.push(firstValueFrom(this.calendarService.updateBicycle(this.fullOrder.bicycleId, this.serviceId, dto)));
+    }
+
+    await Promise.all(saves);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.isDirty) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  }
+
+  async onStatusChange(): Promise<void> {
     if (this.selectedStatus === this.fullOrder.status) return;
 
-    if (this.selectedStatus === 'READY_FOR_PICKUP' && !this.fullOrder.bicycleType?.trim()) {
+    // Walidacja — sprawdzamy lokalną wartość (editBikeType), nie tylko zapisaną
+    if (this.selectedStatus === 'READY_FOR_PICKUP' && !this.editBikeType?.trim()) {
       this.notificationService.error('Nie można ustawić statusu "Gotowe do odbioru" — rower nie ma przypisanego typu roweru.');
       setTimeout(() => { this.selectedStatus = this.fullOrder.status; });
       return;
@@ -339,8 +454,35 @@ export class OrderDetailsModalComponent implements OnDestroy {
 
     this.isUpdating = true;
 
+    // Jeśli dane roweru są zmienione lokalnie, zapisz je przed zmianą statusu
+    const bikeChanged = this.editBikeBrand.trim() !== this.originalBikeBrand
+      || this.editBikeModel.trim() !== this.originalBikeModel
+      || this.editBikeType !== this.originalBikeType
+      || this.editBikeFrameMaterial !== this.originalBikeFrameMaterial;
+
+    if (bikeChanged && this.fullOrder.bicycleId) {
+      try {
+        const dto: BicycleUpdateDto = {
+          brand: this.editBikeBrand.trim(),
+          model: this.editBikeModel.trim() || undefined,
+          type: this.editBikeType || undefined,
+          frameMaterial: this.editBikeFrameMaterial || undefined
+        };
+        await firstValueFrom(this.calendarService.updateBicycle(this.fullOrder.bicycleId, this.serviceId, dto));
+        this.fullOrder.bicycleType = this.editBikeType;
+        this.originalBikeBrand = this.editBikeBrand.trim();
+        this.originalBikeModel = this.editBikeModel.trim();
+        this.originalBikeType = this.editBikeType;
+        this.originalBikeFrameMaterial = this.editBikeFrameMaterial;
+      } catch {
+        this.notificationService.error('Nie udało się zapisać danych roweru przed zmianą statusu.');
+        this.isUpdating = false;
+        this.selectedStatus = this.fullOrder.status;
+        return;
+      }
+    }
+
     // Specjalna obsluga: PENDING_CONFIRMATION -> WAITING_FOR_BIKE
-    // Backend wymaga przejscia przez CONFIRMED, wiec robimy to automatycznie
     if (this.fullOrder.status === 'PENDING_CONFIRMATION' && this.selectedStatus === 'WAITING_FOR_BIKE') {
       this.updateStatusWithIntermediate('CONFIRMED', 'WAITING_FOR_BIKE');
       return;
@@ -349,6 +491,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
     this.calendarService.updateOrderStatus(this.serviceId, this.fullOrder.id, this.selectedStatus).subscribe({
       next: () => {
         this.notificationService.success(this.t('service_calendar.messages.status_updated'));
+        this.fullOrder.status = this.selectedStatus;
         this.isUpdating = false;
         this.orderUpdated.emit();
       },
@@ -356,7 +499,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
         const msg = err?.error?.message ?? this.t('service_calendar.errors.update_status_failed');
         this.notificationService.error(msg);
         this.isUpdating = false;
-        this.selectedStatus = this.fullOrder.status; // Revert
+        this.selectedStatus = this.fullOrder.status;
         console.error('Error updating status:', err);
       }
     });
@@ -394,51 +537,6 @@ export class OrderDetailsModalComponent implements OnDestroy {
     });
   }
 
-  onTechnicianChange(): void {
-    if (this.selectedTechnicianId === this.fullOrder.assignedTechnicianId) return;
-
-    this.isUpdating = true;
-
-    this.calendarService.updateOrder(this.serviceId, this.fullOrder.id, {
-      assignedTechnicianId: this.selectedTechnicianId
-    }).subscribe({
-      next: () => {
-        this.notificationService.success(this.t('service_calendar.messages.order_updated'));
-        this.isUpdating = false;
-        this.orderUpdated.emit();
-      },
-      error: (err: any) => {
-        this.notificationService.error(this.t('service_calendar.errors.update_order_failed'));
-        this.isUpdating = false;
-        this.selectedTechnicianId = this.fullOrder.assignedTechnicianId || null; // Revert
-        console.error('Error updating order:', err);
-      }
-    });
-  }
-
-  onDateChange(): void {
-    if (this.selectedDate === this.fullOrder.plannedDate) return;
-
-    this.isUpdating = true;
-
-    this.calendarService.updateOrder(this.serviceId, this.fullOrder.id, {
-      plannedDate: this.selectedDate
-    }).subscribe({
-      next: () => {
-        this.notificationService.success(this.t('service_calendar.messages.date_updated'));
-        this.fullOrder.plannedDate = this.selectedDate;
-        this.isUpdating = false;
-        this.orderUpdated.emit();
-      },
-      error: (err: any) => {
-        this.notificationService.error(this.t('service_calendar.errors.update_date_failed'));
-        this.isUpdating = false;
-        this.selectedDate = this.fullOrder.plannedDate || ''; // Revert
-        console.error('Error updating date:', err);
-      }
-    });
-  }
-
   autoResize(event: Event): void {
     const el = event.target as HTMLTextAreaElement;
     el.style.height = 'auto';
@@ -455,63 +553,6 @@ export class OrderDetailsModalComponent implements OnDestroy {
     }, 0);
   }
 
-  get isSaveDisabled(): boolean {
-    if (this.isUpdating || this.isSavingReturnTransport) return true;
-    if (this.activeTab === 'return') {
-      return this.returnPickupMethod !== 'delivery' || !this.isReturnDeliveryFormValid;
-    }
-    return false;
-  }
-
-  onSaveAllNotes(): void {
-    if (this.activeTab === 'return') {
-      this.onSaveReturnTransport();
-      return;
-    }
-
-    const payload: any = {};
-    let hasChanges = false;
-
-    if (this.notes !== (this.fullOrder.serviceNotes || '')) {
-      payload.serviceNotes = this.notes;
-      hasChanges = true;
-    }
-    if (this.maintenanceAdvice !== (this.fullOrder.maintenanceAdvice || '')) {
-      payload.maintenanceAdvice = this.maintenanceAdvice;
-      hasChanges = true;
-    }
-    if (this.recommendedRepairs !== (this.fullOrder.recommendedRepairs || '')) {
-      payload.recommendedRepairs = this.recommendedRepairs;
-      hasChanges = true;
-    }
-
-    if (!hasChanges) { this.onClose(); return; }
-
-    this.isUpdating = true;
-
-    this.calendarService.updateOrder(this.serviceId, this.fullOrder.id, payload).subscribe({
-      next: () => {
-        this.fullOrder.serviceNotes = this.notes;
-        this.fullOrder.maintenanceAdvice = this.maintenanceAdvice;
-        this.fullOrder.recommendedRepairs = this.recommendedRepairs;
-        this.notificationService.success(this.t('service_calendar.messages.notes_saved'));
-        this.isUpdating = false;
-        this.onClose();
-      },
-      error: (err: any) => {
-        this.notificationService.error(this.t('service_calendar.errors.save_notes_failed'));
-        this.isUpdating = false;
-        console.error('Error saving notes:', err);
-      }
-    });
-  }
-
-  onCancelNotes(): void {
-    this.notes = this.fullOrder.serviceNotes || '';
-    this.maintenanceAdvice = this.fullOrder.maintenanceAdvice || '';
-    this.recommendedRepairs = this.fullOrder.recommendedRepairs || '';
-    this.onClose();
-  }
 
   // ============================================
   // IMAGE FUNCTIONALITY
@@ -912,51 +953,6 @@ export class OrderDetailsModalComponent implements OnDestroy {
   // EDYCJA DANYCH ROWERU
   // ============================================
 
-  toggleBikeEdit(): void {
-    this.isBikeEditMode = true;
-    this.editBikeBrand = this.fullOrder.bicycleBrand || '';
-    this.editBikeModel = this.fullOrder.bicycleModel || '';
-    this.editBikeType = this.fullOrder.bicycleType || '';
-    this.editBikeFrameMaterial = this.fullOrder.bicycleFrameMaterial || '';
-    if (this.bikeTypes.length === 0) {
-      this.enumerationService.getEnumeration('BIKE_TYPE').subscribe(types => (this.bikeTypes = types));
-    }
-    if (this.frameMaterials.length === 0) {
-      this.enumerationService.getEnumeration('FRAME_MATERIAL').subscribe(mats => (this.frameMaterials = mats));
-    }
-  }
-
-  cancelBikeEdit(): void {
-    this.isBikeEditMode = false;
-  }
-
-  saveBikeData(): void {
-    if (this.isUpdating || !this.fullOrder.bicycleId) return;
-    this.isUpdating = true;
-    const dto: BicycleUpdateDto = {
-      brand: this.editBikeBrand.trim(),
-      model: this.editBikeModel.trim() || undefined,
-      type: this.editBikeType || undefined,
-      frameMaterial: this.editBikeFrameMaterial || undefined
-    };
-    this.calendarService
-      .updateBicycle(this.fullOrder.bicycleId, this.serviceId, dto)
-      .subscribe({
-        next: () => {
-          this.fullOrder.bicycleBrand = this.editBikeBrand.trim();
-          this.fullOrder.bicycleModel = this.editBikeModel.trim();
-          this.fullOrder.bicycleType = this.editBikeType;
-          this.fullOrder.bicycleFrameMaterial = this.editBikeFrameMaterial;
-          this.isBikeEditMode = false;
-          this.isUpdating = false;
-          this.notificationService.success('Dane roweru zostały zaktualizowane.');
-        },
-        error: () => {
-          this.notificationService.error('Nie udało się zaktualizować danych roweru.');
-          this.isUpdating = false;
-        }
-      });
-  }
 
   ngOnDestroy(): void {
     // Zwolnij URLe podgladow

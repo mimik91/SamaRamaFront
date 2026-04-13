@@ -18,4 +18,6 @@ export interface CourierOrder {
   bikeModel?: string;
   clientEmail: string;
   clientPhone?: string;
+  transportNotes?: string;
+  lastModifiedDate?: string;
 }

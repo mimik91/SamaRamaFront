@@ -78,6 +78,12 @@
       [maxBikesPerDay]="calendarConfig?.maxBikesPerDay || 10"
       (orderClick)="onOrderClick($event)"
       (dayClick)="onDayClick($event)"
+      (cancelOrder)="onCancelOrder($event)"
+      (confirmOrder)="onConfirmOrder($event)"
+      (acceptBike)="onAcceptBike($event)"
+      (markReadyForPickup)="onMarkReadyForPickup($event)"
+      (markCompleted)="onMarkCompleted($event)"
+      (backToProgress)="onBackToProgress($event)"
     ></app-calendar-week-view>
 
   </div>

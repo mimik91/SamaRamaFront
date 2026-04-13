@@ -11,7 +11,8 @@ import {
   parseCalendarDate,
   isToday,
   isSameDay,
-  getDayNameKey
+  getDayNameKey,
+  sortOrdersByStatus
 } from '../../../../shared/models/service-calendar.models';
 
 @Component({
@@ -51,7 +52,7 @@ export class CalendarWeekViewComponent {
 
     const dates = Object.keys(this.data.ordersByDay).sort();
     return dates.map(date => {
-      const orders = this.data.ordersByDay[date] || [];
+      const orders = sortOrdersByStatus(this.data.ordersByDay[date] || []);
       return {
         date,
         orders,

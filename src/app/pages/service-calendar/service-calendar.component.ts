@@ -26,7 +26,8 @@ import {
   CalendarLoadingState,
   DEFAULT_CALENDAR_LOADING_STATE,
   formatCalendarDate,
-  getWeekStart
+  getWeekStart,
+  sortOrdersByStatus
 } from '../../shared/models/service-calendar.models';
 
 @Component({
@@ -281,7 +282,7 @@ export class ServiceCalendarComponent implements OnInit {
         this.weekData = data;
 
         // Wyodrebnij dane dla wybranego dnia
-        const orders = data.ordersByDay[selectedDateStr] || [];
+        const orders = sortOrdersByStatus(data.ordersByDay[selectedDateStr] || []);
         this.dayData = {
           date: selectedDateStr,
           orders: orders,
@@ -371,11 +372,10 @@ export class ServiceCalendarComponent implements OnInit {
   onOrderDetailsClose(): void {
     this.showOrderDetailsModal = false;
     this.selectedOrder = null;
+    this.loadCalendarData();
   }
 
   onOrderUpdated(): void {
-    this.showOrderDetailsModal = false;
-    this.selectedOrder = null;
     this.loadCalendarData();
   }
 

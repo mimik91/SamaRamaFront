@@ -27,6 +27,10 @@
           [compact]="true"
           [showTechnician]="calendarMode === 'ADVANCED'"
           (orderClick)="onOrderClick($event)"
+          (acceptBike)="acceptBike.emit($event)"
+          (markReadyForPickup)="markReadyForPickup.emit($event)"
+          (markCompleted)="markCompleted.emit($event)"
+          (backToProgress)="backToProgress.emit($event)"
         ></app-order-bar>
 
         <div class="day-empty" *ngIf="day.orders.length === 0">

@@ -659,6 +659,8 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.serviceReservation}?serviceId=${this.serviceInfo.id}`;
 
+    this.sendDebugReport('reservation', reservationPayload);
+
     this.http.post<{ message: string; orderIds: number[] }>(url, reservationPayload).subscribe({
       next: (res) => {
         if (this.withTransport) {
@@ -753,15 +755,30 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     };
 
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.transport}`;
+
+    this.sendDebugReport('transport', payload);
+
     this.http.post(url, payload).subscribe({
       next: () => this.onSuccess(),
       error: (err) => {
+        this.sendDebugReport('transport-error', {
+          status: err?.status,
+          message: err?.error?.message || err?.message,
+          error: err?.error,
+          sentPayload: payload
+        });
         this.submitting = false;
         const msg = err.error?.message ||
           'Rezerwacja serwisu złożona, ale nie udało się zarezerwować transportu. Skontaktuj się z serwisem.';
         this.notificationService.error(msg);
       }
     });
+  }
+
+  private sendDebugReport(type: string, data: object): void {
+    const reportUrl = `${environment.apiUrl}${environment.endpoints.guestOrders.report}`;
+    const body = { type, timestamp: new Date().toISOString(), ...data };
+    this.http.post(reportUrl, body).subscribe({ error: () => {} });
   }
 
   private onSuccess(): void {

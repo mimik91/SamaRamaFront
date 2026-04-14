@@ -42,7 +42,8 @@ export const environment = {
       discounts: '/guest-orders/discounts',
       serviceReservation: '/guest-orders/service-reservation',
       officeAddresses: '/guest-orders/office-addresses',
-      sessionSync: '/guest-orders/session-sync'
+      sessionSync: '/guest-orders/session-sync',
+      report: '/guest-orders/report'
     },
 
     serviceSlots: {

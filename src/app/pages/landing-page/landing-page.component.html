@@ -430,21 +430,20 @@
         </svg>
         <span>Opinie z Google</span>
       </div>
-      <div class="reviews-grid">
-        <figure class="review-screenshot">
-          <img
-            src="assets/images/opinie/opinia 1.webp"
-            alt="Opinia klienta CycloPick w Google"
-            loading="lazy"
-          />
-        </figure>
-        <figure class="review-screenshot">
-          <img
-            src="assets/images/opinie/opinia 2.webp"
-            alt="Opinia klienta CycloPick w Google"
-            loading="lazy"
-          />
-        </figure>
+      <div
+        class="reviews-marquee-wrapper"
+        [class.is-dragging]="isReviewsDragging"
+        (mousedown)="onReviewsMouseDown($event)"
+        (touchstart)="onReviewsTouchStart($event)"
+      >
+        <div class="reviews-marquee-track" #reviewsTrack>
+          <figure class="review-screenshot" *ngFor="let img of reviewImages">
+            <img [src]="img" alt="Opinia klienta CycloPick w Google" loading="lazy" />
+          </figure>
+          <figure class="review-screenshot" *ngFor="let img of reviewImages" aria-hidden="true">
+            <img [src]="img" alt="" loading="lazy" />
+          </figure>
+        </div>
       </div>
     </section>
 

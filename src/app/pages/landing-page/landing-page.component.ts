@@ -17,23 +17,48 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private ngZone = inject(NgZone);
 
   @ViewChild('partnerTrack') partnerTrackRef!: ElementRef<HTMLElement>;
+  @ViewChild('reviewsTrack') reviewsTrackRef!: ElementRef<HTMLElement>;
 
-  // Marquee state
+  // Marquee state — partner logos
   private rafId: number | null = null;
   private marqueePos = 0;
   private marqueeHalfWidth = 0;
   private readonly MARQUEE_SPEED = 0.6;
 
-  // Drag state
+  // Marquee state — reviews
+  private reviewsRafId: number | null = null;
+  private reviewsPos = 0;
+  private reviewsHalfWidth = 0;
+  private readonly REVIEWS_SPEED = 0.4;
+
+  // Drag state — partner logos
   isDragging = false;
   private dragStartX = 0;
   private dragStartPos = 0;
 
-  // Bound listeners for cleanup
+  // Drag state — reviews
+  isReviewsDragging = false;
+  private reviewsDragStartX = 0;
+  private reviewsDragStartPos = 0;
+
+  // Bound listeners for cleanup — partner logos
   private readonly onMouseMoveBound = (e: MouseEvent) => this.onMouseMove(e);
   private readonly onMouseUpBound = () => this.onDragEnd();
   private readonly onTouchMoveBound = (e: TouchEvent) => this.onTouchMove(e);
   private readonly onTouchEndBound = () => this.onDragEnd();
+
+  // Bound listeners for cleanup — reviews
+  private readonly onReviewsMouseMoveBound = (e: MouseEvent) => this.onReviewsMouseMove(e);
+  private readonly onReviewsMouseUpBound = () => this.onReviewsDragEnd();
+  private readonly onReviewsTouchMoveBound = (e: TouchEvent) => this.onReviewsTouchMove(e);
+  private readonly onReviewsTouchEndBound = () => this.onReviewsDragEnd();
+
+  readonly reviewImages = [
+    'assets/images/opinie/opinia 1.webp',
+    'assets/images/opinie/opinia 2.webp',
+    'assets/images/opinie/opinia 3.webp',
+    'assets/images/opinie/opinia 4.webp'
+  ];
 
   // Zmienna na bezpieczny JSON-LD
   schemaJson: SafeHtml | null = null;
@@ -120,16 +145,21 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Marquee uruchamiamy dopiero po załadowaniu logo z API – patrz startMarquee()
+    setTimeout(() => this.startReviewsMarquee(), 100);
   }
 
   ngOnDestroy(): void {
     this.stopMarquee();
+    this.stopReviewsMarquee();
     if (isPlatformBrowser(this.platformId)) {
       document.removeEventListener('mousemove', this.onMouseMoveBound);
       document.removeEventListener('mouseup', this.onMouseUpBound);
       document.removeEventListener('touchmove', this.onTouchMoveBound);
       document.removeEventListener('touchend', this.onTouchEndBound);
+      document.removeEventListener('mousemove', this.onReviewsMouseMoveBound);
+      document.removeEventListener('mouseup', this.onReviewsMouseUpBound);
+      document.removeEventListener('touchmove', this.onReviewsTouchMoveBound);
+      document.removeEventListener('touchend', this.onReviewsTouchEndBound);
     }
   }
 
@@ -234,6 +264,84 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     document.removeEventListener('mouseup', this.onMouseUpBound);
     document.removeEventListener('touchmove', this.onTouchMoveBound);
     document.removeEventListener('touchend', this.onTouchEndBound);
+  }
+
+  // ============================================================
+  // REVIEWS MARQUEE
+  // ============================================================
+
+  private startReviewsMarquee(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const track = this.reviewsTrackRef?.nativeElement;
+    if (!track) return;
+
+    this.reviewsHalfWidth = track.scrollWidth / 2;
+    if (this.reviewsHalfWidth === 0) return;
+
+    this.stopReviewsMarquee();
+
+    this.ngZone.runOutsideAngular(() => {
+      const step = () => {
+        if (!this.isReviewsDragging) {
+          this.reviewsPos += this.REVIEWS_SPEED;
+          if (this.reviewsPos >= this.reviewsHalfWidth) {
+            this.reviewsPos = 0;
+          }
+          track.style.transform = `translateX(-${this.reviewsPos}px)`;
+        }
+        this.reviewsRafId = requestAnimationFrame(step);
+      };
+      this.reviewsRafId = requestAnimationFrame(step);
+    });
+  }
+
+  private stopReviewsMarquee(): void {
+    if (this.reviewsRafId !== null) {
+      cancelAnimationFrame(this.reviewsRafId);
+      this.reviewsRafId = null;
+    }
+  }
+
+  onReviewsMouseDown(e: MouseEvent): void {
+    this.isReviewsDragging = true;
+    this.reviewsDragStartX = e.clientX;
+    this.reviewsDragStartPos = this.reviewsPos;
+    document.addEventListener('mousemove', this.onReviewsMouseMoveBound);
+    document.addEventListener('mouseup', this.onReviewsMouseUpBound);
+  }
+
+  onReviewsTouchStart(e: TouchEvent): void {
+    this.isReviewsDragging = true;
+    this.reviewsDragStartX = e.touches[0].clientX;
+    this.reviewsDragStartPos = this.reviewsPos;
+    document.addEventListener('touchmove', this.onReviewsTouchMoveBound, { passive: true });
+    document.addEventListener('touchend', this.onReviewsTouchEndBound);
+  }
+
+  private onReviewsMouseMove(e: MouseEvent): void {
+    this.handleReviewsDragMove(e.clientX);
+  }
+
+  private onReviewsTouchMove(e: TouchEvent): void {
+    this.handleReviewsDragMove(e.touches[0].clientX);
+  }
+
+  private handleReviewsDragMove(clientX: number): void {
+    if (!this.isReviewsDragging) return;
+    const delta = this.reviewsDragStartX - clientX;
+    let newPos = this.reviewsDragStartPos + delta;
+    newPos = ((newPos % this.reviewsHalfWidth) + this.reviewsHalfWidth) % this.reviewsHalfWidth;
+    this.reviewsPos = newPos;
+    const track = this.reviewsTrackRef?.nativeElement;
+    if (track) track.style.transform = `translateX(-${this.reviewsPos}px)`;
+  }
+
+  private onReviewsDragEnd(): void {
+    this.isReviewsDragging = false;
+    document.removeEventListener('mousemove', this.onReviewsMouseMoveBound);
+    document.removeEventListener('mouseup', this.onReviewsMouseUpBound);
+    document.removeEventListener('touchmove', this.onReviewsTouchMoveBound);
+    document.removeEventListener('touchend', this.onReviewsTouchEndBound);
   }
 
   // ============================================================

@@ -120,8 +120,8 @@ export class AdminOrderDetailsComponent implements OnInit {
       return false;
     }
 
-    if (this.editForm.transportPrice <= 0) {
-      this.notificationService.error('Cena transportu musi być większa niż 0');
+    if (this.editForm.transportPrice == null || this.editForm.transportPrice < 0) {
+      this.notificationService.error('Cena transportu nie może być ujemna');
       return false;
     }
 

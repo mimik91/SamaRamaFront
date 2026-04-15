@@ -83,30 +83,27 @@
 
       <!-- Packages Display -->
       <div class="packages-container" *ngIf="selectedBikeType">
-        <div 
-          *ngFor="let level of packageLevels" 
-          class="package-card"
-          [class.no-package]="!getPackageForLevel(level)">
-          
-          <div *ngIf="getPackageForLevel(level); let pkg" class="package-content">
-            <div class="package-header">
-              <h3 class="package-title">{{ getPackageDisplayName(pkg) }}</h3>
-            </div>
-            
-            <div class="package-description" *ngIf="pkg.description">
-              <p>{{ pkg.description }}</p>
-            </div>
-            
-            <div class="package-price">
-              <span class="price-amount">{{ pkg.price }}</span>
-              <span class="price-currency">zł</span>
-            </div>
-          </div>
+        <ng-container *ngFor="let level of packageLevels">
+          <div
+            *ngIf="getPackageForLevel(level) as pkg"
+            class="package-card">
 
-          <div *ngIf="!getPackageForLevel(level)" class="no-package-content">
-            <p>Brak pakietu dla tego typu roweru</p>
+            <div class="package-content">
+              <div class="package-header">
+                <h3 class="package-title">{{ getPackageDisplayName(pkg) }}</h3>
+              </div>
+
+              <div class="package-description" *ngIf="pkg.description">
+                <p>{{ pkg.description }}</p>
+              </div>
+
+              <div class="package-price">
+                <span class="price-amount">{{ pkg.price }}</span>
+                <span class="price-currency">zł</span>
+              </div>
+            </div>
           </div>
-        </div>
+        </ng-container>
       </div>
 
       <!-- Comment -->

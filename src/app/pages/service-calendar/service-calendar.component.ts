@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { I18nService } from '../../core/i18n.service';
@@ -56,6 +57,7 @@ export class ServiceCalendarComponent implements OnInit {
   private calendarService = inject(ServiceCalendarService);
   private i18nService = inject(I18nService);
   private notificationService = inject(NotificationService);
+  private platformId = inject(PLATFORM_ID);
 
   // Suffix z URL
   private currentSuffix: string = '';
@@ -70,7 +72,7 @@ export class ServiceCalendarComponent implements OnInit {
   calendarConfig: CalendarConfig | null = null;
 
   // Aktualny widok
-  currentView: CalendarViewMode = 'week';
+  currentView: CalendarViewMode = isPlatformBrowser(this.platformId) && window.innerWidth < 768 ? 'day' : 'week';
   calendarMode: CalendarMode = 'SIMPLE';
 
   // Wybrana data

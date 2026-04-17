@@ -90,6 +90,12 @@ export class ServiceCalendarService {
    * Pobiera konfiguracje kalendarza dla serwisu
    * Obsluguje zarowno plaska odpowiedz jak i opakowana w { config: ... }
    */
+  updateConfig(serviceId: number, viewMode: string, maxBikesPerDay: number): Observable<CalendarConfig> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.put<CalendarConfig>(`${this.apiUrl}${this.endpoints.config}`, { viewMode, maxBikesPerDay }, { params })
+      .pipe(catchError(this.handleError('updateConfig')));
+  }
+
   getConfig(serviceId: number): Observable<CalendarConfig> {
     const params = new HttpParams().set('serviceId', serviceId.toString());
     return this.http.get<CalendarConfig | CalendarConfigResponse>(`${this.apiUrl}${this.endpoints.config}`, { params })

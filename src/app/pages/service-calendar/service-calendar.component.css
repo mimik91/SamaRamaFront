@@ -53,6 +53,33 @@
 .top-bar-actions {
   display: flex;
   gap: var(--spacing-2);
+  align-items: center;
+}
+
+.btn-gear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-gear:hover:not(:disabled) {
+  background: var(--color-primary-alpha-08);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-gear:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .btn-settings {

@@ -12,7 +12,8 @@ import {
   isToday,
   isSameDay,
   getDayNameKey,
-  sortOrdersByStatus
+  sortOrdersByStatus,
+  countBikesForLimit
 } from '../../../../shared/models/service-calendar.models';
 
 @Component({
@@ -56,7 +57,7 @@ export class CalendarWeekViewComponent {
       return {
         date,
         orders,
-        bikesCount: orders.length,
+        bikesCount: countBikesForLimit(orders),
         maxBikesPerDay: this.maxBikesPerDay
       };
     });

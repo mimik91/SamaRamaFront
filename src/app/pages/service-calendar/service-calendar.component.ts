@@ -12,6 +12,7 @@ import { CalendarWeekViewComponent } from './components/calendar-week-view/calen
 import { CreateOrderModalComponent } from './modals/create-order-modal/create-order-modal.component';
 import { OrderDetailsModalComponent } from './modals/order-details-modal/order-details-modal.component';
 import { AcceptBikeModalComponent } from './modals/accept-bike-modal/accept-bike-modal.component';
+import { CalendarSettingsModalComponent } from './modals/calendar-settings-modal/calendar-settings-modal.component';
 import {
   BikeServiceNameIdDto,
 } from '../../shared/models/bike-service-common.models';
@@ -27,7 +28,8 @@ import {
   DEFAULT_CALENDAR_LOADING_STATE,
   formatCalendarDate,
   getWeekStart,
-  sortOrdersByStatus
+  sortOrdersByStatus,
+  countBikesForLimit
 } from '../../shared/models/service-calendar.models';
 
 @Component({
@@ -40,7 +42,8 @@ import {
     CalendarWeekViewComponent,
     CreateOrderModalComponent,
     OrderDetailsModalComponent,
-    AcceptBikeModalComponent
+    AcceptBikeModalComponent,
+    CalendarSettingsModalComponent
   ],
   templateUrl: './service-calendar.component.html',
   styleUrls: ['./service-calendar.component.css']
@@ -88,6 +91,7 @@ export class ServiceCalendarComponent implements OnInit {
   showCreateOrderModal = false;
   showOrderDetailsModal = false;
   showAcceptBikeModal = false;
+  showSettingsModal = false;
   selectedOrder: CalendarOrder | null = null;
   preselectedDate: string | null = null;
   createOrderMode: 'reservation' | 'acceptBike' = 'reservation';
@@ -286,7 +290,7 @@ export class ServiceCalendarComponent implements OnInit {
         this.dayData = {
           date: selectedDateStr,
           orders: orders,
-          bikesCount: orders.length,
+          bikesCount: countBikesForLimit(orders),
           maxBikesPerDay: data.maxBikesPerDay || this.calendarConfig?.maxBikesPerDay || 10
         };
 
@@ -505,6 +509,10 @@ export class ServiceCalendarComponent implements OnInit {
   // ============================================
   // NAWIGACJA
   // ============================================
+
+  onSettingsUpdated(updated: CalendarConfig): void {
+    this.calendarConfig = updated;
+  }
 
   goToProfileSettings(): void {
     if (this.currentSuffix) {

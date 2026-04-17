@@ -41,6 +41,7 @@ export const environment = {
       transport: '/guest-orders/transport',
       discounts: '/guest-orders/discounts',
       serviceReservation: '/guest-orders/service-reservation',
+      serviceAvailability: '/guest-orders/service-reservation/:serviceId/availability',
       officeAddresses: '/guest-orders/office-addresses',
       sessionSync: '/guest-orders/session-sync',
       report: '/guest-orders/report'

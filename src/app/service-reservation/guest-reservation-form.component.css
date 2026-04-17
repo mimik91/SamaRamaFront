@@ -1053,8 +1053,62 @@ h1 { text-align: center; margin-bottom: var(--spacing-8); font-size: var(--font-
   transition: background 0.2s;
 }
 
-.add-bike-btn:hover {
+.add-bike-btn:hover:not(:disabled) {
   background: #f0f7f0;
+}
+
+.add-bike-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-style: solid;
+}
+
+.bikes-limit-info {
+  margin: -12px 0 20px;
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+  text-align: center;
+}
+
+.availability-checking {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+}
+
+.availability-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-primary-alpha-20, rgba(27,94,32,0.2));
+  border-top-color: var(--color-primary, #1B5E20);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.availability-error {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-input, 6px);
+  font-size: 13px;
+  color: var(--color-danger, #e74c3c);
+}
+
+.availability-ok {
+  margin-top: 6px;
+  padding: 6px 12px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: var(--radius-input, 6px);
+  font-size: 13px;
+  color: #166534;
 }
 
 /* Summary bikes */

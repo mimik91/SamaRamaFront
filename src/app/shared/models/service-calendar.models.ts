@@ -234,6 +234,14 @@ function timeToMinutes(time: string | undefined): number {
 
 const SCHEDULE_STATUSES = new Set<CalendarOrderStatus>(['WAITING_FOR_BIKE', 'CONFIRMED']);
 
+export const STATUSES_EXCLUDED_FROM_LIMIT = new Set<CalendarOrderStatus>([
+  'CANCELLED', 'REJECTED', 'COMPLETED'
+]);
+
+export function countBikesForLimit(orders: CalendarOrder[]): number {
+  return orders.filter(o => !STATUSES_EXCLUDED_FROM_LIMIT.has(o.status)).length;
+}
+
 export function sortOrdersByStatus(orders: CalendarOrder[]): CalendarOrder[] {
   return [...orders].sort((a, b) => {
     const aIsSchedule = SCHEDULE_STATUSES.has(a.status);

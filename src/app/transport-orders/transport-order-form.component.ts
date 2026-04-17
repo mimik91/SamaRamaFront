@@ -164,11 +164,6 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
       ).subscribe(() => this.sendSessionSync());
     }
 
-    this.contactAndTransportForm.get('pickupDate')?.valueChanges.subscribe(date => {
-      if (date) {
-        this.checkSlotAvailabilityForDate(date);
-      }
-    });
   }
 
   private loadServiceInfo(): void {
@@ -392,35 +387,6 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
       if (b === 'Kraków') return 1;
       return a.localeCompare(b, 'pl');
     });
-  }
-
-  checkSlotAvailabilityForDate(date: string): void {
-    const bikesCount = this.getSelectedBicyclesCount();
-    if (bikesCount > 0) {
-      this.transportOrderService.checkSlotAvailability(date, bikesCount).subscribe({
-        next: (response) => {
-          const dateControl = this.contactAndTransportForm.get('pickupDate');
-          if (!response.available) {
-            this.notificationService.warning(
-              this.i18n.instant('transport_order.validation.slots_not_available') + ` ${response.availableBikes}.`
-            );
-            dateControl?.setErrors({ ...dateControl.errors, notEnoughSlots: true });
-          } else {
-            this.notificationService.success(this.i18n.instant('transport_order.validation.slots_available'));
-            // Usuń błąd notEnoughSlots, ale zachowaj inne błędy
-            if (dateControl?.errors) {
-              const { notEnoughSlots, availabilityCheckFailed, ...otherErrors } = dateControl.errors;
-              dateControl.setErrors(Object.keys(otherErrors).length > 0 ? otherErrors : null);
-            }
-          }
-        },
-        error: () => {
-          this.notificationService.error(this.i18n.instant('transport_order.validation.slots_check_error'));
-          const dateControl = this.contactAndTransportForm.get('pickupDate');
-          dateControl?.setErrors({ ...dateControl.errors, availabilityCheckFailed: true });
-        }
-      });
-    }
   }
 
   // Step navigation

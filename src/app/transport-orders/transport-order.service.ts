@@ -1,6 +1,6 @@
 // src/app/transport-orders/transport-order.service.ts
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError, map } from 'rxjs';
 import { environment } from '../environments/environments';
 import {
@@ -42,24 +42,6 @@ export class TransportOrderService {
     return this.http.get<TransportOrderResponse[]>(this.apiUrl).pipe(
       catchError(error => {
         console.error('Error fetching user transport orders:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
-   * Sprawdza dostępność slotów na daną datę
-   */
-  checkSlotAvailability(date: string, bikesCount: number): Observable<any> {
-    const params = new HttpParams()
-      .set('date', date)
-      .set('bikesCount', bikesCount.toString());
-    
-    const url = `${environment.apiUrl}${environment.endpoints.serviceSlots.checkAvailability}`;
-    
-    return this.http.get(url, { params }).pipe(
-      catchError(error => {
-        console.error('Error checking slot availability:', error);
         return throwError(() => error);
       })
     );

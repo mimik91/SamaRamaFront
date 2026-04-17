@@ -1,0 +1,48 @@
+<div class="settings-overlay" (click)="onClose()">
+  <div class="settings-panel" (click)="$event.stopPropagation()">
+
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="panel-icon">⚙️</span>
+        <h2>Ustawienia kalendarza</h2>
+      </div>
+      <button class="btn-close" (click)="onClose()" title="Zamknij">✕</button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSave()" class="settings-form">
+
+      <div class="form-section">
+        <div class="form-field">
+          <label for="maxBikesPerDay" class="field-label">
+            Maksymalna liczba rowerów dziennie
+          </label>
+          <input
+            id="maxBikesPerDay"
+            type="number"
+            formControlName="maxBikesPerDay"
+            class="field-input"
+            [class.invalid]="isFieldInvalid('maxBikesPerDay')"
+            min="1"
+          />
+          <span class="field-hint">
+            Limit aktywnych zleceń w jednym dniu. Anulowane i zakończone nie są wliczane.
+          </span>
+          <span class="field-error" *ngIf="isFieldInvalid('maxBikesPerDay')">
+            Wartość musi być większa od 0.
+          </span>
+        </div>
+      </div>
+
+      <div class="panel-footer">
+        <button type="button" class="btn-cancel" (click)="onClose()" [disabled]="saving">
+          Anuluj
+        </button>
+        <button type="submit" class="btn-save" [disabled]="saving || form.invalid">
+          <span *ngIf="saving" class="spinner-sm"></span>
+          {{ saving ? 'Zapisywanie…' : 'Zapisz zmiany' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

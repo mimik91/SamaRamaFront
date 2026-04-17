@@ -14,7 +14,7 @@ import {
 import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, switchMap, distinctUntilChanged } from 'rxjs/operators';
 import { SessionSyncService } from '../core/session-sync.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
@@ -37,6 +37,8 @@ interface ReservationSettings {
   acceptedDays: string[];
   formSchedule: { [key: string]: { fromTime: string | null; toTime: string | null } };
   estimatedReservationDay?: string | null;
+  maxBikesPerDay?: number | null;
+  fullyBookedDates?: string[];
 }
 
 type DeliveryType = 'SELF' | 'DOOR_TO_DOOR' | 'OFFICE';
@@ -88,6 +90,8 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   readonly dateFilter = (date: Date | null): boolean => {
     if (!date) return false;
+    const dateStr = this.dateToStr(date);
+    if (this.reservationSettings?.fullyBookedDates?.includes(dateStr)) return false;
     const dayKey = DAY_KEYS[date.getDay()];
     const accepted = this.reservationSettings?.acceptedDays;
     if (accepted && accepted.length > 0) return accepted.includes(dayKey);
@@ -100,6 +104,11 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   // Per-bike brand autocomplete state
   bikeBrandStates: { filtered: string[]; showDropdown: boolean }[] = [];
+
+  // Availability for selected date
+  availableSlotsForDate: number | null = null;
+  checkingAvailability = false;
+  availabilityError: string | null = null;
 
   // Discount coupon (transport)
   couponControl = new FormControl('');
@@ -168,7 +177,55 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     return this.bikesArray.controls as FormGroup[];
   }
 
+  get maxBikesPerReservation(): number {
+    if (this.availableSlotsForDate !== null) return this.availableSlotsForDate;
+    const max = this.reservationSettings?.maxBikesPerDay;
+    return max && max > 0 ? Math.ceil(max / 2) : 0;
+  }
+
+  get canAddBike(): boolean {
+    const limit = this.maxBikesPerReservation;
+    return limit === 0 || this.bikesArray.length < limit;
+  }
+
+  private checkDateAvailability(date: Date): void {
+    if (!this.serviceInfo?.id) return;
+    const dateStr = this.dateToStr(date);
+    const url = environment.endpoints.guestOrders.serviceAvailability
+      .replace(':serviceId', String(this.serviceInfo.id));
+    this.checkingAvailability = true;
+    this.availabilityError = null;
+    this.availableSlotsForDate = null;
+    this.http.get<{ date: string; available: boolean; availableSlots: number }[]>(
+      `${environment.apiUrl}${url}`,
+      { params: { startDate: dateStr, endDate: dateStr } }
+    ).subscribe({
+      next: (days) => {
+        this.checkingAvailability = false;
+        const day = days[0];
+        if (!day) return;
+        const slots = day.availableSlots ?? 0;
+        if (!day.available || slots <= 0) {
+          this.availabilityError = 'Ten dzień jest już w pełni zarezerwowany. Wybierz inną datę.';
+          this.reservationForm.get('plannedDate')?.setValue(null);
+          this.availableSlotsForDate = null;
+          return;
+        }
+        this.availableSlotsForDate = slots;
+        if (this.bikesArray.length > slots) {
+          this.availabilityError = `Na ten dzień pozostało ${slots} wolne${slots === 1 ? '' : slots < 5 ? ' miejsca' : ' miejsc'}. Usuń rower lub wybierz inną datę.`;
+          this.reservationForm.get('plannedDate')?.setValue(null);
+          this.availableSlotsForDate = null;
+        }
+      },
+      error: () => {
+        this.checkingAvailability = false;
+      }
+    });
+  }
+
   addBike(): void {
+    if (!this.canAddBike) return;
     this.bikesArray.push(this.createBikeGroup());
     this.bikeBrandStates.push({ filtered: [], showDropdown: false });
   }
@@ -350,6 +407,17 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         filter(e => e instanceof NavigationStart)
       ).subscribe(() => this.sendSessionSync());
     }
+
+    this.reservationForm.get('plannedDate')?.valueChanges.pipe(
+      distinctUntilChanged((a, b) => this.dateToStr(a instanceof Date ? a : new Date(a + 'T00:00:00')) === this.dateToStr(b instanceof Date ? b : new Date(b + 'T00:00:00')))
+    ).subscribe((val) => {
+      this.availableSlotsForDate = null;
+      this.availabilityError = null;
+      if (val) {
+        const date = val instanceof Date ? val : new Date(val + 'T00:00:00');
+        if (!isNaN(date.getTime())) this.checkDateAvailability(date);
+      }
+    });
 
     this.reservationForm.get('deliveryType')?.valueChanges.subscribe((val: DeliveryType) => {
       if (val !== 'SELF') {

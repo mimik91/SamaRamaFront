@@ -16,7 +16,8 @@ import {
   CalendarOrderStatus,
   OrderImage,
   ClientLookupResult,
-  ClientBike
+  ClientBike,
+  sortOrdersByStatus
 } from '../../../shared/models/service-calendar.models';
 
 // ============================================
@@ -147,7 +148,33 @@ export class ServiceCalendarService {
       .set('serviceId', serviceId.toString())
       .set('startDate', startDate);
     return this.http.get<CalendarWeekData>(`${this.apiUrl}${this.endpoints.weekView}`, { params })
-      .pipe(catchError(this.handleError('getWeekView')));
+      .pipe(
+        map((data: any) => {
+          if (data?.ordersByDay) {
+            for (const day of Object.keys(data.ordersByDay)) {
+              const mapped = data.ordersByDay[day].map((o: any) => this.mapOrderTime(o));
+              data.ordersByDay[day] = sortOrdersByStatus(mapped);
+            }
+          }
+          return data as CalendarWeekData;
+        }),
+        catchError(this.handleError('getWeekView'))
+      );
+  }
+
+  private mapOrderTime(order: any): any {
+    // Czas może być w plannedDate ("2026-04-16T15:00") lub serviceStartDateTime
+    const source = order.serviceStartDateTime || order.plannedDate || '';
+    const tIndex = source.indexOf('T');
+    if (tIndex !== -1) {
+      const time = source.substring(tIndex + 1, tIndex + 6);
+      if (time && time !== '00:00') {
+        order.plannedTime = time;
+      }
+      // Normalizuj plannedDate do czystego YYYY-MM-DD
+      order.plannedDate = source.substring(0, tIndex);
+    }
+    return order;
   }
 
 
@@ -197,8 +224,11 @@ export class ServiceCalendarService {
    */
   getOrder(serviceId: number, orderId: number): Observable<CalendarOrder> {
     const params = new HttpParams().set('serviceId', serviceId.toString());
-    return this.http.get<CalendarOrder>(`${this.apiUrl}${this.endpoints.orders}/${orderId}`, { params })
-      .pipe(catchError(this.handleError('getOrder')));
+    return this.http.get<any>(`${this.apiUrl}${this.endpoints.orders}/${orderId}`, { params })
+      .pipe(
+        map((o: any) => this.mapOrderTime(o) as CalendarOrder),
+        catchError(this.handleError('getOrder'))
+      );
   }
 
   /**

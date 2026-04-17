@@ -58,7 +58,8 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     'assets/images/opinie/opinia 2.webp',
     'assets/images/opinie/opinia 3.webp',
     'assets/images/opinie/opinia 4.webp',
-    'assets/images/opinie/opinia 5.webp'
+    'assets/images/opinie/opinia 5.webp',
+    'assets/images/opinie/opinia 6.webp'
   ];
 
   // Zmienna na bezpieczny JSON-LD
@@ -142,7 +143,9 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMetaTags();
     this.setCanonicalUrl();
     this.generateSchemaMarkup();
-    this.loadPartnerLogos();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadPartnerLogos();
+    }
   }
 
   ngAfterViewInit(): void {

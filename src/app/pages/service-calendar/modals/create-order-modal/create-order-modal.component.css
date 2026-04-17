@@ -137,6 +137,23 @@
   box-shadow: 0 0 0 2px var(--color-primary-alpha-20);
 }
 
+.time-select-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-select-row .time-select {
+  flex: 1;
+  width: auto;
+}
+
+.time-colon {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-secondary);
+  padding: 0 2px;
+}
+
 .form-group input.readonly,
 .form-group input[readonly] {
   background: var(--color-slate-100);

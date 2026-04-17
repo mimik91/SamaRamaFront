@@ -263,6 +263,34 @@
   cursor: not-allowed;
 }
 
+.time-select-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-select {
+  flex: 1;
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  background: var(--color-white);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.time-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.time-colon {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-secondary);
+  padding: 0 2px;
+}
+
 /* Detail grid */
 .detail-grid {
   display: grid;

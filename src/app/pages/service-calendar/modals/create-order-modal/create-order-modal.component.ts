@@ -50,7 +50,16 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
   bikeModel: string = '';
 
   orderDate: string = '';
+  orderTime: string = '00:00';
   orderNotes: string = '';
+
+  readonly hours: string[] = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  readonly minutes: string[] = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+
+  get orderHour(): string { return this.orderTime.split(':')[0] ?? '00'; }
+  set orderHour(h: string) { this.orderTime = `${h}:${this.orderMinute}`; }
+  get orderMinute(): string { return this.orderTime.split(':')[1] ?? '00'; }
+  set orderMinute(m: string) { this.orderTime = `${this.orderHour}:${m}`; }
   selectedTechnicianId: number | null = null;
 
   // State
@@ -277,6 +286,7 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
           }
       ),
       plannedDate: this.orderDate,
+      plannedTime: this.orderTime && this.orderTime !== '00:00' ? this.orderTime : undefined,
       description: this.orderNotes.trim() || undefined,
       assignedTechnicianId: this.selectedTechnicianId || undefined,
       initialStatus: this.mode === 'acceptBike' ? 'IN_PROGRESS' : undefined

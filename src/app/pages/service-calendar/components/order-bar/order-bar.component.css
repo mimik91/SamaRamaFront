@@ -52,6 +52,19 @@
   color: var(--text-primary);
 }
 
+.order-time {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-info, #3b82f6);
+  background: rgba(59, 130, 246, 0.10);
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
 .order-bar.compact .order-brand {
   font-size: 12px;
 }

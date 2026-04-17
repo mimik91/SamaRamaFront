@@ -124,7 +124,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   constructor() {
     const minD = new Date();
-    minD.setDate(minD.getDate() + 1);
+    minD.setDate(minD.getDate() + 2);
     this.minDateObj = minD;
     this.minDate = this.dateToStr(minD);
 
@@ -571,16 +571,16 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   }
 
   private updateMinDate(settings: ReservationSettings): void {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = this.dateToStr(tomorrow);
+    const dayAfterTomorrow = new Date();
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+    const dayAfterTomorrowStr = this.dateToStr(dayAfterTomorrow);
 
-    if (settings.estimatedReservationDay && settings.estimatedReservationDay > tomorrowStr) {
+    if (settings.estimatedReservationDay && settings.estimatedReservationDay > dayAfterTomorrowStr) {
       this.minDate = settings.estimatedReservationDay;
       this.minDateObj = new Date(settings.estimatedReservationDay + 'T00:00:00');
     } else {
-      this.minDate = tomorrowStr;
-      this.minDateObj = tomorrow;
+      this.minDate = dayAfterTomorrowStr;
+      this.minDateObj = dayAfterTomorrow;
     }
   }
 

@@ -226,11 +226,35 @@ const STATUS_DISPLAY_PRIORITY: Record<CalendarOrderStatus, number> = {
   'CANCELLED':                        10,
 };
 
+function timeToMinutes(time: string | undefined): number {
+  if (!time) return 9999;
+  const [h, m] = time.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+
+const SCHEDULE_STATUSES = new Set<CalendarOrderStatus>(['WAITING_FOR_BIKE', 'CONFIRMED']);
+
 export function sortOrdersByStatus(orders: CalendarOrder[]): CalendarOrder[] {
   return [...orders].sort((a, b) => {
+    const aIsSchedule = SCHEDULE_STATUSES.has(a.status);
+    const bIsSchedule = SCHEDULE_STATUSES.has(b.status);
+
+    // Jeśli oba są w grupie "harmonogramowej" — sortuj po godzinie, potem statusie, potem id
+    if (aIsSchedule && bIsSchedule) {
+      const ta = timeToMinutes(a.plannedTime);
+      const tb = timeToMinutes(b.plannedTime);
+      if (ta !== tb) return ta - tb;
+      const pa = STATUS_DISPLAY_PRIORITY[a.status] ?? 99;
+      const pb = STATUS_DISPLAY_PRIORITY[b.status] ?? 99;
+      if (pa !== pb) return pa - pb;
+      return a.id - b.id;
+    }
+
+    // Standardowe sortowanie po priorytecie statusu
     const pa = STATUS_DISPLAY_PRIORITY[a.status] ?? 99;
     const pb = STATUS_DISPLAY_PRIORITY[b.status] ?? 99;
-    return pa !== pb ? pa - pb : a.id - b.id;
+    if (pa !== pb) return pa - pb;
+    return a.id - b.id;
   });
 }
 
@@ -274,6 +298,7 @@ export interface CalendarOrder {
 
   // Dane zlecenia
   plannedDate: string; // YYYY-MM-DD
+  plannedTime?: string; // HH:mm
   status: CalendarOrderStatus;
   statusDisplayName?: string;
   description?: string;
@@ -350,6 +375,7 @@ export interface CreateCalendarOrderDto {
 
   // Dane zlecenia
   plannedDate: string; // YYYY-MM-DD
+  plannedTime?: string; // HH:mm
   description?: string;
   assignedTechnicianId?: number;
   initialStatus?: CalendarOrderStatus;
@@ -357,6 +383,7 @@ export interface CreateCalendarOrderDto {
 
 export interface UpdateCalendarOrderDto {
   plannedDate?: string;
+  plannedTime?: string | null;
   description?: string;
   serviceNotes?: string;
   maintenanceAdvice?: string;

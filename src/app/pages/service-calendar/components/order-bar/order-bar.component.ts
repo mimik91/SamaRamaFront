@@ -72,6 +72,10 @@ export class OrderBarComponent {
     return this.order.clientName || '';
   }
 
+  get showTime(): boolean {
+    return !!(this.order.plannedTime && (this.order.status === 'WAITING_FOR_BIKE' || this.order.status === 'CONFIRMED'));
+  }
+
   /** Przycisk w prawym dolnym rogu */
   get actionButton(): 'respond' | 'acceptBike' | 'readyForPickup' | 'markCompleted' | 'backToProgress' | null {
     const s = this.order.status;

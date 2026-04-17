@@ -185,6 +185,18 @@
                 class="date-input"
               />
             </div>
+            <div class="detail-item" *ngIf="!canShowImages && canEditTime">
+              <span class="detail-label">{{ t('service_calendar.create_order.time') }}</span>
+              <div class="time-select-row">
+                <select [(ngModel)]="selectedHour" class="time-select">
+                  <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
+                </select>
+                <span class="time-colon">:</span>
+                <select [(ngModel)]="selectedMinute" class="time-select">
+                  <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
+                </select>
+              </div>
+            </div>
             <div class="detail-item" *ngIf="calendarMode === 'ADVANCED'">
               <span class="detail-label">{{ t('service_calendar.order_details.technician') }}</span>
               <select

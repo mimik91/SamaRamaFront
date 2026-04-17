@@ -11,6 +11,7 @@
       <span class="order-model" *ngIf="bikeModel">&nbsp;{{ bikeModel }}</span>
     </div>
     <span class="order-customer" *ngIf="customerName">{{ customerName }}</span>
+    <span class="order-time" *ngIf="showTime">{{ order.plannedTime }}</span>
   </div>
 
   <button

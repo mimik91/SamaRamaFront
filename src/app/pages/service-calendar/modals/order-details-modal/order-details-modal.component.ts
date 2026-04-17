@@ -108,16 +108,32 @@ export class OrderDetailsModalComponent implements OnDestroy {
   // Local copy of order (will be updated with full data from API)
   fullOrder!: CalendarOrder;
 
+  readonly hours: string[] = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  readonly minutes: string[] = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+
   // Editable fields (local — saved only on close/save)
   selectedStatus: CalendarOrderStatus = 'CONFIRMED';
   selectedTechnicianId: number | null = null;
   selectedDate: string = '';
+  selectedTime: string = '';
+
+  get selectedHour(): string { return this.selectedTime ? this.selectedTime.split(':')[0] : '00'; }
+  set selectedHour(h: string) { this.selectedTime = `${h}:${this.selectedMinute}`; }
+  get selectedMinute(): string {
+    if (!this.selectedTime) return '00';
+    const m = this.selectedTime.split(':')[1] ?? '00';
+    // Zaokrąglij do najbliższego wielokrotności 5
+    const num = parseInt(m, 10);
+    return String(Math.round(num / 5) * 5 % 60).padStart(2, '0');
+  }
+  set selectedMinute(m: string) { this.selectedTime = `${this.selectedHour}:${m}`; }
   notes: string = '';
   maintenanceAdvice: string = '';
 
   // Original values — used to detect dirty state and revert on cancel
   private originalTechnicianId: number | null = null;
   private originalDate: string = '';
+  private originalTime: string = '';
   private originalNotes: string = '';
   private originalMaintenanceAdvice: string = '';
   private originalBikeBrand: string = '';
@@ -133,10 +149,16 @@ export class OrderDetailsModalComponent implements OnDestroy {
   bikeTypes: string[] = [];
   frameMaterials: string[] = [];
 
+  get canEditTime(): boolean {
+    const s = this.fullOrder?.status || this.order.status;
+    return s === 'WAITING_FOR_BIKE' || s === 'CONFIRMED';
+  }
+
   get isDirty(): boolean {
     return this.notes !== this.originalNotes
       || this.maintenanceAdvice !== this.originalMaintenanceAdvice
       || this.selectedDate !== this.originalDate
+      || this.selectedTime !== this.originalTime
       || this.selectedTechnicianId !== this.originalTechnicianId
       || this.editBikeBrand.trim() !== this.originalBikeBrand
       || this.editBikeModel.trim() !== this.originalBikeModel
@@ -169,6 +191,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
   private initOriginals(): void {
     this.originalTechnicianId = this.selectedTechnicianId;
     this.originalDate = this.selectedDate;
+    this.originalTime = this.selectedTime;
     this.originalNotes = this.notes;
     this.originalMaintenanceAdvice = this.maintenanceAdvice;
     this.originalBikeBrand = this.editBikeBrand;
@@ -183,6 +206,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
     this.selectedStatus = this.order.status;
     this.selectedTechnicianId = this.order.assignedTechnicianId || null;
     this.selectedDate = this.order.plannedDate || '';
+    this.selectedTime = this.order.plannedTime || '';
     this.notes = this.order.serviceNotes || '';
     this.maintenanceAdvice = this.order.maintenanceAdvice || '';
 
@@ -214,6 +238,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
         this.selectedStatus = this.fullOrder.status;
         this.selectedTechnicianId = this.fullOrder.assignedTechnicianId || null;
         this.selectedDate = this.fullOrder.plannedDate || '';
+        this.selectedTime = this.fullOrder.plannedTime || '';
         this.notes = this.fullOrder.serviceNotes || '';
         this.maintenanceAdvice = this.fullOrder.maintenanceAdvice || '';
         this.editBikeBrand = this.fullOrder.bicycleBrand || '';
@@ -391,6 +416,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
     this.notes = this.originalNotes;
     this.maintenanceAdvice = this.originalMaintenanceAdvice;
     this.selectedDate = this.originalDate;
+    this.selectedTime = this.originalTime;
     this.selectedTechnicianId = this.originalTechnicianId;
     this.editBikeBrand = this.originalBikeBrand;
     this.editBikeModel = this.originalBikeModel;
@@ -410,6 +436,9 @@ export class OrderDetailsModalComponent implements OnDestroy {
     if (this.notes !== this.originalNotes) orderPayload['serviceNotes'] = this.notes;
     if (this.maintenanceAdvice !== this.originalMaintenanceAdvice) orderPayload['maintenanceAdvice'] = this.maintenanceAdvice;
     if (this.selectedDate !== this.originalDate) orderPayload['plannedDate'] = this.selectedDate;
+    if (this.selectedTime !== this.originalTime) {
+      orderPayload['plannedTime'] = this.selectedTime && this.selectedTime !== '00:00' ? this.selectedTime : null;
+    }
     if (this.selectedTechnicianId !== this.originalTechnicianId) orderPayload['assignedTechnicianId'] = this.selectedTechnicianId;
 
     if (Object.keys(orderPayload).length > 0) {

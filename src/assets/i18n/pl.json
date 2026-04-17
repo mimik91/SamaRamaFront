@@ -81,6 +81,7 @@
       "model": "Model roweru",
       "frame_number": "Numer ramy",
       "date": "Data zlecenia",
+      "time": "Godzina",
       "technician": "Serwisant",
       "notes": "Notatki",
       "first_name_placeholder": "Jan",

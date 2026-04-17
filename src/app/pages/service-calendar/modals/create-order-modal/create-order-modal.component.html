@@ -164,6 +164,18 @@
                 [class.readonly]="mode === 'acceptBike'"
               />
             </div>
+            <div class="form-group">
+              <label>{{ t('service_calendar.create_order.time') }}</label>
+              <div class="time-select-row">
+                <select [(ngModel)]="orderHour" name="orderHour" class="time-select">
+                  <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
+                </select>
+                <span class="time-colon">:</span>
+                <select [(ngModel)]="orderMinute" name="orderMinute" class="time-select">
+                  <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
+                </select>
+              </div>
+            </div>
             <div class="form-group" *ngIf="calendarMode === 'ADVANCED' && technicians.length > 0">
               <label for="technician">{{ t('service_calendar.create_order.technician') }}</label>
               <select

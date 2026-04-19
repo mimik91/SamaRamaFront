@@ -3,11 +3,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
     "rootDir": "./src",
-    "ignoreDeprecations": "6.0",
     "paths": {
-      "@colors": ["src/colors.css"]
+      "@colors": ["./src/colors.css"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,

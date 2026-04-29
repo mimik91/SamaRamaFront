@@ -78,73 +78,80 @@
           </div>
         </div>
 
-        <!-- Sekcja: Dane roweru -->
+        <!-- Sekcja: Dane rowerów -->
         <div class="form-section">
-          <h3 class="section-title">{{ t('service_calendar.create_order.bike_section') }}</h3>
-
-          <!-- Rowery klienta (gdy klient znaleziony) -->
-          <div class="form-group client-bikes-select" *ngIf="clientBikes.length > 0">
-            <label>Rowery klienta</label>
-            <select
-              [(ngModel)]="selectedBikeId"
-              name="clientBike"
-              (ngModelChange)="onBikeSelected($event)"
-            >
-              <option [ngValue]="null">-- Nowy rower / Wpisz ręcznie --</option>
-              <option *ngFor="let bike of clientBikes" [ngValue]="bike.id">
-                {{ bike.brand }} {{ bike.model }}
-              </option>
-            </select>
+          <div class="section-header-row">
+            <h3 class="section-title">{{ t('service_calendar.create_order.bike_section') }}</h3>
+            <button type="button" class="btn-add-bike" (click)="addBike()">+ Dodaj rower</button>
           </div>
 
-          <div class="form-row">
-            <div class="form-group brand-autocomplete-wrapper">
-              <label for="bikeBrand">{{ t('service_calendar.create_order.brand') }} *</label>
-              <div class="autocomplete-container">
-                <input
-                  type="text"
-                  id="bikeBrand"
-                  [value]="bikeBrand"
-                  (input)="onBrandInput($event)"
-                  (focus)="onBrandFocus()"
-                  name="bikeBrand"
-                  required
-                  autocomplete="off"
-                  [placeholder]="t('service_calendar.brand_autocomplete.placeholder')"
-                  [disabled]="selectedBikeId !== null"
-                />
-                <button
-                  type="button"
-                  class="expand-btn"
-                  (click)="expandAllBrands()"
-                  [title]="t('service_calendar.brand_autocomplete.show_all')"
-                  [disabled]="selectedBikeId !== null"
-                >
-                  &#9660;
-                </button>
-                <div class="autocomplete-dropdown" *ngIf="showBrandDropdown && filteredBrands.length > 0">
-                  <div
-                    class="autocomplete-item"
-                    *ngFor="let brand of filteredBrands"
-                    (click)="selectBrand(brand)"
-                  >
-                    {{ brand }}
+          <div class="bike-entry" *ngFor="let bike of bikes; let i = index">
+            <div class="bike-entry-header" *ngIf="bikes.length > 1">
+              <span class="bike-entry-label">Rower {{ i + 1 }}</span>
+              <button type="button" class="btn-remove-bike" (click)="removeBike(i)">✕ Usuń</button>
+            </div>
+
+            <!-- Rowery klienta (gdy klient znaleziony) -->
+            <div class="form-group client-bikes-select" *ngIf="clientBikes.length > 0">
+              <label>Rowery klienta</label>
+              <select
+                [(ngModel)]="bike.existingBikeId"
+                [name]="'clientBike_' + i"
+                (ngModelChange)="onBikeSelected($event, i)"
+              >
+                <option [ngValue]="null">-- Nowy rower / Wpisz ręcznie --</option>
+                <option *ngFor="let cb of clientBikes" [ngValue]="cb.id">
+                  {{ cb.brand }} {{ cb.model }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group brand-autocomplete-wrapper">
+                <label [for]="'bikeBrand_' + i">{{ t('service_calendar.create_order.brand') }} *</label>
+                <div class="autocomplete-container">
+                  <input
+                    type="text"
+                    [id]="'bikeBrand_' + i"
+                    [value]="bike.brand"
+                    (input)="onBrandInput($event, i)"
+                    (focus)="onBrandFocus(i)"
+                    [name]="'bikeBrand_' + i"
+                    required
+                    autocomplete="off"
+                    [placeholder]="t('service_calendar.brand_autocomplete.placeholder')"
+                    [disabled]="bike.existingBikeId !== null"
+                  />
+                  <button
+                    type="button"
+                    class="expand-btn"
+                    (click)="expandAllBrands(i)"
+                    [title]="t('service_calendar.brand_autocomplete.show_all')"
+                    [disabled]="bike.existingBikeId !== null"
+                  >&#9660;</button>
+                  <div class="autocomplete-dropdown" *ngIf="bike.showDropdown && bike.filteredBrands.length > 0">
+                    <div
+                      class="autocomplete-item"
+                      *ngFor="let brand of bike.filteredBrands"
+                      (click)="selectBrand(brand, i)"
+                    >{{ brand }}</div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="form-group">
-              <label for="bikeModel">{{ t('service_calendar.create_order.model') }}</label>
-              <input
-                type="text"
-                id="bikeModel"
-                [(ngModel)]="bikeModel"
-                name="bikeModel"
-                [placeholder]="t('service_calendar.create_order.model_placeholder')"
-                [disabled]="selectedBikeId !== null"
-              />
+              <div class="form-group">
+                <label [for]="'bikeModel_' + i">{{ t('service_calendar.create_order.model') }}</label>
+                <input
+                  type="text"
+                  [id]="'bikeModel_' + i"
+                  [(ngModel)]="bike.model"
+                  [name]="'bikeModel_' + i"
+                  [placeholder]="t('service_calendar.create_order.model_placeholder')"
+                  [disabled]="bike.existingBikeId !== null"
+                />
+              </div>
             </div>
           </div>
+
         </div>
 
         <!-- Sekcja: Zlecenie -->

@@ -1544,3 +1544,19 @@
     grid-template-columns: 1fr;
   }
 }
+
+.planned-date-section {
+  padding-bottom: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.planned-date-value {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.planned-time {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-normal);
+}

@@ -1,6 +1,22 @@
 <div class="settings-overlay" (click)="onClose()">
   <div class="settings-panel" (click)="$event.stopPropagation()">
 
+    <!-- Dialog niezapisanych zmian -->
+    <div class="unsaved-overlay" *ngIf="showUnsavedDialog">
+      <div class="unsaved-dialog">
+        <p class="unsaved-title">Masz niezapisane zmiany</p>
+        <p class="unsaved-desc">Co chcesz zrobić przed zamknięciem?</p>
+        <div class="unsaved-actions">
+          <button type="button" class="btn-back" (click)="showUnsavedDialog = false">Wróć do edycji</button>
+          <button type="button" class="btn-discard" (click)="discardAndClose()">Odrzuć zmiany</button>
+          <button type="button" class="btn-save-now" [disabled]="form.invalid || hasTemplateErrors" (click)="onSave()">
+            <span *ngIf="saving" class="spinner-sm"></span>
+            Zapisz i zamknij
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="panel-header">
       <div class="panel-title">
         <span class="panel-icon">⚙️</span>
@@ -11,7 +27,9 @@
 
     <form [formGroup]="form" (ngSubmit)="onSave()" class="settings-form">
 
+      <!-- Ustawienia ogólne -->
       <div class="form-section">
+        <h3 class="section-title">Ogólne</h3>
         <div class="form-field">
           <label for="maxBikesPerDay" class="field-label">
             Maksymalna liczba rowerów dziennie
@@ -20,7 +38,7 @@
             id="maxBikesPerDay"
             type="number"
             formControlName="maxBikesPerDay"
-            class="field-input"
+            class="field-input field-input--narrow"
             [class.invalid]="isFieldInvalid('maxBikesPerDay')"
             min="1"
           />
@@ -33,14 +51,221 @@
         </div>
       </div>
 
+      <!-- Powiadomienia -->
+      <div class="form-section">
+
+        <div class="notification-section-header">
+          <h3 class="section-title">Powiadomienia</h3>
+          <select
+            *ngIf="transportAvailable"
+            class="section-switcher"
+            [(ngModel)]="activeSection"
+            [ngModelOptions]="{ standalone: true }"
+          >
+            <option value="return">Wydanie roweru</option>
+            <option value="pickup">Serwis z transportem (odbiór)</option>
+          </select>
+        </div>
+
+        <div class="section-loading" *ngIf="loadingNotificationConfig">
+          <div class="spinner-sm-dark"></div>
+          <span>Ładowanie…</span>
+        </div>
+
+        <ng-container *ngIf="!loadingNotificationConfig">
+
+          <!-- Return (wydanie) -->
+          <ng-container *ngIf="activeSection === 'return'">
+            <div class="coming-soon-banner">
+              🚧 Powiadomienia e-mail i SMS — wkrótce dostępne
+            </div>
+            <div class="section-disabled-wrap">
+            <div class="notification-columns">
+              <div class="form-field">
+                <label class="field-label field-label--muted">Treść e-mail</label>
+                <textarea
+                  formControlName="emailTextReturn"
+                  class="field-input field-textarea"
+                  rows="4"
+                  placeholder="Treść wiadomości e-mail wysyłanej przy wydaniu roweru…"
+                  [attr.disabled]="true"
+                ></textarea>
+              </div>
+              <div class="form-field">
+                <label class="field-label field-label--muted">Treść SMS</label>
+                <textarea
+                  formControlName="smsTextReturn"
+                  class="field-input field-textarea"
+                  rows="4"
+                  placeholder="Treść SMS wysyłanego przy wydaniu roweru…"
+                  [attr.disabled]="true"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="templates-section">
+              <div class="templates-header">
+                <div>
+                  <span class="field-label">Szablony treści</span>
+                  <p class="templates-hint">
+                    Wstaw znacznik <code>[nazwa]</code> w tekście e-mail — przy wysyłce zostanie zastąpiony treścią wpisaną przez użytkownika.
+                    Uzupełnij nazwę szablonu, a następnie kliknij <strong>[input]</strong> pod polem tekstowym, aby wstawić znacznik w miejscu kursora.
+                  </p>
+                </div>
+                <button type="button" class="btn-add-template" (click)="addTemplate()">+ Dodaj szablon</button>
+              </div>
+              <div class="templates-list">
+                <div class="template-entry" *ngFor="let tpl of returnTemplates; let i = index">
+                  <div class="template-name-row">
+                    <input
+                      type="text"
+                      class="field-input template-name-input"
+                      [class.invalid]="templateNameInvalid(tpl)"
+                      [(ngModel)]="tpl.name"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="onTemplateChange()"
+                      placeholder="Nazwa szablonu (max 20 znaków)"
+                      maxlength="20"
+                    />
+                    <span class="char-count" [class.over]="tpl.name.length > 20">{{ tpl.name.length }}/20</span>
+                    <button type="button" class="btn-remove-template" (click)="removeTemplate(i)" title="Usuń szablon">✕</button>
+                  </div>
+                  <div class="template-text-wrap">
+                    <textarea
+                      #textareaReturn
+                      class="field-input field-textarea template-text-input"
+                      [class.invalid]="templateTextInvalid(tpl)"
+                      [(ngModel)]="tpl.text"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="onTemplateChange()"
+                      rows="3"
+                      placeholder="Tekst dodawany do maila (max 500 znaków)…"
+                      maxlength="500"
+                    ></textarea>
+                    <div class="template-text-footer">
+                      <button
+                        type="button"
+                        class="btn-insert-input"
+                        [disabled]="!tpl.name.trim()"
+                        [title]="tpl.name.trim() ? 'Wstaw [' + tpl.name + '] w miejscu kursora' : 'Najpierw uzupełnij nazwę szablonu'"
+                        (click)="insertInput(textareaReturn, tpl)"
+                      >[ input ]</button>
+                      <span class="char-count" [class.over]="tpl.text.length > 500">{{ tpl.text.length }}/500</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="templates-empty" *ngIf="returnTemplates.length === 0">
+                  Brak szablonów. Kliknij „+ Dodaj szablon", aby dodać.
+                </div>
+              </div>
+            </div>
+            </div><!-- /section-disabled-wrap -->
+          </ng-container>
+
+          <!-- Pickup (odbiór) -->
+          <ng-container *ngIf="activeSection === 'pickup'">
+            <div class="coming-soon-banner">
+              🚧 Powiadomienia e-mail i SMS — wkrótce dostępne
+            </div>
+            <div class="section-disabled-wrap">
+            <div class="notification-columns">
+              <div class="form-field">
+                <label class="field-label field-label--muted">Treść e-mail</label>
+                <textarea
+                  formControlName="emailTextPickup"
+                  class="field-input field-textarea"
+                  rows="4"
+                  placeholder="Treść wiadomości e-mail wysyłanej przy odbiorze roweru…"
+                  [attr.disabled]="true"
+                ></textarea>
+              </div>
+              <div class="form-field">
+                <label class="field-label field-label--muted">Treść SMS</label>
+                <textarea
+                  formControlName="smsTextPickup"
+                  class="field-input field-textarea"
+                  rows="4"
+                  placeholder="Treść SMS wysyłanego przy odbiorze roweru…"
+                  [attr.disabled]="true"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="templates-section">
+              <div class="templates-header">
+                <div>
+                  <span class="field-label">Szablony treści</span>
+                  <p class="templates-hint">
+                    Wstaw znacznik <code>[nazwa]</code> w tekście e-mail — przy wysyłce zostanie zastąpiony treścią wpisaną przez użytkownika.
+                    Uzupełnij nazwę szablonu, a następnie kliknij <strong>[input]</strong> pod polem tekstowym, aby wstawić znacznik w miejscu kursora.
+                  </p>
+                </div>
+                <button type="button" class="btn-add-template" (click)="addTemplate()">+ Dodaj szablon</button>
+              </div>
+              <div class="templates-list">
+                <div class="template-entry" *ngFor="let tpl of pickupTemplates; let i = index">
+                  <div class="template-name-row">
+                    <input
+                      type="text"
+                      class="field-input template-name-input"
+                      [class.invalid]="templateNameInvalid(tpl)"
+                      [(ngModel)]="tpl.name"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="onTemplateChange()"
+                      placeholder="Nazwa szablonu (max 20 znaków)"
+                      maxlength="20"
+                    />
+                    <span class="char-count" [class.over]="tpl.name.length > 20">{{ tpl.name.length }}/20</span>
+                    <button type="button" class="btn-remove-template" (click)="removeTemplate(i)" title="Usuń szablon">✕</button>
+                  </div>
+                  <div class="template-text-wrap">
+                    <textarea
+                      #textareaPickup
+                      class="field-input field-textarea template-text-input"
+                      [class.invalid]="templateTextInvalid(tpl)"
+                      [(ngModel)]="tpl.text"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="onTemplateChange()"
+                      rows="3"
+                      placeholder="Tekst dodawany do maila (max 500 znaków)…"
+                      maxlength="500"
+                    ></textarea>
+                    <div class="template-text-footer">
+                      <button
+                        type="button"
+                        class="btn-insert-input"
+                        [disabled]="!tpl.name.trim()"
+                        [title]="tpl.name.trim() ? 'Wstaw [' + tpl.name + '] w miejscu kursora' : 'Najpierw uzupełnij nazwę szablonu'"
+                        (click)="insertInput(textareaPickup, tpl)"
+                      >[ input ]</button>
+                      <span class="char-count" [class.over]="tpl.text.length > 500">{{ tpl.text.length }}/500</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="templates-empty" *ngIf="pickupTemplates.length === 0">
+                  Brak szablonów. Kliknij „+ Dodaj szablon", aby dodać.
+                </div>
+              </div>
+            </div>
+            </div><!-- /section-disabled-wrap -->
+          </ng-container>
+
+        </ng-container>
+      </div>
+
       <div class="panel-footer">
-        <button type="button" class="btn-cancel" (click)="onClose()" [disabled]="saving">
-          Anuluj
-        </button>
-        <button type="submit" class="btn-save" [disabled]="saving || form.invalid">
-          <span *ngIf="saving" class="spinner-sm"></span>
-          {{ saving ? 'Zapisywanie…' : 'Zapisz zmiany' }}
-        </button>
+        <span class="save-blocked-reason" *ngIf="saveBlockedReason && !saving">
+          ⚠ {{ saveBlockedReason }}
+        </span>
+        <div class="footer-actions">
+          <button type="button" class="btn-cancel" (click)="onClose()" [disabled]="saving">
+            Anuluj
+          </button>
+          <button type="submit" class="btn-save" [disabled]="saving || form.invalid || loadingNotificationConfig || hasTemplateErrors">
+            <span *ngIf="saving" class="spinner-sm"></span>
+            {{ saving ? 'Zapisywanie…' : 'Zapisz zmiany' }}
+          </button>
+        </div>
       </div>
 
     </form>

@@ -36,6 +36,8 @@
   <!-- Services list with virtual scroll -->
   <cdk-virtual-scroll-viewport
     [itemSize]="itemSize"
+    [minBufferPx]="itemSize * 3"
+    [maxBufferPx]="itemSize * 6"
     class="services-list"
     [class.hidden]="services.length === 0"
     (scrolledIndexChange)="onScrollIndexChange($event)"

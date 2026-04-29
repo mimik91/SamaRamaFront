@@ -73,6 +73,19 @@
           </div>
         </div>
 
+        <!-- Data wizyty -->
+        <div class="detail-section planned-date-section">
+          <div class="detail-grid detail-grid--cols">
+            <div class="detail-item">
+              <span class="detail-label">Data wizyty</span>
+              <span class="detail-value planned-date-value">
+                {{ fullOrder.plannedDate | date:'d MMMM yyyy' }}
+                <span *ngIf="fullOrder.plannedTime" class="planned-time"> {{ fullOrder.plannedTime }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- Dane klienta -->
         <div class="detail-section">
           <h3 class="section-title">{{ t('service_calendar.order_details.customer') }}</h3>

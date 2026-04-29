@@ -1,0 +1,142 @@
+<div class="modal-overlay" (click)="!sending && close.emit()">
+  <div class="modal-panel" (click)="$event.stopPropagation()">
+
+    <!-- Loading -->
+    <ng-container *ngIf="step === 'loading'">
+      <div class="modal-loading">
+        <div class="spinner-lg"></div>
+        <p>Sprawdzanie konfiguracji powiadomień…</p>
+      </div>
+    </ng-container>
+
+    <!-- Krok 1: Inne rowery klienta -->
+    <ng-container *ngIf="step === 'siblings'">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span class="modal-icon">🏁</span>
+          <h2>Gotowe do odbioru</h2>
+        </div>
+        <button class="btn-close" (click)="close.emit()" title="Anuluj">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="siblings-info">
+          Klient <strong>{{ order.clientName }}</strong> ma jeszcze inne rowery w serwisie.
+          Zaznacz te, które też są gotowe do odbioru.
+        </p>
+
+        <div class="orders-list">
+          <!-- Zlecenie główne -->
+          <div class="order-row order-row--primary">
+            <div class="order-check">
+              <div class="check-badge">✓</div>
+            </div>
+            <div class="order-info">
+              <span class="order-bike">{{ bikeSummary(order) }}</span>
+              <span class="order-date">{{ order.plannedDate }}</span>
+            </div>
+            <div class="order-badge">Ten rower</div>
+          </div>
+
+          <!-- Rodzeństwo -->
+          <label
+            class="order-row order-row--sibling"
+            *ngFor="let sibling of siblingOrders"
+            [class.is-selected]="selectedIds.has(sibling.id)"
+          >
+            <div class="order-check">
+              <input
+                type="checkbox"
+                [checked]="selectedIds.has(sibling.id)"
+                (change)="toggleSibling(sibling.id)"
+              />
+            </div>
+            <div class="order-info">
+              <span class="order-bike">{{ bikeSummary(sibling) }}</span>
+              <span class="order-date">{{ sibling.plannedDate }}</span>
+            </div>
+            <span
+              class="status-dot"
+              [style.background]="statusColor(sibling)"
+              [title]="sibling.status"
+            ></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="close.emit()">Anuluj</button>
+        <button class="btn-primary" (click)="onConfirmSiblings()">
+          Dalej ({{ selectedCount }}) →
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Krok 2: Wartości do powiadomienia -->
+    <ng-container *ngIf="step === 'keys'">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span class="modal-icon">📩</span>
+          <h2>Powiadomienie do klienta</h2>
+        </div>
+        <button class="btn-close" (click)="close.emit()" [disabled]="sending" title="Anuluj">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="keys-info">
+          Uzupełnij dane, które zostaną wstawione w treść powiadomienia.
+          Odznacz pole jeśli dana wartość nie powinna być wysłana.
+        </p>
+
+        <div class="keys-list">
+          <div class="key-entry" *ngFor="let entry of keyEntries">
+            <label class="key-row" [class.key-row--excluded]="!entry.include">
+              <input
+                type="checkbox"
+                [(ngModel)]="entry.include"
+                class="key-checkbox"
+              />
+              <span class="key-name">{{ entry.key }}</span>
+            </label>
+            <input
+              type="text"
+              class="key-input"
+              [(ngModel)]="entry.value"
+              [disabled]="!entry.include"
+              [placeholder]="entry.include ? 'Wpisz wartość (puste = pusta wartość)' : 'Pole wykluczone z powiadomienia'"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="hadSiblings ? goBackToSiblings() : close.emit()" [disabled]="sending">
+          {{ hadSiblings ? '← Wróć' : 'Anuluj' }}
+        </button>
+        <button class="btn-primary" (click)="onSend()" [disabled]="sending">
+          <span *ngIf="sending" class="spinner-sm"></span>
+          {{ sending ? 'Wysyłanie…' : 'Wyślij powiadomienie' }}
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Błąd fetchKeys: pozwól oznaczyć bez powiadomienia -->
+    <ng-container *ngIf="step === 'error'">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span class="modal-icon">⚠️</span>
+          <h2>Błąd konfiguracji powiadomień</h2>
+        </div>
+        <button class="btn-close" (click)="close.emit()" title="Anuluj">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="keys-info">Nie udało się pobrać szablonu powiadomień. Możesz oznaczyć rower jako gotowy bez wysyłki powiadomienia.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="close.emit()">Anuluj</button>
+        <button class="btn-primary" (click)="doSend({})">Oznacz bez powiadomienia</button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

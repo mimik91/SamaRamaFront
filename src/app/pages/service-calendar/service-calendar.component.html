@@ -23,12 +23,7 @@
         (click)="showSettingsModal = true"
         [disabled]="isLoadingServices || !selectedServiceId"
         title="Ustawienia kalendarza"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-      </button>
+      >⚙</button>
     </div>
 
   </div>
@@ -69,7 +64,7 @@
 
     <!-- Widok dnia -->
     <app-calendar-day-view
-      *ngIf="currentView === 'day' && dayData && !isLoadingData"
+      *ngIf="currentView === 'day' && dayData"
       [data]="dayData"
       [calendarMode]="calendarMode"
       [technicians]="technicians"
@@ -77,6 +72,7 @@
       (cancelOrder)="onCancelOrder($event)"
       (confirmOrder)="onConfirmOrder($event)"
       (acceptBike)="onAcceptBike($event)"
+      (startProgress)="onStartProgress($event)"
       (markReadyForPickup)="onMarkReadyForPickup($event)"
       (markCompleted)="onMarkCompleted($event)"
       (backToProgress)="onBackToProgress($event)"
@@ -84,20 +80,25 @@
 
     <!-- Widok tygodnia -->
     <app-calendar-week-view
-      *ngIf="currentView === 'week' && weekData && !isLoadingData"
+      *ngIf="currentView === 'week' && weekData"
       [data]="weekData"
       [selectedDate]="selectedDate"
       [calendarMode]="calendarMode"
       [technicians]="technicians"
       [maxBikesPerDay]="calendarConfig?.maxBikesPerDay || 10"
+      [isMobile]="isMobile"
+      [mobileDays]="mobileDays"
       (orderClick)="onOrderClick($event)"
       (dayClick)="onDayClick($event)"
       (cancelOrder)="onCancelOrder($event)"
       (confirmOrder)="onConfirmOrder($event)"
       (acceptBike)="onAcceptBike($event)"
+      (startProgress)="onStartProgress($event)"
       (markReadyForPickup)="onMarkReadyForPickup($event)"
       (markCompleted)="onMarkCompleted($event)"
       (backToProgress)="onBackToProgress($event)"
+      (loadPreviousDays)="onLoadPreviousDays()"
+      (loadNextDays)="onLoadNextDays()"
     ></app-calendar-week-view>
 
   </div>
@@ -139,11 +140,22 @@
   (bikeAccepted)="onBikeAccepted()"
 ></app-accept-bike-modal>
 
+<!-- Modal gotowości do odbioru -->
+<app-mark-ready-modal
+  *ngIf="showMarkReadyModal && markReadyOrder && selectedServiceId"
+  [serviceId]="selectedServiceId"
+  [order]="markReadyOrder"
+  [siblingOrders]="markReadySiblings"
+  (close)="onMarkReadyClose()"
+  (completed)="onMarkReadyCompleted($event)"
+></app-mark-ready-modal>
+
 <!-- Modal ustawień kalendarza -->
 <app-calendar-settings-modal
   *ngIf="showSettingsModal && selectedServiceId && calendarConfig"
   [serviceId]="selectedServiceId"
   [config]="calendarConfig"
+  [transportAvailable]="transportAvailable"
   (close)="showSettingsModal = false"
   (configUpdated)="onSettingsUpdated($event)"
 ></app-calendar-settings-modal>

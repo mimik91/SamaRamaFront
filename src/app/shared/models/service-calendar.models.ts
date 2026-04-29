@@ -58,6 +58,7 @@ export type CalendarOrderStatus =
   | 'REJECTED'
   | 'CANCELLED'
   | 'WAITING_FOR_BIKE'
+  | 'IN_QUEUE'
   | 'IN_PROGRESS'
   | 'WAITING_FOR_PARTS'
   | 'AWAITING_CLIENT_DECISION'
@@ -101,6 +102,12 @@ export const CALENDAR_ORDER_STATUSES: OrderStatusConfig[] = [
     i18nKey: 'service_calendar.statuses.waiting_for_bike',
     cssVar: '--color-blue-200',
     fallbackColor: '#bfdbfe'
+  },
+  {
+    value: 'IN_QUEUE',
+    i18nKey: 'service_calendar.statuses.in_queue',
+    cssVar: '--color-teal-400',
+    fallbackColor: '#4DD0E1'
   },
   {
     value: 'IN_PROGRESS',
@@ -159,8 +166,9 @@ export const STATUS_TRANSITIONS: Record<CalendarOrderStatus, CalendarOrderStatus
   'PENDING_CONFIRMATION': ['CONFIRMED', 'WAITING_FOR_BIKE', 'REJECTED', 'CANCELLED'],
   'AWAITING_CLIENT_DATE_CONFIRMATION': ['CONFIRMED', 'REJECTED', 'CANCELLED'],
   'CONFIRMED': ['WAITING_FOR_BIKE', 'CANCELLED'],
-  'WAITING_FOR_BIKE': ['CANCELLED'],
-  'IN_PROGRESS': ['WAITING_FOR_PARTS', 'AWAITING_CLIENT_DECISION', 'READY_FOR_PICKUP', 'CANCELLED'],
+  'WAITING_FOR_BIKE': ['IN_QUEUE', 'CANCELLED'],
+  'IN_QUEUE': ['IN_PROGRESS', 'CANCELLED'],
+  'IN_PROGRESS': ['IN_QUEUE', 'WAITING_FOR_PARTS', 'AWAITING_CLIENT_DECISION', 'READY_FOR_PICKUP', 'CANCELLED'],
   'WAITING_FOR_PARTS': ['IN_PROGRESS', 'AWAITING_CLIENT_DECISION', 'READY_FOR_PICKUP', 'CANCELLED'],
   'AWAITING_CLIENT_DECISION': ['IN_PROGRESS', 'WAITING_FOR_PARTS', 'READY_FOR_PICKUP', 'CANCELLED'],
   'READY_FOR_PICKUP': ['COMPLETED', 'IN_PROGRESS'],
@@ -215,15 +223,16 @@ export function getStatusI18nKey(status: CalendarOrderStatus): string {
 const STATUS_DISPLAY_PRIORITY: Record<CalendarOrderStatus, number> = {
   'PENDING_CONFIRMATION':             0,
   'IN_PROGRESS':                      1,
-  'WAITING_FOR_PARTS':                2,
-  'AWAITING_CLIENT_DECISION':         3,
-  'READY_FOR_PICKUP':                 4,
-  'WAITING_FOR_BIKE':                 5,
-  'CONFIRMED':                        6,
-  'AWAITING_CLIENT_DATE_CONFIRMATION':7,
-  'COMPLETED':                        8,
-  'REJECTED':                         9,
-  'CANCELLED':                        10,
+  'IN_QUEUE':                         2,
+  'WAITING_FOR_PARTS':                3,
+  'AWAITING_CLIENT_DECISION':         4,
+  'READY_FOR_PICKUP':                 5,
+  'WAITING_FOR_BIKE':                 6,
+  'CONFIRMED':                        7,
+  'AWAITING_CLIENT_DATE_CONFIRMATION':8,
+  'COMPLETED':                        9,
+  'REJECTED':                         10,
+  'CANCELLED':                        11,
 };
 
 function timeToMinutes(time: string | undefined): number {
@@ -360,7 +369,18 @@ export interface ClientBike {
 }
 
 /**
- * DTO do tworzenia zlecenia - plaska struktura zgodna z backendem
+ * Dane jednego roweru w zleceniu
+ */
+export interface BikeInOrderDto {
+  existingBicycleId?: number;
+  brand?: string;
+  model?: string;
+  type?: string;
+  frameNumber?: string;
+}
+
+/**
+ * DTO do tworzenia zlecenia - endpoint przyjmuje listę rowerów
  */
 export interface CreateCalendarOrderDto {
   // Dane klienta - istniejący (zarejestrowany lub z historii)
@@ -372,14 +392,8 @@ export interface CreateCalendarOrderDto {
   firstName?: string;
   lastName?: string;
 
-  // Dane roweru - istniejący
-  existingBicycleId?: number;
-
-  // Dane roweru - nowy
-  brand?: string;
-  model?: string;
-  type?: string;
-  frameNumber?: string;
+  // Lista rowerów
+  bicycles: BikeInOrderDto[];
 
   // Dane zlecenia
   plannedDate: string; // YYYY-MM-DD
@@ -412,6 +426,20 @@ export interface UpdateCalendarOrderDto {
   lastName?: string;
   email?: string;
   phone?: string;
+}
+
+export function getOrderClientKey(order: CalendarOrder): string {
+  return order.clientEmail || order.clientPhone || order.clientName || String(order.id);
+}
+
+
+export interface ServiceNotificationConfig {
+  emailTextPickup?: string;
+  smsTextPickup?: string;
+  contentTemplatesPickup?: Record<string, string>;
+  emailTextReturn?: string;
+  smsTextReturn?: string;
+  contentTemplatesReturn?: Record<string, string>;
 }
 
 // ============================================

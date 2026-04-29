@@ -1,42 +1,149 @@
-<div class="week-view">
-  <div class="week-grid">
+<!-- Mobile: pionowy infinite scroll -->
+<ng-container *ngIf="isMobile; else desktopView">
+  <!-- Fixed bar — pojawia się gdy header zjechał z ekranu -->
+  <div class="mobile-fixed-bar" [class.mobile-fixed-bar--visible]="showStickyBar">
+    <button class="sticky-btn sticky-btn-today" (click)="scrollToToday()">Dzisiaj</button>
+    <button class="sticky-btn sticky-btn-top" (click)="scrollToTop()">↑ Nagłówek</button>
+  </div>
+
+  <div class="mobile-view">
+    <!-- Sentinel: gdy zjechał z ekranu → pokaż fixed bar -->
+    <div #headerSentinel class="header-sentinel"></div>
+
+    <!-- Załaduj poprzedni tydzień -->
+    <button class="btn-load-prev" (click)="loadPreviousDays.emit()">
+      ↑ Wcześniejszy tydzień
+    </button>
+
+    <!-- Lista dni -->
     <div
-      class="day-column"
-      *ngFor="let day of days"
-      [class.today]="isDayToday(day)"
-      [class.selected]="isDaySelected(day)"
+      *ngFor="let day of mobileDays"
+      [id]="'day-' + day.date"
+      class="mobile-day-section"
+      [class.mobile-today]="isDayToday(day)"
     >
-      <!-- Day header -->
-      <div class="day-header" (click)="onDayClick(day)">
-        <span class="day-name">{{ getDayName(day) }}</span>
-        <span class="day-number" [class.today]="isDayToday(day)">{{ getDayNumber(day) }}</span>
+      <!-- Belka dnia -->
+      <div class="mobile-day-header" [class.mobile-day-header-today]="isDayToday(day)">
+        <div class="mobile-day-label">
+          <span class="mobile-day-name">{{ getDayName(day) }}</span>
+          <span class="mobile-day-date">{{ getMobileDayDate(day) }}</span>
+        </div>
+        <div class="mobile-day-capacity" [class]="'cap-' + getCapacityClass(day)">
+          {{ day.bikesCount }}/{{ day.maxBikesPerDay }}
+        </div>
       </div>
 
-      <!-- Capacity indicator -->
-      <div class="day-capacity" [class]="getCapacityClass(day)">
-        <span class="capacity-count">{{ day.bikesCount }}</span>
-        <span class="capacity-separator">/</span>
-        <span class="capacity-max">{{ day.maxBikesPerDay }}</span>
-      </div>
-
-      <!-- Orders list -->
-      <div class="day-orders">
+      <!-- Zlecenia -->
+      <div class="mobile-day-orders">
         <app-order-bar
           *ngFor="let order of day.orders"
           [order]="order"
-          [compact]="true"
+          [compact]="false"
           [showTechnician]="calendarMode === 'ADVANCED'"
           (orderClick)="onOrderClick($event)"
           (acceptBike)="acceptBike.emit($event)"
+          (startProgress)="startProgress.emit($event)"
           (markReadyForPickup)="markReadyForPickup.emit($event)"
           (markCompleted)="markCompleted.emit($event)"
           (backToProgress)="backToProgress.emit($event)"
         ></app-order-bar>
 
-        <div class="day-empty" *ngIf="day.orders.length === 0">
-          <span class="empty-icon">+</span>
+        <div class="mobile-day-empty" *ngIf="day.orders.length === 0">
+          Brak zleceń
+        </div>
+      </div>
+    </div>
+
+    <!-- Sentinel — ładuje następny tydzień gdy widoczny w viewport -->
+    <div class="scroll-sentinel" #sentinel></div>
+
+  </div>
+</ng-container>
+
+<!-- Desktop: siatka tygodniowa -->
+<ng-template #desktopView>
+  <div class="week-view">
+    <div class="week-grid">
+      <div
+        class="day-column"
+        *ngFor="let day of days"
+        [class.today]="isDayToday(day)"
+        [class.selected]="isDaySelected(day)"
+      >
+        <div class="day-header" (click)="onDayClick(day)">
+          <span class="day-name">{{ getDayName(day) }}</span>
+          <span class="day-number" [class.today]="isDayToday(day)">{{ getDayNumber(day) }}</span>
+        </div>
+
+        <div class="day-capacity" [class]="getCapacityClass(day)">
+          <span class="capacity-count">{{ day.bikesCount }}</span>
+          <span class="capacity-separator">/</span>
+          <span class="capacity-max">{{ day.maxBikesPerDay }}</span>
+        </div>
+
+        <div class="day-orders">
+          <ng-container *ngFor="let item of getDisplayItems(day)">
+
+            <!-- Pojedyncze zlecenie -->
+            <app-order-bar
+              *ngIf="item.type === 'single'"
+              [order]="item.order!"
+              [compact]="true"
+              [showTechnician]="calendarMode === 'ADVANCED'"
+              (orderClick)="onOrderClick($event)"
+              (acceptBike)="acceptBike.emit($event)"
+              (startProgress)="startProgress.emit($event)"
+              (markReadyForPickup)="markReadyForPickup.emit($event)"
+              (markCompleted)="markCompleted.emit($event)"
+              (backToProgress)="backToProgress.emit($event)"
+            ></app-order-bar>
+
+            <!-- Zgrupowane zlecenia (3+) -->
+            <ng-container *ngIf="item.type === 'group'">
+              <!-- Zwinięty -->
+              <div
+                *ngIf="!isGroupExpanded(item.key!)"
+                class="order-group-collapsed"
+                (click)="toggleGroup(item.key!)"
+              >
+                <div class="order-group-info">
+                  <span class="order-group-client">{{ item.clientName }}</span>
+                  <span class="order-group-count">{{ groupBikesLabel(item.orders!.length) }}</span>
+                  <span class="order-group-brands">{{ groupBrandsSummary(item.orders!) }}</span>
+                </div>
+                <span class="order-group-chevron">▼</span>
+              </div>
+
+              <!-- Rozwinięty -->
+              <div *ngIf="isGroupExpanded(item.key!)" class="order-group-expanded">
+                <div class="order-group-header" (click)="toggleGroup(item.key!)">
+                  <span>{{ item.clientName }} · {{ groupBikesLabel(item.orders!.length) }}</span>
+                  <span class="order-group-chevron">▲</span>
+                </div>
+                <div class="order-group-body">
+                  <app-order-bar
+                    *ngFor="let order of item.orders"
+                    [order]="order"
+                    [compact]="true"
+                    [showTechnician]="calendarMode === 'ADVANCED'"
+                    (orderClick)="onOrderClick($event)"
+                    (acceptBike)="acceptBike.emit($event)"
+                    (startProgress)="startProgress.emit($event)"
+                    (markReadyForPickup)="markReadyForPickup.emit($event)"
+                    (markCompleted)="markCompleted.emit($event)"
+                    (backToProgress)="backToProgress.emit($event)"
+                  ></app-order-bar>
+                </div>
+              </div>
+            </ng-container>
+
+          </ng-container>
+
+          <div class="day-empty" *ngIf="day.orders.length === 0">
+            <span class="empty-icon">+</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</ng-template>

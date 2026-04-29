@@ -108,7 +108,10 @@ export const environment = {
       returnTransport: '/service-calendar/orders/:id/return-transport',
       transportAddress: '/service-calendar/orders/:id/transport-address',
       proposeDate: '/service-calendar/orders/:id/propose-date',
-      bikes: '/service-calendar/bikes'
+      bikes: '/service-calendar/bikes',
+      notificationConfig: '/service-calendar/notification-config',
+      notificationKeys: '/service-calendar/orders/notification-keys',
+      sendNotification: '/service-calendar/orders/send-notification'
     },
 
     // Service Order Images (separate controller)

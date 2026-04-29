@@ -17,8 +17,11 @@ import {
   OrderImage,
   ClientLookupResult,
   ClientBike,
-  sortOrdersByStatus
+  sortOrdersByStatus,
+  ServiceNotificationConfig
 } from '../../../shared/models/service-calendar.models';
+
+export type { ServiceNotificationConfig };
 
 // ============================================
 // INTERFEJSY DLA ZDJEC ZLECENIA
@@ -73,6 +76,7 @@ export interface BicycleUpdateDto {
   type?: string;
   frameMaterial?: string;
 }
+
 
 @Injectable({
   providedIn: 'root'
@@ -364,6 +368,48 @@ export class ServiceCalendarService {
     const url = this.endpoints.clientBikes.replace(':clientId', clientId.toString());
     return this.http.get<ClientBike[]>(`${this.apiUrl}${url}`)
       .pipe(catchError(this.handleError('getClientBikes')));
+  }
+
+  // ============================================
+  // POWIADOMIENIA GOTOWOŚCI
+  // ============================================
+
+  getNotificationKeys(serviceId: number, orderIds: number[]): Observable<{ keys: string[] }> {
+    let params = new HttpParams().set('serviceId', serviceId.toString());
+    for (const id of orderIds) {
+      params = params.append('orderIds', id.toString());
+    }
+    return this.http.get<{ keys: string[] }>(`${this.apiUrl}${this.endpoints.notificationKeys}`, { params })
+      .pipe(catchError(this.handleError('getNotificationKeys')));
+  }
+
+  sendReadyNotification(
+    serviceId: number,
+    orderIds: number[],
+    contentValues: Record<string, string | null>
+  ): Observable<unknown> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.post<unknown>(
+      `${this.apiUrl}${this.endpoints.sendNotification}`,
+      { orderIds, contentValues },
+      { params }
+    ).pipe(catchError(this.handleError('sendReadyNotification')));
+  }
+
+  // ============================================
+  // KONFIGURACJA POWIADOMIEŃ
+  // ============================================
+
+  getNotificationConfig(serviceId: number): Observable<ServiceNotificationConfig> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.get<ServiceNotificationConfig>(`${this.apiUrl}${this.endpoints.notificationConfig}`, { params })
+      .pipe(catchError(this.handleError('getNotificationConfig')));
+  }
+
+  updateNotificationConfig(serviceId: number, data: ServiceNotificationConfig): Observable<ServiceNotificationConfig> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.put<ServiceNotificationConfig>(`${this.apiUrl}${this.endpoints.notificationConfig}`, data, { params })
+      .pipe(catchError(this.handleError('updateNotificationConfig')));
   }
 
   // ============================================

@@ -3,7 +3,7 @@
 .services-list-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   min-height: 0;
   background-color: var(--color-white-alt);
   overflow: hidden;
@@ -35,7 +35,6 @@
 
 .services-list {
   flex: 1;
-  height: 100%;
   min-height: 0;
   padding: 0;
   background-color: var(--color-white-alt);
@@ -43,7 +42,7 @@
 
 /* Virtual scroll viewport styling */
 cdk-virtual-scroll-viewport {
-  height: 100%;
+  flex: 1;
   width: 100%;
   min-height: 0;
 }

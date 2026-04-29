@@ -50,6 +50,7 @@
       "rejected": "Odrzucone",
       "cancelled": "Anulowane",
       "waiting_for_bike": "Oczekuje na rower",
+      "in_queue": "W kolejce",
       "in_progress": "W trakcie",
       "waiting_for_parts": "Oczekuje na części",
       "awaiting_client_decision": "Oczekuje na decyzję klienta",
@@ -180,8 +181,10 @@
       "order_cancelled": "Zlecenie zostało anulowane",
       "order_confirmed": "Zlecenie zostało potwierdzone",
       "bike_accepted": "Rower został przyjęty do serwisu",
+      "work_started": "Prace nad zleceniem zostały rozpoczęte",
       "ready_for_pickup": "Zlecenie oznaczone jako gotowe do odbioru",
-      "order_completed": "Zlecenie zostało zakończone"
+      "order_completed": "Zlecenie zostało zakończone",
+      "settings_saved": "Ustawienia kalendarza zostały zapisane."
     },
     "months": {
       "january": "Styczeń",

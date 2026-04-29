@@ -27,6 +27,7 @@ export class CalendarDayViewComponent {
   @Output() cancelOrder = new EventEmitter<CalendarOrder>();
   @Output() confirmOrder = new EventEmitter<CalendarOrder>();
   @Output() acceptBike = new EventEmitter<CalendarOrder>();
+  @Output() startProgress = new EventEmitter<CalendarOrder>();
   @Output() markReadyForPickup = new EventEmitter<CalendarOrder>();
   @Output() markCompleted = new EventEmitter<CalendarOrder>();
   @Output() backToProgress = new EventEmitter<CalendarOrder>();
@@ -81,6 +82,10 @@ export class CalendarDayViewComponent {
 
   onAcceptBike(order: CalendarOrder): void {
     this.acceptBike.emit(order);
+  }
+
+  onStartProgress(order: CalendarOrder): void {
+    this.startProgress.emit(order);
   }
 
   onMarkReadyForPickup(order: CalendarOrder): void {

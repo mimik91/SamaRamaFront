@@ -24,6 +24,7 @@ export class OrderBarComponent {
 
   @Output() orderClick = new EventEmitter<CalendarOrder>();
   @Output() acceptBike = new EventEmitter<CalendarOrder>();
+  @Output() startProgress = new EventEmitter<CalendarOrder>();
   @Output() markReadyForPickup = new EventEmitter<CalendarOrder>();
   @Output() markCompleted = new EventEmitter<CalendarOrder>();
   @Output() backToProgress = new EventEmitter<CalendarOrder>();
@@ -42,6 +43,9 @@ export class OrderBarComponent {
     }
     if (s === 'WAITING_FOR_BIKE' || s === 'CONFIRMED') {
       return 'var(--color-info)';
+    }
+    if (s === 'IN_QUEUE') {
+      return 'var(--color-teal-400, #4DD0E1)';
     }
     if (s === 'IN_PROGRESS' || s === 'READY_FOR_PICKUP') {
       return 'var(--color-accent)';
@@ -77,10 +81,11 @@ export class OrderBarComponent {
   }
 
   /** Przycisk w prawym dolnym rogu */
-  get actionButton(): 'respond' | 'acceptBike' | 'readyForPickup' | 'markCompleted' | 'backToProgress' | null {
+  get actionButton(): 'respond' | 'acceptBike' | 'startProgress' | 'readyForPickup' | 'markCompleted' | 'backToProgress' | null {
     const s = this.order.status;
     if (s === 'PENDING_CONFIRMATION') return 'respond';
     if (s === 'CONFIRMED' || s === 'WAITING_FOR_BIKE') return 'acceptBike';
+    if (s === 'IN_QUEUE') return 'startProgress';
     if (s === 'IN_PROGRESS') return 'readyForPickup';
     if (s === 'READY_FOR_PICKUP') return 'markCompleted';
     if (s === 'WAITING_FOR_PARTS' || s === 'AWAITING_CLIENT_DECISION') return 'backToProgress';
@@ -91,7 +96,8 @@ export class OrderBarComponent {
   get actionButtonColor(): string {
     const btn = this.actionButton;
     if (btn === 'respond') return 'var(--color-accent-orange)';
-    if (btn === 'acceptBike') return 'var(--status-in-progress)';    // → IN_PROGRESS
+    if (btn === 'acceptBike') return 'var(--status-in-progress)';    // → IN_QUEUE
+    if (btn === 'startProgress') return 'var(--color-primary)';      // → IN_PROGRESS
     if (btn === 'readyForPickup') return 'var(--status-ready)';      // → READY_FOR_PICKUP
     if (btn === 'markCompleted') return 'var(--status-completed)';   // → COMPLETED
     if (btn === 'backToProgress') return 'var(--status-confirmed)';  // → IN_PROGRESS (niebieski)
@@ -102,6 +108,7 @@ export class OrderBarComponent {
     const btn = this.actionButton;
     if (btn === 'respond') return 'ODPOWIEDZ';
     if (btn === 'acceptBike') return 'PRZYJMIJ';
+    if (btn === 'startProgress') return 'ZACZNIJ';
     if (btn === 'readyForPickup') return 'GOTOWY';
     if (btn === 'markCompleted') return 'ODEBRANY';
     if (btn === 'backToProgress') return 'WZNÓW';
@@ -118,6 +125,7 @@ export class OrderBarComponent {
     const btn = this.actionButton;
     if (btn === 'respond') this.orderClick.emit(this.order);
     else if (btn === 'acceptBike') this.acceptBike.emit(this.order);
+    else if (btn === 'startProgress') this.startProgress.emit(this.order);
     else if (btn === 'readyForPickup') this.markReadyForPickup.emit(this.order);
     else if (btn === 'markCompleted') this.markCompleted.emit(this.order);
     else if (btn === 'backToProgress') this.backToProgress.emit(this.order);

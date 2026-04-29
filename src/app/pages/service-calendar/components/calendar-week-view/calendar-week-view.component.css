@@ -143,6 +143,264 @@
 }
 
 /* ============================================
+   MOBILE INFINITE SCROLL VIEW
+   ============================================ */
+
+.mobile-view {
+  padding: 0 0 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.header-sentinel {
+  height: 1px;
+}
+
+.mobile-fixed-bar {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--color-white);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-110%);
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+
+.mobile-fixed-bar--visible {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.sticky-btn {
+  flex: 1;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-btn);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.sticky-btn-today {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.sticky-btn-today:hover {
+  background: var(--color-primary-dark);
+}
+
+.sticky-btn-top {
+  background: var(--color-slate-100, #f1f5f9);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.sticky-btn-top:hover {
+  background: var(--color-slate-200, #e2e8f0);
+  color: var(--text-primary);
+}
+
+.btn-load-prev {
+  margin: var(--spacing-3) var(--spacing-3) var(--spacing-2);
+}
+
+.btn-load-prev {
+  width: calc(100% - var(--spacing-6));
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--color-white);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-load-prev:hover {
+  background: var(--color-primary-alpha-08);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.mobile-day-section {
+  margin: 0 var(--spacing-3) var(--spacing-4);
+}
+
+.mobile-day-section.mobile-today .mobile-day-header {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.mobile-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--color-slate-700, #334155);
+  color: var(--color-white);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mobile-day-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobile-day-name {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.mobile-day-date {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+}
+
+.mobile-day-capacity {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.mobile-day-capacity.cap-full { background: rgba(231, 76, 60, 0.4); }
+.mobile-day-capacity.cap-high { background: rgba(230, 126, 34, 0.35); }
+.mobile-day-capacity.cap-medium { background: rgba(241, 196, 15, 0.3); }
+.mobile-day-capacity.cap-low { background: rgba(39, 174, 96, 0.3); }
+
+.mobile-day-orders {
+  background: var(--color-white);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  padding: var(--spacing-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.mobile-day-empty {
+  padding: var(--spacing-3);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   GRUPOWANIE ZLECEŃ
+   ============================================ */
+
+.order-group-collapsed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  background: var(--color-primary-alpha-08);
+  border: 1px solid var(--color-primary-alpha-20);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.order-group-collapsed:hover {
+  background: var(--color-primary-alpha-15);
+}
+
+.order-group-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.order-group-client {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-group-count {
+  font-size: 10px;
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.order-group-brands {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-group-chevron {
+  font-size: 9px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.order-group-expanded {
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.order-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px var(--spacing-2);
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.order-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1);
+  background: var(--color-primary-alpha-08);
+}
+
+.order-group-header .order-group-chevron {
+  color: var(--color-white);
+}
+
+.scroll-sentinel {
+  height: 1px;
+  width: 100%;
+}
+
+/* ============================================
    RESPONSIVE - Mobile First
    ============================================ */
 

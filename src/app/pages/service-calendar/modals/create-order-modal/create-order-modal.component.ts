@@ -9,6 +9,7 @@ import { EnumerationService } from '../../../../core/enumeration.service';
 import { ServiceCalendarService } from '../../services/service-calendar.service';
 import {
   CreateCalendarOrderDto,
+  BikeInOrderDto,
   CalendarMode,
   Technician,
   ClientLookupResult,
@@ -16,6 +17,14 @@ import {
 } from '../../../../shared/models/service-calendar.models';
 
 export type CreateOrderMode = 'reservation' | 'acceptBike';
+
+interface BikeEntry {
+  existingBikeId: number | null;
+  brand: string;
+  model: string;
+  filteredBrands: string[];
+  showDropdown: boolean;
+}
 
 @Component({
   selector: 'app-create-order-modal',
@@ -40,15 +49,16 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
   @Output() orderCreated = new EventEmitter<void>();
 
-  // Form data
+  // Dane klienta
   customerEmail: string = '';
   customerPhone: string = '';
   customerFirstName: string = '';
   customerLastName: string = '';
 
-  bikeBrand: string = '';
-  bikeModel: string = '';
+  // Tablica rowerów
+  bikes: BikeEntry[] = [this.createEmptyBike()];
 
+  // Dane zlecenia
   orderDate: string = '';
   orderTime: string = '00:00';
   orderNotes: string = '';
@@ -60,26 +70,26 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
   set orderHour(h: string) { this.orderTime = `${h}:${this.orderMinute}`; }
   get orderMinute(): string { return this.orderTime.split(':')[1] ?? '00'; }
   set orderMinute(m: string) { this.orderTime = `${this.orderHour}:${m}`; }
+
   selectedTechnicianId: number | null = null;
 
-  // State
   isSubmitting: boolean = false;
 
-  // Brand autocomplete
   allBrands: string[] = [];
-  filteredBrands: string[] = [];
-  showBrandDropdown: boolean = false;
   loadingBrands: boolean = false;
 
-  // Client lookup
   foundClient: ClientLookupResult | null = null;
   clientBikes: ClientBike[] = [];
   isLookingUpClient: boolean = false;
-  selectedBikeId: number | null = null;
+
   private destroy$ = new Subject<void>();
 
   t(key: string, params?: Record<string, any>): string {
     return this.i18nService.translate(key, params);
+  }
+
+  private createEmptyBike(): BikeEntry {
+    return { existingBikeId: null, brand: '', model: '', filteredBrands: [], showDropdown: false };
   }
 
   ngOnInit(): void {
@@ -94,7 +104,6 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
       this.orderDate = todayFormatted;
     }
 
-    // Load brands for autocomplete
     this.loadBrands();
   }
 
@@ -104,57 +113,60 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
   }
 
   // ============================================
-  // BRAND AUTOCOMPLETE
+  // ZARZĄDZANIE TABLICĄ ROWERÓW
+  // ============================================
+
+  addBike(): void {
+    this.bikes.push(this.createEmptyBike());
+  }
+
+  removeBike(i: number): void {
+    this.bikes.splice(i, 1);
+  }
+
+  // ============================================
+  // BRAND AUTOCOMPLETE (indeksowane)
   // ============================================
 
   private loadBrands(): void {
     this.loadingBrands = true;
     this.enumerationService.getEnumeration('BRAND').subscribe({
-      next: (brands) => {
-        this.allBrands = brands;
-        this.loadingBrands = false;
-      },
-      error: (err) => {
-        console.error('Error loading brands:', err);
-        this.loadingBrands = false;
-      }
+      next: (brands) => { this.allBrands = brands; this.loadingBrands = false; },
+      error: (err) => { console.error('Error loading brands:', err); this.loadingBrands = false; }
     });
   }
 
-  onBrandInput(event: Event): void {
+  onBrandInput(event: Event, i: number): void {
     const query = (event.target as HTMLInputElement).value;
-    this.bikeBrand = query;
-
+    this.bikes[i].brand = query;
     if (query.length >= 3) {
-      this.filteredBrands = this.allBrands.filter(brand =>
-        brand.toLowerCase().includes(query.toLowerCase())
-      );
-      this.showBrandDropdown = this.filteredBrands.length > 0;
+      this.bikes[i].filteredBrands = this.allBrands.filter(b => b.toLowerCase().includes(query.toLowerCase()));
+      this.bikes[i].showDropdown = this.bikes[i].filteredBrands.length > 0;
     } else {
-      this.showBrandDropdown = false;
+      this.bikes[i].showDropdown = false;
     }
   }
 
-  onBrandFocus(): void {
-    if (this.bikeBrand.length >= 3 && this.filteredBrands.length > 0) {
-      this.showBrandDropdown = true;
+  onBrandFocus(i: number): void {
+    if (this.bikes[i].brand.length >= 3 && this.bikes[i].filteredBrands.length > 0) {
+      this.bikes[i].showDropdown = true;
     }
   }
 
-  selectBrand(brand: string): void {
-    this.bikeBrand = brand;
-    this.showBrandDropdown = false;
+  selectBrand(brand: string, i: number): void {
+    this.bikes[i].brand = brand;
+    this.bikes[i].showDropdown = false;
   }
 
-  expandAllBrands(): void {
-    this.filteredBrands = [...this.allBrands];
-    this.showBrandDropdown = true;
+  expandAllBrands(i: number): void {
+    this.bikes[i].filteredBrands = [...this.allBrands];
+    this.bikes[i].showDropdown = true;
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.showBrandDropdown = false;
+      this.bikes.forEach(b => b.showDropdown = false);
     }
   }
 
@@ -163,20 +175,16 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
   // ============================================
 
   onEmailBlur(): void {
-    if (!this.customerEmail) {
-      this.resetClientLookup();
-      return;
-    }
+    if (this.foundClient || this.isLookingUpClient) return;
+    if (!this.customerEmail) { this.resetClientLookup(); return; }
     if (this.customerEmail.length >= 5 && this.customerEmail.includes('@') && this.customerEmail.includes('.')) {
       this.performClientLookup(this.customerEmail, undefined);
     }
   }
 
   onPhoneBlur(): void {
-    if (!this.customerPhone) {
-      this.resetClientLookup();
-      return;
-    }
+    if (this.foundClient || this.isLookingUpClient) return;
+    if (!this.customerPhone) { this.resetClientLookup(); return; }
     const digits = this.customerPhone.replace(/\D/g, '');
     if (digits.length >= 9) {
       this.performClientLookup(undefined, this.customerPhone);
@@ -210,25 +218,23 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  onBikeSelected(bikeId: number | null): void {
+  onBikeSelected(bikeId: number | null, i: number): void {
     if (bikeId === null) {
-      this.bikeBrand = '';
-      this.bikeModel = '';
+      this.bikes[i].brand = '';
+      this.bikes[i].model = '';
       return;
     }
     const bike = this.clientBikes.find(b => b.id === bikeId);
     if (bike) {
-      this.bikeBrand = bike.brand;
-      this.bikeModel = bike.model;
+      this.bikes[i].brand = bike.brand;
+      this.bikes[i].model = bike.model;
     }
   }
 
   resetClientLookup(): void {
     this.foundClient = null;
     this.clientBikes = [];
-    this.selectedBikeId = null;
-    this.bikeBrand = '';
-    this.bikeModel = '';
+    this.bikes = [this.createEmptyBike()];
   }
 
   // ============================================
@@ -243,22 +249,18 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
   }
 
   onOverlayClick(event: Event): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.onClose();
-    }
+    if ((event.target as HTMLElement).classList.contains('modal-overlay')) this.onClose();
   }
 
-  onClose(): void {
-    this.close.emit();
-  }
+  onClose(): void { this.close.emit(); }
 
   get isFormValid(): boolean {
     const hasClient = !!(
       this.foundClient ||
       (this.customerFirstName.trim() && (this.customerEmail.trim() || this.customerPhone.trim()))
     );
-    const hasBike = !!(this.selectedBikeId || this.bikeBrand.trim());
-    return !!(hasClient && hasBike && this.orderDate);
+    const allBikesValid = this.bikes.every(bike => bike.existingBikeId !== null || bike.brand.trim());
+    return !!(hasClient && allBikesValid && this.orderDate);
   }
 
   onSubmit(): void {
@@ -266,8 +268,16 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
 
     this.isSubmitting = true;
 
+    const bicycles: BikeInOrderDto[] = this.bikes.map(bike =>
+      bike.existingBikeId !== null
+        ? { existingBicycleId: bike.existingBikeId }
+        : {
+            brand: bike.brand.trim(),
+            model: bike.model.trim() || undefined
+          }
+    );
+
     const orderData: CreateCalendarOrderDto = {
-      // Dane klienta
       ...(this.foundClient
         ? { clientId: this.foundClient.id }
         : {
@@ -277,14 +287,7 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
             lastName: this.customerLastName.trim() || undefined
           }
       ),
-      // Dane roweru
-      ...(this.selectedBikeId
-        ? { existingBicycleId: this.selectedBikeId }
-        : {
-            brand: this.bikeBrand.trim(),
-            model: this.bikeModel.trim() || undefined
-          }
-      ),
+      bicycles,
       plannedDate: this.orderDate,
       plannedTime: this.orderTime && this.orderTime !== '00:00' ? this.orderTime : undefined,
       description: this.orderNotes.trim() || undefined,

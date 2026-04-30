@@ -59,7 +59,12 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     'assets/images/opinie/opinia 3.webp',
     'assets/images/opinie/opinia 4.webp',
     'assets/images/opinie/opinia 5.webp',
-    'assets/images/opinie/opinia 6.webp'
+    'assets/images/opinie/opinia 6.webp',
+    'assets/images/opinie/opinia 7.webp',
+    'assets/images/opinie/opinia 8.webp',
+    'assets/images/opinie/opinia 9.webp',
+    'assets/images/opinie/opinia 10.webp',
+    'assets/images/opinie/opinia 11.webp'
   ];
 
   // Zmienna na bezpieczny JSON-LD

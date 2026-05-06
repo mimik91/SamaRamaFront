@@ -242,7 +242,7 @@
               class="form-textarea"
               rows="3"
               [class.invalid]="isBikeFieldInvalid(i, 'additionalInfo')"
-              placeholder="Opisz problem z rowerem lub dodaj uwagi dla serwisu..."
+              placeholder="np. Przegląd wiosenny / Skrzypiące hamulce – przednie / Nie wchodzi bieg 3 i 4 / Przebita dętka – tylne koło"
             ></textarea>
             <span *ngIf="isBikeFieldInvalid(i, 'additionalInfo')" class="field-error">Opis problemu / zlecone usługi jest wymagany</span>
           </div>
@@ -300,6 +300,9 @@
                 <span class="delivery-card-desc">Odbierzemy rower spod Twojej pracy 10:00 – 16:00</span>
               </div>
             </div>
+          </div>
+          <div *ngIf="weekendTransportError" class="availability-error weekend-transport-error">
+            {{ weekendTransportError }}
           </div>
           <p class="transport-toggle-hint">
             {{ isOfficePick ? 'Transport odbędzie się w dniu serwisu (10:00–16:00)' : 'Transport zostanie zarezerwowany na dzień przed serwisem' }}

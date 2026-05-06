@@ -92,7 +92,9 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     if (!date) return false;
     const dateStr = this.dateToStr(date);
     if (this.reservationSettings?.fullyBookedDates?.includes(dateStr)) return false;
-    const dayKey = DAY_KEYS[date.getDay()];
+    const day = date.getDay();
+    if (this.withTransport && (day === 0 || day === 6)) return false;
+    const dayKey = DAY_KEYS[day];
     const accepted = this.reservationSettings?.acceptedDays;
     if (accepted && accepted.length > 0) return accepted.includes(dayKey);
     return true;
@@ -109,6 +111,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   availableSlotsForDate: number | null = null;
   checkingAvailability = false;
   availabilityError: string | null = null;
+  weekendTransportError: string | null = null;
 
   // Discount coupon (transport)
   couponControl = new FormControl('');
@@ -375,6 +378,18 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   }
 
   setDeliveryType(type: DeliveryType): void {
+    if (type !== 'SELF') {
+      const planned = this.reservationForm.get('plannedDate')?.value;
+      if (planned) {
+        const date = planned instanceof Date ? planned : new Date(planned + 'T00:00:00');
+        const day = date.getDay();
+        if (day === 0 || day === 6) {
+          this.weekendTransportError = 'Transport możliwy tylko do rezerwacji od poniedziałku do piątku.';
+          return;
+        }
+      }
+    }
+    this.weekendTransportError = null;
     this.reservationForm.get('deliveryType')?.setValue(type);
     // Reset office selection and clear address when switching type
     this.selectedOffice = null;
@@ -415,7 +430,11 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       this.availabilityError = null;
       if (val) {
         const date = val instanceof Date ? val : new Date(val + 'T00:00:00');
-        if (!isNaN(date.getTime())) this.checkDateAvailability(date);
+        if (!isNaN(date.getTime())) {
+          const day = date.getDay();
+          if (day !== 0 && day !== 6) this.weekendTransportError = null;
+          this.checkDateAvailability(date);
+        }
       }
     });
 

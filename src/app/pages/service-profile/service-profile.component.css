@@ -137,6 +137,13 @@
   object-fit: contain;
 }
 
+.content-left h1 {
+  font-size: var(--font-size-3xl);
+  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+  margin-bottom: var(--spacing-6);
+}
+
 .content-left h2 {
   font-size: var(--font-size-4xl);
   color: var(--text-primary);
@@ -165,6 +172,96 @@
   height: auto;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-lg);
+}
+
+/* ===== FEATURE BLOCKS (transport / rezerwacja) ===== */
+
+.service-features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  margin: var(--spacing-4) 0;
+  align-self: stretch;
+  text-align: left;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-primary-alpha-08);
+  border-radius: var(--radius-card);
+  border-left: 3px solid var(--color-primary);
+}
+
+.feature-item svg {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  margin-top: 2px;
+}
+
+/* Override .content-left h3 (font-size: 3xl) — feature h3 są małe */
+.feature-text h3 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-1);
+}
+
+/* Override .content-left p — feature p bez max-width i pre-line */
+.feature-text p {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: none;
+  white-space: normal;
+}
+
+/* ===== CTA BUTTONS (w sekcji O nas) ===== */
+
+.service-cta {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--spacing-4);
+}
+
+.cta-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
+  border-radius: var(--radius-btn);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.btn-cta-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white);
+  border: none;
+  box-shadow: 0 2px 8px var(--color-primary-alpha-30);
+}
+
+.btn-cta-primary:hover {
+  box-shadow: 0 4px 16px var(--color-primary-alpha-40);
+  transform: translateY(-1px);
+}
+
+.btn-cta-secondary {
+  background: var(--color-white);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color-gray);
+}
+
+.btn-cta-secondary:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* ===== INFO BANNER & NOTE BANNER ===== */
@@ -665,12 +762,24 @@
 }
 
 @media (max-width: 768px) {
+  .content-left h1 {
+    font-size: var(--font-size-2xl);
+  }
+
   .content-left h2 {
     font-size: var(--font-size-3xl);
   }
 
   .content-left h3 {
     font-size: var(--font-size-2xl);
+  }
+
+  .service-cta {
+    flex-direction: column;
+  }
+
+  .cta-link {
+    width: 100%;
   }
 
   .service-logo {

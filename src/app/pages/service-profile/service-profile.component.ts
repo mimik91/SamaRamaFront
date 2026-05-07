@@ -207,8 +207,18 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
       description = `Sprawdź godziny otwarcia serwisu rowerowego ${serviceName} w ${city}. Zaplanuj wizytę w dogodnym dla Ciebie terminie.`;
       keywords.push('godziny otwarcia', `godziny otwarcia ${serviceName}`, 'kiedy otwarty');
     } else {
-      // Default "O nas" section
-      description += ` Sprawdź informacje o serwisie, dane kontaktowe i lokalizację.`;
+      // "O nas" — keyword-rich description zbudowana od zera (max ~155 znaków)
+      const parts: string[] = [`${serviceName} – serwis rowerowy ${city}.`];
+      if (this.publicInfo.transportAvailable) {
+        parts.push('Odbiór roweru z domu i dostawa po naprawie.');
+        keywords.push('odbiór roweru z domu', 'transport roweru', 'serwis rowerowy z dojazdem', 'serwis door to door');
+      }
+      if (this.publicInfo.reservationAvailable) {
+        parts.push('Rezerwacja wizyty online.');
+        keywords.push('rezerwacja serwisu online', 'umów wizytę serwis rowerowy', 'rezerwacja online');
+      }
+      parts.push('Sprawdź kontakt i lokalizację.');
+      description = parts.join(' ');
       keywords.push('o nas', 'kontakt', 'adres serwisu');
     }
 

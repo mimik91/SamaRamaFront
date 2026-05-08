@@ -3,11 +3,17 @@ import express from 'express';
 import compression from 'compression';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as http from 'node:http';
+import * as https from 'node:https';
 import bootstrap from './main.server';
+import { environment, environmentProduction } from './app/environments/environments';
+
+const env = process.env['NODE_ENV'] === 'production' ? environmentProduction : environment;
+const backendBase = new URL(env.apiUrl).origin;
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
-const indexHtml = join(serverDistFolder, 'index.server.html');
+const indexHtml = join(browserDistFolder, 'index.html');
 
 const app = express();
 const commonEngine = new CommonEngine();
@@ -35,6 +41,23 @@ app.use((req, res, next) => {
   }
 
   next();
+});
+
+/**
+ * Proxy /sitemap.xml do backendu (dynamicznie generowany z bazy)
+ * Musi być PRZED express.static, żeby statyczny plik nie wygrał
+ */
+app.get('/sitemap.xml', (req, res) => {
+  const url = `${backendBase}/sitemap.xml`;
+  const client = url.startsWith('https') ? https : http;
+
+  client.get(url, (backendRes) => {
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    backendRes.pipe(res);
+  }).on('error', () => {
+    res.status(503).send('Sitemap temporarily unavailable');
+  });
 });
 
 /**

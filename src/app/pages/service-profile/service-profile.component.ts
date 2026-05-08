@@ -524,7 +524,8 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
           bookingUrl,
           bikeShopData.address,
           bookableOffers,
-          description || undefined
+          description || undefined,
+          bikeShopData.image || undefined
         );
         if (eventSchema) {
           schemas.push(eventSchema);

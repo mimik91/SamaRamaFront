@@ -557,6 +557,7 @@ export class SchemaOrgHelper {
    * @param address Adres serwisu
    * @param offers Lista ofert (pakiety serwisowe z cenami)
    * @param description Opcjonalny opis serwisu
+   * @param image Opcjonalny URL logo/zdjęcia serwisu
    */
   static generateBookableEvent(
     serviceName: string,
@@ -564,12 +565,18 @@ export class SchemaOrgHelper {
     bookingUrl: string,
     address: SchemaAddress,
     offers: SchemaOffer[],
-    description?: string
+    description?: string,
+    image?: string
   ): any {
     if (!serviceName || !serviceUrl || !bookingUrl || !address) {
       console.error('[SchemaOrgHelper] Brak wymaganych danych dla BookableEvent');
       return null;
     }
+
+    // Daty rezerwacji: od dziś przez następne 365 dni
+    const today = new Date();
+    const startDate = today.toISOString().split('T')[0];
+    const endDate = new Date(today.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     const schemaOffers = offers.length > 0
       ? offers.map(offer => ({
@@ -580,21 +587,19 @@ export class SchemaOrgHelper {
           price: offer.price,
           priceCurrency: offer.priceCurrency || 'PLN',
           availability: 'https://schema.org/InStock',
-          validFrom: new Date().toISOString().split('T')[0]
+          validFrom: startDate,
+          validUntil: endDate
         }))
-      : [{
-          '@type': 'Offer',
-          url: bookingUrl,
-          availability: 'https://schema.org/InStock',
-          priceCurrency: 'PLN'
-        }];
+      : [];
 
-    return {
+    const eventSchema: any = {
       '@context': 'https://schema.org',
       '@type': 'Event',
       name: `Rezerwacja serwisu rowerowego — ${serviceName}`,
       description: description || `Umów wizytę w serwisie rowerowym ${serviceName}`,
       url: bookingUrl,
+      startDate: startDate,
+      endDate: endDate,
       eventStatus: 'https://schema.org/EventScheduled',
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
       location: {
@@ -613,8 +618,20 @@ export class SchemaOrgHelper {
         name: serviceName,
         url: serviceUrl
       },
+      performer: {
+        '@type': 'Organization',
+        name: serviceName,
+        url: serviceUrl
+      },
       offers: schemaOffers
     };
+
+    // Dodaj image jeśli dostępny
+    if (image) {
+      eventSchema.image = Array.isArray(image) ? image : [image];
+    }
+
+    return eventSchema;
   }
 
   /**

@@ -191,12 +191,21 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     const seen = new Set<number>();
     const result: CalendarOrder[] = [];
     for (const week of weeks) {
-      const byDay = week.ordersByDay as Record<string, CalendarOrder[]>;
+      const byDay = week.ordersByDay as Record<string, any[]>;
       for (const orders of Object.values(byDay)) {
-        for (const order of orders) {
-          if (!seen.has(order.id)) {
-            seen.add(order.id);
-            result.push(order);
+        for (const raw of orders) {
+          if (!seen.has(raw.id)) {
+            seen.add(raw.id);
+            // Backend może zwracać bicycle jako zagnieżdżony obiekt lub płaskie pola
+            if (raw.bicycle && typeof raw.bicycle === 'object') {
+              raw.bicycleType = raw.bicycleType || raw.bicycle.type;
+              raw.bicycleBrand = raw.bicycleBrand || raw.bicycle.brand;
+              raw.bicycleModel = raw.bicycleModel || raw.bicycle.model;
+              raw.bicycleFrameNumber = raw.bicycleFrameNumber || raw.bicycle.frameNumber;
+              raw.bicycleFrameMaterial = raw.bicycleFrameMaterial || raw.bicycle.frameMaterial;
+              raw.bicycleId = raw.bicycleId || raw.bicycle.id;
+            }
+            result.push(raw as CalendarOrder);
           }
         }
       }

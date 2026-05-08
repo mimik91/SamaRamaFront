@@ -36,7 +36,8 @@ app.use((req, res, next) => {
   }
 
   // Only redirect non-www to www (Cloudflare handles HTTPS)
-  if (host === 'cyclopick.pl') {
+  const hostname = host.split(':')[0];
+  if (hostname === 'cyclopick.pl') {
     return res.redirect(301, `https://www.cyclopick.pl${req.originalUrl}`);
   }
 
@@ -46,19 +47,20 @@ app.use((req, res, next) => {
 /**
  * Proxy /sitemap.xml do backendu (dynamicznie generowany z bazy)
  * Musi być PRZED express.static, żeby statyczny plik nie wygrał
+ * TODO: Uncomment when backend has /sitemap.xml endpoint
  */
-app.get('/sitemap.xml', (req, res) => {
-  const url = `${backendBase}/sitemap.xml`;
-  const client = url.startsWith('https') ? https : http;
-
-  client.get(url, (backendRes) => {
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    backendRes.pipe(res);
-  }).on('error', () => {
-    res.status(503).send('Sitemap temporarily unavailable');
-  });
-});
+// app.get('/sitemap.xml', (req, res) => {
+//   const url = `${backendBase}/sitemap.xml`;
+//   const client = url.startsWith('https') ? https : http;
+//
+//   client.get(url, (backendRes) => {
+//     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+//     res.setHeader('Cache-Control', 'public, max-age=3600');
+//     backendRes.pipe(res);
+//   }).on('error', () => {
+//     res.status(503).send('Sitemap temporarily unavailable');
+//   });
+// });
 
 /**
  * Serve static files from /browser

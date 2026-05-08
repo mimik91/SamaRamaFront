@@ -14,7 +14,7 @@
     "serve:ssr": "node dist/sama-rama/server/server.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,css}\"",
-    "heroku-postbuild": "ng build --configuration production"
+    "heroku-postbuild": "ng build --configuration production && cp dist/sama-rama/browser/index.csr.html dist/sama-rama/browser/index.html"
   },
   "private": true,
   "dependencies": {

@@ -15,6 +15,10 @@ const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 const indexHtml = join(browserDistFolder, 'index.html');
 
+console.log('DEBUG: serverDistFolder =', serverDistFolder);
+console.log('DEBUG: browserDistFolder =', browserDistFolder);
+console.log('DEBUG: indexHtml =', indexHtml);
+
 const app = express();
 const commonEngine = new CommonEngine();
 

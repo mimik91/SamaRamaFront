@@ -386,11 +386,19 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
 
   getWebsiteUrl(url: string): string {
     if (!url) return '';
-    // Jeśli URL nie ma protokołu, dodaj https://
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       return 'https://' + url;
     }
     return url;
+  }
+
+  getInstagramUrl(handle: string): string {
+    if (!handle) return '';
+    if (handle.startsWith('http://') || handle.startsWith('https://')) {
+      return handle;
+    }
+    const username = handle.startsWith('@') ? handle.slice(1) : handle;
+    return `https://www.instagram.com/${username}`;
   }
 
   // Metoda pomocnicza do tłumaczeń (dla template)
@@ -475,17 +483,15 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
       bikeShopData.sameAs = sameAs;
     }
 
-    // 7. Dodaj pakiety serwisowe jako offers (zawsze, jeśli są aktywne)
-    if (this.packages && this.packages.length > 0) {
-      const activePackages = this.packages.filter(pkg => pkg.active);
-      if (activePackages.length > 0) {
-        bikeShopData.offers = activePackages
-          .map(pkg => ({
-            name: pkg.customName || pkg.displayName,
-            description: pkg.description || undefined,
-            price: pkg.price
-          }));
-      }
+    // 7. Dodaj pakiety serwisowe jako offers
+    if (this.packages && this.packages.length > 0 && this.activeStatus?.packagesActive) {
+      bikeShopData.offers = this.packages
+        .filter(pkg => pkg.active)
+        .map(pkg => ({
+          name: pkg.customName || pkg.displayName,
+          description: pkg.description || undefined,
+          price: pkg.price
+        }));
     }
 
     // 8. Generuj schema i dodaj do DOM
@@ -519,26 +525,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
         }
 
         // Event + Offer — tylko gdy mamy oferty (pakiety lub cennik)
-        let bookableOffers: SchemaOffer[] = bikeShopData.offers ?? [];
-
-        // Fallback do cennika gdy pakietów brak
-        if (bookableOffers.length === 0 && this.availableItems && this.availableItems.length > 0) {
-          const pricelistOffers: SchemaOffer[] = [];
-          this.availableItems.forEach(category => {
-            category.items.forEach((item: any) => {
-              const price = this.pricelist?.items[item.id];
-              if (price && typeof price === 'number') {
-                pricelistOffers.push({
-                  name: item.name,
-                  description: `${category.category.name} - ${item.name}`,
-                  price: price
-                });
-              }
-            });
-          });
-          bookableOffers = pricelistOffers;
-        }
-
+        const bookableOffers: SchemaOffer[] = bikeShopData.offers ?? [];
         const eventSchema = SchemaOrgHelper.generateBookableEvent(
           serviceName,
           serviceUrl,

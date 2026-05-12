@@ -71,7 +71,7 @@ export class MarkReadyModalComponent implements OnInit {
         if (keys.length === 0) {
           this.doSend({});
         } else {
-          this.keyEntries = keys.map(key => ({ key, include: true, value: '' }));
+          this.keyEntries = keys.map(key => ({ key, include: false, value: '' }));
           this.step = 'keys';
         }
       },

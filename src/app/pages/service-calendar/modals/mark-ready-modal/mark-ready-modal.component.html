@@ -102,8 +102,8 @@
               type="text"
               class="key-input"
               [(ngModel)]="entry.value"
-              [disabled]="!entry.include"
-              [placeholder]="entry.include ? 'Wpisz wartość (puste = pusta wartość)' : 'Pole wykluczone z powiadomienia'"
+              [placeholder]="entry.include ? 'Wpisz wartość (puste = pusta wartość)' : 'Wpisz wartość aby dołączyć do powiadomienia'"
+              (input)="entry.value && (entry.include = true)"
             />
           </div>
         </div>

@@ -9,15 +9,13 @@ import bootstrap from './main.server';
 import { environment, environmentProduction } from './app/environments/environments';
 
 const env = process.env['NODE_ENV'] === 'production' ? environmentProduction : environment;
-const backendBase = new URL(env.apiUrl).origin;
+// BACKEND_ORIGIN overrides derived URL to avoid proxy loops in production
+// (e.g. set to the Spring Boot Heroku app URL: https://samarama-api.herokuapp.com)
+const backendBase = process.env['BACKEND_ORIGIN'] || new URL(env.apiUrl).origin;
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 const indexHtml = join(browserDistFolder, 'index.html');
-
-console.log('DEBUG: serverDistFolder =', serverDistFolder);
-console.log('DEBUG: browserDistFolder =', browserDistFolder);
-console.log('DEBUG: indexHtml =', indexHtml);
 
 const app = express();
 const commonEngine = new CommonEngine();
@@ -40,8 +38,7 @@ app.use((req, res, next) => {
   }
 
   // Only redirect non-www to www (Cloudflare handles HTTPS)
-  const hostname = host.split(':')[0];
-  if (hostname === 'cyclopick.pl') {
+  if (host === 'cyclopick.pl') {
     return res.redirect(301, `https://www.cyclopick.pl${req.originalUrl}`);
   }
 
@@ -51,20 +48,19 @@ app.use((req, res, next) => {
 /**
  * Proxy /sitemap.xml do backendu (dynamicznie generowany z bazy)
  * Musi być PRZED express.static, żeby statyczny plik nie wygrał
- * TODO: Uncomment when backend has /sitemap.xml endpoint
  */
-// app.get('/sitemap.xml', (req, res) => {
-//   const url = `${backendBase}/sitemap.xml`;
-//   const client = url.startsWith('https') ? https : http;
-//
-//   client.get(url, (backendRes) => {
-//     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-//     res.setHeader('Cache-Control', 'public, max-age=3600');
-//     backendRes.pipe(res);
-//   }).on('error', () => {
-//     res.status(503).send('Sitemap temporarily unavailable');
-//   });
-// });
+app.get('/sitemap.xml', (req, res) => {
+  const url = `${backendBase}/sitemap.xml`;
+  const client = url.startsWith('https') ? https : http;
+
+  client.get(url, (backendRes) => {
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    backendRes.pipe(res);
+  }).on('error', () => {
+    res.status(503).send('Sitemap temporarily unavailable');
+  });
+});
 
 /**
  * Serve static files from /browser

@@ -6,11 +6,10 @@ import { fileURLToPath } from 'node:url';
 import * as http from 'node:http';
 import * as https from 'node:https';
 import bootstrap from './main.server';
-import { environment, environmentProduction } from './app/environments/environments';
+import { environment } from './app/environments/environments';
+import { SSR_RESPONSE } from './app/core/ssr-tokens';
 
-const env = process.env['NODE_ENV'] === 'production' ? environmentProduction : environment;
-// BACKEND_ORIGIN overrides derived URL to avoid proxy loops in production
-// (e.g. set to the Spring Boot Heroku app URL: https://samarama-api.herokuapp.com)
+const env = environment;
 const backendBase = process.env['BACKEND_ORIGIN'] || new URL(env.apiUrl).origin;
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
@@ -20,10 +19,8 @@ const indexHtml = join(browserDistFolder, 'index.html');
 const app = express();
 const commonEngine = new CommonEngine();
 
-// KLUCZOWE DLA HEROKU: Informuje Express, że jest za proxy
 app.set('trust proxy', true);
 
-// Dodaj kompresję, aby przyspieszyć ładowanie assetów (AIO/SEO boost)
 app.use(compression());
 
 /**
@@ -37,8 +34,8 @@ app.use((req, res, next) => {
     return next();
   }
 
-  // Only redirect non-www to www (Cloudflare handles HTTPS)
-  if (host === 'cyclopick.pl') {
+  const hostname = host.split(':')[0];
+  if (hostname === 'cyclopick.pl') {
     return res.redirect(301, `https://www.cyclopick.pl${req.originalUrl}`);
   }
 
@@ -136,7 +133,10 @@ app.use('/**', (req, res, next) => {
       documentFilePath: indexHtml,
       url: `${protocol}://${headers.host}${originalUrl}`,
       publicPath: browserDistFolder,
-      providers: [{ provide: 'REQUEST', useValue: req }],
+      providers: [
+        { provide: 'REQUEST', useValue: req },
+        { provide: SSR_RESPONSE, useValue: res },
+      ],
     })
     .then((html) => {
       const path = originalUrl.split('?')[0];

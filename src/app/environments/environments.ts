@@ -228,11 +228,3 @@ export const environment = {
     ]
   }
 };
-
-// Production environment
-export const environmentProduction = {
-  ...environment,
-  production: true,
-  siteUrl: 'https://www.cyclopick.pl',
-  apiUrl: 'https://www.cyclopick.pl/api'
-};

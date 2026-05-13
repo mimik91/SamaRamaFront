@@ -16,6 +16,9 @@ import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { filter, switchMap, distinctUntilChanged } from 'rxjs/operators';
 import { SessionSyncService } from '../core/session-sync.service';
+import { SeoService } from '../core/seo.service';
+import { SchemaOrgHelper, BikeRepairShopData } from '../core/schema-org.helper';
+import { SSR_RESPONSE } from '../core/ssr-tokens';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { NotificationService } from '../core/notification.service';
@@ -68,7 +71,9 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   private notificationService = inject(NotificationService);
   private enumerationService = inject(EnumerationService);
   private sessionSyncService = inject(SessionSyncService);
+  private seoService = inject(SeoService);
   private platformId = inject(PLATFORM_ID);
+  private serverResponse = inject(SSR_RESPONSE, { optional: true });
 
   private routerSub: Subscription | null = null;
   private sessionSyncSent = false;
@@ -500,7 +505,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         return;
       }
       this.serviceSuffix = suffix;
-      const stateServiceId = window.history.state?.serviceId;
+      const stateServiceId = isPlatformBrowser(this.platformId) ? window.history.state?.serviceId : null;
       if (stateServiceId) {
         this.loadServiceDetails(+stateServiceId);
       } else {
@@ -511,12 +516,14 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
             if (res.id) {
               this.loadServiceDetails(res.id);
             } else {
+              this.send404();
               this.notificationService.error('Nie znaleziono serwisu.');
               this.router.navigate([environment.links.servicesMap]);
               this.loading = false;
             }
           },
           error: () => {
+            this.send404();
             this.notificationService.error('Nie znaleziono serwisu.');
             this.router.navigate([environment.links.servicesMap]);
             this.loading = false;
@@ -576,10 +583,15 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
           transportAvailable: !!d.transportAvailable,
           transportCost: d.transportCost ?? null
         };
+
+        this.injectReservationSchema(d);
+        this.updateReservationSeo(d.name, d.city);
+
         this.loadReservationSettings(d.id);
         this.loading = false;
       },
       error: () => {
+        this.send404();
         this.notificationService.error('Nie udało się załadować danych serwisu.');
         this.router.navigate([environment.links.servicesMap]);
         this.loading = false;
@@ -895,6 +907,53 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routerSub?.unsubscribe();
+    this.seoService.removeStructuredData();
+  }
+
+  private send404(): void {
+    if (this.serverResponse) {
+      this.serverResponse.status(404);
+    }
+  }
+
+  private updateReservationSeo(serviceName: string, city: string): void {
+    if (!this.serviceSuffix) return;
+
+    this.seoService.updateFullSeoTags(
+      {
+        title: `Rezerwacja wizyty – ${serviceName} | CycloPick`,
+        description: `Zarezerwuj wizytę w serwisie rowerowym ${serviceName}${city ? ' w ' + city : ''}. Wybierz termin online – szybko i wygodnie.`,
+        type: 'website',
+        keywords: ['rezerwacja serwis rowerowy', serviceName, city, 'umów wizytę rowerowy', 'serwis rowerowy online']
+      },
+      `/${this.serviceSuffix}/zarezerwuj`
+    );
+  }
+
+  private injectReservationSchema(d: any): void {
+    if (!this.serviceSuffix) return;
+
+    const serviceUrl = `${environment.siteUrl}/${this.serviceSuffix}`;
+    const bookingUrl = `${serviceUrl}/zarezerwuj`;
+
+    const schemaData: BikeRepairShopData = {
+      name: d.name,
+      url: serviceUrl,
+      address: {
+        street: `${d.street || ''} ${d.building || ''}${d.flat ? '/' + d.flat : ''}`.trim(),
+        city: d.city || '',
+        postalCode: d.postalCode || '',
+        country: 'PL'
+      },
+      image: d.logoUrl || undefined,
+      telephone: d.phoneNumber || undefined,
+      email: d.email || undefined
+    };
+
+    const schema = SchemaOrgHelper.generateBookableLocalBusiness(schemaData, bookingUrl);
+    if (schema) {
+      this.seoService.addStructuredData(schema);
+    }
   }
 
   private sendSessionSync(): void {

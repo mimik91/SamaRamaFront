@@ -82,7 +82,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   imagesLoading = true;
 
   // Domyślne obrazy (fallback gdy serwis nie ma własnych)
-  private readonly defaultLogoUrl = 'assets/images/logo-cyclopick.webp';
+  private readonly defaultLogoUrl = 'https://www.cyclopick.pl/assets/images/logo-cyclopick.webp';
   private readonly defaultAboutUsUrl = 'assets/images/pictures/vertical/przerzutka-rowerowa.webp';
   private readonly defaultOpeningHoursUrl = 'assets/images/pictures/vertical/rower.webp';
   
@@ -150,6 +150,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     this.availableItems = data.availableItems;
     this.packagesConfig = data.packagesConfig;
     this.bikeTypes = data.bikeTypes;
+    this.logoUrl = data.logoUrl;
 
     // Wyciągnij pakiety z config
     if (this.packagesConfig?.packages) {
@@ -425,7 +426,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     const bikeShopData: BikeRepairShopData = {
       name: serviceName,
       description: description || `Profesjonalny serwis rowerowy ${serviceName}`,
-      image: this.logoUrl || this.defaultLogoUrl,
+      image: this.logoUrl ?? undefined,
       address: {
         street: `${this.publicInfo.street} ${this.publicInfo.building}${this.publicInfo.flat ? '/' + this.publicInfo.flat : ''}`,
         city: this.publicInfo.city || 'Polska',
@@ -590,34 +591,21 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
    * @returns Zakres cenowy w formacie "PLN 50-300" lub "$$" jako fallback
    */
   private estimatePriceRange(): string {
-    const allPrices: number[] = [];
-
-    // Ceny z cennika
-    if (this.pricelist?.items) {
-      const pricelistPrices = Object.values(this.pricelist.items)
-        .filter(price => typeof price === 'number' && price > 0);
-      allPrices.push(...pricelistPrices);
+    if (!this.packages || this.packages.length === 0) {
+      return '$$';
     }
 
-    // Ceny z pakietów
-    if (this.packages && this.packages.length > 0) {
-      const packagePrices = this.packages
-        .filter(pkg => pkg.active && pkg.price > 0)
-        .map(pkg => pkg.price);
-      allPrices.push(...packagePrices);
+    const prices = this.packages
+      .filter(pkg => pkg.active && pkg.price > 0)
+      .map(pkg => pkg.price);
+
+    if (prices.length === 0) {
+      return '$$';
     }
 
-    if (allPrices.length === 0) {
-      return '$$'; // Fallback gdy brak cen
-    }
-
-    // Znajdź minimalną i maksymalną cenę
-    const minPrice = Math.min(...allPrices);
-    const maxPrice = Math.max(...allPrices);
-
-    // ✅ Zwróć konkretny zakres cenowy z walutą
-    // Format akceptowany przez Schema.org: "PLN 50-300"
-    return `PLN ${Math.round(minPrice)}-${Math.round(maxPrice)}`;
+    const min = Math.round(Math.min(...prices));
+    const max = Math.round(Math.max(...prices));
+    return `PLN ${min}-${max}`;
   }
 
   /**

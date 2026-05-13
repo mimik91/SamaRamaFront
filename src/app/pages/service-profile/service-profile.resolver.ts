@@ -23,6 +23,7 @@ export interface ServiceProfileResolvedData {
   availableItems: CategoryWithItemsDto[];
   packagesConfig: ServicePackagesConfigDto | null;
   bikeTypes: string[];
+  logoUrl: string | null;
 }
 
 /**
@@ -62,12 +63,17 @@ export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedDat
               availableItems: Observable<CategoryWithItemsDto[]>;
               packagesConfig: Observable<ServicePackagesConfigDto | null>;
               bikeTypes: Observable<string[]>;
+              logoUrl: Observable<string | null>;
             } = {
               openingHours: of(null),
               pricelist: of(null),
               availableItems: of([]),
               packagesConfig: of(null),
-              bikeTypes: of([])
+              bikeTypes: of([]),
+              logoUrl: this.profileService.getServiceImage(serviceId, 'LOGO').pipe(
+                map(r => r.url ?? null),
+                catchError(() => of(null))
+              )
             };
 
             // Godziny otwarcia
@@ -77,7 +83,7 @@ export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedDat
               );
             }
 
-            // Cennik i pakiety
+            // Cennik
             if (activeStatus?.pricelistActive) {
               additionalData$.pricelist = this.profileService.getPricelist(serviceId).pipe(
                 catchError(() => of(null))
@@ -86,7 +92,10 @@ export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedDat
               additionalData$.availableItems = this.profileService.getAllAvailableItems().pipe(
                 catchError(() => of([]))
               );
+            }
 
+            // Pakiety (niezależnie od cennika)
+            if (activeStatus?.pricelistActive || activeStatus?.packagesActive) {
               additionalData$.packagesConfig = this.profileService.getPackagesConfig(serviceId).pipe(
                 catchError(() => of(null))
               );
@@ -106,7 +115,8 @@ export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedDat
                 pricelist: additionalData.pricelist,
                 availableItems: additionalData.availableItems,
                 packagesConfig: additionalData.packagesConfig,
-                bikeTypes: additionalData.bikeTypes
+                bikeTypes: additionalData.bikeTypes,
+                logoUrl: additionalData.logoUrl
               }))
             );
           })

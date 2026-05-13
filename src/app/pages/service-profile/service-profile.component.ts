@@ -12,9 +12,9 @@ import {
   SchemaOrgHelper,
   BikeRepairShopData,
   SchemaDayOfWeek,
-  SchemaOpeningHours,
-  SchemaOffer
+  SchemaOpeningHours
 } from '../../core/schema-org.helper';
+import { environment } from '../../environments/environments';
 import {
   BikeServicePublicInfo,
   ServiceActiveStatus
@@ -496,16 +496,22 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     }
 
     // 8. Generuj schema i dodaj do DOM
-    const bikeShopSchema = SchemaOrgHelper.generateBikeRepairShop(bikeShopData);
+    const serviceUrl = `https://www.cyclopick.pl/${this.suffix}`;
+    const bookingUrl = this.publicInfo.reservationAvailable
+      ? `https://www.cyclopick.pl/${this.suffix}/zarezerwuj`
+      : undefined;
+
+    const bikeShopSchema = SchemaOrgHelper.generateBikeRepairShop(bikeShopData, bookingUrl);
 
     if (bikeShopSchema) {
-      const serviceUrl = `https://www.cyclopick.pl/${this.suffix}`;
-      const bookingUrl = `https://www.cyclopick.pl/${this.suffix}/zarezerwuj`;
+      const citySlug = environment.settings.seoCities.find((c: { name: string; slug: string }) => c.name === city)?.slug;
+      const cityUrl = citySlug
+        ? `https://www.cyclopick.pl/serwisy-rowerowe-${citySlug}`
+        : 'https://www.cyclopick.pl';
 
-      // 9. Opcjonalnie: Dodaj breadcrumb
       const breadcrumb = SchemaOrgHelper.generateBreadcrumb([
         { name: 'CycloPick', url: 'https://www.cyclopick.pl' },
-        { name: city, url: `https://www.cyclopick.pl?city=${encodeURIComponent(city)}` },
+        { name: city, url: cityUrl },
         { name: serviceName, url: serviceUrl }
       ]);
 
@@ -515,35 +521,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
         schemas.push(breadcrumb);
       }
 
-      // 10. Google Reserve with Google — dodaj schematy rezerwacji gdy serwis ma aktywną rezerwację
-      if (this.publicInfo.reservationAvailable) {
-        const bookableSchema = SchemaOrgHelper.generateBookableLocalBusiness(
-          bikeShopData,
-          bookingUrl
-        );
-        if (bookableSchema) {
-          schemas.push(bookableSchema);
-        }
-
-        // Event + Offer — tylko gdy mamy oferty (pakiety lub cennik)
-        const bookableOffers: SchemaOffer[] = bikeShopData.offers ?? [];
-        const eventSchema = SchemaOrgHelper.generateBookableEvent(
-          serviceName,
-          serviceUrl,
-          bookingUrl,
-          bikeShopData.address,
-          bookableOffers,
-          description || undefined,
-          bikeShopData.image || undefined
-        );
-        if (eventSchema) {
-          schemas.push(eventSchema);
-        }
-      }
-
       this.seoService.addMultipleStructuredData(schemas);
-
-      console.log('[ServiceProfile] ✅ Structured data added, schemas count:', schemas.length);
     }
   }
 

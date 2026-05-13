@@ -157,7 +157,7 @@ export class SchemaOrgHelper {
    * });
    * ```
    */
-  static generateBikeRepairShop(data: BikeRepairShopData): any {
+  static generateBikeRepairShop(data: BikeRepairShopData, bookingUrl?: string): any {
     // Walidacja wymaganych pól
     if (!data || !data.name || !data.url || !data.address) {
       console.error('[SchemaOrgHelper] Brak wymaganych danych dla BikeRepairShop');
@@ -205,6 +205,9 @@ export class SchemaOrgHelper {
         latitude: data.geo.latitude,
         longitude: data.geo.longitude
       };
+      schema.hasMap = `https://www.google.com/maps?q=${data.geo.latitude},${data.geo.longitude}`;
+    } else {
+      schema.hasMap = `https://www.google.com/maps/search/${encodeURIComponent(data.name + ' ' + data.address.city)}`;
     }
 
     // ✅ Godziny otwarcia - poprawiona implementacja
@@ -255,6 +258,27 @@ export class SchemaOrgHelper {
           priceCurrency: offer.priceCurrency || 'PLN',
           availability: 'https://schema.org/InStock'
         }))
+      };
+    }
+
+    if (bookingUrl) {
+      schema.potentialAction = {
+        '@type': 'ReserveAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: bookingUrl,
+          inLanguage: 'pl',
+          actionPlatform: [
+            'http://schema.org/DesktopWebPlatform',
+            'http://schema.org/MobileWebPlatform',
+            'http://schema.org/IOSPlatform',
+            'http://schema.org/AndroidPlatform'
+          ]
+        },
+        result: {
+          '@type': 'Reservation',
+          name: `Rezerwacja serwisu rowerowego ${data.name}`
+        }
       };
     }
 

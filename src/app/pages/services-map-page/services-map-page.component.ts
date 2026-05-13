@@ -844,8 +844,8 @@ onCitySelected(city: CitySuggestion): void {
       '@graph': [
         {
           '@type': 'WebPage',
-          '@id': 'https://www.cyclopick.pl/services-map#webpage',
-          'url': 'https://www.cyclopick.pl/services-map',
+          '@id': 'https://www.cyclopick.pl/mapa-serwisow#webpage',
+          'url': 'https://www.cyclopick.pl/mapa-serwisow',
           'name': 'Mapa serwisów rowerowych w Polsce',
           'description': 'Interaktywna mapa serwisów rowerowych w Polsce. Znajdź najbliższy warsztat rowerowy, sprawdź opinie i umów wizytę online.',
           'isPartOf': {
@@ -856,12 +856,12 @@ onCitySelected(city: CitySuggestion): void {
             'url': 'https://www.cyclopick.pl/assets/images/for-services/widocznosc-na-mapie-serwisow.webp'
           },
           'breadcrumb': {
-            '@id': 'https://www.cyclopick.pl/services-map#breadcrumb'
+            '@id': 'https://www.cyclopick.pl/mapa-serwisow#breadcrumb'
           }
         },
         {
           '@type': 'BreadcrumbList',
-          '@id': 'https://www.cyclopick.pl/services-map#breadcrumb',
+          '@id': 'https://www.cyclopick.pl/mapa-serwisow#breadcrumb',
           'itemListElement': [
             {
               '@type': 'ListItem',
@@ -873,13 +873,13 @@ onCitySelected(city: CitySuggestion): void {
               '@type': 'ListItem',
               'position': 2,
               'name': 'Mapa serwisów rowerowych',
-              'item': 'https://www.cyclopick.pl/services-map'
+              'item': 'https://www.cyclopick.pl/mapa-serwisow'
             }
           ]
         },
         {
           '@type': 'Service',
-          '@id': 'https://www.cyclopick.pl/services-map#service',
+          '@id': 'https://www.cyclopick.pl/mapa-serwisow#service',
           'name': 'Wyszukiwarka serwisów rowerowych',
           'description': 'Interaktywna mapa pozwalająca znaleźć serwisy rowerowe w całej Polsce. Filtrowanie po usługach, lokalizacji i ocenach.',
           'provider': {
@@ -896,7 +896,7 @@ onCitySelected(city: CitySuggestion): void {
         },
         {
           '@type': 'ItemList',
-          '@id': 'https://www.cyclopick.pl/services-map#servicelist',
+          '@id': 'https://www.cyclopick.pl/mapa-serwisow#servicelist',
           'name': 'Lista serwisów rowerowych w Polsce',
           'description': 'Katalog warsztatów rowerowych dostępnych na mapie CycloPick',
           'numberOfItems': this.totalServices || 1000,
@@ -905,7 +905,7 @@ onCitySelected(city: CitySuggestion): void {
         // FAQPage Schema - dla AIO (ChatGPT, Copilot, Gemini)
         {
           '@type': 'FAQPage',
-          '@id': 'https://www.cyclopick.pl/services-map#faq',
+          '@id': 'https://www.cyclopick.pl/mapa-serwisow#faq',
           'mainEntity': [
             {
               '@type': 'Question',

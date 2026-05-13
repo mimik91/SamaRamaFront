@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, Inject, inject, ViewChild, ElementRef, PLATFORM_ID, NgZone } from '@angular/core';
 import { isPlatformBrowser, CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { Meta, Title, DomSanitizer, SafeHtml, SafeStyle } from '@angular/platform-browser';
+import { Meta, Title, DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { ServiceProfileService } from '../service-profile/service-profile.service';
+import { SeoService } from '../../core/seo.service';
+import { SchemaOrgHelper } from '../../core/schema-org.helper';
 
 @Component({
   selector: 'app-landing-page',
@@ -15,6 +17,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private serviceProfileService = inject(ServiceProfileService);
   private platformId = inject(PLATFORM_ID);
   private ngZone = inject(NgZone);
+  private seoService = inject(SeoService);
 
   @ViewChild('partnerTrack') partnerTrackRef!: ElementRef<HTMLElement>;
   @ViewChild('reviewsTrack') reviewsTrackRef!: ElementRef<HTMLElement>;
@@ -59,16 +62,9 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     'assets/images/opinie/opinia 3.webp',
     'assets/images/opinie/opinia 4.webp',
     'assets/images/opinie/opinia 5.webp',
-    'assets/images/opinie/opinia 6.webp',
-    'assets/images/opinie/opinia 7.webp',
-    'assets/images/opinie/opinia 8.webp',
-    'assets/images/opinie/opinia 9.webp',
-    'assets/images/opinie/opinia 10.webp',
-    'assets/images/opinie/opinia 11.webp'
+    'assets/images/opinie/opinia 6.webp'
   ];
 
-  // Zmienna na bezpieczny JSON-LD
-  schemaJson: SafeHtml | null = null;
 
   partnerLogos: { serviceId: number; logoUrl: string; suffix: string }[] = [];
 
@@ -148,9 +144,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMetaTags();
     this.setCanonicalUrl();
     this.generateSchemaMarkup();
-    if (isPlatformBrowser(this.platformId)) {
-      this.loadPartnerLogos();
-    }
+    this.loadPartnerLogos();
   }
 
   ngAfterViewInit(): void {
@@ -158,6 +152,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
     this.stopMarquee();
     this.stopReviewsMarquee();
     if (isPlatformBrowser(this.platformId)) {
@@ -377,6 +372,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
     this.meta.updateTag({ name: 'twitter:description', content: pageDescription });
+    this.meta.updateTag({ name: 'twitter:image', content: 'https://www.cyclopick.pl/assets/images/og-image-cyclopick.jpg' });
   }
 
   private setCanonicalUrl(): void {
@@ -390,61 +386,31 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private generateSchemaMarkup(): void {
-    const schema = {
+    const faqSchema = SchemaOrgHelper.generateFAQPage(
+      this.faqData.map(item => ({ question: item.question, answer: item.answer }))
+    );
+
+    const transportService = {
       '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'WebSite',
-          '@id': 'https://www.cyclopick.pl/#website',
-          'url': 'https://www.cyclopick.pl/',
-          'name': 'CycloPick',
-          'description': 'Znajdź serwis rowerowy w swojej okolicy. Największa baza warsztatów w Polsce.',
-          'publisher': {
-            '@type': 'Organization',
-            'name': 'CycloPick',
-            'logo': { '@type': 'ImageObject', 'url': 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png' }
-          },
-          'potentialAction': {
-            '@type': 'SearchAction',
-            'target': { '@type': 'EntryPoint', 'urlTemplate': 'https://www.cyclopick.pl/serwisy/{city}' },
-            'query-input': 'required name=city'
-          }
-        },
-        {
-          '@type': 'SoftwareApplication',
-          'name': 'CycloPick',
-          'applicationCategory': 'LifestyleApplication',
-          'operatingSystem': 'Web',
-          'offers': { '@type': 'Offer', 'price': '0', 'priceCurrency': 'PLN' },
-          'description': 'Aplikacja internetowa do znajdowania warsztatów rowerowych w Polsce.'
-        },
-        {
-          '@type': 'FAQPage',
-          'mainEntity': this.faqData.map(item => ({
-            '@type': 'Question',
-            'name': item.question,
-            'acceptedAnswer': { '@type': 'Answer', 'text': item.answer }
-          }))
-        },
-        {
-          '@type': 'Service',
-          '@id': 'https://www.cyclopick.pl/#transport-service',
-          'name': 'Transport roweru door-to-door Kraków',
-          'serviceType': 'Serwis rowerowy z transportem door-to-door',
-          'description': 'Kompleksowy serwis rowerowy door-to-door w Krakowie. Transport roweru od drzwi do drzwi. U Partnerów CycloPick transport gratis, do pozostałych serwisów 60 zł w obie strony.',
-          'areaServed': { '@type': 'City', 'name': 'Kraków', 'addressCountry': 'PL' },
-          'provider': { '@type': 'Organization', 'name': 'CycloPick', 'url': 'https://www.cyclopick.pl' },
-          'offers': [
-            { '@type': 'Offer', 'name': 'Transport roweru do Partnera CycloPick', 'price': '0', 'priceCurrency': 'PLN', 'availability': 'https://schema.org/InStock' },
-            { '@type': 'Offer', 'name': 'Transport roweru do dowolnego serwisu w Krakowie', 'price': '60', 'priceCurrency': 'PLN', 'availability': 'https://schema.org/InStock' }
-          ]
-        }
+      '@type': 'Service',
+      '@id': 'https://www.cyclopick.pl/#transport-service',
+      name: 'Transport roweru door-to-door Kraków',
+      serviceType: 'Serwis rowerowy z transportem door-to-door',
+      description: 'Kompleksowy serwis rowerowy door-to-door w Krakowie. U Partnerów CycloPick transport gratis, do pozostałych serwisów 60 zł w obie strony.',
+      areaServed: { '@type': 'City', name: 'Kraków', addressCountry: 'PL' },
+      provider: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' },
+      offers: [
+        { '@type': 'Offer', name: 'Transport roweru do Partnera CycloPick', price: '0', priceCurrency: 'PLN', availability: 'https://schema.org/InStock' },
+        { '@type': 'Offer', name: 'Transport roweru do dowolnego serwisu w Krakowie', price: '60', priceCurrency: 'PLN', availability: 'https://schema.org/InStock' }
       ]
     };
 
-    this.schemaJson = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
-    );
+    this.seoService.addMultipleStructuredData([
+      SchemaOrgHelper.generateOrganization(),
+      SchemaOrgHelper.generateWebSite(),
+      faqSchema,
+      transportService
+    ]);
   }
 
   // ============================================================

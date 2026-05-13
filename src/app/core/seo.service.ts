@@ -60,11 +60,9 @@ export class SeoService {
 
     this.setCanonicalUrl(url);
 
-
-
-    const metaDesc = description || this.defaultDescription;
-
-    this.metaService.updateTag({ name: 'description', content: metaDesc });
+    if (description) {
+      this.metaService.updateTag({ name: 'description', content: description });
+    }
 
 
 

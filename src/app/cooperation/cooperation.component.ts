@@ -1,7 +1,9 @@
-import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
+import { SeoService } from '../core/seo.service';
+import { SchemaOrgHelper } from '../core/schema-org.helper';
 
 @Component({
   selector: 'app-cooperation',
@@ -11,6 +13,7 @@ import { Meta, Title } from '@angular/platform-browser';
   styleUrls: ['./cooperation.component.css']
 })
 export class CooperationComponent implements OnInit, OnDestroy {
+  private seoService = inject(SeoService);
 
   cooperationAreas = [
     {
@@ -71,16 +74,18 @@ export class CooperationComponent implements OnInit, OnDestroy {
   constructor(
     private meta: Meta,
     private title: Title,
+    @Inject(PLATFORM_ID) private platformId: Object,
     @Inject(DOCUMENT) private document: Document
   ) { }
 
   ngOnInit(): void {
     this.setMetaTags();
     this.setCanonicalUrl();
+    this.seoService.addStructuredData(SchemaOrgHelper.generateOrganization());
   }
 
   ngOnDestroy(): void {
-    // Cleanup if needed
+    this.seoService.removeStructuredData();
   }
 
   private setMetaTags(): void {
@@ -98,13 +103,13 @@ export class CooperationComponent implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description', content: pageDescription });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/cooperation' });
-    this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/logo-cyclopick.png' });
+    this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/logo-cyclopick.webp' });
     this.meta.updateTag({ property: 'og:locale', content: 'pl_PL' });
 
-    // Twitter Card
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
     this.meta.updateTag({ name: 'twitter:description', content: pageDescription });
+    this.meta.updateTag({ name: 'twitter:image', content: 'https://www.cyclopick.pl/assets/images/logo-cyclopick.webp' });
   }
 
   private setCanonicalUrl(): void {

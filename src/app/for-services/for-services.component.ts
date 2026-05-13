@@ -1,9 +1,11 @@
 // for-services.component.ts
 
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml, Meta, Title } from '@angular/platform-browser';
+import { SeoService } from '../core/seo.service';
+import { SchemaOrgHelper } from '../core/schema-org.helper';
 
 @Component({
   selector: 'app-for-services',
@@ -12,7 +14,8 @@ import { DomSanitizer, SafeHtml, Meta, Title } from '@angular/platform-browser';
   templateUrl: './for-services.component.html',
   styleUrls: ['./for-services.component.css']
 })
-export class ForServicesComponent implements OnInit {
+export class ForServicesComponent implements OnInit, OnDestroy {
+  private seoService = inject(SeoService);
 
   // Powrót do logo CycloPick
   heroImage = {
@@ -206,6 +209,42 @@ Nie widzisz swojej specjalizacji na liście? Bez obaw! Możesz ją dodać samodz
   ngOnInit(): void {
     this.setMetaTags();
     this.setCanonicalUrl();
+    this.addStructuredData();
+  }
+
+  ngOnDestroy(): void {
+    this.seoService.removeStructuredData();
+  }
+
+  private addStructuredData(): void {
+    const allFaqItems = this.faqCategories.flatMap(cat =>
+      cat.items.map(item => ({ question: item.question, answer: item.answer }))
+    );
+
+    const howTo = SchemaOrgHelper.generateHowTo(
+      'Jak dołączyć do CycloPick jako serwis rowerowy',
+      'Rejestracja serwisu rowerowego na platformie CycloPick w 3 prostych krokach. Bezpłatnie.',
+      [
+        {
+          name: 'Szybka rejestracja',
+          text: 'Wypełnij podstawowe dane i wybierz zakres usług – zajmie Ci to mniej niż 5 minut.'
+        },
+        {
+          name: 'Weryfikacja profilu',
+          text: 'Potwierdź maila i poczekaj na nasze sprawdzenie (robimy to w max. 3 dni, by dbać o jakość bazy).'
+        },
+        {
+          name: 'Pokaż się z najlepszej strony',
+          text: 'Po weryfikacji uzupełnij zdjęcia i pochwal się współpracą na FB – my zrobimy to samo, promując Twój warsztat!'
+        }
+      ]
+    );
+
+    this.seoService.addMultipleStructuredData([
+      SchemaOrgHelper.generateOrganization(),
+      SchemaOrgHelper.generateFAQPage(allFaqItems),
+      howTo
+    ]);
   }
 
   private setMetaTags(): void {

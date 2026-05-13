@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-cookie-policy',
@@ -208,8 +209,17 @@ import { Router, RouterLink } from '@angular/router';
     }
   `]
 })
-export class CookiePolicyComponent {
+export class CookiePolicyComponent implements OnInit {
+  private title = inject(Title);
+  private meta = inject(Meta);
+
   constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    this.title.setTitle('Polityka Cookies | CycloPick');
+    this.meta.updateTag({ name: 'description', content: 'Polityka plików cookies platformy CycloPick. Dowiedz się, jakich ciasteczek używamy i jak nimi zarządzać.' });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+  }
 
   goBack(): void {
     window.history.back();

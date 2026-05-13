@@ -479,10 +479,12 @@ export class SchemaOrgHelper {
         availableLanguage: ['pl']
       },
       sameAs: [
-
-        'https://www.facebook.com/cyclopick'
-
-      ].filter(Boolean)
+        'https://www.facebook.com/cyclopick',
+        'https://www.instagram.com/cyclopickpl',
+        'https://x.com/cyclopickPL',
+        'https://pl.linkedin.com/company/cyclopick-pl',
+        'https://www.youtube.com/@cyclopick'
+      ]
     };
   }
 
@@ -716,6 +718,60 @@ export class SchemaOrgHelper {
     }
 
     return result;
+  }
+
+  /**
+   * Generuje HowTo schema dla instrukcji krok po kroku
+   */
+  static generateHowTo(
+    name: string,
+    description: string,
+    steps: Array<{ name: string; text: string }>
+  ): any {
+    if (!steps || steps.length === 0) return null;
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'HowTo',
+      name,
+      description,
+      step: steps.map((s, i) => ({
+        '@type': 'HowToStep',
+        position: i + 1,
+        name: s.name,
+        text: s.text
+      }))
+    };
+  }
+
+  /**
+   * Generuje WebSite schema z SearchAction dla strony głównej
+   */
+  static generateWebSite(): any {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      '@id': 'https://www.cyclopick.pl/#website',
+      url: 'https://www.cyclopick.pl/',
+      name: 'CycloPick',
+      description: 'Największa baza serwisów rowerowych w Polsce. Znajdź warsztat, sprawdź cennik i zarezerwuj wizytę online.',
+      inLanguage: 'pl',
+      publisher: {
+        '@type': 'Organization',
+        name: 'CycloPick',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://www.cyclopick.pl/assets/images/logo-cyclopick.webp'
+        }
+      },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: 'https://www.cyclopick.pl/serwisy/{city}'
+        },
+        'query-input': 'required name=city'
+      }
+    };
   }
 
   /**

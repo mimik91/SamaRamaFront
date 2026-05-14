@@ -386,10 +386,6 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private generateSchemaMarkup(): void {
-    const faqSchema = SchemaOrgHelper.generateFAQPage(
-      this.faqData.map(item => ({ question: item.question, answer: item.answer }))
-    );
-
     const transportService = {
       '@context': 'https://schema.org',
       '@type': 'Service',
@@ -408,7 +404,6 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.seoService.addMultipleStructuredData([
       SchemaOrgHelper.generateOrganization(),
       SchemaOrgHelper.generateWebSite(),
-      faqSchema,
       transportService
     ]);
   }

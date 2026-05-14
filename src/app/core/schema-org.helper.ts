@@ -721,29 +721,6 @@ export class SchemaOrgHelper {
   }
 
   /**
-   * Generuje HowTo schema dla instrukcji krok po kroku
-   */
-  static generateHowTo(
-    name: string,
-    description: string,
-    steps: Array<{ name: string; text: string }>
-  ): any {
-    if (!steps || steps.length === 0) return null;
-    return {
-      '@context': 'https://schema.org',
-      '@type': 'HowTo',
-      name,
-      description,
-      step: steps.map((s, i) => ({
-        '@type': 'HowToStep',
-        position: i + 1,
-        name: s.name,
-        text: s.text
-      }))
-    };
-  }
-
-  /**
    * Generuje WebSite schema z SearchAction dla strony głównej
    */
   static generateWebSite(): any {

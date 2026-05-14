@@ -912,53 +912,6 @@ onCitySelected(city: CitySuggestion): void {
           'description': 'Katalog warsztatów rowerowych dostępnych na mapie CycloPick',
           'numberOfItems': this.totalServices || 1000,
           'itemListOrder': 'https://schema.org/ItemListOrderDescending'
-        },
-        // FAQPage Schema - dla AIO (ChatGPT, Copilot, Gemini)
-        {
-          '@type': 'FAQPage',
-          '@id': 'https://www.cyclopick.pl/mapa-serwisow#faq',
-          'mainEntity': [
-            {
-              '@type': 'Question',
-              'name': 'Jak znaleźć najlepszy serwis rowerowy w mojej okolicy?',
-              'acceptedAnswer': {
-                '@type': 'Answer',
-                'text': 'Skorzystaj z interaktywnej mapy CycloPick. Wpisz nazwę swojego miasta w wyszukiwarkę, a mapa pokaże wszystkie dostępne serwisy rowerowe w okolicy. Możesz przefiltrować wyniki według oferowanych usług (np. naprawa przerzutek, centrowanie kół) i sprawdzić opinie innych użytkowników.'
-              }
-            },
-            {
-              '@type': 'Question',
-              'name': 'Czy mogę umówić się do serwisu rowerowego online?',
-              'acceptedAnswer': {
-                '@type': 'Answer',
-                'text': 'Tak, większość serwisów na mapie CycloPick umożliwia rezerwację terminu online. Po wybraniu serwisu możesz sprawdzić dostępne terminy i zarezerwować wizytę bez dzwonienia. Niektóre serwisy oferują również możliwość zamówienia transportu roweru.'
-              }
-            },
-            {
-              '@type': 'Question',
-              'name': 'Ile kosztuje naprawa roweru w serwisie?',
-              'acceptedAnswer': {
-                '@type': 'Answer',
-                'text': 'Ceny różnią się w zależności od serwisu i rodzaju naprawy. Podstawowy przegląd roweru kosztuje zwykle 50-150 zł. Dzięki CycloPick możesz porównać cenniki różnych serwisów przed wizytą - wiele warsztatów publikuje swoje cenniki na swoich profilach.'
-              }
-            },
-            {
-              '@type': 'Question',
-              'name': 'Jak sprawdzić opinie o serwisie rowerowym?',
-              'acceptedAnswer': {
-                '@type': 'Answer',
-                'text': 'Na mapie CycloPick każdy serwis rowerowy ma swój profil z opiniami użytkowników. Kliknij na wybrany serwis, aby zobaczyć oceny, komentarze i zdjęcia od innych rowerzystów. Zweryfikowane serwisy są oznaczone specjalną ikoną.'
-              }
-            },
-            {
-              '@type': 'Question',
-              'name': 'Czy CycloPick działa w całej Polsce?',
-              'acceptedAnswer': {
-                '@type': 'Answer',
-                'text': 'Tak, mapa CycloPick obejmuje serwisy rowerowe w całej Polsce. Aktualnie w bazie znajduje się ponad 1000 warsztatów rowerowych - od dużych miast jak Warszawa, Kraków czy Wrocław, po mniejsze miejscowości. Lista serwisów jest stale aktualizowana.'
-              }
-            }
-          ]
         }
       ]
     };

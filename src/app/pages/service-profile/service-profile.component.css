@@ -376,6 +376,13 @@
   width: 100%;
 }
 
+.pricelist-main-heading {
+  font-size: var(--font-size-3xl);
+  color: var(--color-primary);
+  font-weight: 700;
+  margin: 0 0 var(--spacing-2);
+}
+
 .category-group {
   margin-bottom: var(--spacing-8);
 }

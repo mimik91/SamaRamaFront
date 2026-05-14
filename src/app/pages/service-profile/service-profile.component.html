@@ -96,12 +96,13 @@
     <!-- PRICELIST TAB (z pakietami na górze) -->
 <section class="pricelist-section" *ngIf="activeTab === 'pricelist'">
   <div class="pricelist-tab">
-    
+    <h1 class="pricelist-main-heading">{{ publicInfo.name }} – cennik serwisu rowerowego</h1>
+
     <!-- ============================================ -->
     <!-- PAKIETY SERWISOWE - NA GÓRZE CENNIKA -->
     <!-- ============================================ -->
     <div *ngIf="packagesConfig && packages && packages.length > 0" class="packages-section-in-pricelist">
-      
+
       <!-- Nagłówek sekcji pakietów -->
       <h2 class="section-title">Pakiety serwisowe</h2>
       
@@ -189,7 +190,7 @@
     <!-- OPENING HOURS TAB -->
     <section class="main-content" *ngIf="activeTab === 'hours'">
       <div class="content-left">
-        <h2>Godziny otwarcia – {{ publicInfo.name }}</h2>
+        <h1>Godziny otwarcia – {{ publicInfo.name }}</h1>
         <div *ngIf="openingHours?.openingHoursInfo" class="info-banner">
           <p>{{ openingHours?.openingHoursInfo }}</p>
         </div>

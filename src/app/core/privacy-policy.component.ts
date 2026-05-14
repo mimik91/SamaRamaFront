@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
+import { SeoService } from './seo.service';
 
 @Component({
   selector: 'app-privacy-policy',
@@ -247,6 +248,7 @@ import { Title, Meta } from '@angular/platform-browser';
 export class PrivacyPolicyComponent implements OnInit {
   private title = inject(Title);
   private meta = inject(Meta);
+  private seoService = inject(SeoService);
 
   constructor(private router: Router) {}
 
@@ -254,6 +256,7 @@ export class PrivacyPolicyComponent implements OnInit {
     this.title.setTitle('Polityka Prywatności | CycloPick');
     this.meta.updateTag({ name: 'description', content: 'Polityka prywatności platformy CycloPick. Dowiedz się, jak przetwarzamy Twoje dane osobowe zgodnie z RODO.' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.seoService.setCanonical('https://www.cyclopick.pl/privacy-policy');
   }
 
   goBack(): void {

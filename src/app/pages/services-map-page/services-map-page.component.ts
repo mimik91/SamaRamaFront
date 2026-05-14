@@ -146,6 +146,14 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
       };
     }
 
+    // Synchronicznie ustaw tytuł ze snapshotu — krytyczne dla SSR
+    // queryParams subscription może wyemitować za późno dla serwera
+    const cityFromSnapshot = snapshot.get('city') || '';
+    if (cityFromSnapshot) {
+      this.filtersState.cityQuery = cityFromSnapshot;
+    }
+    this.updateDynamicMetaTags();
+
     // Inicjalizuj dane z resolvera (SSR)
     this.initializeFromResolver();
 
@@ -794,8 +802,8 @@ onCitySelected(city: CitySuggestion): void {
       : 'Interaktywna mapa serwisów rowerowych w Polsce. Znajdź najbliższy warsztat rowerowy, sprawdź opinie i umów wizytę online. Ponad 1000 serwisów rowerowych w całej Polsce.';
 
     const urlPath = hasCity
-      ? `https://www.cyclopick.pl?city=${encodeURIComponent(city)}`
-      : 'https://www.cyclopick.pl';
+      ? `https://www.cyclopick.pl/mapa-serwisow?city=${encodeURIComponent(city)}`
+      : 'https://www.cyclopick.pl/mapa-serwisow';
 
     // Title
     this.title.setTitle(titleText);
@@ -829,6 +837,9 @@ onCitySelected(city: CitySuggestion): void {
     this.meta.updateTag({ name: 'twitter:title', content: titleText });
     this.meta.updateTag({ name: 'twitter:description', content: descriptionText });
     this.meta.updateTag({ name: 'twitter:image', content: 'https://www.cyclopick.pl/assets/images/for-services/widocznosc-na-mapie-serwisow.webp' });
+
+    // Canonical URL — zawsze bez parametrów (unikamy duplicate content z ?city=X)
+    this.seoService.setCanonical('https://www.cyclopick.pl/mapa-serwisow');
 
     // Robots
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });

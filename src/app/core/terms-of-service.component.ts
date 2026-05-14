@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
+import { SeoService } from './seo.service';
 
 @Component({
   selector: 'app-terms-of-service',
@@ -178,6 +179,7 @@ import { Title, Meta } from '@angular/platform-browser';
 export class TermsOfServiceComponent implements OnInit {
   private title = inject(Title);
   private meta = inject(Meta);
+  private seoService = inject(SeoService);
 
   constructor(private router: Router) {}
 
@@ -185,6 +187,7 @@ export class TermsOfServiceComponent implements OnInit {
     this.title.setTitle('Regulamin usług transportowych | CycloPick');
     this.meta.updateTag({ name: 'description', content: 'Regulamin świadczenia usług transportowych platformy CycloPick. Warunki zamówienia transportu roweru door-to-door.' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.seoService.setCanonical('https://www.cyclopick.pl/terms-of-service');
   }
 
   goBack(): void {

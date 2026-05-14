@@ -266,7 +266,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Generuje i dodaje JSON-LD ItemList schema dla listy serwisów
+   * Generuje i dodaje JSON-LD ItemList + BreadcrumbList schema dla listy serwisów
    * Dzięki temu AI crawlery (ChatGPT, Gemini) mogą odczytać dane serwisów
    */
   private updateStructuredData(): void {
@@ -281,8 +281,14 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
       `Serwisy rowerowe ${this.currentCity.name}`
     );
 
-    if (!itemList) return;
+    const breadcrumb = SchemaOrgHelper.generateBreadcrumb([
+      { name: 'CycloPick', url: environment.siteUrl },
+      { name: `Serwisy rowerowe – ${this.currentCity.name}`, url: `${environment.siteUrl}/serwisy/${this.currentCity.slug}` }
+    ]);
 
-    this.seoService.addStructuredData(itemList);
+    const schemas = [itemList, breadcrumb].filter(Boolean);
+    if (schemas.length === 0) return;
+
+    this.seoService.addMultipleStructuredData(schemas);
   }
 }

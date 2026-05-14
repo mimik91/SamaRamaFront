@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
+import { SeoService } from './seo.service';
 
 @Component({
   selector: 'app-terms-of-service-workshops',
@@ -232,6 +233,7 @@ import { Title, Meta } from '@angular/platform-browser';
 export class TermsOfServiceWorkshopsComponent implements OnInit {
   private title = inject(Title);
   private meta = inject(Meta);
+  private seoService = inject(SeoService);
 
   constructor(private router: Router) {}
 
@@ -239,6 +241,7 @@ export class TermsOfServiceWorkshopsComponent implements OnInit {
     this.title.setTitle('Regulamin dla serwisów rowerowych | CycloPick');
     this.meta.updateTag({ name: 'description', content: 'Regulamin świadczenia usług dla serwisów rowerowych na platformie CycloPick. Zasady rejestracji i korzystania z panelu warsztatu.' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.seoService.setCanonical('https://www.cyclopick.pl/terms-of-service-workshops');
   }
 
   goBack(): void {

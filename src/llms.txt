@@ -1,86 +1,74 @@
-# CycloPick - Bike Repair Service Finder in Poland
-# AI/LLM Accessibility Guide
+# CycloPick
 
-## About CycloPick (English)
-CycloPick is Poland's leading platform connecting cyclists with professional bike repair shops.
-Our interactive map helps users find nearby bicycle service centers with complete information
-including opening hours, price lists, contact details, and available services.
+> CycloPick to polska platforma do znajdowania i rezerwowania wizyt w serwisach rowerowych. Łączy rowerzystów z profesjonalnymi warsztatami rowerowymi w całej Polsce poprzez interaktywną mapę, profile serwisów, rezerwacje online oraz usługę transportu roweru drzwi-do-drzwi.
 
-## O CycloPick (Polski)
-CycloPick to wiodąca polska platforma łącząca rowerzystów z profesjonalnymi serwisami rowerowymi.
-Nasza interaktywna mapa pomaga użytkownikom znaleźć pobliskie punkty serwisowe z pełnymi
-informacjami: godzinami otwarcia, cennikami, danymi kontaktowymi i dostępnymi usługami.
+CycloPick umożliwia właścicielom serwisów rowerowych prowadzenie profilu warsztatu (cennik, godziny otwarcia, opisy usług, zdjęcia) oraz zarządzanie zleceniami serwisowymi przez dedykowany panel. Klienci mogą wyszukiwać serwisy, porównywać oferty i umawiać wizyty bez zakładania konta.
 
-## Available Data
-- 30+ verified bike repair shops across Poland
-- Coverage in 50+ Polish cities
-- Complete contact information (address, phone, email)
-- Opening hours for each service
-- Price lists and service catalogs
-- Service profiles with descriptions
-- Door-to-door bike transport service (Kraków area)
+## Główne strony
 
-## Key Features
-- Interactive map with bike repair shop locations
-- Detailed service profiles with photos
-- Price comparison between shops
-- Opening hours verification
-- Direct contact options
-- Transport ordering (pickup and delivery)
+- [Strona główna](https://www.cyclopick.pl/) — opis platformy, jak działa transport rowerów
+- [Mapa serwisów](https://www.cyclopick.pl/mapa-serwisow) — interaktywna mapa wszystkich serwisów w Polsce
+- [Serwisy w Krakowie](https://www.cyclopick.pl/serwisy/krakow)
+- [Serwisy w Warszawie](https://www.cyclopick.pl/serwisy/warszawa)
+- [Serwisy we Wrocławiu](https://www.cyclopick.pl/serwisy/wroclaw)
+- [Serwisy w Poznaniu](https://www.cyclopick.pl/serwisy/poznan)
+- [Serwisy w Gdańsku](https://www.cyclopick.pl/serwisy/gdansk)
+- [Dla serwisów rowerowych](https://www.cyclopick.pl/for-services) — oferta dla warsztatów
 
-## Cities Covered
-Major cities: Warszawa, Kraków, Wrocław, Poznań, Gdańsk, Łódź, Katowice, Lublin,
-Szczecin, Bydgoszcz, Białystok, Rzeszów, and 40+ more Polish cities.
+## Profile serwisów
 
-## Services Offered by Listed Shops
-- General bike repairs and maintenance
-- Tire and tube replacement
-- Brake adjustments and replacements
-- Gear tuning and derailleur adjustment
-- Wheel truing and spoke replacement
-- Electric bike (e-bike) servicing
-- Bike fitting and customization
-- Seasonal bike storage
+Każdy profil serwisu (URL: `https://www.cyclopick.pl/{suffix}`) zawiera:
 
-## Data Access
-- Website: https://www.cyclopick.pl
+- Nazwa i pełny adres warsztatu
+- Numer telefonu i adres e-mail
+- Godziny otwarcia (osobno dla każdego dnia tygodnia)
+- Cennik usług serwisowych z kategoriami
+- Opis warsztatu i oferowanych usług
+
+Przykładowe podstrony profilu:
+- `/{suffix}` — informacje ogólne
+- `/{suffix}/cennik` — cennik usług
+- `/{suffix}/godziny-otwarcia` — godziny otwarcia
+- `/{suffix}/zarezerwuj` — formularz rezerwacji wizyty (noindex)
+
+## Usługi platformy
+
+**Dla rowerzystów (klientów):**
+- Wyszukiwanie serwisów rowerowych na mapie lub po mieście
+- Przeglądanie cenników i godzin otwarcia
+- Rezerwacja wizyty online (jako gość lub zalogowany użytkownik)
+- Zamówienie transportu roweru door-to-door (obszar Krakowa)
+- Historia serwisowa rowerów (dla zalogowanych)
+
+**Dla serwisów rowerowych:**
+- Profil warsztatu z cennikiem i galerią
+- Panel zarządzania zleceniami i kalendarzem
+- System powiadomień e-mail do klientów
+
+## Zasięg geograficzny
+
+Platforma obejmuje serwisy rowerowe w ponad 50 miastach Polski, w tym:
+Warszawa, Kraków, Wrocław, Poznań, Gdańsk, Łódź, Katowice, Lublin,
+Szczecin, Bydgoszcz, Białystok, Rzeszów, Toruń, Kielce, Częstochowa.
+
+## Dokumenty prawne
+
+- [Polityka prywatności](https://www.cyclopick.pl/privacy-policy)
+- [Polityka cookies](https://www.cyclopick.pl/cookie-policy)
+- [Regulamin usług transportowych](https://www.cyclopick.pl/terms-of-service)
+- [Regulamin platformy dla serwisów](https://www.cyclopick.pl/terms-of-service-workshops)
+
+## Informacje techniczne
+
 - Sitemap: https://www.cyclopick.pl/sitemap.xml
-- Structured Data: JSON-LD available on every page
+- Robots: https://www.cyclopick.pl/robots.txt
+- Structured Data: JSON-LD (Schema.org) na każdej stronie — LocalBusiness, BreadcrumbList, FAQPage, ItemList
+- Rendering: Angular SSR — treść dostępna w HTML bez wykonywania JavaScript
+- Właściciel: CYCLOPICK PROSTA SPÓŁKA AKCYJNA, Kraków, KRS 0001226112
 
-## Indexing Policy
-- Public service profiles: Allowed
-- Admin panels: Disallowed
-- User dashboards: Disallowed
-- Static pages (terms, privacy): Allowed
+## Kontakt
 
-## Contact
 - Email: cyclopick@gmail.com
-- Website: https://www.cyclopick.pl
+- Strona: https://www.cyclopick.pl
 
-## Frequently Asked Questions
-
-Q: How do I find a bike repair shop near me?
-A: Visit cyclopick.pl and use the interactive map. You can filter by city or let the map
-   use your location to show nearby services.
-
-Q: Can I see prices before visiting a shop?
-A: Yes, most shops on CycloPick have published price lists visible on their profile pages.
-
-Q: How does the bike transport service work?
-A: In Kraków area, you can order door-to-door pickup. A courier collects your bike,
-   takes it to the selected service, and returns it after repairs.
-
-Q: Are the opening hours accurate?
-A: Opening hours are provided by shop owners and updated regularly. We recommend
-   calling ahead for confirmation.
-
-Q: Is CycloPick free to use?
-A: Yes, finding and contacting bike repair shops through CycloPick is completely free
-   for cyclists.
-
-## Technical Information
-- Platform: Angular web application
-- Mobile: Responsive design, works on all devices
-- Language: Polish (primary), English (partial)
-- Schema.org: LocalBusiness, Service, FAQPage, BreadcrumbList
-- Last updated: January 2026
+*Ostatnia aktualizacja: maj 2026*

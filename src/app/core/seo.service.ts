@@ -66,7 +66,12 @@ export class SeoService {
 
 
 
-    if (path.includes('admin') || path.includes('panel') || path.includes('account') || path.includes('login') || path.includes('register')) {
+    if (
+      path.includes('admin') || path.includes('panel') ||
+      path.includes('account') || path.includes('login') ||
+      path.includes('register') || path.includes('zarezerwuj') ||
+      path.includes('zamow-transport')
+    ) {
 
       this.metaService.updateTag({ name: 'robots', content: 'noindex, nofollow' });
 
@@ -164,7 +169,12 @@ export class SeoService {
 
     // 7. Robots - KRYTYCZNE: Sprawdź czy to nie strona administracyjna
     // Centralna logika blokowania indeksacji dla paneli admina/konta
-    if (path && (path.includes('admin') || path.includes('panel') || path.includes('account') || path.includes('login') || path.includes('register'))) {
+    if (path && (
+      path.includes('admin') || path.includes('panel') ||
+      path.includes('account') || path.includes('login') ||
+      path.includes('register') || path.includes('zarezerwuj') ||
+      path.includes('zamow-transport')
+    )) {
       this.metaService.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     } else {
       this.metaService.updateTag({ name: 'robots', content: 'index, follow' });
@@ -366,6 +376,14 @@ export class SeoService {
     if (scripts.length > 0) {
       console.log(`[SeoService] ✅ Removed ${scripts.length} structured data script(s)`);
     }
+  }
+
+  /**
+   * Publiczna metoda do ustawiania canonical URL
+   * Używaj w komponentach, które nie korzystają z updateFullSeoTags()
+   */
+  setCanonical(url: string): void {
+    this.setCanonicalUrl(url);
   }
 
   /**

@@ -69,7 +69,7 @@ export class SeoService {
     if (
       path.includes('admin') || path.includes('panel') ||
       path.includes('account') || path.includes('login') ||
-      path.includes('register') || path.includes('zarezerwuj') ||
+      path.includes('register') ||
       path.includes('zamow-transport')
     ) {
 
@@ -172,7 +172,7 @@ export class SeoService {
     if (path && (
       path.includes('admin') || path.includes('panel') ||
       path.includes('account') || path.includes('login') ||
-      path.includes('register') || path.includes('zarezerwuj') ||
+      path.includes('register') ||
       path.includes('zamow-transport')
     )) {
       this.metaService.updateTag({ name: 'robots', content: 'noindex, nofollow' });

@@ -782,6 +782,33 @@ export class SchemaOrgHelper {
   }
 
   /**
+   * Generuje HowTo schema dla instrukcji krok po kroku
+   */
+  static generateHowTo(
+    name: string,
+    description: string,
+    steps: Array<{ name: string; text: string }>
+  ): any {
+    if (!name || !steps || steps.length === 0) {
+      console.warn('[SchemaOrgHelper] Brak wymaganych danych dla HowTo');
+      return null;
+    }
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'HowTo',
+      name,
+      description,
+      step: steps.map((step, index) => ({
+        '@type': 'HowToStep',
+        position: index + 1,
+        name: step.name,
+        text: step.text
+      }))
+    };
+  }
+
+  /**
    * Zwraca domyślne FAQ dla CycloPick (do użycia na stronie głównej)
    */
   static getDefaultCycloPickFAQ(): Array<{ question: string; answer: string }> {

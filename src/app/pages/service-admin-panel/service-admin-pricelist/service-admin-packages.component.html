@@ -71,7 +71,6 @@
       <div class="settings-header">
         <h3>{{ t('pricelist.packages.global_settings') }}</h3>
         <div class="settings-header-right">
-          <!-- Toggle: pakiety aktywne -->
           <label class="pkg-toggle-label" [class.pkg-toggle-disabled]="!isEditingSettings">
             <input
               type="checkbox"
@@ -87,11 +86,9 @@
               {{ configActive ? t('pricelist.packages.active') : t('pricelist.packages.inactive') }}
             </span>
           </label>
-
         </div>
       </div>
 
-      <!-- General Description -->
       <div class="setting-row">
         <label>{{ t('pricelist.packages.general_description') }}</label>
         <textarea
@@ -104,7 +101,6 @@
         <small>{{ (generalDescription || '').length }}/1000 {{ t('pricelist.packages.characters') }}</small>
       </div>
 
-      <!-- Comment -->
       <div class="setting-row">
         <label>{{ t('pricelist.packages.comment') }}</label>
         <textarea
@@ -117,7 +113,6 @@
         <small>{{ t('pricelist.packages.comment_hint') }}</small>
       </div>
 
-      <!-- Default Bike Type -->
       <div class="setting-row">
         <label>{{ t('pricelist.packages.default_bike_type') }}</label>
         <select
@@ -132,8 +127,6 @@
         <small>{{ t('pricelist.packages.default_bike_type_hint') }}</small>
       </div>
 
-
-      <!-- Error message in settings -->
       <div *ngIf="error && isEditingSettings" class="error-state" style="min-height: auto; padding: var(--spacing-4) 0;">
         <p style="margin: 0; color: var(--color-danger);">{{ t(error) }}</p>
       </div>
@@ -142,8 +135,8 @@
     <!-- Bike Type Selector -->
     <div class="bike-type-selector" *ngIf="allBikeTypes.length > 0">
       <label>{{ t('pricelist.packages.select_bike_type') }}</label>
-      <select 
-        class="bike-type-select" 
+      <select
+        class="bike-type-select"
         [(ngModel)]="selectedBikeType"
         [disabled]="isSaving">
         <option *ngFor="let bikeType of allBikeTypes; trackBy: trackByBikeType" [value]="bikeType">
@@ -193,20 +186,20 @@
             </div>
 
             <div class="package-actions">
-              <button 
-                class="btn btn-primary" 
+              <button
+                class="btn btn-primary"
                 (click)="startEditingPackage(pkg)"
-                [disabled]="isSaving || editingPackage !== null">
+                [disabled]="isSaving">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
                 {{ t('common.edit') }}
               </button>
-              <button 
-                class="btn btn-danger" 
+              <button
+                class="btn btn-danger"
                 (click)="deletePackage(pkg)"
-                [disabled]="isSaving || editingPackage !== null">
+                [disabled]="isSaving">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="3 6 5 6 21 6"></polyline>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -221,10 +214,10 @@
             <div class="package-form">
               <div class="form-group">
                 <label>{{ t('pricelist.packages.custom_name') }}</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   class="form-input"
-                  [(ngModel)]="editingPackage!.customName"
+                  [(ngModel)]="getEditingPackage(level)!.customName"
                   [placeholder]="getPackageLevelDisplayName(level)"
                   maxlength="100">
                 <small>{{ t('pricelist.packages.custom_name_help') }}</small>
@@ -233,12 +226,12 @@
               <div class="form-group">
                 <label>{{ t('pricelist.packages.bike_types') }}</label>
                 <div class="bike-types-checkboxes">
-                  <label *ngFor="let bikeType of allBikeTypes; trackBy: trackByBikeType" 
+                  <label *ngFor="let bikeType of allBikeTypes; trackBy: trackByBikeType"
                          class="checkbox-label-inline">
-                    <input 
+                    <input
                       type="checkbox"
-                      [checked]="isBikeTypeSelected(bikeType)"
-                      (change)="toggleBikeType(bikeType)">
+                      [checked]="isBikeTypeSelected(level, bikeType)"
+                      (change)="toggleBikeType(level, bikeType)">
                     <span>{{ bikeType }}</span>
                   </label>
                 </div>
@@ -247,11 +240,11 @@
               <div class="form-group">
                 <label>{{ t('pricelist.packages.price') }}</label>
                 <div class="price-input-group">
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     class="form-input price-input"
-                    [value]="editingPackage!.price || ''"
-                    (input)="onPriceChange($any($event.target).value)"
+                    [value]="getEditingPackage(level)!.price || ''"
+                    (input)="onPriceChange(level, $any($event.target).value)"
                     min="0"
                     step="0.01"
                     [placeholder]="t('pricelist.packages.price_placeholder')">
@@ -263,7 +256,7 @@
                 <label>{{ t('pricelist.packages.description') }}</label>
                 <textarea
                   class="form-input"
-                  [(ngModel)]="editingPackage!.description"
+                  [(ngModel)]="getEditingPackage(level)!.description"
                   rows="3"
                   maxlength="500"
                   (input)="autoResizeTextarea($event)"
@@ -275,7 +268,7 @@
                 <label class="checkbox-label-inline">
                   <input
                     type="checkbox"
-                    [(ngModel)]="editingPackage!.active">
+                    [(ngModel)]="getEditingPackage(level)!.active">
                   <span>{{ t('pricelist.packages.package_active') }}</span>
                 </label>
               </div>
@@ -287,12 +280,23 @@
               <div class="form-actions">
                 <button
                   class="btn btn-secondary"
-                  (click)="cancelEditingPackage()">
+                  (click)="cancelEditingPackage(level)">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
                   {{ t('common.cancel') }}
+                </button>
+                <button
+                  class="btn btn-save"
+                  (click)="savePackage(level)"
+                  [disabled]="isSaving">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                  {{ isSaving ? '...' : t('common.save') }}
                 </button>
               </div>
             </div>
@@ -302,10 +306,10 @@
         <!-- Empty State - No Package -->
         <div *ngIf="!getPackageByLevel(level) && !isEditingPackageLevel(level)" class="package-empty">
           <p>{{ t('pricelist.packages.no_package') }}</p>
-          <button 
-            class="btn btn-primary" 
+          <button
+            class="btn btn-primary"
             (click)="startCreatingPackage(level)"
-            [disabled]="isSaving || editingPackage !== null">
+            [disabled]="isSaving">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -318,10 +322,10 @@
         <div *ngIf="!getPackageByLevel(level) && isEditingPackageLevel(level)" class="package-form">
           <div class="form-group">
             <label>{{ t('pricelist.packages.custom_name') }}</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               class="form-input"
-              [(ngModel)]="editingPackage!.customName"
+              [(ngModel)]="getEditingPackage(level)!.customName"
               [placeholder]="getPackageLevelDisplayName(level)"
               maxlength="100">
             <small>{{ t('pricelist.packages.custom_name_help') }}</small>
@@ -330,12 +334,12 @@
           <div class="form-group">
             <label>{{ t('pricelist.packages.bike_types') }}</label>
             <div class="bike-types-checkboxes">
-              <label *ngFor="let bikeType of allBikeTypes; trackBy: trackByBikeType" 
+              <label *ngFor="let bikeType of allBikeTypes; trackBy: trackByBikeType"
                      class="checkbox-label-inline">
-                <input 
+                <input
                   type="checkbox"
-                  [checked]="isBikeTypeSelected(bikeType)"
-                  (change)="toggleBikeType(bikeType)">
+                  [checked]="isBikeTypeSelected(level, bikeType)"
+                  (change)="toggleBikeType(level, bikeType)">
                 <span>{{ bikeType }}</span>
               </label>
             </div>
@@ -344,11 +348,11 @@
           <div class="form-group">
             <label>{{ t('pricelist.packages.price') }}</label>
             <div class="price-input-group">
-              <input 
-                type="number" 
+              <input
+                type="number"
                 class="form-input price-input"
-                [value]="editingPackage!.price || ''"
-                (input)="onPriceChange($any($event.target).value)"
+                [value]="getEditingPackage(level)!.price || ''"
+                (input)="onPriceChange(level, $any($event.target).value)"
                 min="0"
                 step="0.01"
                 [placeholder]="t('pricelist.packages.price')">
@@ -360,7 +364,7 @@
             <label>{{ t('pricelist.packages.description') }}</label>
             <textarea
               class="form-input"
-              [(ngModel)]="editingPackage!.description"
+              [(ngModel)]="getEditingPackage(level)!.description"
               rows="3"
               maxlength="500"
               (input)="autoResizeTextarea($event)"
@@ -372,7 +376,7 @@
             <label class="checkbox-label-inline">
               <input
                 type="checkbox"
-                [(ngModel)]="editingPackage!.active">
+                [(ngModel)]="getEditingPackage(level)!.active">
               <span>{{ t('pricelist.packages.active') }}</span>
             </label>
           </div>
@@ -384,12 +388,23 @@
           <div class="form-actions">
             <button
               class="btn btn-secondary"
-              (click)="cancelEditingPackage()">
+              (click)="cancelEditingPackage(level)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
               {{ t('common.cancel') }}
+            </button>
+            <button
+              class="btn btn-save"
+              (click)="savePackage(level)"
+              [disabled]="isSaving">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              {{ isSaving ? '...' : t('common.save') }}
             </button>
           </div>
         </div>

@@ -1,0 +1,157 @@
+<!-- Loading -->
+<div class="rp-loading" *ngIf="isLoading">
+  <div class="spinner-small"></div>
+  <span>Ładowanie...</span>
+</div>
+
+<!-- Error -->
+<div class="rp-error" *ngIf="!isLoading && loadError">
+  <p>Nie udało się załadować danych.</p>
+  <button class="btn-rp-retry" (click)="loadData()">Spróbuj ponownie</button>
+</div>
+
+<div class="repair-plan-container" *ngIf="!isLoading && !loadError">
+
+  <!-- Pakiet serwisowy -->
+  <div class="rp-section">
+    <div class="rp-section-header">
+      <h4>Pakiet serwisowy <span class="rp-optional">(opcjonalny)</span></h4>
+      <span class="rp-bike-type-badge" *ngIf="order.bicycleType">{{ order.bicycleType }}</span>
+    </div>
+
+    <p class="rp-empty-hint" *ngIf="packagesForBikeType.length === 0">
+      Brak aktywnych pakietów dla typu roweru „{{ bikeTypeLabel }}".
+    </p>
+
+    <div class="rp-packages" *ngIf="packagesForBikeType.length > 0">
+      <button
+        *ngFor="let pkg of packagesForBikeType"
+        class="rp-package-btn"
+        [class.selected]="selectedPackage?.id === pkg.id"
+        (click)="selectPackage(pkg)"
+      >
+        <span class="rp-pkg-name">{{ pkg.displayName }}</span>
+        <span class="rp-pkg-price">{{ pkg.price | number:'1.2-2' }} zł</span>
+        <span class="rp-pkg-desc" *ngIf="pkg.description">{{ pkg.description }}</span>
+      </button>
+      <button
+        class="rp-package-btn rp-package-none"
+        [class.selected]="!selectedPackage"
+        (click)="selectedPackage = null"
+      >
+        Bez pakietu
+      </button>
+    </div>
+  </div>
+
+  <!-- Pozycje naprawy -->
+  <div class="rp-section">
+    <h4>Pozycje naprawy</h4>
+
+    <div class="rp-add-item">
+      <div class="rp-autocomplete-wrapper">
+        <input
+          type="text"
+          class="rp-item-name-input"
+          [(ngModel)]="newItemName"
+          (input)="onNewItemNameInput()"
+          (blur)="onAutocompleteBlur()"
+          (keydown)="onNewItemNameKeydown($event)"
+          placeholder="Wyszukaj lub wpisz własną pozycję i naciśnij Enter..."
+        />
+        <div class="rp-autocomplete-dropdown" *ngIf="showAutocomplete">
+          <button
+            *ngFor="let item of autocompleteResults; let i = index"
+            class="rp-ac-option"
+            [class.focused]="focusedAutocompleteIndex === i"
+            (mousedown)="selectAutocompleteItem(item)"
+          >
+            <span class="rp-ac-name">{{ item.name }}</span>
+            <span class="rp-ac-price" *ngIf="item.price !== null">{{ item.price | number:'1.2-2' }} zł</span>
+            <span class="rp-ac-no-price" *ngIf="item.price === null">brak ceny</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-items-list" *ngIf="lineItems.length > 0">
+      <div class="rp-item-row" *ngFor="let item of lineItems; let i = index">
+        <span class="rp-item-name">{{ item.name }}</span>
+        <input
+          type="number"
+          class="rp-item-price-edit"
+          [ngModel]="item.price"
+          (ngModelChange)="updateLineItemPrice(i, $event)"
+          min="0"
+          step="0.01"
+        />
+        <span class="rp-currency">zł</span>
+        <button class="rp-btn-remove no-print" (click)="removeLineItem(i)">&times;</button>
+      </div>
+    </div>
+
+    <p class="rp-empty-hint" *ngIf="lineItems.length === 0">Brak pozycji. Dodaj usługi powyżej.</p>
+  </div>
+
+  <!-- Podsumowanie -->
+  <div class="rp-section rp-summary-section">
+    <h4>Podsumowanie</h4>
+
+    <div class="rp-summary-rows">
+      <div class="rp-summary-row" *ngIf="selectedPackage">
+        <span>Pakiet &ndash; {{ selectedPackage.displayName }}</span>
+        <span>{{ packageCost | number:'1.2-2' }} zł</span>
+      </div>
+      <div class="rp-summary-row" *ngIf="lineItems.length > 0">
+        <span>Pozycje ({{ lineItems.length }})</span>
+        <span>{{ itemsCost | number:'1.2-2' }} zł</span>
+      </div>
+      <div class="rp-summary-divider"></div>
+      <div class="rp-summary-total">
+        <span>Razem</span>
+        <div class="rp-total-values">
+          <del *ngIf="customTotalEnabled" class="rp-total-original">{{ calculatedTotal | number:'1.2-2' }} zł</del>
+          <strong>{{ finalTotal | number:'1.2-2' }} zł</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-custom-total no-print">
+      <label class="rp-checkbox-label">
+        <input type="checkbox" [(ngModel)]="customTotalEnabled" (change)="onCustomTotalToggle()" />
+        Zmień łączną kwotę
+      </label>
+      <input
+        *ngIf="customTotalEnabled"
+        type="number"
+        class="rp-custom-total-input"
+        [(ngModel)]="customTotalValue"
+        min="0"
+        step="0.01"
+      />
+      <span *ngIf="customTotalEnabled" class="rp-currency">zł</span>
+    </div>
+
+    <div class="rp-notes">
+      <label for="repairPlanNotes">Notatki do planu</label>
+      <textarea
+        id="repairPlanNotes"
+        [(ngModel)]="notes"
+        rows="3"
+        placeholder="Dodatkowe uwagi, warunki, terminy..."
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- Akcje -->
+  <div class="rp-actions no-print">
+    <span class="rp-autosave-hint">Zapisywane automatycznie przy zamknięciu</span>
+    <div class="rp-action-buttons">
+      <button class="btn-rp-send" disabled title="Wkrótce dostępne">
+        Wyślij do klienta
+      </button>
+      <button class="btn-rp-print" (click)="printPlan()">Drukuj</button>
+    </div>
+  </div>
+
+</div>

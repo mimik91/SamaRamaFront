@@ -41,6 +41,13 @@
           Sposób zwrotu
           <span class="return-badge" *ngIf="hasReturnTransport">&#10003;</span>
         </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'repair-plan'"
+          (click)="activeTab = 'repair-plan'"
+        >
+          Plan naprawy
+        </button>
       </div>
 
       <!-- Tab: Szczegóły zlecenia -->
@@ -536,6 +543,11 @@
         </ng-container>
 
       </div><!-- /tab-content return -->
+
+      <!-- Tab: Plan naprawy -->
+      <div class="tab-content" *ngIf="activeTab === 'repair-plan'">
+        <app-repair-plan-tab [order]="fullOrder" [serviceId]="serviceId" />
+      </div>
 
     </div>
 

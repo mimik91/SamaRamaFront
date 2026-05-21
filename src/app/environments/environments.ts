@@ -111,7 +111,8 @@ export const environment = {
       bikes: '/service-calendar/bikes',
       notificationConfig: '/service-calendar/notification-config',
       notificationKeys: '/service-calendar/orders/notification-keys',
-      sendNotification: '/service-calendar/orders/send-notification'
+      sendNotification: '/service-calendar/orders/send-notification',
+      repairPlan: '/service-calendar/orders/:id/repair-plan'
     },
 
     // Service Order Images (separate controller)

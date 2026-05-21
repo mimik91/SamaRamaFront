@@ -5,7 +5,7 @@ import { I18nService } from '../../../core/i18n.service';
 import { environment } from '../../../environments/environments';
 import { ServicePackagesService } from './service-packages.service';
 import { parsePrice, formatPrice } from '../../../shared/models/service-pricelist.models';
-import {  
+import {
   ServicePackageDto,
   ServicePackagesConfigDto,
   PackageLevel,
@@ -30,28 +30,24 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
 
   @Input() serviceId!: number;
 
-  // Stan komponentu
   isLoading = true;
   isSaving = false;
   isEditingSettings = false;
   error: string = '';
   successMessage: string = '';
 
-  // Dane pakietów
   packagesConfig: ServicePackagesConfigDto | null = null;
   allBikeTypes: string[] = [];
   selectedBikeType: string | null = null;
 
-  // Ustawienia globalne
   generalDescription: string = '';
   comment: string = '';
   defaultBikeType: string | null = null;
   configActive: boolean = false;
   originalSettings: PackagesConfigSettingsDto | null = null;
 
-  // Edycja pakietu
-  editingPackage: EditingPackage | null = null;
-  PackageLevel = PackageLevel; // Eksport do template
+  editingPackages = new Map<PackageLevel, EditingPackage>();
+  PackageLevel = PackageLevel;
 
   ngOnInit(): void {
     if (!this.serviceId) {
@@ -74,14 +70,12 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
         if (config && bikeTypes) {
           this.packagesConfig = config;
           this.allBikeTypes = bikeTypes.sort((a, b) => a.localeCompare(b, 'pl'));
-          
-          // Ustaw globalne ustawienia
+
           this.generalDescription = config.generalDescription || '';
           this.comment = config.comment || '';
           this.defaultBikeType = config.defaultBikeType;
           this.configActive = config.active;
 
-          // Automatycznie wybierz domyślny typ roweru lub pierwszy z listy
           if (this.allBikeTypes.length > 0 && !this.selectedBikeType) {
             this.selectedBikeType = this.defaultBikeType || this.allBikeTypes[0];
           }
@@ -141,13 +135,8 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
           this.isEditingSettings = false;
           this.isSaving = false;
           this.originalSettings = null;
-
-          // Odśwież dane
           this.loadPackages();
-
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 5000);
+          setTimeout(() => { this.successMessage = ''; }, 5000);
         },
         error: (err) => {
           console.error('Error saving settings:', err);
@@ -160,9 +149,7 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
   // ===== FILTROWANIE PAKIETÓW =====
 
   getFilteredPackages(): ServicePackageDto[] {
-    if (!this.packagesConfig || !this.selectedBikeType) {
-      return [];
-    }
+    if (!this.packagesConfig || !this.selectedBikeType) return [];
     return this.packagesService.filterPackagesByBikeType(
       this.packagesConfig.packages,
       this.selectedBikeType
@@ -176,7 +163,7 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
   // ===== TWORZENIE/EDYCJA PAKIETU =====
 
   startCreatingPackage(level: PackageLevel): void {
-    this.editingPackage = {
+    this.editingPackages.set(level, {
       packageId: null,
       packageLevel: level,
       customName: '',
@@ -184,14 +171,14 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
       price: null,
       description: '',
       active: true
-    };
+    });
     this.successMessage = '';
     this.error = '';
     this.initTextareaHeights();
   }
 
   startEditingPackage(pkg: ServicePackageDto): void {
-    this.editingPackage = {
+    this.editingPackages.set(pkg.packageLevel, {
       packageId: pkg.id,
       packageLevel: pkg.packageLevel,
       customName: pkg.customName || '',
@@ -199,10 +186,14 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
       price: pkg.price,
       description: pkg.description || '',
       active: pkg.active
-    };
+    });
     this.successMessage = '';
     this.error = '';
     this.initTextareaHeights();
+  }
+
+  getEditingPackage(level: PackageLevel): EditingPackage | undefined {
+    return this.editingPackages.get(level);
   }
 
   private initTextareaHeights(): void {
@@ -223,109 +214,108 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (!this.editingPackage) return;
-    const pkg = this.editingPackage;
-    if (pkg.bikeTypes.size === 0 || !pkg.price || pkg.price <= 0) return;
-
-    const bikeTypesArray = Array.from(pkg.bikeTypes);
-
-    if (pkg.packageId === null) {
-      this.packagesService.createPackage(this.serviceId, {
-        packageLevel: pkg.packageLevel,
-        customName: pkg.customName || null,
-        bikeTypes: bikeTypesArray,
-        price: pkg.price,
-        description: pkg.description || null,
-        active: pkg.active
-      }).subscribe();
-    } else {
-      this.packagesService.updatePackage(pkg.packageId, {
-        customName: pkg.customName || null,
-        bikeTypes: bikeTypesArray,
-        price: pkg.price,
-        description: pkg.description || null,
-        active: pkg.active
-      }).subscribe();
+    for (const [, pkg] of this.editingPackages) {
+      if (pkg.bikeTypes.size === 0 || !pkg.price || pkg.price <= 0) continue;
+      const bikeTypesArray = Array.from(pkg.bikeTypes);
+      if (pkg.packageId === null) {
+        this.packagesService.createPackage(this.serviceId, {
+          packageLevel: pkg.packageLevel,
+          customName: pkg.customName || null,
+          bikeTypes: bikeTypesArray,
+          price: pkg.price,
+          description: pkg.description || null,
+          active: pkg.active
+        }).subscribe();
+      } else {
+        this.packagesService.updatePackage(pkg.packageId, {
+          customName: pkg.customName || null,
+          bikeTypes: bikeTypesArray,
+          price: pkg.price,
+          description: pkg.description || null,
+          active: pkg.active
+        }).subscribe();
+      }
     }
   }
 
   @HostListener('window:beforeunload')
   onBeforeUnload(): void {
-    if (!isPlatformBrowser(this.platformId) || !this.editingPackage) return;
-    const pkg = this.editingPackage;
-    if (pkg.bikeTypes.size === 0 || !pkg.price || pkg.price <= 0) return;
+    if (!isPlatformBrowser(this.platformId) || this.editingPackages.size === 0) return;
 
     const sessionStr = localStorage.getItem('auth_session');
     if (!sessionStr) return;
 
     try {
       const session = JSON.parse(sessionStr) as { token: string };
-      const bikeTypesArray = Array.from(pkg.bikeTypes);
       const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${session.token}`
       };
 
-      if (pkg.packageId === null) {
-        fetch(`${this.apiUrl}/my-service/packages?serviceId=${this.serviceId}`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            packageLevel: pkg.packageLevel,
-            customName: pkg.customName || null,
-            bikeTypes: bikeTypesArray,
-            price: pkg.price,
-            description: pkg.description || null,
-            active: pkg.active
-          }),
-          keepalive: true
-        });
-      } else {
-        fetch(`${this.apiUrl}/my-service/packages/${pkg.packageId}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify({
-            customName: pkg.customName || null,
-            bikeTypes: bikeTypesArray,
-            price: pkg.price,
-            description: pkg.description || null,
-            active: pkg.active
-          }),
-          keepalive: true
-        });
+      for (const [, pkg] of this.editingPackages) {
+        if (pkg.bikeTypes.size === 0 || !pkg.price || pkg.price <= 0) continue;
+        const bikeTypesArray = Array.from(pkg.bikeTypes);
+        if (pkg.packageId === null) {
+          fetch(`${this.apiUrl}/my-service/packages?serviceId=${this.serviceId}`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              packageLevel: pkg.packageLevel,
+              customName: pkg.customName || null,
+              bikeTypes: bikeTypesArray,
+              price: pkg.price,
+              description: pkg.description || null,
+              active: pkg.active
+            }),
+            keepalive: true
+          });
+        } else {
+          fetch(`${this.apiUrl}/my-service/packages/${pkg.packageId}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              customName: pkg.customName || null,
+              bikeTypes: bikeTypesArray,
+              price: pkg.price,
+              description: pkg.description || null,
+              active: pkg.active
+            }),
+            keepalive: true
+          });
+        }
       }
     } catch { /* best-effort */ }
   }
 
-  cancelEditingPackage(): void {
-    this.editingPackage = null;
+  cancelEditingPackage(level: PackageLevel): void {
+    this.editingPackages.delete(level);
     this.error = '';
   }
 
-  toggleBikeType(bikeType: string): void {
-    if (!this.editingPackage) return;
-
-    if (this.editingPackage.bikeTypes.has(bikeType)) {
-      this.editingPackage.bikeTypes.delete(bikeType);
+  toggleBikeType(level: PackageLevel, bikeType: string): void {
+    const pkg = this.editingPackages.get(level);
+    if (!pkg) return;
+    if (pkg.bikeTypes.has(bikeType)) {
+      pkg.bikeTypes.delete(bikeType);
     } else {
-      this.editingPackage.bikeTypes.add(bikeType);
+      pkg.bikeTypes.add(bikeType);
     }
   }
 
-  isBikeTypeSelected(bikeType: string): boolean {
-    return this.editingPackage?.bikeTypes.has(bikeType) || false;
+  isBikeTypeSelected(level: PackageLevel, bikeType: string): boolean {
+    return this.editingPackages.get(level)?.bikeTypes.has(bikeType) || false;
   }
 
-  savePackage(): void {
-    if (!this.editingPackage) return;
+  savePackage(level: PackageLevel): void {
+    const editingPackage = this.editingPackages.get(level);
+    if (!editingPackage) return;
 
-    // Walidacja
-    if (this.editingPackage.bikeTypes.size === 0) {
+    if (editingPackage.bikeTypes.size === 0) {
       this.error = 'pricelist.packages.validation.bike_types_required';
       return;
     }
 
-    if (!this.editingPackage.price || this.editingPackage.price <= 0) {
+    if (!editingPackage.price || editingPackage.price <= 0) {
       this.error = 'pricelist.packages.validation.price_required';
       return;
     }
@@ -334,30 +324,26 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
     this.error = '';
     this.successMessage = '';
 
-    const bikeTypesArray = Array.from(this.editingPackage.bikeTypes);
+    const bikeTypesArray = Array.from(editingPackage.bikeTypes);
 
-    if (this.editingPackage.packageId === null) {
-      // Tworzenie nowego pakietu
+    if (editingPackage.packageId === null) {
       const createDto: CreatePackageDto = {
-        packageLevel: this.editingPackage.packageLevel,
-        customName: this.editingPackage.customName || null,
+        packageLevel: editingPackage.packageLevel,
+        customName: editingPackage.customName || null,
         bikeTypes: bikeTypesArray,
-        price: this.editingPackage.price,
-        description: this.editingPackage.description || null,
-        active: this.editingPackage.active
+        price: editingPackage.price,
+        description: editingPackage.description || null,
+        active: editingPackage.active
       };
 
       this.packagesService.createPackage(this.serviceId, createDto)
         .subscribe({
           next: () => {
             this.successMessage = 'pricelist.packages.messages.package_created';
-            this.editingPackage = null;
+            this.editingPackages.delete(level);
             this.isSaving = false;
             this.loadPackages();
-
-            setTimeout(() => {
-              this.successMessage = '';
-            }, 5000);
+            setTimeout(() => { this.successMessage = ''; }, 5000);
           },
           error: (err) => {
             console.error('Error creating package:', err);
@@ -366,26 +352,22 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
           }
         });
     } else {
-      // Aktualizacja istniejącego pakietu
       const updateDto: UpdatePackageDto = {
-        customName: this.editingPackage.customName || null,
+        customName: editingPackage.customName || null,
         bikeTypes: bikeTypesArray,
-        price: this.editingPackage.price,
-        description: this.editingPackage.description || null,
-        active: this.editingPackage.active
+        price: editingPackage.price,
+        description: editingPackage.description || null,
+        active: editingPackage.active
       };
 
-      this.packagesService.updatePackage(this.editingPackage.packageId, updateDto)
+      this.packagesService.updatePackage(editingPackage.packageId, updateDto)
         .subscribe({
           next: () => {
             this.successMessage = 'pricelist.packages.messages.package_updated';
-            this.editingPackage = null;
+            this.editingPackages.delete(level);
             this.isSaving = false;
             this.loadPackages();
-
-            setTimeout(() => {
-              this.successMessage = '';
-            }, 5000);
+            setTimeout(() => { this.successMessage = ''; }, 5000);
           },
           error: (err) => {
             console.error('Error updating package:', err);
@@ -396,12 +378,16 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
     }
   }
 
+  onPriceChange(level: PackageLevel, newPrice: string): void {
+    const pkg = this.editingPackages.get(level);
+    if (!pkg) return;
+    pkg.price = parsePrice(newPrice);
+  }
+
   // ===== USUWANIE PAKIETU =====
 
   deletePackage(pkg: ServicePackageDto): void {
-    if (!confirm(this.t('pricelist.packages.confirm.delete_package'))) {
-      return;
-    }
+    if (!confirm(this.t('pricelist.packages.confirm.delete_package'))) return;
 
     this.isSaving = true;
     this.error = '';
@@ -413,10 +399,7 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
           this.successMessage = 'pricelist.packages.messages.package_deleted';
           this.isSaving = false;
           this.loadPackages();
-
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 5000);
+          setTimeout(() => { this.successMessage = ''; }, 5000);
         },
         error: (err) => {
           console.error('Error deleting package:', err);
@@ -437,19 +420,13 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
   }
 
   isEditingPackageLevel(level: PackageLevel): boolean {
-    return this.editingPackage?.packageLevel === level;
-  }
-
-  onPriceChange(newPrice: string): void {
-    if (!this.editingPackage) return;
-    this.editingPackage.price = parsePrice(newPrice);
+    return this.editingPackages.has(level);
   }
 
   formatPrice(price: number): string {
     return formatPrice(price);
   }
 
-  // Pomocnicza metoda do tłumaczeń
   t(key: string, params?: Record<string, any>): string {
     return this.i18nService.translate(key, params);
   }

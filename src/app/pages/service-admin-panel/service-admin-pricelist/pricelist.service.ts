@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environments';
 import {
   PricelistCategoryDto,
@@ -19,13 +20,15 @@ export class PricelistService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}`;
 
-  /**
-   * Pobiera wszystkie dostępne kategorie i itemy cennika
-   */
+  private availableItemsCache$: Observable<CategoryWithItemsDto[]> | null = null;
+
   getAllAvailableItems(): Observable<CategoryWithItemsDto[]> {
-    return this.http.get<CategoryWithItemsDto[]>(
-      `${this.apiUrl}/pricelist/available-items`
-    );
+    if (!this.availableItemsCache$) {
+      this.availableItemsCache$ = this.http
+        .get<CategoryWithItemsDto[]>(`${this.apiUrl}/pricelist/available-items`)
+        .pipe(shareReplay(1));
+    }
+    return this.availableItemsCache$;
   }
 
   /**

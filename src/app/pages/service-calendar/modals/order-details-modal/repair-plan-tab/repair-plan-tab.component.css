@@ -1,0 +1,516 @@
+.repair-plan-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+  padding: var(--spacing-5);
+}
+
+/* === SEKCJE === */
+
+.rp-section {
+  background: var(--color-white);
+  border: 1px solid var(--border-color-gray);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-4) var(--spacing-5);
+}
+
+.rp-section h4 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-3) 0;
+}
+
+.rp-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+}
+
+.rp-section-header h4 {
+  margin: 0;
+}
+
+.rp-optional {
+  font-weight: 400;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.rp-bike-type-badge {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-primary);
+  background: var(--color-primary-alpha-08);
+  border: 1px solid var(--color-primary-alpha-20);
+  border-radius: 12px;
+  padding: 2px 10px;
+}
+
+.rp-empty-hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* === PAKIETY === */
+
+.rp-packages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.rp-package-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--spacing-3) var(--spacing-4);
+  border: 2px solid var(--border-color-gray);
+  border-radius: var(--radius-card);
+  background: var(--color-white);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+  min-width: 140px;
+  max-width: 220px;
+}
+
+.rp-package-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.rp-package-btn.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-alpha-08);
+}
+
+.rp-package-btn.rp-package-none {
+  min-width: auto;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  align-self: flex-start;
+}
+
+.rp-pkg-name {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.rp-pkg-price {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.rp-pkg-desc {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  white-space: pre-line;
+  margin-top: 2px;
+}
+
+/* === DODAWANIE POZYCJI === */
+
+.rp-add-item {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+  margin-bottom: var(--spacing-3);
+}
+
+.rp-autocomplete-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.rp-item-name-input {
+  width: 100%;
+  border: 2px solid var(--border-color-gray);
+  border-radius: var(--radius-input);
+  padding: 8px 12px;
+  font-size: var(--font-size-sm);
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.rp-item-name-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
+}
+
+.rp-autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--color-white);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-input);
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.rp-ac-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  text-align: left;
+  transition: background 0.15s;
+  gap: var(--spacing-2);
+}
+
+.rp-ac-option:hover,
+.rp-ac-option.focused {
+  background: var(--color-primary-alpha-08);
+  color: var(--color-primary);
+}
+
+.rp-ac-option.focused .rp-ac-name {
+  color: var(--color-primary);
+}
+
+.rp-ac-name {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.rp-ac-price {
+  font-weight: 600;
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.rp-ac-no-price {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.rp-currency {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* === LISTA POZYCJI === */
+
+.rp-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.rp-item-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-sm);
+}
+
+.rp-item-name {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.rp-item-price-edit {
+  width: 80px;
+  border: 1px solid var(--border-color-gray);
+  border-radius: var(--radius-input);
+  padding: 4px 8px;
+  font-size: var(--font-size-sm);
+  text-align: right;
+}
+
+.rp-item-price-edit:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* Ukryj strzałki spinner z inputów liczbowych */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.rp-btn-remove {
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+
+.rp-btn-remove:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* === PODSUMOWANIE === */
+
+.rp-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+}
+
+.rp-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.rp-summary-divider {
+  border-top: 1px dashed var(--border-color-gray);
+  margin: var(--spacing-1) 0;
+}
+
+.rp-summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+}
+
+.rp-total-values {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.rp-total-original {
+  font-size: var(--font-size-base);
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.rp-summary-total strong {
+  color: var(--color-primary);
+}
+
+.rp-custom-total {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+  padding-top: var(--spacing-2);
+  border-top: 1px solid var(--border-color-gray);
+}
+
+.rp-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rp-checkbox-label input[type='checkbox'] {
+  accent-color: var(--color-primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.rp-custom-total-input {
+  width: 110px;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-input);
+  padding: 6px 10px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-align: right;
+}
+
+.rp-custom-total-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
+}
+
+/* === NOTATKI === */
+
+.rp-notes label {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-2);
+}
+
+.rp-notes textarea {
+  width: 100%;
+  border: 2px solid var(--border-color-gray);
+  border-radius: var(--radius-input);
+  padding: 10px 12px;
+  font-size: var(--font-size-sm);
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.rp-notes textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
+}
+
+/* === AKCJE === */
+
+.rp-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-5);
+  background: var(--color-gray-50);
+  border-top: 1px solid var(--border-color-gray);
+  margin: 0 calc(-1 * var(--spacing-5)) calc(-1 * var(--spacing-5));
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+.rp-autosave-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.rp-action-buttons {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.btn-rp-send {
+  padding: 8px 16px;
+  background: var(--color-white);
+  color: var(--text-muted);
+  border: 2px solid var(--border-color-gray);
+  border-radius: var(--radius-btn);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-rp-print {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-btn);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px var(--color-primary-alpha-30);
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.btn-rp-print:hover {
+  box-shadow: 0 4px 16px var(--color-primary-alpha-40);
+  transform: translateY(-1px);
+}
+
+/* === LOADING / ERROR === */
+
+.rp-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-6);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.rp-error {
+  padding: var(--spacing-5);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.rp-error p {
+  margin-bottom: var(--spacing-3);
+}
+
+.btn-rp-retry {
+  padding: 8px 16px;
+  background: none;
+  border: 2px solid var(--border-color-gray);
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+
+/* === RESPONSYWNOŚĆ === */
+
+@media (max-width: 640px) {
+  .repair-plan-container {
+    padding: var(--spacing-3);
+  }
+
+  .rp-add-item {
+    flex-wrap: wrap;
+  }
+
+  .rp-autocomplete-wrapper {
+    flex: 1 1 100%;
+  }
+
+  .rp-packages {
+    flex-direction: column;
+  }
+
+  .rp-package-btn {
+    max-width: 100%;
+  }
+
+  .rp-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rp-action-buttons {
+    flex-direction: column;
+  }
+
+  .btn-rp-save,
+  .btn-rp-send,
+  .btn-rp-print {
+    width: 100%;
+    text-align: center;
+  }
+}

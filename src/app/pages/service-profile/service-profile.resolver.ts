@@ -56,6 +56,17 @@ export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedDat
           activeStatus: this.profileService.getActiveStatus(serviceId)
         }).pipe(
           switchMap(({ publicInfo, activeStatus }) => {
+            // Przekieruj gdy sekcja nie jest aktywna
+            const section = route.data['section'];
+            if (section === 'hours' && !activeStatus?.openingHoursActive) {
+              this.router.navigate(['/', suffix], { replaceUrl: true });
+              return of(null);
+            }
+            if (section === 'pricelist' && !activeStatus?.pricelistActive && !activeStatus?.packagesActive) {
+              this.router.navigate(['/', suffix], { replaceUrl: true });
+              return of(null);
+            }
+
             // Krok 3: Warunkowo pobierz dodatkowe dane
             const additionalData$: {
               openingHours: Observable<OpeningHoursWithInfoDto | null>;

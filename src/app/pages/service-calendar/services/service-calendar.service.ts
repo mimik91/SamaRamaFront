@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environments';
 import {
@@ -22,6 +22,10 @@ import {
 } from '../../../shared/models/service-calendar.models';
 
 export type { ServiceNotificationConfig };
+import {
+  RepairPlanResponse,
+  SaveRepairPlanRequest
+} from '../../../shared/models/repair-plan.models';
 
 // ============================================
 // INTERFEJSY DLA ZDJEC ZLECENIA
@@ -425,6 +429,29 @@ export class ServiceCalendarService {
       `${this.apiUrl}${environment.endpoints.bicycleStatus.stolenCheck}`,
       { params }
     ).pipe(catchError(this.handleError('checkStolenBike')));
+  }
+
+  // ============================================
+  // REPAIR PLAN
+  // ============================================
+
+  getRepairPlan(serviceId: number, orderId: number): Observable<RepairPlanResponse | null> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http
+      .get<RepairPlanResponse>(`${this.apiUrl}/service-calendar/orders/${orderId}/repair-plan`, { params })
+      .pipe(
+        catchError(error => {
+          if (error?.status === 404) return of(null);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  saveRepairPlan(serviceId: number, orderId: number, request: SaveRepairPlanRequest): Observable<RepairPlanResponse> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http
+      .put<RepairPlanResponse>(`${this.apiUrl}/service-calendar/orders/${orderId}/repair-plan`, request, { params })
+      .pipe(catchError(this.handleError('saveRepairPlan')));
   }
 
   // ============================================

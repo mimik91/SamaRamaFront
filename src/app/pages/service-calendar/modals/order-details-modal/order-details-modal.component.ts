@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, inject, ViewChild, ViewChildren, QueryList, ElementRef, DestroyRef, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RepairPlanTabComponent } from './repair-plan-tab/repair-plan-tab.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { I18nService } from '../../../../core/i18n.service';
@@ -23,7 +24,7 @@ import {
 @Component({
   selector: 'app-order-details-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RepairPlanTabComponent],
   templateUrl: './order-details-modal.component.html',
   styleUrls: ['./order-details-modal.component.css']
 })
@@ -72,7 +73,8 @@ export class OrderDetailsModalComponent implements OnDestroy {
   isSendingMessage = false;
 
   // Tab
-  activeTab: 'details' | 'messages' | 'return' = 'details';
+  @Input() initialTab: 'details' | 'messages' | 'return' | 'repair-plan' = 'details';
+  activeTab: 'details' | 'messages' | 'return' | 'repair-plan' = 'details';
 
   // Propose date
   showProposeDateForm = false;
@@ -201,6 +203,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
   }
 
   ngOnInit(): void {
+    this.activeTab = this.initialTab;
     // Initialize with passed order data
     this.fullOrder = { ...this.order };
     this.selectedStatus = this.order.status;

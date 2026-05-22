@@ -70,9 +70,8 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
       next: ({ config, availableItems, servicePricelist, existingPlan }) => {
         const activePackages = config.packages.filter(p => p.active);
         const bikeType = this.order.bicycleType ?? null;
-        this.packagesForBikeType = bikeType
-          ? filterPackagesByBikeType(activePackages, bikeType)
-          : activePackages;
+        const filtered = bikeType ? filterPackagesByBikeType(activePackages, bikeType) : activePackages;
+        this.packagesForBikeType = filtered.length > 0 ? filtered : activePackages;
 
         const categoriesWithPrices = this.pricelistService.mergeItemsWithPrices(
           availableItems,

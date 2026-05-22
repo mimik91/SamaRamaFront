@@ -15,44 +15,19 @@
 .fixed-header {
   position: sticky;
   top: 0;
-  z-index: 1000; /* Niżej niż navbar */
+  z-index: 1000;
   background: var(--color-white);
   border-bottom: 2px solid var(--color-slate-200);
   box-shadow: var(--shadow-sm);
   display: none;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
 }
 
 @media screen and (max-width: 1024px) {
   .fixed-header {
     display: block;
   }
-}
-
-/* ============ MOBILE VIEW TOGGLE ============ */
-
-.mobile-view-toggle {
-  padding: 12px 20px;
-  border-top: 1px solid var(--border-color-light);
-  background: var(--color-white-alt);
-}
-
-.view-toggle-btn {
-  width: 100%;
-  padding: 12px 20px;
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-primary);
-}
-
-.view-toggle-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-primary-hover);
 }
 
 /* ============ CONTENT AREA ============ */
@@ -62,7 +37,7 @@
   display: flex;
   overflow: hidden;
   position: relative;
-  z-index: 1; /* KLUCZOWE - niżej niż navbar */
+  z-index: 1;
 }
 
 /* ============ SIDEBAR ============ */
@@ -76,9 +51,27 @@
   box-shadow: 2px 0 10px var(--color-black-alpha-08);
   height: 100%;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
-  z-index: 100; /* Wyżej niż mapa, ale niżej niż navbar */
+  z-index: 100;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: var(--color-slate-100);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--color-slate-300);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-slate-400);
 }
 
 .sidebar.hidden {
@@ -91,6 +84,9 @@
   background-color: var(--color-primary);
   color: var(--color-white);
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .sidebar-title {
@@ -108,20 +104,11 @@
   font-weight: 400;
 }
 
-.sidebar-search-filters {
-  border-bottom: 1px solid var(--border-color-light);
-  flex-shrink: 0;
+.sidebar-filters {
+  flex: 1;
   overflow: visible;
   position: relative;
   z-index: 101;
-}
-
-:host ::ng-deep app-services-list {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
 }
 
 /* ============ MAP CONTAINER ============ */
@@ -130,11 +117,7 @@
   flex: 1;
   position: relative;
   height: 100%;
-  z-index: 1; /* KLUCZOWE - niżej niż sidebar i navbar */
-}
-
-.map-container.hidden {
-  display: none;
+  z-index: 1;
 }
 
 /* ============ RESPONSIVE DESIGN ============ */
@@ -151,39 +134,14 @@
 
   .content-area {
     flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    height: auto;
     flex: 1;
     min-height: 0;
-    border-right: none;
-  }
-
-  .sidebar.hidden {
-    display: none !important;
-    height: 0 !important;
-    overflow: hidden !important;
-  }
-
-  .sidebar-title {
-    font-size: 1.1rem;
-  }
-
-  .sidebar-subtitle {
-    font-size: 0.8rem;
   }
 
   .map-container {
     width: 100%;
-    height: 100%;
-  }
-
-  .map-container.hidden {
-    display: none !important;
-    height: 0 !important;
-    overflow: hidden !important;
+    flex: 1;
+    min-height: 300px;
   }
 }
 
@@ -198,11 +156,6 @@
 
   .sidebar-subtitle {
     font-size: 0.75rem;
-  }
-
-  .view-toggle-btn {
-    font-size: 0.9rem;
-    padding: 10px 16px;
   }
 }
 

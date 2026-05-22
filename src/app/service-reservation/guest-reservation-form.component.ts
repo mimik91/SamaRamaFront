@@ -11,7 +11,7 @@ import {
   AbstractControl,
   ValidationErrors
 } from '@angular/forms';
-import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
+import { ActivatedRoute, Router, NavigationStart, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { filter, switchMap, distinctUntilChanged } from 'rxjs/operators';
@@ -24,7 +24,6 @@ import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/cor
 import { NotificationService } from '../core/notification.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { environment } from '../environments/environments';
-import { ServiceNavComponent } from '../pages/service-profile/service-nav.component';
 import { OfficeAddressDto } from '../shared/models/office-address.model';
 
 interface ServiceInfo {
@@ -55,7 +54,7 @@ const DAY_LABELS: { [key: string]: string } = {
 @Component({
   selector: 'app-guest-reservation-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule, ServiceNavComponent],
+  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule, RouterModule],
   providers: [
     provideNativeDateAdapter(),
     { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' }

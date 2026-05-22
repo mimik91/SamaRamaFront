@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { ServiceNavComponent } from './service-nav.component';
 import { Subject, takeUntil } from 'rxjs';
 import { ServiceProfileResolvedData } from './service-profile.resolver';
 import { I18nService } from '../../core/i18n.service';
@@ -28,12 +27,10 @@ import {
   filterPackagesByBikeType
 } from '../../shared/models/service-packages.models';
 
-type TabType = 'info' | 'hours' | 'pricelist' | 'packages';
-
 @Component({
   selector: 'app-service-profile-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ServiceNavComponent],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './service-profile.component.html',
   styleUrls: ['./service-profile.component.css']
 })
@@ -72,7 +69,22 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   bikeTypes: string[] = [];
   selectedBikeType: string | null = null;
   filteredPackages: ServicePackageDto[] = [];
-  
+
+  // Akordeony cennika — domyślnie wszystkie zwinięte
+  expandedCategories = new Set<string>();
+
+  toggleCategory(name: string): void {
+    if (this.expandedCategories.has(name)) {
+      this.expandedCategories.delete(name);
+    } else {
+      this.expandedCategories.add(name);
+    }
+  }
+
+  isCategoryExpanded(name: string): boolean {
+    return this.expandedCategories.has(name);
+  }
+
   // Obrazy serwisu (null = jeszcze nie załadowane, użyj skeleton)
   logoUrl: string | null = null;
   aboutUsImageUrl: string | null = null;
@@ -85,9 +97,6 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   private readonly defaultLogoUrl = 'https://www.cyclopick.pl/assets/images/logo-cyclopick.webp';
   private readonly defaultAboutUsUrl = 'assets/images/pictures/vertical/przerzutka-rowerowa.webp';
   private readonly defaultOpeningHoursUrl = 'assets/images/pictures/vertical/rower.webp';
-  
-  // Aktywna zakładka
-  activeTab: TabType = 'info';
   
   // Dni tygodnia
   daysOfWeek: Array<{key: DayOfWeek, label: string}> = [
@@ -117,14 +126,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Subscribe to route data changes to detect section changes and get resolved data
     this.route.data.pipe(takeUntil(this.destroy$)).subscribe(data => {
-      const section = data['section'] as TabType | undefined;
-      if (section) {
-        this.activeTab = section;
-      }
-
-      // Pobierz dane z resolvera (Angular SSR czeka na resolver przed renderowaniem)
       const profileData = data['profileData'] as ServiceProfileResolvedData | null;
       if (profileData) {
         this.initializeFromResolvedData(profileData);
@@ -182,48 +184,39 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
 
     const serviceName = this.publicInfo.name;
     const city = this.publicInfo.city;
-    const address = this.getFullAddress();
-    let path = `/${this.suffix}`;
-    let title = `${serviceName} – serwis rowerowy ${city} | CycloPick`;
-    let description = this.publicInfo.description || `Profesjonalny serwis rowerowy ${serviceName} w ${city}.`;
-    let keywords: string[] = [
+    const title = `${serviceName} – serwis rowerowy ${city} | CycloPick`;
+
+    const keywords: string[] = [
       'serwis rowerowy',
       `serwis rowerowy ${city}`,
       'naprawa rowerów',
       `naprawa rowerów ${city}`,
       serviceName,
       'warsztat rowerowy',
-      'mechanik rowerowy'
+      'mechanik rowerowy',
+      'kontakt',
+      'adres serwisu'
     ];
 
-    // Dostosuj SEO dla konkretnej sekcji
-    if (this.activeTab === 'pricelist') {
-      path += '/cennik';
-      title = `${serviceName} – cennik serwisu rowerowego ${city} | CycloPick`;
-      description = `Sprawdź cennik serwisu rowerowego ${serviceName} w ${city}. Pakiety serwisowe i ceny poszczególnych usług naprawy rowerów.`;
-      keywords.push('cennik serwisu rowerowego', `cennik ${serviceName}`, 'ceny naprawy rowerów');
-    } else if (this.activeTab === 'hours') {
-      path += '/godziny-otwarcia';
-      title = `${serviceName} – godziny otwarcia | serwis rowerowy ${city} | CycloPick`;
-      description = `Sprawdź godziny otwarcia serwisu rowerowego ${serviceName} w ${city}. Zaplanuj wizytę w dogodnym dla Ciebie terminie.`;
-      keywords.push('godziny otwarcia', `godziny otwarcia ${serviceName}`, 'kiedy otwarty');
-    } else {
-      // "O nas" — keyword-rich description zbudowana od zera (max ~155 znaków)
-      const parts: string[] = [`${serviceName} – serwis rowerowy ${city}.`];
-      if (this.publicInfo.transportAvailable) {
-        parts.push('Odbiór roweru z domu i dostawa po naprawie.');
-        keywords.push('odbiór roweru z domu', 'transport roweru', 'serwis rowerowy z dojazdem', 'serwis door to door');
-      }
-      if (this.publicInfo.reservationAvailable) {
-        parts.push('Rezerwacja wizyty online.');
-        keywords.push('rezerwacja serwisu online', 'umów wizytę serwis rowerowy', 'rezerwacja online');
-      }
-      parts.push('Sprawdź kontakt i lokalizację.');
-      description = parts.join(' ');
-      keywords.push('o nas', 'kontakt', 'adres serwisu');
+    const parts: string[] = [`${serviceName} – serwis rowerowy ${city}.`];
+    if (this.activeStatus?.pricelistActive || this.activeStatus?.packagesActive) {
+      parts.push('Sprawdź cennik i pakiety serwisowe.');
+      keywords.push('cennik serwisu rowerowego', 'ceny naprawy rowerów');
     }
+    if (this.activeStatus?.openingHoursActive) {
+      parts.push('Godziny otwarcia.');
+      keywords.push('godziny otwarcia');
+    }
+    if (this.publicInfo.transportAvailable) {
+      parts.push('Odbiór roweru z domu.');
+      keywords.push('odbiór roweru z domu', 'transport roweru');
+    }
+    if (this.publicInfo.reservationAvailable) {
+      parts.push('Rezerwacja online.');
+      keywords.push('rezerwacja serwisu online');
+    }
+    const description = parts.join(' ');
 
-    // Użyj rozszerzonej metody SEO z Open Graph i Twitter Cards
     this.seoService.updateFullSeoTags(
       {
         title,
@@ -232,7 +225,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
         type: 'profile',
         keywords
       },
-      path
+      `/${this.suffix}`
     );
   }
 
@@ -277,22 +270,6 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
 
     // Zakończ ładowanie
     this.imagesLoading = false;
-  }
-
-  // Metody pomocnicze dla zakładek
-  setActiveTab(tab: TabType): void {
-    // Navigate to appropriate URL instead of changing local state
-    const urlMap: Record<TabType, string> = {
-      'info': `/${this.suffix}`,
-      'hours': `/${this.suffix}/godziny-otwarcia`,
-      'pricelist': `/${this.suffix}/cennik`,
-      'packages': `/${this.suffix}/cennik` // Packages are part of pricelist
-    };
-
-    const targetUrl = urlMap[tab];
-    if (targetUrl) {
-      this.router.navigateByUrl(targetUrl);
-    }
   }
 
   // Metoda do zmiany typu roweru w pakietach

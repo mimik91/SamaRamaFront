@@ -29,7 +29,6 @@ import {
 
 // Components
 import { MapComponent } from './components/map/map.component';
-import { ServicesListComponent } from './components/services-list/services-list.component';
 import { SearchFiltersComponent } from './components/search-filters/search-filters.component';
 
 // Interface for pending popup state
@@ -52,7 +51,6 @@ interface MapBounds {
   imports: [
     CommonModule,
     MapComponent,
-    ServicesListComponent,
     SearchFiltersComponent
   ],
   templateUrl: './services-map-page.component.html',
@@ -778,6 +776,24 @@ onCitySelected(city: CitySuggestion): void {
         this.mapInvalidateTimeoutId = undefined;
       }, 100);
     }
+  }
+
+  // ============ SERVICES LIST URL ============
+
+  get servicesListUrl(): string {
+    const city = this.filtersState.cityQuery?.trim();
+    if (city) {
+      return `/serwisy/${this.cityToSlug(city)}`;
+    }
+    return '/serwisy';
+  }
+
+  private cityToSlug(city: string): string {
+    return city.toLowerCase()
+      .replace(/ą/g, 'a').replace(/ć/g, 'c').replace(/ę/g, 'e')
+      .replace(/ł/g, 'l').replace(/ń/g, 'n').replace(/ó/g, 'o')
+      .replace(/ś/g, 's').replace(/ź/g, 'z').replace(/ż/g, 'z')
+      .replace(/\s+/g, '-');
   }
 
   // ============ SEO ============

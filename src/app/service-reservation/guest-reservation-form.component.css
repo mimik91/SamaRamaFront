@@ -1,3 +1,24 @@
+.back-to-service {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--spacing-4) var(--spacing-5) 0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: opacity 0.15s;
+}
+
+.back-link:hover {
+  opacity: 0.75;
+}
+
 .reservation-container {
   max-width: 900px;
   margin: 0 auto;

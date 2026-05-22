@@ -25,36 +25,31 @@
           <label class="search-label">🏙️ Szukaj po mieście</label>
           <div class="search-input-wrapper">
             <span class="search-icon">🔍</span>
-            <input 
+            <input
               #cityInput
-              type="text" 
+              type="text"
               class="search-input"
               placeholder="Wpisz nazwę miasta (min. 3 litery)..."
               [(ngModel)]="filtersState.cityQuery"
               (input)="onCitySearchChange()"
               (focus)="onCityFocus($event)"
             >
-            <button 
-              *ngIf="filtersState.cityQuery" 
+            <button
+              *ngIf="filtersState.cityQuery"
               class="search-clear"
               (click)="clearCitySearch()"
               type="button"
-            >
-              ✕
-            </button>
+            >✕</button>
           </div>
         </div>
 
         <!-- City Dropdown - Fixed positioning -->
-        <div 
-          class="autocomplete-dropdown" 
+        <div
+          class="autocomplete-dropdown"
           *ngIf="citySearchFocused && (citySuggestions.length > 0 || citySearchLoading)"
           [ngStyle]="cityDropdownStyle"
         >
-          <div class="autocomplete-loading" *ngIf="citySearchLoading">
-            Szukam miast...
-          </div>
-          
+          <div class="autocomplete-loading" *ngIf="citySearchLoading">Szukam miast...</div>
           <div
             class="autocomplete-item"
             *ngFor="let city of citySuggestions; trackBy: trackByCityName"
@@ -70,36 +65,31 @@
           <label class="search-label">🔧 Szukaj po nazwie serwisu</label>
           <div class="search-input-wrapper">
             <span class="search-icon">🔍</span>
-            <input 
+            <input
               #serviceInput
-              type="text" 
+              type="text"
               class="search-input"
               placeholder="Wpisz nazwę serwisu (min. 3 litery)..."
               [(ngModel)]="filtersState.serviceQuery"
               (input)="onServiceSearchChange()"
               (focus)="onServiceFocus($event)"
             >
-            <button 
-              *ngIf="filtersState.serviceQuery" 
+            <button
+              *ngIf="filtersState.serviceQuery"
               class="search-clear"
               (click)="clearServiceSearch()"
               type="button"
-            >
-              ✕
-            </button>
+            >✕</button>
           </div>
         </div>
 
         <!-- Service Dropdown - Fixed positioning -->
-        <div 
-          class="autocomplete-dropdown" 
+        <div
+          class="autocomplete-dropdown"
           *ngIf="serviceSearchFocused && (serviceSuggestions.length > 0 || serviceSearchLoading)"
           [ngStyle]="serviceDropdownStyle"
         >
-          <div class="autocomplete-loading" *ngIf="serviceSearchLoading">
-            Szukam serwisów...
-          </div>
-          
+          <div class="autocomplete-loading" *ngIf="serviceSearchLoading">Szukam serwisów...</div>
           <div
             class="autocomplete-item"
             *ngFor="let service of serviceSuggestions; trackBy: trackByServiceId"
@@ -113,122 +103,88 @@
               📍 {{ service.address }}
             </div>
           </div>
-          
           <div class="autocomplete-empty" *ngIf="!serviceSearchLoading && serviceSuggestions.length === 0 && filtersState.serviceQuery.length >= 3">
             Nie znaleziono serwisów dla "{{ filtersState.serviceQuery }}"
           </div>
         </div>
       </div>
 
-      <!-- Filters Section -->
+      <!-- Services List Link -->
       <div class="filters-section">
-        <div class="filters-row">
-          <!-- <label class="filter-label">
-            <input 
-              type="checkbox" 
-              class="filter-checkbox"
-              [(ngModel)]="filtersState.verifiedOnly"
-              (change)="onVerifiedOnlyChange()"
-            >
-            Tylko zweryfikowane serwisy
-          </label> -->
-          
-          <button 
-            class="advanced-filters-btn" 
-            (click)="toggleAdvancedFilters()"
-            [class.active]="showAdvancedFilters || filtersState.selectedCoverageIds.length > 0"
-            [title]="filtersState.selectedCoverageIds.length > 0 ? 'Aktywne filtry: ' + filtersState.selectedCoverageIds.length : 'Otwórz zaawansowane filtry'"
-          >
+        <a [href]="servicesListUrl" class="services-list-btn">
+          <span class="services-list-icon">📋</span>
+          <span>Lista serwisów</span>
+          <span class="services-list-arrow">→</span>
+        </a>
+      </div>
+
+      <!-- Inline Advanced Filters (always visible) -->
+      <div class="inline-filters">
+        <div class="inline-filters-header">
+          <div class="inline-filters-title">
             <span>🎯</span>
             <span>Zaawansowane filtry</span>
-            <span class="filter-count" *ngIf="filtersState.selectedCoverageIds.length > 0">
+            <span class="filter-count-badge" *ngIf="filtersState.selectedCoverageIds.length > 0">
               {{ filtersState.selectedCoverageIds.length }}
             </span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Overlay for mobile -->
-  <div class="filters-overlay" [class.show]="showAdvancedFilters && isMobileView" (click)="toggleAdvancedFilters()"></div>
-
-  <!-- Advanced Filters Panel - SIMPLE SHOW/HIDE -->
-  <div class="advanced-filters-panel" [class.open]="showAdvancedFilters">
-    <div class="filters-panel-header">
-      <h3>🎯 Zaawansowane filtry</h3>
-      <button class="close-filters-btn" (click)="toggleAdvancedFilters()">✕</button>
-    </div>
-
-    <!-- Action buttons -->
-    <div class="filters-actions">
-      <button 
-        class="btn-clear-filters"
-        (click)="clearAllFilters(); $event.stopPropagation()"
-        type="button"
-      >
-        Wyczyść filtry
-      </button>
-    </div>
-
-      <!-- Filter search -->
-      <div class="filter-search-section">
-        <div class="filter-search-wrapper">
-          <span class="filter-search-icon">🔍</span>
-          <input 
-            type="text" 
-            class="filter-search-input"
-            placeholder="Szukaj w filtrach..."
-            [(ngModel)]="filterSearchQuery"
-            (input)="$event.stopPropagation()"
-          >
-          <button 
-            *ngIf="filterSearchQuery" 
-            class="filter-search-clear"
-            (click)="clearFilterSearch(); $event.stopPropagation()"
+          </div>
+          <button
+            class="btn-clear-filters"
+            (click)="clearAllFilters()"
             type="button"
           >
-            ✕
+            Wyczyść
           </button>
         </div>
-        <p class="filter-search-hint" *ngIf="filterSearchQuery && filteredCoverageCategories.length === 0">
-          Nie znaleziono filtrów dla "{{ filterSearchQuery }}"
-        </p>
-      </div>
-      
-      <div class="filters-panel-content">
-        <!-- Loading state -->
-        <div *ngIf="coverageCategories.length === 0" class="filters-loading">
-          <div class="loading-spinner-small"></div>
-          <p>Ładowanie filtrów...</p>
-        </div>
 
-        <!-- Categories list - FILTERED -->
-        <div class="filter-category" *ngFor="let categoryGroup of filteredCoverageCategories; trackBy: trackByCategoryId">
-          <h4 class="category-title">{{ categoryGroup.category.name }}</h4>
-          
-          <div class="coverage-list">
-            <label
-              class="coverage-item"
-              *ngFor="let coverage of categoryGroup.coverages; trackBy: trackByCoverageId"
-              (click)="$event.stopPropagation()"
+        <!-- Filter search -->
+        <div class="filter-search-section">
+          <div class="filter-search-wrapper">
+            <span class="filter-search-icon">🔍</span>
+            <input
+              type="text"
+              class="filter-search-input"
+              placeholder="Szukaj w filtrach..."
+              [(ngModel)]="filterSearchQuery"
             >
-              <input 
-                type="checkbox" 
-                class="coverage-checkbox"
-                [checked]="isCoverageSelected(coverage.id)"
-                (change)="toggleCoverage(coverage.id); $event.stopPropagation()"
-                (click)="$event.stopPropagation()"
-              >
-              <span class="coverage-name">{{ coverage.name }}</span>
-            </label>
+            <button
+              *ngIf="filterSearchQuery"
+              class="filter-search-clear"
+              (click)="clearFilterSearch()"
+              type="button"
+            >✕</button>
           </div>
+          <p class="filter-search-hint" *ngIf="filterSearchQuery && filteredCoverageCategories.length === 0">
+            Nie znaleziono filtrów dla "{{ filterSearchQuery }}"
+          </p>
         </div>
 
-        <!-- Empty state -->
-        <div *ngIf="coverageCategories.length === 0" class="filters-empty">
-          <p>Brak dostępnych filtrów</p>
+        <!-- Categories list -->
+        <div class="inline-filters-content">
+          <div *ngIf="coverageCategories.length === 0" class="filters-loading">
+            <div class="loading-spinner-small"></div>
+            <p>Ładowanie filtrów...</p>
+          </div>
+
+          <div class="filter-category" *ngFor="let categoryGroup of filteredCoverageCategories; trackBy: trackByCategoryId">
+            <h4 class="category-title">{{ categoryGroup.category.name }}</h4>
+            <div class="coverage-list">
+              <label
+                class="coverage-item"
+                *ngFor="let coverage of categoryGroup.coverages; trackBy: trackByCoverageId"
+              >
+                <input
+                  type="checkbox"
+                  class="coverage-checkbox"
+                  [checked]="isCoverageSelected(coverage.id)"
+                  (change)="toggleCoverage(coverage.id)"
+                >
+                <span class="coverage-name">{{ coverage.name }}</span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>

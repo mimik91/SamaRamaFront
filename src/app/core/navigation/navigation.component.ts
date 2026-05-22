@@ -28,6 +28,30 @@ export class NavigationComponent implements OnInit {
   mobileMenuOpen = false;
   currentUrl: string = '';
   serviceSuffix: string = '';
+
+  private readonly KNOWN_ROUTES = new Set([
+    'mapa-serwisow', 'mapa', 'services-map', 'serwisy', 'jak-dzialamy',
+    'terms-of-service', 'terms-of-service-workshops', 'privacy-policy', 'cookie-policy',
+    'cennik-rowerzysci', 'cennik-serwisy', 'cooperation', 'ordersummary',
+    'login', 'register', 'verify-account', 'password-reset-request', 'password-reset',
+    'complete-registration', 'register-service', 'register-serviceman', 'about',
+    'for-services', 'service-pending-verification', 'client-dashboard', 'admin-dashboard',
+    'bicycles', 'admin-orders', 'account', 'admin-users', 'admin-services-verification',
+    'admin-service-edit', 'admin-enumerations', 'admin-service-slots', 'admin-bike-services',
+    'admin-office-addresses', 'mistrzauta', 'order-transport', 'reserve-service',
+    'ulotka', 'sukces'
+  ]);
+
+  getViewedSuffix(): string | null {
+    const match = this.currentUrl.match(/^\/([^/?#]+)/);
+    if (!match) return null;
+    const segment = decodeURIComponent(match[1]);
+    return this.KNOWN_ROUTES.has(segment) ? null : segment;
+  }
+
+  isServiceProfilePage(): boolean {
+    return /^\/[^/?#]+(\/?)$/.test(this.currentUrl) && this.getViewedSuffix() !== null;
+  }
   
   ngOnInit(): void {
     this.router.events.pipe(

@@ -72,6 +72,14 @@
         <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Login</a>
         <a routerLink="/register-service" routerLinkActive="active" (click)="closeMobileMenu()">Zarejestruj serwis</a>
       </ng-template>
+
+      <!-- CTA rezerwacji — widoczne dla wszystkich na stronie profilu serwisu -->
+      <a *ngIf="isServiceProfilePage()"
+         [routerLink]="['/', getViewedSuffix(), 'zarezerwuj']"
+         (click)="closeMobileMenu()"
+         class="nav-link nav-cta-reserve">
+        Zarezerwuj wizytę
+      </a>
     </div>
 
     <!-- User Settings Dropdown -->

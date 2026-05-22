@@ -13,7 +13,6 @@ import { I18nService } from '../core/i18n.service';
 import { SessionSyncService } from '../core/session-sync.service';
 import { environment } from '../environments/environments';
 import { BicycleFormData, BicycleData } from '../shared/models/bicycle.model';
-import { ServiceNavComponent } from '../pages/service-profile/service-nav.component';
 import { OfficeAddressDto } from '../shared/models/office-address.model';
 
 type PickupType = 'ADDRESS' | 'OFFICE';
@@ -22,7 +21,7 @@ type PickupType = 'ADDRESS' | 'OFFICE';
 @Component({
   selector: 'app-transport-order-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ServiceNavComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './transport-order-form.component.html',
   styleUrls: ['./transport-order-form.component.css']
 })

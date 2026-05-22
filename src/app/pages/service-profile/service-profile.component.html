@@ -13,16 +13,37 @@
     </button>
   </div>
 
-  <div *ngIf="!isLoading && !error && publicInfo" class="profile-content">
-    
-    <app-service-nav
-      [suffix]="suffix"
-      [publicInfo]="publicInfo"
-      [activeStatus]="activeStatus">
-    </app-service-nav>
+  <div *ngIf="!isLoading && !error && publicInfo" class="profile-content"
+       [class.has-bottom-bar]="publicInfo.reservationAvailable || publicInfo.transportAvailable">
 
-    <!-- ABOUT US TAB -->
-    <section class="main-content" id="info" *ngIf="activeTab === 'info'">
+    <!-- Bottom CTA bar -->
+    <div class="bottom-cta-bar" *ngIf="publicInfo.reservationAvailable || publicInfo.transportAvailable">
+      <div class="bottom-cta-inner">
+        <span class="bottom-cta-label">{{ publicInfo.name }}</span>
+        <a *ngIf="publicInfo.reservationAvailable"
+           [routerLink]="['/', suffix, 'zarezerwuj']"
+           class="bottom-cta-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Zarezerwuj wizytę
+        </a>
+        <a *ngIf="!publicInfo.reservationAvailable && publicInfo.transportAvailable"
+           [routerLink]="['/', suffix, 'zamow-transport']"
+           class="bottom-cta-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+          Zamów transport
+        </a>
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <section class="main-content" id="info">
       <div class="content-left">
         <h1>{{ publicInfo.name }} – serwis rowerowy {{ publicInfo.city }}</h1>
         <!-- Logo z skeleton -->
@@ -93,8 +114,8 @@
       </div>
     </section>
 
-    <!-- PRICELIST TAB (z pakietami na górze) -->
-<section class="pricelist-section" *ngIf="activeTab === 'pricelist'">
+    <!-- CENNIK + PAKIETY -->
+<section class="pricelist-section" id="cennik" *ngIf="activeStatus?.pricelistActive || activeStatus?.packagesActive">
   <div class="pricelist-tab">
     <h1 class="pricelist-main-heading">{{ publicInfo.name }} – cennik serwisu rowerowego</h1>
 
@@ -171,8 +192,17 @@
       </div>
       
       <div *ngFor="let categoryGroup of getPricelistByCategories()" class="category-group">
-        <h3 class="category-title">{{ categoryGroup.category }}</h3>
-        <div class="pricelist-items">
+        <button class="category-title" (click)="toggleCategory(categoryGroup.category)" type="button">
+          <span>{{ categoryGroup.category }}</span>
+          <svg class="category-chevron"
+               [class.expanded]="isCategoryExpanded(categoryGroup.category)"
+               xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="pricelist-items" *ngIf="isCategoryExpanded(categoryGroup.category)">
           <div *ngFor="let item of categoryGroup.items" class="price-item">
             <span class="item-name">{{ item.name }}</span>
             <span class="item-price">{{ item.price }} zł</span>
@@ -187,8 +217,8 @@
   </div>
 </section>
 
-    <!-- OPENING HOURS TAB -->
-    <section class="main-content" *ngIf="activeTab === 'hours'">
+    <!-- GODZINY OTWARCIA -->
+    <section class="main-content" id="godziny-otwarcia" *ngIf="activeStatus?.openingHoursActive">
       <div class="content-left">
         <h1>Godziny otwarcia – {{ publicInfo.name }}</h1>
         <div *ngIf="openingHours?.openingHoursInfo" class="info-banner">

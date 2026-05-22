@@ -56,6 +56,20 @@
   transition: background-color 0.3s;
 }
 
+.nav-cta-reserve {
+  background-color: var(--color-white) !important;
+  color: var(--color-primary) !important;
+  font-weight: var(--font-weight-bold);
+  border-radius: var(--radius-button);
+  padding: 6px 14px !important;
+  margin-left: 4px;
+}
+
+.nav-cta-reserve:hover {
+  background-color: var(--color-slate-100) !important;
+  color: var(--color-primary) !important;
+}
+
 .nav-link--icon {
   display: inline-flex;
   align-items: center;

@@ -49,6 +49,7 @@ import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-
 import { CooperationComponent } from './cooperation/cooperation.component';
 import { ServiceProfilePageComponent } from './pages/service-profile/service-profile.component';
 import { CityServicesPageComponent } from './pages/city-services-page/city-services-page.component';
+import { AllServicesPageComponent } from './pages/all-services-page/all-services-page.component';
 import { LandingPageComponent } from './pages/landing-page/landing-page.component';
 import { FlyerRedirectComponent } from './pages/flyer-redirect/flyer-redirect.component';
 import { OrderSuccessComponent } from './pages/order-success/order-success.component';
@@ -76,7 +77,14 @@ export const routes: Routes = [
     { path: 'mapa', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `mapa-serwisow?${qs}` : 'mapa-serwisow'; }, pathMatch: 'full' },
     { path: 'services-map', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `mapa-serwisow?${qs}` : 'mapa-serwisow'; }, pathMatch: 'full' },
 
-    // SEO - lista serwisów dla miast
+    // SEO - pełna lista serwisów (wszystkie w Polsce)
+    {
+      path: 'serwisy',
+      component: AllServicesPageComponent,
+      title: 'Serwisy rowerowe w Polsce | CycloPick'
+    },
+
+    // SEO - lista serwisów dla konkretnego miasta
     {
       path: 'serwisy/:city',
       component: CityServicesPageComponent,
@@ -397,23 +405,9 @@ export const routes: Routes = [
       title: 'Zarezerwuj Serwis'
     },
 
-    // Service profile - cennik section (must be before base :suffix route)
-    {
-      path: ':suffix/cennik',
-      component: ServiceProfilePageComponent,
-      title: ServiceProfileTitleResolver,
-      resolve: { profileData: ServiceProfileResolver },
-      data: { section: 'pricelist' }
-    },
-
-    // Service profile - godziny otwarcia section (must be before base :suffix route)
-    {
-      path: ':suffix/godziny-otwarcia',
-      component: ServiceProfilePageComponent,
-      title: ServiceProfileTitleResolver,
-      resolve: { profileData: ServiceProfileResolver },
-      data: { section: 'hours' }
-    },
+    // Przekierowania legacy URL → one-pager
+    { path: ':suffix/cennik', redirectTo: ({ params }) => `/${params['suffix']}` },
+    { path: ':suffix/godziny-otwarcia', redirectTo: ({ params }) => `/${params['suffix']}` },
 
     // Strona przekierowania z ulotek (QR kod) — zlicza odwiedziny w GA4
     {

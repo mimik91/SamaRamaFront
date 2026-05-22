@@ -1,20 +1,20 @@
-<article class="city-services-container" itemscope itemtype="https://schema.org/ItemList">
-  <!-- Header section -->
-  <header class="city-header" *ngIf="!cityNotFound">
-    <h1 itemprop="name">
-      Serwis rowerowy {{ currentCity?.name }} &#8211; lista warsztat&#243;w i napraw rower&#243;w
-    </h1>
+<article class="all-services-container" itemscope itemtype="https://schema.org/ItemList">
+
+  <!-- Header -->
+  <header class="page-header">
+    <h1 itemprop="name">Serwisy rowerowe w Polsce</h1>
     <p class="subtitle">
-      Lista serwis&#243;w rowerowych w mie&#347;cie {{ currentCity?.name }} i okolicach
+      Pełna lista <strong>warsztatów rowerowych</strong> w całej Polsce.
+      Wybierz miasto lub przeglądaj wszystkie serwisy.
     </p>
   </header>
 
   <!-- CTA Banner for service owners -->
-  <aside class="service-cta-banner" *ngIf="!cityNotFound">
+  <aside class="service-cta-banner">
     <div class="service-cta-content">
       <div class="service-cta-text">
         <strong>Nie ma tutaj Twojego serwisu?</strong>
-        <span>Sprawd&#378; co mo&#380;esz zyska&#263; i zarejestruj sw&#243;j serwis rowerowy w CycloPick!</span>
+        <span>Sprawdź co możesz zyskać i zarejestruj swój serwis rowerowy w CycloPick!</span>
       </div>
       <a routerLink="/register-service" class="service-cta-button">
         Zarejestruj serwis
@@ -26,10 +26,11 @@
     </div>
   </aside>
 
-  <!-- City selector & actions -->
-  <div class="actions-bar" *ngIf="!cityNotFound">
+  <!-- Actions bar -->
+  <div class="actions-bar">
+    <!-- City autocomplete -->
     <div class="city-autocomplete-wrapper">
-      <label class="city-label">Zmień miasto:</label>
+      <label class="city-label">Filtruj po mieście:</label>
       <div class="city-input-wrapper">
         <svg class="city-input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -38,7 +39,7 @@
         <input
           type="text"
           class="city-input"
-          [placeholder]="currentCity?.name || 'Wpisz miasto...'"
+          placeholder="Wpisz miasto..."
           [(ngModel)]="cityInputValue"
           (input)="onCityInput()"
           (focus)="onCityFocus()"
@@ -50,9 +51,11 @@
           class="city-input-clear"
           (click)="clearCityInput()"
           type="button"
-          title="Wszystkie miasta"
+          title="Wyczyść"
         >✕</button>
       </div>
+
+      <!-- Suggestions dropdown -->
       <div class="city-suggestions" *ngIf="showCitySuggestions">
         <div
           class="city-suggestion-item"
@@ -81,72 +84,18 @@
   <!-- Loading state -->
   <div *ngIf="loading" class="loading-state">
     <div class="spinner"></div>
-    <p>&#321;adowanie serwis&#243;w rowerowych...</p>
+    <p>Ładowanie serwisów rowerowych...</p>
   </div>
 
   <!-- Error state -->
-  <div *ngIf="error && !loading && !cityNotFound" class="error-state">
-    <p>Wyst&#261;pi&#322; b&#322;&#261;d podczas &#322;adowania serwis&#243;w. Spr&#243;buj ponownie p&#243;&#378;niej.</p>
-  </div>
-
-  <!-- City not found (404) state -->
-  <div *ngIf="cityNotFound && !loading" class="not-found-state">
-    <img
-      src="assets/images/pictures/404.webp"
-      alt="Strona nie znaleziona"
-      class="not-found-image"
-    >
-    <h2>Miasto nie znalezione</h2>
-    <p>Nie znale&#378;li&#347;my miasta o podanej nazwie w naszej bazie. Wybierz miasto z poni&#380;szej listy:</p>
-    <div class="city-autocomplete-wrapper not-found-selector">
-      <div class="city-input-wrapper">
-        <svg class="city-input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-          <circle cx="12" cy="10" r="3"></circle>
-        </svg>
-        <input
-          type="text"
-          class="city-input"
-          placeholder="Wpisz miasto..."
-          [(ngModel)]="cityInputValue"
-          (input)="onCityInput()"
-          (focus)="onCityFocus()"
-          (keydown)="onCityKeydown($event)"
-          autocomplete="off"
-        >
-        <button
-          *ngIf="cityInputValue"
-          class="city-input-clear"
-          (click)="clearCityInput()"
-          type="button"
-        >✕</button>
-      </div>
-      <div class="city-suggestions" *ngIf="showCitySuggestions">
-        <div
-          class="city-suggestion-item"
-          *ngFor="let city of filteredCities; let i = index; trackBy: trackByCitySlug"
-          [class.active]="activeSuggestionIndex === i"
-          (click)="selectCity(city)"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          {{ city.name }}
-        </div>
-      </div>
-    </div>
+  <div *ngIf="error && !loading" class="error-state">
+    <p>Wystąpił błąd podczas ładowania serwisów. Spróbuj ponownie później.</p>
   </div>
 
   <!-- Services list -->
-  <main id="serwisy" *ngIf="!loading && !error && !cityNotFound" class="services-section">
+  <main id="serwisy" *ngIf="!loading && !error" class="services-section">
     <h2 class="services-count-header">
-      <ng-container *ngIf="isKrakow; else defaultCount">
-        Znaleziono <strong>{{ totalServices }}</strong> serwis&#243;w rowerowych w Krakowie
-      </ng-container>
-      <ng-template #defaultCount>
-        Znaleziono <strong>{{ totalServices }}</strong> serwis&#243;w rowerowych
-      </ng-template>
+      Znaleziono <strong>{{ totalServices }}</strong> serwisów rowerowych w Polsce
     </h2>
 
     <ul class="services-list" *ngIf="services.length > 0">
@@ -176,9 +125,6 @@
         </div>
 
         <div class="service-actions">
-          
-
-          <!-- Przycisk strony serwisu dla zweryfikowanych (zarejestrowanych) -->
           <button
             *ngIf="service.verified"
             (click)="navigateToServicePage(service)"
@@ -189,10 +135,9 @@
               <polyline points="15 3 21 3 21 9"></polyline>
               <line x1="10" y1="14" x2="21" y2="3"></line>
             </svg>
-            Profil serwisu {{ service.name }}
+            Profil serwisu
           </button>
 
-          <!-- Przycisk rejestracji dla niezweryfikowanych (niezarejestrowanych) -->
           <button
             *ngIf="!service.verified"
             (click)="registerService(service)"
@@ -207,7 +152,6 @@
             Zarejestruj ten serwis
           </button>
 
-          <!-- Przycisk rezerwacji (gdy reservationAvailable = true; zastępuje transport) -->
           <button
             *ngIf="service.reservationAvailable"
             (click)="navigateToReservation(service)"
@@ -219,66 +163,40 @@
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            Zarezerwuj wizyt&#281; w serwisie {{ service.name }}
+            Zarezerwuj wizytę
           </button>
-
-          <!-- Transport button only for Krak&#243;w i gdy brak rezerwacji -->
-          <a
-            *ngIf="isKrakow && !service.reservationAvailable"
-            (click)="navigateToTransport(service)"
-            class="transport-button"
-            style="cursor:pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="3" width="15" height="13"></rect>
-              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-              <circle cx="5.5" cy="18.5" r="2.5"></circle>
-              <circle cx="18.5" cy="18.5" r="2.5"></circle>
-            </svg>
-            Zamów transport do serwisu {{ service.name }}
-          </a>
         </div>
       </li>
     </ul>
 
-    <div *ngIf="services.length === 0" class="no-services">
-      <p>Nie znaleziono serwis&#243;w rowerowych w tym obszarze.</p>
+    <div *ngIf="services.length === 0 && !loading" class="no-services">
+      <p>Nie znaleziono serwisów rowerowych.</p>
+    </div>
+
+    <!-- Load more -->
+    <div class="load-more-section" *ngIf="hasMore">
+      <button class="load-more-btn" (click)="loadMore()" [disabled]="loadingMore">
+        <span *ngIf="!loadingMore">Załaduj więcej serwisów</span>
+        <span *ngIf="loadingMore">Ładowanie...</span>
+      </button>
+      <p class="load-more-info">
+        Wyświetlono {{ services.length }} z {{ totalServices }} serwisów
+      </p>
     </div>
   </main>
 
-  <!-- SEO content - generic for other cities -->
-  <section class="seo-content" *ngIf="!isKrakow && !cityNotFound">
-    <h2>Serwisy rowerowe w mie&#347;cie {{ currentCity?.name }}</h2>
-    <p>
-      Szukasz <strong>serwisu rowerowego w mie&#347;cie {{ currentCity?.name }}</strong>? Na tej stronie znajdziesz list&#281;
-      <strong>warsztat&#243;w rowerowych</strong> dzia&#322;aj&#261;cych w {{ currentCity?.name }} i okolicach.
-      Ka&#380;dy serwis posiada dane kontaktowe, dzi&#281;ki czemu mo&#380;esz szybko um&#243;wi&#263; si&#281; na <strong>napraw&#281; roweru</strong>.
-    </p>
-
-    <h2>Znajd&#378; najlepszy warsztat rowerowy w mie&#347;cie {{ currentCity?.name }}</h2>
-    <p>
-      CycloPick to platforma &#322;&#261;cz&#261;ca rowerzyst&#243;w z serwisami rowerowymi w ca&#322;ej Polsce.
-      Dzi&#281;ki naszej interaktywnej <strong>mapie serwis&#243;w rowerowych</strong> mo&#380;esz &#322;atwo znale&#378;&#263; najbli&#380;szy
-      warsztat w {{ currentCity?.name }} i innych miastach Polski.
-    </p>
-    <p>
-      Przegl&#261;daj list&#281; serwis&#243;w, por&#243;wnuj oferty i wybierz najlepszy <strong>warsztat rowerowy</strong> dla siebie.
-      Zweryfikowane serwisy oznaczone s&#261; specjaln&#261; odznak&#261;.
-    </p>
-  </section>
-
-  <!-- Footer links to other cities -->
+  <!-- Footer links to cities -->
   <footer class="cities-footer">
-    <h2>Serwisy rowerowe w innych miastach Polski</h2>
+    <h2>Serwisy rowerowe w miastach Polski</h2>
     <nav class="cities-nav" aria-label="Lista miast z serwisami rowerowymi">
       <a
         *ngFor="let city of footerCities"
         [routerLink]="['/serwisy', city.slug]"
-        [class.active]="city.slug === currentCity?.slug"
         [attr.title]="'Serwisy rowerowe ' + city.name"
       >
         {{ city.name }}
       </a>
     </nav>
   </footer>
+
 </article>

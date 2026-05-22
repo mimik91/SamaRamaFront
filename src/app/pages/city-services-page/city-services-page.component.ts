@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, inject, HostListener, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
@@ -25,11 +25,13 @@ export interface CityConfig {
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './city-services-page.component.html',
-  styleUrls: ['./city-services-page.component.css']
+  styleUrls: ['./city-services-page.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CityServicesPageComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private seoService = inject(SeoService);
+  private cdr = inject(ChangeDetectorRef);
 
   // Wszystkie miasta z environment (dla dropdowna) - posortowane alfabetycznie
   readonly cities: CityConfig[] = [...environment.settings.seoCities].sort((a, b) =>
@@ -49,7 +51,22 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   totalServices = 0;
   cityNotFound = false;
 
+  // City autocomplete state
+  cityInputValue = '';
+  filteredCities: CityConfig[] = [];
+  showCitySuggestions = false;
+  activeSuggestionIndex = -1;
+
   isBrowser: boolean;
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.city-autocomplete-wrapper')) {
+      this.showCitySuggestions = false;
+      this.cdr.markForCheck();
+    }
+  }
 
   // Flaga czy to Kraków (dla transportu)
   get isKrakow(): boolean {
@@ -77,6 +94,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     if (snapshot) {
       this.currentCity = snapshot.city;
       this.selectedCitySlug = snapshot.city.slug;
+      this.cityInputValue = snapshot.city.name;
       this.services = snapshot.services;
       this.totalServices = snapshot.total;
       this.loading = false;
@@ -92,6 +110,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
         // Dane z resolvera - miasto znalezione
         this.currentCity = cityData.city;
         this.selectedCitySlug = cityData.city.slug;
+        this.cityInputValue = cityData.city.name;
         this.services = cityData.services;
         this.totalServices = cityData.total;
         this.cityNotFound = false;
@@ -128,6 +147,97 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     if (this.selectedCitySlug) {
       this.router.navigate(['/serwisy', this.selectedCitySlug]);
     }
+  }
+
+  onCityInput(): void {
+    const query = this.cityInputValue.trim().toLowerCase();
+    this.activeSuggestionIndex = -1;
+    if (query.length < 1) {
+      this.filteredCities = [];
+      this.showCitySuggestions = false;
+    } else {
+      this.filteredCities = this.sortWithPriority(
+        this.cities.filter(c => c.name.toLowerCase().includes(query))
+      ).slice(0, 10);
+      this.showCitySuggestions = this.filteredCities.length > 0;
+    }
+    this.cdr.markForCheck();
+  }
+
+  onCityFocus(): void {
+    this.activeSuggestionIndex = -1;
+    if (this.cityInputValue.trim().length >= 1) {
+      this.showCitySuggestions = this.filteredCities.length > 0;
+    } else {
+      this.filteredCities = this.footerCities;
+      this.showCitySuggestions = true;
+    }
+    this.cdr.markForCheck();
+  }
+
+  private sortWithPriority(matches: CityConfig[]): CityConfig[] {
+    const matchSlugs = new Set(matches.map(c => c.slug));
+    const priority = this.footerCities.filter(c => matchSlugs.has(c.slug));
+    const prioritySlugs = new Set(priority.map(c => c.slug));
+    const rest = matches.filter(c => !prioritySlugs.has(c.slug));
+    return [...priority, ...rest];
+  }
+
+  onCityKeydown(event: KeyboardEvent): void {
+    if (!this.showCitySuggestions || this.filteredCities.length === 0) {
+      if (event.key === 'ArrowDown') {
+        this.filteredCities = this.footerCities;
+        this.showCitySuggestions = true;
+        this.activeSuggestionIndex = 0;
+        this.cdr.markForCheck();
+        event.preventDefault();
+      }
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.activeSuggestionIndex = Math.min(this.activeSuggestionIndex + 1, this.filteredCities.length - 1);
+        this.cdr.markForCheck();
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.activeSuggestionIndex = Math.max(this.activeSuggestionIndex - 1, -1);
+        this.cdr.markForCheck();
+        break;
+      case 'Enter':
+        event.preventDefault();
+        if (this.activeSuggestionIndex >= 0 && this.filteredCities[this.activeSuggestionIndex]) {
+          this.selectCity(this.filteredCities[this.activeSuggestionIndex]);
+        }
+        break;
+      case 'Escape':
+        this.showCitySuggestions = false;
+        this.activeSuggestionIndex = -1;
+        this.cdr.markForCheck();
+        break;
+    }
+  }
+
+  selectCity(city: CityConfig): void {
+    this.cityInputValue = city.name;
+    this.showCitySuggestions = false;
+    this.activeSuggestionIndex = -1;
+    this.router.navigate(['/serwisy', city.slug]);
+  }
+
+  clearCityInput(): void {
+    this.cityInputValue = '';
+    this.filteredCities = [];
+    this.showCitySuggestions = false;
+    this.activeSuggestionIndex = -1;
+    this.router.navigate(['/serwisy']);
+    this.cdr.markForCheck();
+  }
+
+  trackByCitySlug(index: number, city: CityConfig): string {
+    return city.slug;
   }
 
   navigateToMap(): void {

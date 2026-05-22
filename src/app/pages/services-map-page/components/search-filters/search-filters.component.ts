@@ -37,6 +37,8 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     selectedCoverageIds: []
   };
 
+  @Input() servicesListUrl: string = '/serwisy';
+
   // Outputs - zdarzenia dla rodzica
   @Output() citySearchChanged = new EventEmitter<string>();
   @Output() citySelected = new EventEmitter<CitySuggestion>();
@@ -57,7 +59,6 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
   // Stan lokalny (tylko UI)
   citySearchFocused = false;
   serviceSearchFocused = false;
-  showAdvancedFilters = false;
   isBrowser: boolean;
   filtersExpanded = true;
 
@@ -247,11 +248,6 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     this.verifiedOnlyChanged.emit(this.filtersState.verifiedOnly);
   }
 
-  toggleAdvancedFilters(): void {
-    this.showAdvancedFilters = !this.showAdvancedFilters;
-    this.advancedFiltersToggled.emit();
-  }
-
   toggleCoverage(coverageId: number): void {
     this.coverageToggled.emit(coverageId);
   }
@@ -266,9 +262,6 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
 
   applyAdvancedFilters(): void {
     this.advancedFiltersApplied.emit();
-    if (this.isMobileView) {
-      this.showAdvancedFilters = false;
-    }
   }
 
   clearAdvancedFilters(): void {
@@ -303,9 +296,5 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
   this.advancedFiltersCleared.emit();
 }
 
-closeFiltersPanel(): void {
-    this.showAdvancedFilters = !this.showAdvancedFilters;
-    this.advancedFiltersToggled.emit();
-}
 
 }

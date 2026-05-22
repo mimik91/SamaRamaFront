@@ -53,6 +53,12 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
 
+  // All services page - server render (SEO important)
+  {
+    path: 'serwisy',
+    renderMode: RenderMode.Server
+  },
+
   // City services pages - server render (SEO important, data changes)
   {
     path: 'serwisy/:city',
@@ -193,14 +199,6 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: ':suffix/zarezerwuj',
-    renderMode: RenderMode.Server
-  },
-  {
-    path: ':suffix/cennik',
-    renderMode: RenderMode.Server
-  },
-  {
-    path: ':suffix/godziny-otwarcia',
     renderMode: RenderMode.Server
   },
   // Strona przekierowania z ulotek — renderowana po stronie klienta

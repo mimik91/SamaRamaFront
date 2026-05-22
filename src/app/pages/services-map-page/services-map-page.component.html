@@ -4,7 +4,6 @@
   <!-- Fixed header with search and filters - MOBILE ONLY -->
   <div class="fixed-header" *ngIf="isMobileView">
     <app-search-filters
-    
       [isMobileView]="isMobileView"
       [citySuggestions]="citySuggestions"
       [serviceSuggestions]="serviceSuggestions"
@@ -12,6 +11,7 @@
       [serviceSearchLoading]="serviceSearchLoading"
       [coverageCategories]="coverageCategories"
       [filtersState]="filtersState"
+      [servicesListUrl]="servicesListUrl"
       (citySearchChanged)="onCitySearchChanged($event)"
       (citySelected)="onCitySelected($event)"
       (cityClearRequested)="onCityClearRequested()"
@@ -22,25 +22,13 @@
       (coverageToggled)="onCoverageToggled($event)"
       (advancedFiltersApplied)="onAdvancedFiltersApplied()"
       (advancedFiltersCleared)="onAdvancedFiltersCleared()"
-      (closePanelRequested)="isAdvandedFiltersPanelOpen = false" 
     ></app-search-filters>
-
-    <!-- Mobile view toggle button -->
-    <div class="mobile-view-toggle">
-      <button 
-        class="view-toggle-btn" 
-        (click)="toggleView()"
-      >
-        <span *ngIf="showMapView">📋 Lista ({{ totalServices }})</span>
-        <span *ngIf="!showMapView">🗺️ Mapa</span>
-      </button>
-    </div>
   </div>
 
   <!-- Main content area -->
   <div class="content-area">
-    <!-- Sidebar with services list -->
-    <div class="sidebar" [class.hidden]="isMobileView && showMapView">
+    <!-- Sidebar with filters -->
+    <div class="sidebar" [class.hidden]="isMobileView">
       <!-- Sidebar header -->
       <header class="sidebar-header">
         <h1 class="sidebar-title">Mapa serwisów rowerowych</h1>
@@ -48,7 +36,7 @@
       </header>
 
       <!-- Search and filters - DESKTOP ONLY -->
-      <div class="sidebar-search-filters" *ngIf="!isMobileView">
+      <div class="sidebar-filters">
         <app-search-filters
           [isMobileView]="isMobileView"
           [citySuggestions]="citySuggestions"
@@ -57,6 +45,7 @@
           [serviceSearchLoading]="serviceSearchLoading"
           [coverageCategories]="coverageCategories"
           [filtersState]="filtersState"
+          [servicesListUrl]="servicesListUrl"
           (citySearchChanged)="onCitySearchChanged($event)"
           (citySelected)="onCitySelected($event)"
           (cityClearRequested)="onCityClearRequested()"
@@ -67,30 +56,12 @@
           (coverageToggled)="onCoverageToggled($event)"
           (advancedFiltersApplied)="onAdvancedFiltersApplied()"
           (advancedFiltersCleared)="onAdvancedFiltersCleared()"
-          
         ></app-search-filters>
       </div>
-
-      <!-- Services list -->
-      <app-services-list
-        style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;"
-        [services]="services"
-        [selectedServiceId]="selectedServiceId"
-        [loading]="loadingServices"
-        [loadingMore]="loadingMore"
-        [hasMoreServices]="hasMoreServices"
-        [error]="servicesError"
-        [totalServices]="totalServices"
-        [currentPage]="currentPage"
-        [totalPages]="totalPages"
-        (serviceSelected)="onServiceSelected($event)"
-        (scrollEnd)="onScrollEnd()"
-        (retryRequested)="onRetryRequested()"
-      ></app-services-list>
     </div>
 
     <!-- Map container -->
-    <div class="map-container" [class.hidden]="isMobileView && !showMapView">
+    <div class="map-container">
       <app-map
         [pins]="mapPins"
         [selectedPinId]="selectedServiceId"
@@ -107,7 +78,7 @@
         (orderTransport)="onOrderTransport($event)"
         (reserveService)="onReserveService($event)"
         (popupReopenRequested)="onPopupReopenRequested($event)"
-        (popupClosed)="onPopupClosed($event)"  
+        (popupClosed)="onPopupClosed($event)"
       ></app-map>
     </div>
   </div>

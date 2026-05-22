@@ -13,8 +13,8 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router, NavigationStart, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Subscription, forkJoin } from 'rxjs';
-import { filter, switchMap, distinctUntilChanged } from 'rxjs/operators';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { filter, switchMap, distinctUntilChanged, catchError } from 'rxjs/operators';
 import {
   ServicePackagesConfigDto,
   ServicePackageDto,
@@ -929,19 +929,23 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     const bikeTypesUrl = `${environment.apiUrl}${environment.endpoints.bikeServices.bikeTypes}/${serviceId}`;
 
     forkJoin({
-      config: this.http.get<ServicePackagesConfigDto>(configUrl),
-      bikeTypes: this.http.get<string[]>(bikeTypesUrl)
+      config: this.http.get<ServicePackagesConfigDto>(configUrl).pipe(catchError(() => of(null))),
+      bikeTypes: this.http.get<string[]>(bikeTypesUrl).pipe(catchError(() => of([])))
     }).subscribe({
       next: ({ config, bikeTypes }) => {
-        if (config?.active && config.packages?.some(p => p.active)) {
-          this.packagesConfig = config;
-          this.packages = config.packages.filter(p => p.active);
-          this.bikeTypes = bikeTypes;
-          this.selectedBikeType = config.defaultBikeType || bikeTypes[0] || null;
-          this.filteredPackages = filterPackagesByBikeType(this.packages, this.selectedBikeType);
-        }
-      },
-      error: () => {}
+        if (!config?.active || !config.packages?.some(p => p.active)) return;
+
+        this.packagesConfig = config;
+        this.packages = config.packages.filter(p => p.active);
+
+        const derivedTypes = bikeTypes.length > 0
+          ? bikeTypes
+          : [...new Set(this.packages.flatMap(p => p.bikeTypes))].sort((a, b) => a.localeCompare(b, 'pl'));
+
+        this.bikeTypes = derivedTypes;
+        this.selectedBikeType = config.defaultBikeType || derivedTypes[0] || null;
+        this.filteredPackages = filterPackagesByBikeType(this.packages, this.selectedBikeType);
+      }
     });
   }
 

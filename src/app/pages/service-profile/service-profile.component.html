@@ -187,7 +187,7 @@
       <!-- Nagłówek sekcji cennika -->
       <h2 class="section-title" *ngIf="packages && packages.length > 0">Cennik usług</h2>
       
-      <div *ngIf="pricelist.pricelistInfo" class="info-banner">
+      <div *ngIf="pricelist.pricelistInfo?.trim()" class="info-banner">
         <p>{{ pricelist.pricelistInfo }}</p>
       </div>
       
@@ -210,7 +210,7 @@
         </div>
       </div>
       
-      <div *ngIf="pricelist.pricelistNote" class="note-banner">
+      <div *ngIf="pricelist.pricelistNote?.trim()" class="note-banner">
         <p><strong>Uwaga:</strong> {{ pricelist.pricelistNote }}</p>
       </div>
     </div>

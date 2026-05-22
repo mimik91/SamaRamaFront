@@ -13,8 +13,15 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router, NavigationStart, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { filter, switchMap, distinctUntilChanged } from 'rxjs/operators';
+import {
+  ServicePackagesConfigDto,
+  ServicePackageDto,
+  PackageLevel,
+  ALL_PACKAGE_LEVELS,
+  filterPackagesByBikeType
+} from '../shared/models/service-packages.models';
 import { SessionSyncService } from '../core/session-sync.service';
 import { SeoService } from '../core/seo.service';
 import { SchemaOrgHelper, BikeRepairShopData } from '../core/schema-org.helper';
@@ -123,6 +130,15 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   couponMessage: string | null = null;
   isCouponInvalid = false;
   finalTransportPrice: number | null = null;
+
+  // Packages pricelist panel
+  packagesConfig: ServicePackagesConfigDto | null = null;
+  packages: ServicePackageDto[] = [];
+  bikeTypes: string[] = [];
+  selectedBikeType: string | null = null;
+  filteredPackages: ServicePackageDto[] = [];
+  packagesExpanded = false;
+  readonly packageLevels = ALL_PACKAGE_LEVELS;
 
   // Office address autocomplete
   officeAddresses: OfficeAddressDto[] = [];
@@ -587,6 +603,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         this.updateReservationSeo(d.name, d.city);
 
         this.loadReservationSettings(d.id);
+        this.loadPackages(d.id);
         this.loading = false;
       },
       error: () => {
@@ -886,6 +903,46 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate([environment.links.servicesMap]);
+  }
+
+  // ===== Packages pricelist panel =====
+
+  togglePackages(): void {
+    this.packagesExpanded = !this.packagesExpanded;
+  }
+
+  onBikeTypeChange(type: string): void {
+    this.selectedBikeType = type;
+    this.filteredPackages = filterPackagesByBikeType(this.packages, type);
+  }
+
+  getPackageForLevel(level: PackageLevel): ServicePackageDto | null {
+    return this.filteredPackages.find(p => p.packageLevel === level) || null;
+  }
+
+  getPackageDisplayName(pkg: ServicePackageDto): string {
+    return pkg.customName || pkg.packageLevelDisplayName;
+  }
+
+  private loadPackages(serviceId: number): void {
+    const configUrl = `${environment.apiUrl}${environment.endpoints.bikeServices.packagesConfig}?serviceId=${serviceId}`;
+    const bikeTypesUrl = `${environment.apiUrl}${environment.endpoints.bikeServices.bikeTypes}/${serviceId}`;
+
+    forkJoin({
+      config: this.http.get<ServicePackagesConfigDto>(configUrl),
+      bikeTypes: this.http.get<string[]>(bikeTypesUrl)
+    }).subscribe({
+      next: ({ config, bikeTypes }) => {
+        if (config?.active && config.packages?.some(p => p.active)) {
+          this.packagesConfig = config;
+          this.packages = config.packages.filter(p => p.active);
+          this.bikeTypes = bikeTypes;
+          this.selectedBikeType = config.defaultBikeType || bikeTypes[0] || null;
+          this.filteredPackages = filterPackagesByBikeType(this.packages, this.selectedBikeType);
+        }
+      },
+      error: () => {}
+    });
   }
 
   formatDatePL(val: string | Date): string {

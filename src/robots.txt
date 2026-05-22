@@ -7,8 +7,6 @@ Allow: /assets/
 Allow: /*.js$
 Allow: /*.css$
 Allow: /*/zarezerwuj
-Allow: /*/cennik
-Allow: /*/godziny-otwarcia
 Allow: /serwisy
 Allow: /for-services
 Allow: /cooperation
@@ -32,8 +30,6 @@ Allow: /assets/
 Allow: /*.js$
 Allow: /*.css$
 Allow: /*/zarezerwuj
-Allow: /*/cennik
-Allow: /*/godziny-otwarcia
 Allow: /serwisy
 Allow: /for-services
 Allow: /cooperation
@@ -72,8 +68,6 @@ Allow: /assets/
 Allow: /*.js$
 Allow: /*.css$
 Allow: /*/zarezerwuj
-Allow: /*/cennik
-Allow: /*/godziny-otwarcia
 Allow: /serwisy
 Allow: /for-services
 Allow: /cooperation

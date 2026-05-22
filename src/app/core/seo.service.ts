@@ -189,14 +189,12 @@ export class SeoService {
 
    */
 
-  updateServiceProfileSeo(serviceName: string, city: string, address: string, description?: string, imageUrl?: string) {
+  updateServiceProfileSeo(serviceName: string, city: string, address: string, description?: string, imageUrl?: string, path?: string) {
 
     const title = `${serviceName} - Serwis Rowerowy ${city} | CycloPick`;
 
     const metaDescription = description
-
-      ? `${description.substring(0, 150)}...`
-
+      ? (description.length > 150 ? `${description.substring(0, 150)}...` : description)
       : `Profesjonalny serwis rowerowy ${serviceName} w ${city}. ${address}. Sprawdź cennik, godziny otwarcia i umów wizytę online przez CycloPick.`;
 
 
@@ -235,7 +233,7 @@ export class SeoService {
 
       keywords
 
-    });
+    }, path);
 
   }
 
@@ -348,11 +346,11 @@ export class SeoService {
       return;
     }
 
-    // Dla wielu elementów, stwórz tablicę JSON-LD
-    // (zgodne z Graph notation Schema.org)
+    // Dla wielu elementów, stwórz tablicę JSON-LD (Graph notation Schema.org).
+    // Każdy element musi być pozbawiony własnego @context — w @graph jest tylko jeden, na górze.
     const graphData = {
       '@context': 'https://schema.org',
-      '@graph': validData
+      '@graph': validData.map(({ '@context': _, ...rest }: any) => rest)
     };
 
     this.addStructuredData(graphData);

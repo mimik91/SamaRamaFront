@@ -184,7 +184,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     const city = this.publicInfo.city;
     const address = this.getFullAddress();
     let path = `/${this.suffix}`;
-    let title = `${serviceName} | CycloPick`;
+    let title = `${serviceName} – serwis rowerowy ${city} | CycloPick`;
     let description = this.publicInfo.description || `Profesjonalny serwis rowerowy ${serviceName} w ${city}.`;
     let keywords: string[] = [
       'serwis rowerowy',
@@ -199,12 +199,12 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     // Dostosuj SEO dla konkretnej sekcji
     if (this.activeTab === 'pricelist') {
       path += '/cennik';
-      title = `${serviceName} - Cennik | CycloPick`;
+      title = `${serviceName} – cennik serwisu rowerowego ${city} | CycloPick`;
       description = `Sprawdź cennik serwisu rowerowego ${serviceName} w ${city}. Pakiety serwisowe i ceny poszczególnych usług naprawy rowerów.`;
       keywords.push('cennik serwisu rowerowego', `cennik ${serviceName}`, 'ceny naprawy rowerów');
     } else if (this.activeTab === 'hours') {
       path += '/godziny-otwarcia';
-      title = `${serviceName} - Godziny otwarcia | CycloPick`;
+      title = `${serviceName} – godziny otwarcia | serwis rowerowy ${city} | CycloPick`;
       description = `Sprawdź godziny otwarcia serwisu rowerowego ${serviceName} w ${city}. Zaplanuj wizytę w dogodnym dla Ciebie terminie.`;
       keywords.push('godziny otwarcia', `godziny otwarcia ${serviceName}`, 'kiedy otwarty');
     } else {

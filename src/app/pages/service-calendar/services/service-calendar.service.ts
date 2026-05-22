@@ -203,7 +203,7 @@ export class ServiceCalendarService {
     const params = new HttpParams().set('serviceId', serviceId.toString());
     return this.http.post<any>(`${this.apiUrl}${this.endpoints.orders}`, order, { params })
       .pipe(
-        map((res) => res?.order ?? res),
+        map((res) => res?.order ?? res?.orders?.[0] ?? res),
         catchError(this.handleError('createOrder'))
       );
   }

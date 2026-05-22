@@ -933,7 +933,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       bikeTypes: this.http.get<string[]>(bikeTypesUrl).pipe(catchError(() => of([])))
     }).subscribe({
       next: ({ config, bikeTypes }) => {
-        if (!config?.active || !config.packages?.some(p => p.active)) return;
+        if (!config?.packages?.some(p => p.active)) return;
 
         this.packagesConfig = config;
         this.packages = config.packages.filter(p => p.active);

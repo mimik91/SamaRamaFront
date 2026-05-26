@@ -11,7 +11,7 @@ interface KeyEntry {
   value: string;
 }
 
-type ModalStep = 'siblings' | 'loading' | 'keys' | 'error';
+type ModalStep = 'siblings' | 'loading' | 'keys' | 'error' | 'validation-error';
 
 @Component({
   selector: 'app-mark-ready-modal',
@@ -31,11 +31,20 @@ export class MarkReadyModalComponent implements OnInit {
   private calendarService = inject(ServiceCalendarService);
   private notificationService = inject(NotificationService);
 
+  private readonly KEY_LABELS: Record<string, string> = {
+    finalPrice: 'Cena końcowa'
+  };
+
   step: ModalStep = 'loading';
   selectedIds = new Set<number>();
   keyEntries: KeyEntry[] = [];
   sending = false;
   hadSiblings = false;
+  validationErrorMessage = '';
+
+  getKeyLabel(key: string): string {
+    return this.KEY_LABELS[key] ?? key;
+  }
 
   ngOnInit(): void {
     this.selectedIds.add(this.order.id);
@@ -67,16 +76,27 @@ export class MarkReadyModalComponent implements OnInit {
 
   private fetchKeys(): void {
     this.calendarService.getNotificationKeys(this.serviceId, Array.from(this.selectedIds)).subscribe({
-      next: ({ keys }) => {
+      next: ({ keys, estimatedFinalPrice }) => {
         if (keys.length === 0) {
           this.doSend({});
         } else {
-          this.keyEntries = keys.map(key => ({ key, include: false, value: '' }));
+          this.keyEntries = keys.map(key => {
+            if (key === 'finalPrice' && estimatedFinalPrice !== null) {
+              return { key, include: true, value: String(estimatedFinalPrice) };
+            }
+            return { key, include: false, value: '' };
+          });
           this.step = 'keys';
         }
       },
-      error: () => {
-        this.step = 'error';
+      error: (err) => {
+        const msg: string | undefined = err?.error?.message;
+        if (msg) {
+          this.validationErrorMessage = msg;
+          this.step = 'validation-error';
+        } else {
+          this.step = 'error';
+        }
       }
     });
   }

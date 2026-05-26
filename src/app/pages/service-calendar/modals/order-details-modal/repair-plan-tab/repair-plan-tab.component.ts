@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { PricelistService } from '../../../../service-admin-panel/service-admin-pricelist/pricelist.service';
 import { ServicePackagesService } from '../../../../service-admin-panel/service-admin-pricelist/service-packages.service';
 import { ServiceCalendarService } from '../../../services/service-calendar.service';
+import { NotificationService } from '../../../../../core/notification.service';
 import { CalendarOrder } from '../../../../../shared/models/service-calendar.models';
 import { ServicePackageDto, filterPackagesByBikeType } from '../../../../../shared/models/service-packages.models';
 import { PricelistItemWithPrice } from '../../../../../shared/models/service-pricelist.models';
@@ -21,6 +22,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   private pricelistService = inject(PricelistService);
   private packagesService = inject(ServicePackagesService);
   private calendarService = inject(ServiceCalendarService);
+  private notificationService = inject(NotificationService);
   private platformId = inject(PLATFORM_ID);
 
   @Input() order!: CalendarOrder;
@@ -46,6 +48,10 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   focusedAutocompleteIndex = -1;
 
   savedAt: Date | null = null;
+
+  showSendPopup = false;
+  isSaving = false;
+  isSending = false;
 
   get packageCost(): number { return this.selectedPackage?.price ?? 0; }
   get itemsCost(): number { return this.lineItems.reduce((s, i) => s + i.price, 0); }
@@ -396,6 +402,37 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   }
 
   sendToClient(): void {
-    // TODO: POST /service-calendar/orders/:id/repair-plan/send
+    if (this.isSaving || this.isSending) return;
+    this.isSaving = true;
+    this.calendarService.saveRepairPlan(this.serviceId, this.order.id, this.buildRequest()).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.showSendPopup = true;
+      },
+      error: () => {
+        this.isSaving = false;
+        this.notificationService.error('Nie udało się zapisać planu naprawy. Spróbuj ponownie.');
+      }
+    });
+  }
+
+  onConfirmSend(requiresConfirmation: boolean): void {
+    this.showSendPopup = false;
+    this.isSending = true;
+    this.calendarService.sendRepairPlan(this.serviceId, this.order.id, { requiresConfirmation }).subscribe({
+      next: () => {
+        this.isSending = false;
+        this.notificationService.success(
+          requiresConfirmation
+            ? 'Plan naprawy wysłany. Oczekiwanie na potwierdzenie klienta.'
+            : 'Plan naprawy wysłany do klienta.'
+        );
+      },
+      error: (err) => {
+        this.isSending = false;
+        const msg: string | undefined = err?.error?.message;
+        this.notificationService.error(msg ?? 'Nie udało się wysłać planu naprawy.');
+      }
+    });
   }
 }

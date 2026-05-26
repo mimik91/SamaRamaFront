@@ -24,7 +24,8 @@ import {
 export type { ServiceNotificationConfig };
 import {
   RepairPlanResponse,
-  SaveRepairPlanRequest
+  SaveRepairPlanRequest,
+  SendRepairPlanRequest
 } from '../../../shared/models/repair-plan.models';
 
 // ============================================
@@ -378,12 +379,12 @@ export class ServiceCalendarService {
   // POWIADOMIENIA GOTOWOŚCI
   // ============================================
 
-  getNotificationKeys(serviceId: number, orderIds: number[]): Observable<{ keys: string[] }> {
+  getNotificationKeys(serviceId: number, orderIds: number[]): Observable<{ keys: string[]; estimatedFinalPrice: number | null }> {
     let params = new HttpParams().set('serviceId', serviceId.toString());
     for (const id of orderIds) {
       params = params.append('orderIds', id.toString());
     }
-    return this.http.get<{ keys: string[] }>(`${this.apiUrl}${this.endpoints.notificationKeys}`, { params })
+    return this.http.get<{ keys: string[]; estimatedFinalPrice: number | null }>(`${this.apiUrl}${this.endpoints.notificationKeys}`, { params })
       .pipe(catchError(this.handleError('getNotificationKeys')));
   }
 
@@ -452,6 +453,13 @@ export class ServiceCalendarService {
     return this.http
       .put<RepairPlanResponse>(`${this.apiUrl}/service-calendar/orders/${orderId}/repair-plan`, request, { params })
       .pipe(catchError(this.handleError('saveRepairPlan')));
+  }
+
+  sendRepairPlan(serviceId: number, orderId: number, request: SendRepairPlanRequest): Observable<void> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http
+      .post<void>(`${this.apiUrl}/service-calendar/orders/${orderId}/repair-plan/send`, request, { params })
+      .pipe(catchError(this.handleError('sendRepairPlan')));
   }
 
   // ============================================

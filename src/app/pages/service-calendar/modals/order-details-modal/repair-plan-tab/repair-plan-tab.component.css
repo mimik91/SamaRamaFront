@@ -415,15 +415,137 @@ input[type='number'] {
 }
 
 .btn-rp-send {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 16px;
-  background: var(--color-white);
-  color: var(--text-muted);
-  border: 2px solid var(--border-color-gray);
+  background: linear-gradient(135deg, #0369a1 0%, #0c4a6e 100%);
+  color: var(--color-white);
+  border: none;
   border-radius: var(--radius-btn);
   font-size: var(--font-size-sm);
   font-weight: 600;
-  cursor: not-allowed;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
+  transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
+}
+
+.btn-rp-send:hover:not(:disabled) {
+  box-shadow: 0 4px 16px rgba(3, 105, 161, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-rp-send:disabled {
   opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rp-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: rp-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes rp-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === POPUP === */
+
+.rp-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rp-popup {
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-6) var(--spacing-6) var(--spacing-5);
+  max-width: 420px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  text-align: center;
+}
+
+.rp-popup-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.rp-popup h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.rp-popup p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.rp-popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+}
+
+.rp-popup-btn {
+  padding: 9px 16px;
+  border-radius: var(--radius-btn);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+
+.rp-popup-btn--primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white);
+  box-shadow: 0 2px 8px var(--color-primary-alpha-30);
+}
+
+.rp-popup-btn--primary:hover {
+  box-shadow: 0 4px 14px var(--color-primary-alpha-40);
+  transform: translateY(-1px);
+}
+
+.rp-popup-btn--outline {
+  background: var(--color-white);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.rp-popup-btn--outline:hover {
+  background: var(--color-primary-alpha-08);
+}
+
+.rp-popup-btn--secondary {
+  background: var(--color-white);
+  color: var(--text-secondary);
+  border: 2px solid var(--border-color-gray);
+}
+
+.rp-popup-btn--secondary:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .btn-rp-print {

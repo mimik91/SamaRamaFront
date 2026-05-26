@@ -6,6 +6,10 @@ export interface RepairPlanLineItem {
 
 // ===== REQUEST =====
 
+export interface SendRepairPlanRequest {
+  requiresConfirmation: boolean;
+}
+
 export interface SaveRepairPlanRequest {
   packageId: number | null;
   packagePriceSnapshot: number | null;

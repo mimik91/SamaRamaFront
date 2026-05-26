@@ -152,15 +152,23 @@
               Gotowe do odbioru
             </button>
 
-            <!-- WAITING_FOR_PARTS / AWAITING_CLIENT_DECISION: Wznów -->
-            <button
-              *ngIf="order.status === 'WAITING_FOR_PARTS' || order.status === 'AWAITING_CLIENT_DECISION'"
-              class="btn-action btn-action--resume"
-              (click)="onQuickStatusChange(order, 'IN_PROGRESS', $event)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Wznów naprawę
-            </button>
+            <!-- WAITING_FOR_PARTS / AWAITING_CLIENT_DECISION: Do kolejki / Wznów -->
+            <ng-container *ngIf="order.status === 'WAITING_FOR_PARTS' || order.status === 'AWAITING_CLIENT_DECISION'">
+              <button
+                class="btn-action btn-action--queue"
+                (click)="onQuickStatusChange(order, 'IN_QUEUE', $event)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Do kolejki
+              </button>
+              <button
+                class="btn-action btn-action--resume"
+                (click)="onQuickStatusChange(order, 'IN_PROGRESS', $event)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Wznów naprawę
+              </button>
+            </ng-container>
 
             <!-- READY_FOR_PICKUP: Zakończ -->
             <button
@@ -222,3 +230,13 @@
   (close)="onAcceptBikeClose()"
   (bikeAccepted)="onAcceptBikeClose()"
 ></app-accept-bike-modal>
+
+<!-- Mark Ready Modal -->
+<app-mark-ready-modal
+  *ngIf="showMarkReadyModal && markReadyOrder && selectedServiceId"
+  [serviceId]="selectedServiceId!"
+  [order]="markReadyOrder"
+  [siblingOrders]="markReadySiblings"
+  (close)="onMarkReadyClose()"
+  (completed)="onMarkReadyCompleted($event)"
+></app-mark-ready-modal>

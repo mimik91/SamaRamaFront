@@ -8,13 +8,15 @@ import { ServiceCalendarService } from '../service-calendar/services/service-cal
 import { NotificationService } from '../../core/notification.service';
 import { OrderDetailsModalComponent } from '../service-calendar/modals/order-details-modal/order-details-modal.component';
 import { AcceptBikeModalComponent } from '../service-calendar/modals/accept-bike-modal/accept-bike-modal.component';
+import { MarkReadyModalComponent } from '../service-calendar/modals/mark-ready-modal/mark-ready-modal.component';
 import { BikeServiceNameIdDto } from '../../shared/models/bike-service-common.models';
 import {
   CalendarOrder,
   CalendarOrderStatus,
   Technician,
   getWeekStart,
-  formatCalendarDate
+  formatCalendarDate,
+  getOrderClientKey
 } from '../../shared/models/service-calendar.models';
 
 interface KanbanColumn {
@@ -63,20 +65,20 @@ const COLUMN_DEFS: Omit<KanbanColumn, 'orders'>[] = [
     bgColor: '#fef3c7',
   },
   {
-    id: 'in_progress',
-    statuses: ['IN_PROGRESS'],
-    dropStatus: 'IN_PROGRESS',
-    label: 'W trakcie naprawy',
-    color: '#ea580c',
-    bgColor: '#fff7ed',
-  },
-  {
     id: 'paused',
     statuses: ['IN_QUEUE', 'WAITING_FOR_PARTS', 'AWAITING_CLIENT_DECISION'],
     dropStatus: 'WAITING_FOR_PARTS',
     label: 'Wstrzymana naprawa',
     color: '#7c3aed',
     bgColor: '#f5f3ff',
+  },
+  {
+    id: 'in_progress',
+    statuses: ['IN_PROGRESS'],
+    dropStatus: 'IN_PROGRESS',
+    label: 'W trakcie naprawy',
+    color: '#ea580c',
+    bgColor: '#fff7ed',
   },
   {
     id: 'done',
@@ -91,7 +93,7 @@ const COLUMN_DEFS: Omit<KanbanColumn, 'orders'>[] = [
 @Component({
   selector: 'app-service-kanban',
   standalone: true,
-  imports: [CommonModule, DragDropModule, OrderDetailsModalComponent, AcceptBikeModalComponent],
+  imports: [CommonModule, DragDropModule, OrderDetailsModalComponent, AcceptBikeModalComponent, MarkReadyModalComponent],
   templateUrl: './service-kanban.component.html',
   styleUrls: ['./service-kanban.component.css']
 })
@@ -117,6 +119,11 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   showOrderDetails = false;
   showAcceptBike = false;
   preselectedOrderForAccept: CalendarOrder | null = null;
+
+  showMarkReadyModal = false;
+  markReadyOrder: CalendarOrder | null = null;
+  markReadySiblings: CalendarOrder[] = [];
+  private markReadyDragRevert: { fromContainer: CalendarOrder[]; toContainer: CalendarOrder[]; fromIndex: number; toIndex: number } | null = null;
 
   private updateScrollbarWidth(): void {}
 
@@ -267,9 +274,16 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     this.pendingMove = null;
     clearTimeout(move.timer);
 
-    if (move.newStatus === 'READY_FOR_PICKUP' && !move.order.bicycleType?.trim()) {
-      transferArrayItem(move.toContainer, move.fromContainer, move.toIndex, move.fromIndex);
-      this.notificationService.error('Nie można ustawić statusu "Gotowe do odbioru" — rower nie ma przypisanego typu roweru.');
+    if (move.newStatus === 'READY_FOR_PICKUP') {
+      this.markReadyDragRevert = {
+        fromContainer: move.fromContainer,
+        toContainer: move.toContainer,
+        fromIndex: move.fromIndex,
+        toIndex: move.toIndex
+      };
+      this.markReadyOrder = move.order;
+      this.markReadySiblings = this.findEligibleSiblings(move.order);
+      this.showMarkReadyModal = true;
       return;
     }
 
@@ -321,14 +335,45 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   onQuickStatusChange(order: CalendarOrder, status: CalendarOrderStatus, event: Event): void {
     event.stopPropagation();
     if (!this.selectedServiceId) return;
-    if (status === 'READY_FOR_PICKUP' && !order.bicycleType?.trim()) {
-      this.notificationService.error('Nie można ustawić statusu "Gotowe do odbioru" — rower nie ma przypisanego typu roweru.');
+    if (status === 'READY_FOR_PICKUP') {
+      this.markReadyOrder = order;
+      this.markReadySiblings = this.findEligibleSiblings(order);
+      this.showMarkReadyModal = true;
       return;
     }
     this.calendarService.updateOrderStatus(this.selectedServiceId, order.id, status).subscribe({
       next: () => { this.loadKanbanData(); },
       error: (err: any) => this.notificationService.error(err?.error?.message ?? 'Nie udało się zmienić statusu.')
     });
+  }
+
+  onMarkReadyClose(): void {
+    this.showMarkReadyModal = false;
+    this.markReadyOrder = null;
+    this.markReadySiblings = [];
+    if (this.markReadyDragRevert) {
+      const r = this.markReadyDragRevert;
+      transferArrayItem(r.toContainer, r.fromContainer, r.toIndex, r.fromIndex);
+      this.markReadyDragRevert = null;
+    }
+  }
+
+  onMarkReadyCompleted(_processedIds: number[]): void {
+    this.showMarkReadyModal = false;
+    this.markReadyOrder = null;
+    this.markReadySiblings = [];
+    this.markReadyDragRevert = null;
+    this.loadKanbanData();
+  }
+
+  private findEligibleSiblings(order: CalendarOrder): CalendarOrder[] {
+    const key = getOrderClientKey(order);
+    const eligible: CalendarOrderStatus[] = ['IN_PROGRESS', 'WAITING_FOR_PARTS', 'AWAITING_CLIENT_DECISION'];
+    return this.columns.flatMap(c => c.orders).filter(o =>
+      o.id !== order.id &&
+      getOrderClientKey(o) === key &&
+      eligible.includes(o.status)
+    );
   }
 
   // ===== Card click → OrderDetailsModal =====

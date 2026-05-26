@@ -147,11 +147,26 @@
   <div class="rp-actions no-print">
     <span class="rp-autosave-hint">Zapisywane automatycznie przy zamknięciu</span>
     <div class="rp-action-buttons">
-      <button class="btn-rp-send" disabled title="Wkrótce dostępne">
-        Wyślij do klienta
+      <button class="btn-rp-send" (click)="sendToClient()" [disabled]="isSaving || isSending">
+        <span *ngIf="isSaving || isSending" class="rp-spinner"></span>
+        {{ isSaving ? 'Zapisywanie…' : isSending ? 'Wysyłanie…' : 'Wyślij do klienta' }}
       </button>
       <button class="btn-rp-print" (click)="printPlan()">Drukuj</button>
     </div>
   </div>
 
+</div>
+
+<!-- Popup: potwierdzenie planu -->
+<div class="rp-popup-overlay" *ngIf="showSendPopup" (click)="showSendPopup = false">
+  <div class="rp-popup" (click)="$event.stopPropagation()">
+    <div class="rp-popup-icon">📨</div>
+    <h3>Wyślij plan naprawy</h3>
+    <p>Czy klient musi potwierdzić plan naprawy przed rozpoczęciem prac?</p>
+    <div class="rp-popup-actions">
+      <button class="rp-popup-btn rp-popup-btn--secondary" (click)="showSendPopup = false">Anuluj</button>
+      <button class="rp-popup-btn rp-popup-btn--outline" (click)="onConfirmSend(false)">Nie, wyślij informacyjnie</button>
+      <button class="rp-popup-btn rp-popup-btn--primary" (click)="onConfirmSend(true)">Tak, wymagaj potwierdzenia</button>
+    </div>
+  </div>
 </div>

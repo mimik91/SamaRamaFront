@@ -84,8 +84,8 @@
 
       <div class="modal-body">
         <p class="keys-info">
-          Uzupełnij dane, które zostaną wstawione w treść powiadomienia.
-          Odznacz pole jeśli dana wartość nie powinna być wysłana.
+          Klient otrzyma email z informacją, że rower jest gotowy do odbioru.
+          Możesz podać cenę końcową, która zostanie dołączona do wiadomości — jeśli nie zaznaczysz pola, email zostanie wysłany bez informacji o cenie.
         </p>
 
         <div class="keys-list">
@@ -96,7 +96,7 @@
                 [(ngModel)]="entry.include"
                 class="key-checkbox"
               />
-              <span class="key-name">{{ entry.key }}</span>
+              <span class="key-name">{{ getKeyLabel(entry.key) }}</span>
             </label>
             <input
               type="text"
@@ -117,6 +117,26 @@
           <span *ngIf="sending" class="spinner-sm"></span>
           {{ sending ? 'Wysyłanie…' : 'Wyślij powiadomienie' }}
         </button>
+      </div>
+    </ng-container>
+
+    <!-- Błąd walidacji backendowej: zablokuj akcję -->
+    <ng-container *ngIf="step === 'validation-error'">
+      <div class="modal-header modal-header--danger">
+        <div class="modal-title">
+          <span class="modal-icon">🚫</span>
+          <h2>Nie można oznaczyć jako gotowe</h2>
+        </div>
+        <button class="btn-close" (click)="close.emit()" title="Zamknij">✕</button>
+      </div>
+      <div class="modal-body modal-body--danger">
+        <div class="error-message-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p>{{ validationErrorMessage }}</p>
+        </div>
+      </div>
+      <div class="modal-footer modal-footer--danger">
+        <button class="btn-danger-ok" (click)="close.emit()">Zrozumiałem</button>
       </div>
     </ng-container>
 

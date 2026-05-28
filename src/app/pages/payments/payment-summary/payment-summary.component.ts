@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { PaymentService } from '../../core/payment.service';
-import { NotificationService } from '../../core/notification.service';
-import { environment } from '../../environments/environments';
-import { PaymentNavigationState, PaymentOrderType } from '../../shared/models/payment.models';
+import { PaymentService } from '../../../core/payment.service';
+import { NotificationService } from '../../../core/notification.service';
+import { environment } from '../../../environments/environments';
+import { PaymentNavigationState, PaymentOrderType } from '../../../shared/models/payment.models';
 
 const PENDING_ORDER_KEY = 'pendingOrderData';
 

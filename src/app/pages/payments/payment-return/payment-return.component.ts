@@ -3,9 +3,9 @@ import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, of, timer } from 'rxjs';
 import { catchError, switchMap, takeWhile } from 'rxjs/operators';
-import { PaymentService } from '../../core/payment.service';
-import { environment } from '../../environments/environments';
-import { PaymentStatus } from '../../shared/models/payment.models';
+import { PaymentService } from '../../../core/payment.service';
+import { environment } from '../../../environments/environments';
+import { PaymentStatus } from '../../../shared/models/payment.models';
 
 const POLL_INTERVAL_MS = 15_000;
 

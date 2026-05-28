@@ -11,7 +11,8 @@ export const environment = {
     privacyPolicy: '/privacy-policy',
     homepage: '/',
     servicesMap: '/mapa-serwisow',
-    orderSummary: '/ordersummary'
+    orderSummary: '/ordersummary',
+    paymentReturn: '/platnosc/powrot'
   },
   
   // API Endpoints
@@ -45,6 +46,11 @@ export const environment = {
       officeAddresses: '/guest-orders/office-addresses',
       sessionSync: '/guest-orders/session-sync',
       report: '/guest-orders/report'
+    },
+
+    payment: {
+      initiate: '/payments/initiate',
+      status: '/payments/status'
     },
 
     serviceSlots: {

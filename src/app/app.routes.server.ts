@@ -211,6 +211,16 @@ export const serverRoutes: ServerRoute[] = [
     path: 'sukces',
     renderMode: RenderMode.Client
   },
+    // Podsumowanie zamówienia przed płatnością — client only (stan z routera)
+  {
+    path: 'platnosc/podsumowanie',
+    renderMode: RenderMode.Client
+  },
+  // Strona powrotu z PayU — client only (query params z PayU, brak SSR potrzebna)
+  {
+    path: 'platnosc/powrot',
+    renderMode: RenderMode.Client
+  },
   {
     path: ':suffix',
     renderMode: RenderMode.Server

@@ -53,6 +53,8 @@ import { AllServicesPageComponent } from './pages/all-services-page/all-services
 import { LandingPageComponent } from './pages/landing-page/landing-page.component';
 import { FlyerRedirectComponent } from './pages/flyer-redirect/flyer-redirect.component';
 import { OrderSuccessComponent } from './pages/order-success/order-success.component';
+import { PaymentReturnComponent } from './pages/payments/payment-return/payment-return.component';
+import { PaymentSummaryComponent } from './pages/payments/payment-summary/payment-summary.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
@@ -421,6 +423,21 @@ export const routes: Routes = [
       path: 'sukces',
       component: OrderSuccessComponent,
       title: 'Dziękujemy! | CycloPick'
+    },
+
+    
+    // Podsumowanie zamówienia przed płatnością — wybór "opłać" lub "opłacę później"
+    {
+      path: 'platnosc/podsumowanie',
+      component: PaymentSummaryComponent,
+      title: 'Podsumowanie zamówienia | CycloPick'
+    },
+
+    // Strona powrotu z PayU (po dokonaniu lub anulowaniu płatności)
+    {
+      path: 'platnosc/powrot',
+      component: PaymentReturnComponent,
+      title: 'Status płatności | CycloPick'
     },
 
     // Service profile - base route (default - "O nas" section)

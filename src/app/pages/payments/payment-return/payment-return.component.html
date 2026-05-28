@@ -1,0 +1,82 @@
+<div class="payment-return-container">
+
+  <!-- CHECKING (spinner podczas odpytywania backendu) -->
+  <div *ngIf="isChecking" class="status-card checking">
+    <div class="spinner"></div>
+    <h1>Sprawdzamy status płatności&hellip;</h1>
+    <p class="subtitle">To może potrwać chwilę.</p>
+  </div>
+
+  <!-- SUCCESS -->
+  <div *ngIf="!isChecking && status === 'SUCCESS'" class="status-card success">
+    <div class="icon-wrapper success-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <h1>Płatność zakończona pomyślnie</h1>
+    <p class="subtitle">Twoje zamówienie zostało opłacone. Potwierdzenie wysłaliśmy na podany adres e-mail.</p>
+    <div class="info-box">
+      <p>Kurier skontaktuje się z Tobą w celu ustalenia szczegółów odbioru roweru.</p>
+    </div>
+    <button class="btn-primary" (click)="goHome()">Wróć na stronę główną</button>
+  </div>
+
+  <!-- CANCELED -->
+  <div *ngIf="!isChecking && status === 'CANCELED'" class="status-card canceled">
+    <div class="icon-wrapper canceled-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </div>
+    <h1>Płatność anulowana</h1>
+    <p class="subtitle">Nie dokończyłeś procesu płatności. Twoje zamówienie zostało zapisane — możesz wrócić i opłacić je później.</p>
+    <div class="info-box warning">
+      <p>Jeśli chcesz dokonać płatności, złóż zamówienie ponownie lub skontaktuj się z nami.</p>
+    </div>
+    <button class="btn-primary" (click)="goHome()">Wróć na stronę główną</button>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="!isChecking && status === 'ERROR'" class="status-card error">
+    <div class="icon-wrapper error-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
+    <h1>Błąd płatności</h1>
+    <p class="subtitle">Niestety wystąpił problem z przetworzeniem płatności.</p>
+    <div class="info-box warning">
+      <p>Spróbuj ponownie lub skontaktuj się z nami pod adresem <strong>kontakt&#64;cyclopick.pl</strong>.</p>
+    </div>
+    <button class="btn-primary" (click)="goHome()">Wróć na stronę główną</button>
+  </div>
+
+  <!-- PENDING -->
+  <div *ngIf="!isChecking && status === 'PENDING'" class="status-card pending">
+    <div class="icon-wrapper pending-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+    </div>
+    <h1>Płatność w trakcie przetwarzania</h1>
+    <p class="subtitle">Twoje zamówienie zostało złożone. Czekamy na potwierdzenie płatności od PayU.</p>
+    <div class="info-box">
+      <p>Automatycznie sprawdzimy status co 15 sekund. Możesz też zamknąć tę stronę — wyślemy potwierdzenie e-mailem.</p>
+    </div>
+    <div class="poll-indicator" [class.rechecking]="isRechecking">
+      <span class="poll-dot"></span>
+      <span *ngIf="!isRechecking && lastCheckedAt">
+        Ostatnio sprawdzono: {{ lastCheckedAt | date:'HH:mm:ss' }}
+      </span>
+      <span *ngIf="isRechecking">Sprawdzamy&hellip;</span>
+      <span *ngIf="!isRechecking && !lastCheckedAt">Sprawdzamy automatycznie&hellip;</span>
+    </div>
+    <button class="btn-primary" (click)="goHome()">Wróć na stronę główną</button>
+  </div>
+
+</div>

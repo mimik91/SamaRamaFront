@@ -625,8 +625,6 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.submitting = true;
-
     const bicyclesData = this.bicyclesForm.value.bicycles as BicycleFormData[];
     const contactAndTransportData = this.contactAndTransportForm.value;
 
@@ -643,7 +641,7 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
       ? (userNotes ? `${officePart}\n${userNotes}` : officePart)
       : userNotes;
 
-    const transportOrder = {
+    const orderData: Record<string, unknown> = {
       bicycles: bicyclesData.map(bike => ({
         brand: bike.brand,
         model: bike.model || '',
@@ -651,12 +649,10 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
       })),
       email: contactAndTransportData.clientEmail,
       phone: contactAndTransportData.clientPhone,
-
       pickupStreet: contactAndTransportData.pickupStreet,
       pickupBuildingNumber: contactAndTransportData.pickupBuildingNumber,
       pickupCity: contactAndTransportData.pickupCity,
       pickupPostalCode: contactAndTransportData.pickupPostalCode,
-
       pickupDate: contactAndTransportData.pickupDate,
       targetServiceId: this.selectedServiceInfo.id,
       transportPrice: finalPrice,
@@ -665,23 +661,12 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
       discountCoupon: this.finalTransportPrice !== null ? this.discountCouponControl.value : null
     };
 
-    this.transportOrderService.createGuestTransportOrder(transportOrder).subscribe({
-      next: () => {
-        this.submitting = false;
-        this.router.navigate(['/sukces'], { queryParams: { typ: 'transport' }, replaceUrl: true });
-      },
-      error: (err) => {
-        this.submitting = false;
-        
-        let errorMessage: string;
-
-        if (err.error?.errors && Array.isArray(err.error.errors)) {
-          errorMessage = err.error.errors.join('\n');
-        } else {
-          errorMessage = err.error?.message || this.i18n.instant('transport_order.messages.order_error');
-        }
-
-        this.notificationService.error(errorMessage);
+    this.router.navigate(['/platnosc/podsumowanie'], {
+      state: {
+        orderType: 'TRANSPORT',
+        orderData,
+        totalPrice: finalPrice,
+        bikeCount: this.getSelectedBicyclesCount()
       }
     });
   }

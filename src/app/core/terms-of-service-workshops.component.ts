@@ -18,7 +18,7 @@ import { SeoService } from './seo.service';
         <div class="terms-text">
           <h2>1. Postanowienia og&oacute;lne</h2>
           <p>1.1. Niniejszy Regulamin okre&sacute;la zasady korzystania z platformy internetowej dost&#281;pnej pod adresem CycloPick.pl (&bdquo;Platforma&rdquo;).</p>
-          <p>1.2. W&lstrok;a&sacute;cicielem i administratorem Platformy jest CYCLOPICK PROSTA SP&Oacute;&Lstrok;KA AKCYJNA z siedzib&#261; w Krakowie, KRS: 0001226112, NIP: 5130309678, REGON: 544080816 (&bdquo;Us&lstrok;ugodawca&rdquo;).</p>
+          <p>1.2. W&lstrok;a&sacute;cicielem i administratorem Platformy jest CYCLOPICK PROSTA SP&Oacute;&Lstrok;KA AKCYJNA z siedzib&#261; w Bosutowie, adres: ul. Krakowska 13, 32-086 Bosut&oacute;w (poczta: W&#281;grzce), gmina Zielonki, woj. ma&lstrok;opolskie, KRS: 0001226112, NIP: 5130309678, REGON: 544080816 (&bdquo;Us&lstrok;ugodawca&rdquo;).</p>
           <p>1.3. Us&lstrok;ugodawca &sacute;wiadczy us&lstrok;ugi drog&#261; elektroniczn&#261; polegaj&#261;ce w szczeg&oacute;lno&sacute;ci na:</p>
           <ul>
             <li>udost&#281;pnianiu Serwisom narz&#281;dzi do tworzenia wiz yt&oacute;wek online,</li>

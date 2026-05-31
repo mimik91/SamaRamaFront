@@ -18,7 +18,7 @@ import { SeoService } from './seo.service';
       <section class="terms-content">
 
         <h2>1. Postanowienia og&oacute;lne</h2>
-        <p>1.1. Niniejszy regulamin (&bdquo;Regulamin&rdquo;) okre&sacute;la zasady &sacute;wiadczenia us&lstrok;ug transportu rowerowego przez sp&oacute;&lstrok;k&#281; CYCLOPICK PROSTA SP&Oacute;&Lstrok;KA AKCYJNA z siedzib&#261; w Krakowie, wpisan&#261; do rejestru przedsi&#281;biorc&oacute;w Krajowego Rejestru S&#261;dowego pod numerem KRS: 0001226112 (S&#261;d Rejonowy dla Krakowa-&Sacute;r&oacute;dm ie&sacute;cia w Krakowie, XI Wydzia&lstrok; Gospodarczy KRS), o kapitale akcyjnym w pe&lstrok;ni op&lstrok;aconym, posiadaj&#261;c&#261; NIP: 5130309678 oraz REGON: 544080816 (&bdquo;Us&lstrok;ugodawca&rdquo;).</p>
+        <p>1.1. Niniejszy regulamin (&bdquo;Regulamin&rdquo;) okre&sacute;la zasady &sacute;wiadczenia us&lstrok;ug transportu rowerowego przez sp&oacute;&lstrok;k&#281; CYCLOPICK PROSTA SP&Oacute;&Lstrok;KA AKCYJNA z siedzib&#261; w Bosutowie, adres: ul. Krakowska 13, 32-086 Bosut&oacute;w (poczta: W&#281;grzce), gmina Zielonki, woj. ma&lstrok;opolskie, wpisan&#261; do rejestru przedsi&#281;biorc&oacute;w Krajowego Rejestru S&#261;dowego pod numerem KRS: 0001226112 (S&#261;d Rejonowy dla Krakowa-&Sacute;r&oacute;dmie&sacute;cia w Krakowie, XI Wydzia&lstrok; Gospodarczy KRS), o kapitale akcyjnym w pe&lstrok;ni op&lstrok;aconym, posiadaj&#261;c&#261; NIP: 5130309678 oraz REGON: 544080816 (&bdquo;Us&lstrok;ugodawca&rdquo;).</p>
         <p>1.2. Kontakt z Us&lstrok;ugodawc&#261;:</p>
         <ul>
           <li>e-mail: <a href="mailto:cyclopick@gmail.com">cyclopick{{'@'}}gmail.com</a></li>

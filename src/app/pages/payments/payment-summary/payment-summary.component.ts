@@ -88,7 +88,4 @@ export class PaymentSummaryComponent implements OnInit {
     });
   }
 
-  goHome(): void {
-    this.router.navigate([environment.links.homepage]);
-  }
 }

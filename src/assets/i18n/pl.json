@@ -400,7 +400,7 @@
     "pickup_cities": {
       "title": "Obszar odbioru",
       "intro": "Aktualnie odbieramy rowery z następujących miejscowości:",
-      "cities": "Kraków, Batowice, Bibice, Boleń, Bosutów, Dziekanowice, Michałowice, Raciborowice, Węgrzce, Zielonki"
+      "cities": "Kraków, Batowice, Bibice, Boleń, Bosutów, Dziekanowice, Raciborowice, Węgrzce, Zielonki"
     },
     "carbon_warning": {
       "title": "Bardzo ważne",
@@ -718,5 +718,62 @@
     "contact": {
       "title": "Kontakt"
     }
+  },
+  "how_it_works_page": {
+    "section_title": "Transport rowerów w Krakowie – jak to działa?",
+    "view_transport_btn": "Transport Rowerów",
+    "process_description": "Wieczorem odbieramy Twój rower i zawozimy do serwisu, w dniu zakończenia serwisu odbieramy rower od serwisu i wieczorem odstawiamy go z powrotem pod Twój dom.",
+    "see_map_btn": "Zobacz mapę serwisów",
+    "summary": "Proste, wygodne i bezproblemowe!",
+    "area_label": "Obszar działania:",
+    "contact_title": "Kontakt – zamów transport roweru",
+    "success_title": "Zamówienie wysłane pomyślnie!",
+    "success_message": "Twoje zamówienie zostało przyjęte. Wkrótce skontaktujemy się z Tobą w sprawie szczegółów.",
+    "new_order_btn": "Nowe zamówienie",
+    "login_btn": "Przejdź do logowania",
+    "transport_steps": [
+      {
+        "title": "Umów się na serwis w swoim serwisie rowerowym",
+        "description": "Skontaktuj się z wybranym serwisem i umów termin na serwis Twojego roweru."
+      },
+      {
+        "title": "Wypełnij formularz na naszej stronie",
+        "description": "Dodaj rower do systemu, podaj wymagane dane i wybierz dzień odbioru (dzień przed serwisem). Odbierzemy go spod wskazanego adresu w godzinach 18:00—22:00."
+      },
+      {
+        "title": "Odbierzemy rower i zawieziemy do serwisu",
+        "description": "Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia."
+      },
+      {
+        "title": "Po zakończonym serwisie dostarczymy Ci rower z powrotem",
+        "description": "Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy."
+      }
+    ],
+    "service_steps": [
+      {
+        "title": "Zarejestruj rower w systemie",
+        "description": "Dodaj jednoślad do systemu, podając podstawowe informacje."
+      },
+      {
+        "title": "Wybierz termin odbioru",
+        "description": "Wskaż dogodny dzień odbioru, a my odbierzemy Twój rower spod wskazanego adresu w godzinach 18:00 - 22:00."
+      },
+      {
+        "title": "Odbierzemy od Ciebie rower",
+        "description": "Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia."
+      },
+      {
+        "title": "Bezpiecznie przewieziemy Twój rower do współpracującego z nami serwisu",
+        "description": "Bezpiecznie przewieziemy Twój rower do współpracującego z nami serwisu."
+      },
+      {
+        "title": "Po zakończeniu serwisu odbierzemy i dostarczymy rower z powrotem",
+        "description": "Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy."
+      },
+      {
+        "title": "Płatność przy odbiorze",
+        "description": "Płacisz za serwis przy odbiorze roweru za pomocą gotówki lub aplikacji BLIK."
+      }
+    ]
   }
 }

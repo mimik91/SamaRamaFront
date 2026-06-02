@@ -8,6 +8,7 @@ import { BikeFormService, BikeFormData } from '../../home/bike-form.service';
 import { ServiceSlotService } from '../../service-slots/service-slot.service';
 import { HomeHeroComponent } from '../../home/home-hero.component';
 import { NotificationService } from '../../core/notification.service';
+import { I18nService } from '../../core/i18n.service';
 
 @Component({
   selector: 'app-how-it-works-page',
@@ -30,77 +31,14 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private meta = inject(Meta);
   private title = inject(Title);
+  private i18n = inject(I18nService);
   private isBrowser: boolean;
 
-  // Aktywny widok sekcji "Jak działamy"
   activeHowItWorksView: 'transport' | 'service' = 'transport';
   formSubmitted = false;
 
-  transportSteps = [
-    {
-      number: 1,
-      title: 'Umów się na serwis w swoim serwisie rowerowym',
-      description: 'Skontaktuj się z wybranym serwisem i umów termin na serwis Twojego roweru.',
-      icon: 'calendar'
-    },
-    {
-      number: 2,
-      title: 'Wypełnij formularz na naszej stronie',
-      description: 'Dodaj rower do systemu, podaj wymagane dane i wybierz dzień odbioru (dzień przed serwisem). Odbierzemy go spod wskazanego adresu w godzinach 18:00—22:00.',
-      icon: 'file-text'
-    },
-    {
-      number: 3,
-      title: 'Odbierzemy rower i zawieziemy do serwisu',
-      description: 'Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia.',
-      icon: 'truck'
-    },
-    {
-      number: 4,
-      title: 'Po zakończonym serwisie dostarczymy Ci rower z powrotem',
-      description: 'Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy.',
-      icon: 'tool'
-    }
-  ];
-
-  serviceSteps = [
-    {
-      number: 1,
-      title: 'Zarejestruj rower w systemie',
-      description: 'Dodaj jednoślad do systemu, podając podstawowe informacje.',
-      icon: 'file-text'
-    },
-    {
-      number: 2,
-      title: 'Wybierz termin odbioru',
-      description: 'Wskaż dogodny dzień odbioru, a my odbierzemy Twój rower spod wskazanego adresu w godzinach 18:00 - 22:00.',
-      icon: 'clock'
-    },
-    {
-      number: 3,
-      title: 'Odbierzemy od Ciebie rower',
-      description: 'Możesz też przypiąć rower zapięciem na szyfr i przesłać nam lokalizację oraz kod do zapięcia.',
-      icon: 'package'
-    },
-    {
-      number: 4,
-      title: 'Bezpiecznie przewieziemy Twój rower do współpracującego z nami serwisu',
-      description: 'Bezpiecznie przewieziemy Twój rower do współpracującego z nami serwisu.',
-      icon: 'truck'
-    },
-    {
-      number: 5,
-      title: 'Po zakończeniu serwisu odbierzemy i dostarczymy rower z powrotem',
-      description: 'Przywozimy go z powrotem pod wskazany adres, gotowego do jazdy.',
-      icon: 'tool'
-    },
-    {
-      number: 6,
-      title: 'Płatność przy odbiorze',
-      description: 'Płacisz za serwis przy odbiorze roweru za pomocą gotówki lub aplikacji BLIK.',
-      icon: 'credit-card'
-    }
-  ];
+  private readonly transportStepIcons = ['calendar', 'file-text', 'truck', 'tool'];
+  private readonly serviceStepIcons = ['file-text', 'clock', 'package', 'truck', 'tool', 'credit-card'];
 
   bikeForm: FormGroup;
   brands: string[] = [];
@@ -108,9 +46,16 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
   maxBikesPerOrder = 5; // Default value
   loadingMaxBikes = true;
 
-  // Getter dla aktualnych kroków
-  get currentSteps() {
-    return this.activeHowItWorksView === 'transport' ? this.transportSteps : this.serviceSteps;
+  get currentSteps(): { number: number; icon: string; title: string; description: string }[] {
+    const isTransport = this.activeHowItWorksView === 'transport';
+    const icons = isTransport ? this.transportStepIcons : this.serviceStepIcons;
+    const key = isTransport ? 'how_it_works_page.transport_steps' : 'how_it_works_page.service_steps';
+    const steps = this.i18n.instant(key) as { title: string; description: string }[];
+    return steps.map((s, i) => ({ number: i + 1, icon: icons[i], ...s }));
+  }
+
+  t(key: string): string {
+    return this.i18n.instant(key) as string;
   }
 
   constructor(

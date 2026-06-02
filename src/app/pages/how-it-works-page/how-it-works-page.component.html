@@ -10,33 +10,33 @@
       </svg>
     </div>
     <div class="success-content">
-      <h3>Zamówienie wysłane pomyślnie!</h3>
-      <p>Twoje zamówienie zostało przyjęte. Wkrótce skontaktujemy się z Tobą w sprawie szczegółów.</p>
+      <h3>{{ t('how_it_works_page.success_title') }}</h3>
+      <p>{{ t('how_it_works_page.success_message') }}</p>
       <div class="success-actions">
-        <button type="button" class="reset-btn" (click)="resetForm()">Nowe zamówienie</button>
-        <button type="button" class="login-btn" (click)="navigateTo('/login')">Przejdź do logowania</button>
+        <button type="button" class="reset-btn" (click)="resetForm()">{{ t('how_it_works_page.new_order_btn') }}</button>
+        <button type="button" class="login-btn" (click)="navigateTo('/login')">{{ t('how_it_works_page.login_btn') }}</button>
       </div>
     </div>
   </div>
 
   <!-- Sekcja "Jak działamy" z ograniczoną szerokością -->
   <section id="how-it-works" class="content-section how-it-works-limited">
-    <h1>Transport rowerów w Krakowie – jak to działa?</h1>
-    
+    <h1>{{ t('how_it_works_page.section_title') }}</h1>
+
     <!-- Przyciski przełączania widoku -->
     <div class="view-switcher">
-      <button 
-        type="button" 
-        class="view-btn hero-btn" 
+      <button
+        type="button"
+        class="view-btn hero-btn"
         [class.active]="activeHowItWorksView === 'transport'"
         (click)="switchHowItWorksView('transport')"
       >
-        Transport Rowerów
+        {{ t('how_it_works_page.view_transport_btn') }}
       </button>
       <!-- Można odkomentować jak będzie potrzeba
-      <button 
-        type="button" 
-        class="view-btn hero-btn" 
+      <button
+        type="button"
+        class="view-btn hero-btn"
         [class.active]="activeHowItWorksView === 'service'"
         (click)="switchHowItWorksView('service')"
       >
@@ -44,9 +44,9 @@
       </button>
       -->
     </div>
-    
-    <h2 class="process-description">Wieczorem odbieramy Twój rower i zawozimy do serwisu, w dniu zakończenia serwisu odbieramy rower od serwisu i wieczorem odstawiamy go z powrotem pod Twój dom.</h2>
-    
+
+    <h2 class="process-description">{{ t('how_it_works_page.process_description') }}</h2>
+
     <div class="steps-container">
       <div *ngFor="let step of currentSteps" class="step-card">
         <div class="step-number">{{ step.number }}</div>
@@ -98,20 +98,20 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Przyciski akcji -->
     <div class="how-it-works-actions">
-      <button 
-        type="button" 
-        class="hero-btn learn-more-btn" 
+      <button
+        type="button"
+        class="hero-btn learn-more-btn"
         (click)="goToMap()"
       >
-        Zobacz mapę serwisów
+        {{ t('how_it_works_page.see_map_btn') }}
       </button>
     </div>
-    
+
     <div class="process-summary">
-      <p style="font-weight: normal !important;">Proste, wygodne i bezproblemowe!</p>
+      <p style="font-weight: normal !important;">{{ t('how_it_works_page.summary') }}</p>
     </div>
 
     <div class="service-area-info">
@@ -122,19 +122,19 @@
         </svg>
       </div>
       <div class="service-area-text">
-        <strong>Obszar działania:</strong> Kraków, Węgrzce, Zielonki, Bosutów, Bibice, Batowice, Michałowice, Dziekanowice, Raciborowice, Boleń
+        <strong>{{ t('how_it_works_page.area_label') }}</strong> {{ t('pickup_cities.cities') }}
       </div>
     </div>
   </section>
 
   <!-- Sekcja kontaktowa -->
     <section class="contact-section">
-      <h2>Kontakt – zamów transport roweru</h2>
+      <h2>{{ t('how_it_works_page.contact_title') }}</h2>
     </section>
     <div class="contact-info-container">
       <div class="contact-info-item">
         <div class="contact-icon email-icon">
-          <a href="mailto:cyclopick@gmail.com" 
+          <a href="mailto:cyclopick@gmail.com"
              aria-label="Wyślij email na adres cyclopick@gmail.com"
              title="Wyślij email: cyclopick@gmail.com">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -145,10 +145,10 @@
         </div>
         <div class="contact-text">cyclopick{{'@'}}gmail.com</div>
       </div>
-      
+
       <div class="contact-info-item">
         <div class="contact-icon phone-icon">
-          <a href="tel:+48667757920" 
+          <a href="tel:+48667757920"
              aria-label="Zadzwoń pod numer +48 667 757 920"
              title="Zadzwoń: +48 667 757 920">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -158,12 +158,12 @@
         </div>
         <div class="contact-text">+48 667 757 920</div>
       </div>
-      
+
       <div class="contact-info-item">
         <div class="contact-icon facebook-icon">
-          <a href="https://www.facebook.com/cyclopick" 
-             target="_blank" 
-             rel="noopener noreferrer" 
+          <a href="https://www.facebook.com/cyclopick"
+             target="_blank"
+             rel="noopener noreferrer"
              aria-label="Odwiedź naszą stronę na Facebooku"
              title="Znajdź nas na Facebooku">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

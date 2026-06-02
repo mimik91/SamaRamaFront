@@ -130,7 +130,7 @@ h1 {
   gap: 10px;
   box-shadow: 0 2px 8px var(--color-primary-alpha-30);
   transition: box-shadow 0.2s, transform 0.2s, opacity 0.2s;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
 }
 
 .btn-pay:hover:not(:disabled) {
@@ -151,26 +151,6 @@ h1 {
 
 .loading-text {
   font-size: 0.95rem;
-}
-
-/* Later button */
-.btn-later {
-  width: 100%;
-  background: transparent;
-  color: var(--text-secondary);
-  border: 2px solid var(--border-color-gray);
-  border-radius: var(--radius-btn);
-  padding: 12px 24px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-  margin-bottom: 24px;
-}
-
-.btn-later:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
 }
 
 /* Disclaimer */

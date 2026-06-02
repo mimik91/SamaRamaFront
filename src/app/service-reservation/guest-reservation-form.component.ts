@@ -174,7 +174,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
       plannedDate: ['', [Validators.required, this.acceptedDayValidator.bind(this)]],
-      deliveryType: ['SELF' as DeliveryType]
+      deliveryType: ['DOOR_TO_DOOR' as DeliveryType]
     });
 
     this.transportForm = this.fb.group({
@@ -470,7 +470,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.transportForm.disable();
+    this.transportForm.enable();
   }
 
   private loadBrands(): void {
@@ -598,6 +598,10 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
           transportAvailable: !!d.transportAvailable,
           transportCost: d.transportCost ?? null
         };
+
+        if (!d.transportAvailable) {
+          this.reservationForm.get('deliveryType')?.setValue('SELF' as DeliveryType);
+        }
 
         this.injectReservationSchema(d);
         this.updateReservationSeo(d.name, d.city);

@@ -10,6 +10,7 @@ import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { MapService } from './services/map.service';
 import { NotificationService } from '../../core/notification.service';
 import { SeoService } from '../../core/seo.service';
+import { MapStateService } from '../../core/map-state.service';
 
 // Resolver
 import { ServicesMapResolvedData } from './services-map-page.resolver';
@@ -119,9 +120,14 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
     private meta: Meta,
     private title: Title,
     private seoService: SeoService,
+    private mapStateService: MapStateService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+  }
+
+  private pushServicesListUrl(): void {
+    this.mapStateService.setServicesListUrl(this.servicesListUrl);
   }
 
   @HostListener('window:resize')
@@ -227,12 +233,11 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Clear any pending timeouts
     if (this.mapInvalidateTimeoutId !== undefined) {
       clearTimeout(this.mapInvalidateTimeoutId);
       this.mapInvalidateTimeoutId = undefined;
     }
-
+    this.mapStateService.reset();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -469,11 +474,12 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   }
 
 onCitySelected(city: CitySuggestion): void {
-    // Wykorzystujemy współrzędne bezpośrednio z odpowiedzi
     const latitude = city.latitude;
     const longitude = city.longitude;
 
-    // Aktualizuj URL z query param (dla SEO i udostępniania linków)
+    this.filtersState.cityQuery = city.cityName;
+    this.pushServicesListUrl();
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { city: city.cityName },
@@ -481,7 +487,6 @@ onCitySelected(city: CitySuggestion): void {
     });
 
     if (this.mapComponent && latitude && longitude) {
-      // Centrujemy mapę na współrzędnych miasta z odpowiednim zoomem
       this.mapComponent.centerOn(latitude, longitude, 13);
     } else {
       console.error('Missing coordinates or map component for city:', city);
@@ -491,8 +496,8 @@ onCitySelected(city: CitySuggestion): void {
   onCityClearRequested(): void {
     this.filtersState.cityQuery = '';
     this.citySuggestions = [];
+    this.pushServicesListUrl();
 
-    // Usuń query param z URL
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { city: null },
@@ -635,6 +640,7 @@ onCitySelected(city: CitySuggestion): void {
 
   onMapMoved(viewState: MapViewState): void {
     this.currentMapView = viewState;
+    this.pushServicesListUrl();
     this.mapMoveSubject.next(viewState);
   }
 
@@ -780,12 +786,44 @@ onCitySelected(city: CitySuggestion): void {
 
   // ============ SERVICES LIST URL ============
 
+  private readonly VOIVODESHIP_CAPITALS: { slug: string; lat: number; lng: number }[] = [
+    { slug: 'warszawa',    lat: 52.2297, lng: 21.0122 },
+    { slug: 'krakow',      lat: 50.0614, lng: 19.9366 },
+    { slug: 'lodz',        lat: 51.7592, lng: 19.4560 },
+    { slug: 'wroclaw',     lat: 51.1079, lng: 17.0385 },
+    { slug: 'poznan',      lat: 52.4064, lng: 16.9252 },
+    { slug: 'gdansk',      lat: 54.3520, lng: 18.6466 },
+    { slug: 'szczecin',    lat: 53.4285, lng: 14.5528 },
+    { slug: 'bydgoszcz',   lat: 53.1235, lng: 18.0084 },
+    { slug: 'lublin',      lat: 51.2465, lng: 22.5684 },
+    { slug: 'bialystok',   lat: 53.1325, lng: 23.1688 },
+    { slug: 'katowice',    lat: 50.2649, lng: 19.0238 },
+    { slug: 'rzeszow',     lat: 50.0412, lng: 22.0048 },
+    { slug: 'kielce',      lat: 50.8661, lng: 20.6286 },
+    { slug: 'olsztyn',     lat: 53.7784, lng: 20.4801 },
+    { slug: 'opole',       lat: 50.6751, lng: 17.9213 },
+    { slug: 'zielona-gora', lat: 51.9356, lng: 15.5062 }
+  ];
+
   get servicesListUrl(): string {
     const city = this.filtersState.cityQuery?.trim();
     if (city) {
       return `/serwisy/${this.cityToSlug(city)}`;
     }
+    const detectedSlug = this.detectCitySlugFromMap();
+    if (detectedSlug) {
+      return `/serwisy/${detectedSlug}`;
+    }
     return '/serwisy';
+  }
+
+  private detectCitySlugFromMap(): string | null {
+    const { center, zoom } = this.currentMapView;
+    if (!center || (zoom ?? 0) < 11) return null;
+    const match = this.VOIVODESHIP_CAPITALS.find(c =>
+      Math.abs(center.lat - c.lat) < 0.25 && Math.abs(center.lng - c.lng) < 0.35
+    );
+    return match?.slug ?? null;
   }
 
   private cityToSlug(city: string): string {

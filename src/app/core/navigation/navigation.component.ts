@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { NotificationService } from '../notification.service';
+import { MapStateService } from '../map-state.service';
 import { UserSettingsComponent } from '../user-settings/user-settings.component';
 import { CycloPickLogoComponent } from '../../shared/cyclopick-logo/cyclopick-logo.component';
 import { filter } from 'rxjs/operators';
@@ -24,6 +25,8 @@ export class NavigationComponent implements OnInit {
   authService = inject(AuthService);
   router = inject(Router);
   notification = inject(NotificationService);
+  private mapStateService = inject(MapStateService);
+  readonly servicesListUrl$ = this.mapStateService.servicesListUrl$;
   
   mobileMenuOpen = false;
   currentUrl: string = '';
@@ -226,6 +229,10 @@ export class NavigationComponent implements OnInit {
     event.preventDefault();
     this.router.navigate(['/']);
     this.closeMobileMenu();
+  }
+
+  isMapPage(): boolean {
+    return this.currentUrl.startsWith('/mapa-serwisow');
   }
 
   isAuthPage(): boolean {

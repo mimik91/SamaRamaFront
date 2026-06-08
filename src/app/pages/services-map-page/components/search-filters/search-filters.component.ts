@@ -173,6 +173,12 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     this.cityClearRequested.emit();
   }
 
+  onCityEnter(): void {
+    if (this.citySuggestions.length > 0) {
+      this.onCitySelect(this.citySuggestions[0]);
+    }
+  }
+
   onCityFocus(event: FocusEvent): void {
     this.citySearchFocused = true;
     const inputElement = event.target as HTMLElement;
@@ -198,6 +204,12 @@ export class SearchFiltersComponent implements OnInit, OnDestroy {
     this.filtersState.serviceQuery = '';
     this.serviceSearchFocused = false;
     this.serviceClearRequested.emit();
+  }
+
+  onServiceEnter(): void {
+    if (this.serviceSuggestions.length > 0) {
+      this.onServiceSelect(this.serviceSuggestions[0]);
+    }
   }
 
   onServiceFocus(event: FocusEvent): void {

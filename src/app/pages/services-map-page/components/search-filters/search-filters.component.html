@@ -33,6 +33,7 @@
               [(ngModel)]="filtersState.cityQuery"
               (input)="onCitySearchChange()"
               (focus)="onCityFocus($event)"
+              (keydown.enter)="onCityEnter()"
             >
             <button
               *ngIf="filtersState.cityQuery"
@@ -73,6 +74,7 @@
               [(ngModel)]="filtersState.serviceQuery"
               (input)="onServiceSearchChange()"
               (focus)="onServiceFocus($event)"
+              (keydown.enter)="onServiceEnter()"
             >
             <button
               *ngIf="filtersState.serviceQuery"

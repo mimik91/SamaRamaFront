@@ -432,6 +432,37 @@ export function getOrderClientKey(order: CalendarOrder): string {
   return order.clientEmail || order.clientPhone || order.clientName || String(order.id);
 }
 
+export interface OrderSearchFilter {
+  firstName: string;
+  lastName: string;
+  bikeBrand: string;
+  bikeModel: string;
+  email: string;
+  phone: string;
+}
+
+export const EMPTY_ORDER_SEARCH_FILTER: OrderSearchFilter = {
+  firstName: '', lastName: '', bikeBrand: '', bikeModel: '', email: '', phone: ''
+};
+
+export function matchesOrderFilter(order: CalendarOrder, f: OrderSearchFilter): boolean {
+  const name = (order.clientName ?? '').toLowerCase();
+  const parts = name.split(' ');
+  const first = parts[0] ?? '';
+  const last = parts.length > 1 ? parts.slice(1).join(' ') : name;
+  if (f.firstName && !first.includes(f.firstName.toLowerCase())) return false;
+  if (f.lastName && !last.includes(f.lastName.toLowerCase())) return false;
+  if (f.bikeBrand && !(order.bicycleBrand ?? '').toLowerCase().includes(f.bikeBrand.toLowerCase())) return false;
+  if (f.bikeModel && !(order.bicycleModel ?? '').toLowerCase().includes(f.bikeModel.toLowerCase())) return false;
+  if (f.email && !(order.clientEmail ?? '').toLowerCase().includes(f.email.toLowerCase())) return false;
+  if (f.phone && !(order.clientPhone ?? '').includes(f.phone)) return false;
+  return true;
+}
+
+export function hasActiveFilter(f: OrderSearchFilter): boolean {
+  return Object.values(f).some(v => v !== '');
+}
+
 
 export interface ServiceNotificationConfig {
   emailTextPickup?: string;
@@ -518,6 +549,14 @@ export function getWeekStart(date: Date): Date {
   d.setDate(diff);
   d.setHours(0, 0, 0, 0);
   return d;
+}
+
+/**
+ * Zwraca poczatek siatki miesięcznej (poniedziałek tygodnia zawierającego 1. dzień miesiąca)
+ */
+export function getMonthGridStart(date: Date): Date {
+  const firstOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  return getWeekStart(firstOfMonth);
 }
 
 /**

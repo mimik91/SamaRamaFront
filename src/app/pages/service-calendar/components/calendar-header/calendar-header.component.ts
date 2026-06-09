@@ -4,9 +4,6 @@ import { I18nService } from '../../../../core/i18n.service';
 import {
   CalendarViewMode,
   CalendarMode,
-  formatCalendarDate,
-  getWeekStart,
-  getWeekEnd,
   getMonthNameKey
 } from '../../../../shared/models/service-calendar.models';
 
@@ -43,7 +40,6 @@ export class CalendarHeaderComponent {
       case 'day':
         return this.formatDayLabel(this.selectedDate);
       case 'week':
-        return this.formatWeekLabel(this.selectedDate);
       case 'month':
         return this.formatMonthLabel(this.selectedDate);
       default:
@@ -57,26 +53,6 @@ export class CalendarHeaderComponent {
     const month = this.t(monthKey);
     const year = date.getFullYear();
     return `${day} ${month} ${year}`;
-  }
-
-  private formatWeekLabel(date: Date): string {
-    const start = getWeekStart(date);
-    const end = getWeekEnd(date);
-
-    const startDay = start.getDate();
-    const endDay = end.getDate();
-
-    if (start.getMonth() === end.getMonth()) {
-      const monthKey = getMonthNameKey(start.getMonth());
-      const month = this.t(monthKey);
-      return `${startDay} - ${endDay} ${month} ${start.getFullYear()}`;
-    } else {
-      const startMonthKey = getMonthNameKey(start.getMonth(), true);
-      const endMonthKey = getMonthNameKey(end.getMonth(), true);
-      const startMonth = this.t(startMonthKey);
-      const endMonth = this.t(endMonthKey);
-      return `${startDay} ${startMonth} - ${endDay} ${endMonth} ${end.getFullYear()}`;
-    }
   }
 
   private formatMonthLabel(date: Date): string {
@@ -121,8 +97,6 @@ export class CalendarHeaderComponent {
         newDate.setDate(newDate.getDate() - 1);
         break;
       case 'week':
-        newDate.setDate(newDate.getDate() - 7);
-        break;
       case 'month':
         newDate.setMonth(newDate.getMonth() - 1);
         break;
@@ -139,8 +113,6 @@ export class CalendarHeaderComponent {
         newDate.setDate(newDate.getDate() + 1);
         break;
       case 'week':
-        newDate.setDate(newDate.getDate() + 7);
-        break;
       case 'month':
         newDate.setMonth(newDate.getMonth() + 1);
         break;

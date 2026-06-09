@@ -17,6 +17,14 @@
       </div>
     </div>
 
+    <div class="top-bar-center">
+      <app-order-search
+        *ngIf="selectedServiceId"
+        [allOrders]="allOrdersForSearch"
+        (filterChange)="onSearchFilterChange($event)"
+      ></app-order-search>
+    </div>
+
     <div class="top-bar-actions">
       <button
         class="btn-gear"
@@ -80,8 +88,8 @@
 
     <!-- Widok tygodnia -->
     <app-calendar-week-view
-      *ngIf="currentView === 'week' && weekData"
-      [data]="weekData"
+      *ngIf="currentView === 'week' && filteredWeekData"
+      [data]="filteredWeekData!"
       [selectedDate]="selectedDate"
       [calendarMode]="calendarMode"
       [technicians]="technicians"

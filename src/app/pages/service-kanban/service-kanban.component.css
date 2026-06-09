@@ -12,7 +12,6 @@
 .kanban-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   padding: 12px 20px;
   background: white;
@@ -25,12 +24,22 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
+}
+
+.kanban-header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
 }
 
 .kanban-header-right {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
+  justify-content: flex-end;
 }
 
 .btn-back {
@@ -186,7 +195,7 @@
   background: #f8fafc;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
-  max-height: 100%;
+  max-height: calc(100dvh - 100px);
   overflow: hidden;
 }
 
@@ -318,6 +327,23 @@
 }
 
 .card-client svg { flex-shrink: 0; color: var(--text-muted); }
+
+.card-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 2px;
+  padding-left: 18px;
+}
+
+.card-phone,
+.card-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .card-status-badge {
   display: inline-flex;
@@ -537,8 +563,83 @@
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .kanban-title { font-size: 1rem; }
-  .kanban-board { padding: 12px; }
-  .kanban-board-inner { gap: 10px; }
-  .kanban-column { min-width: 230px; width: 240px; }
+  /* Header — dwa wiersze: tytuł | wyszukiwarka */
+  .kanban-header {
+    padding: 8px 12px;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .kanban-header-left {
+    flex: 1;
+  }
+
+  .kanban-subtitle { display: none; }
+
+  .kanban-header-center {
+    flex: 1 0 100%;
+    justify-content: flex-start;
+  }
+
+  .kanban-header-right {
+    flex: 1 0 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  /* Board: scroll poziomy ze snap co 2 kolumny */
+  .kanban-board {
+    padding: 8px 0 12px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .kanban-board-inner {
+    padding: 0 8px;
+    gap: 8px;
+  }
+
+  /* Kolumna = połowa ekranu → 2 jednocześnie widoczne */
+  .kanban-column {
+    scroll-snap-align: start;
+    width: calc(50vw - 12px);
+    min-width: calc(50vw - 12px);
+    max-width: calc(50vw - 12px);
+    max-height: calc(100dvh - 140px);
+  }
+
+  .col-header {
+    padding: 8px 8px;
+    gap: 5px;
+  }
+
+  .col-label { font-size: 0.74rem; }
+  .col-count { font-size: 0.7rem; padding: 1px 6px; }
+
+  .col-cards {
+    padding: 6px 5px 8px;
+    gap: 5px;
+  }
+
+  /* Karty — uproszczone */
+  .kanban-card {
+    padding: 7px 7px 6px;
+    gap: 3px;
+    border-left-width: 3px;
+  }
+
+  .card-status-badge { display: none; }
+  .card-technician   { display: none; }
+  .card-desc         { display: none; }
+  .card-contact      { display: none; }
+  .card-actions      { display: none; }
+
+  .card-date   { font-size: 0.68rem; }
+  .card-bike   { font-size: 0.75rem; gap: 3px; }
+  .card-bike strong { font-weight: 600; }
+  .card-model  { display: none; }
+  .card-client { font-size: 0.72rem; }
+  .card-client svg { display: none; }
+
+  .col-empty { padding: 12px 6px; font-size: 0.75rem; }
 }

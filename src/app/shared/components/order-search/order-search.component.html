@@ -1,0 +1,38 @@
+<div class="order-search">
+  <span class="search-label">Szukaj klienta</span>
+  <div class="search-fields">
+    <div class="search-field-wrap" *ngFor="let field of fields">
+      <div class="search-input-wrap">
+        <input
+          class="search-input"
+          type="text"
+          [placeholder]="field.placeholder"
+          [value]="filter[field.key]"
+          (input)="onInput(field.key, $any($event.target).value)"
+          autocomplete="off"
+        />
+        <button
+          *ngIf="filter[field.key]"
+          class="search-clear-btn"
+          (click)="clearField(field.key, $event)"
+          tabindex="-1"
+        >×</button>
+
+        <div class="suggestions-list" *ngIf="openField === field.key && suggestions[field.key].length > 0">
+          <div
+            class="suggestion-item"
+            *ngFor="let s of suggestions[field.key]"
+            (mousedown)="selectSuggestion(field.key, s)"
+          >{{ s }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button
+    *ngIf="hasActive"
+    class="search-clear-all"
+    (click)="clearAll($event)"
+    title="Wyczyść filtry"
+  >×</button>
+</div>

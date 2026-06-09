@@ -30,11 +30,16 @@ import {
   CalendarLoadingState,
   DEFAULT_CALENDAR_LOADING_STATE,
   formatCalendarDate,
-  getWeekStart,
+  getMonthGridStart,
   sortOrdersByStatus,
   countBikesForLimit,
-  getOrderClientKey
+  getOrderClientKey,
+  OrderSearchFilter,
+  EMPTY_ORDER_SEARCH_FILTER,
+  matchesOrderFilter,
+  hasActiveFilter
 } from '../../shared/models/service-calendar.models';
+import { OrderSearchComponent } from '../../shared/components/order-search/order-search.component';
 
 @Component({
   selector: 'app-service-calendar',
@@ -48,7 +53,8 @@ import {
     OrderDetailsModalComponent,
     AcceptBikeModalComponent,
     CalendarSettingsModalComponent,
-    MarkReadyModalComponent
+    MarkReadyModalComponent,
+    OrderSearchComponent
   ],
   templateUrl: './service-calendar.component.html',
   styleUrls: ['./service-calendar.component.css']
@@ -102,6 +108,10 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
   loadingState: CalendarLoadingState = { ...DEFAULT_CALENDAR_LOADING_STATE };
   servicesError: string = '';
 
+  // Wyszukiwarka
+  searchFilter: OrderSearchFilter = { ...EMPTY_ORDER_SEARCH_FILTER };
+  allOrdersForSearch: CalendarOrder[] = [];
+
   // Modale
   showCreateOrderModal = false;
   showOrderDetailsModal = false;
@@ -129,6 +139,25 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
    */
   get waitingForBikeOrders(): CalendarOrder[] {
     return this.getAllOrders().filter(o => o.status === 'WAITING_FOR_BIKE');
+  }
+
+  get filteredWeekData(): CalendarWeekData | null {
+    if (!this.weekData) return null;
+    if (!hasActiveFilter(this.searchFilter)) return this.weekData;
+    const f = this.searchFilter;
+    return {
+      ...this.weekData,
+      ordersByDay: Object.fromEntries(
+        Object.entries(this.weekData.ordersByDay).map(([day, orders]) => [
+          day,
+          orders.filter(o => matchesOrderFilter(o, f))
+        ])
+      )
+    };
+  }
+
+  onSearchFilterChange(filter: OrderSearchFilter): void {
+    this.searchFilter = filter;
   }
 
   /**
@@ -286,7 +315,7 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
    * dla spojnosci danych (bicycleBrand, bicycleModel, etc.)
    */
   private loadDayView(): void {
-    const startDate = formatCalendarDate(getWeekStart(this.selectedDate));
+    const startDate = formatCalendarDate(getMonthGridStart(this.selectedDate));
     const selectedDateStr = formatCalendarDate(this.selectedDate);
 
     this.calendarService.getWeekView(this.selectedServiceId!, startDate).subscribe({
@@ -300,7 +329,7 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
           bikesCount: countBikesForLimit(orders),
           maxBikesPerDay: data.maxBikesPerDay || this.calendarConfig?.maxBikesPerDay || 10
         };
-
+        this.refreshAllOrdersForSearch();
         this.loadingState.isLoadingOrders = false;
       },
       error: (err: any) => {
@@ -311,10 +340,11 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
   }
 
   private loadWeekView(): void {
-    const startDate = formatCalendarDate(getWeekStart(this.selectedDate));
+    const startDate = formatCalendarDate(getMonthGridStart(this.selectedDate));
     this.calendarService.getWeekView(this.selectedServiceId!, startDate).subscribe({
       next: (data: CalendarWeekData) => {
         this.weekData = data;
+        this.refreshAllOrdersForSearch();
         this.loadingState.isLoadingOrders = false;
       },
       error: (err: any) => {
@@ -337,7 +367,7 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
   }
 
   private initMobileDays(): void {
-    const weekStart = getWeekStart(new Date());
+    const weekStart = getMonthGridStart(new Date());
     this.mobileEarliestWeekStart = new Date(weekStart);
     this.mobileLatestWeekStart = new Date(weekStart);
 
@@ -345,6 +375,7 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
       next: (data: CalendarWeekData) => {
         this.weekData = data;
         this.mobileDays = this.weekDataToDays(data);
+        this.refreshAllOrdersForSearch();
         this.loadingState.isLoadingOrders = false;
       },
       error: (err: any) => {
@@ -358,14 +389,17 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
     if (!this.selectedServiceId || this.loadingMobilePrev || !this.mobileEarliestWeekStart) return;
     this.loadingMobilePrev = true;
 
-    const prevWeekStart = new Date(this.mobileEarliestWeekStart);
-    prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+    const prevMonthRef = new Date(this.mobileEarliestWeekStart);
+    prevMonthRef.setDate(prevMonthRef.getDate() + 6); // przesuń w głąb wyświetlanego miesiąca (grid start może być w poprzednim)
+    prevMonthRef.setMonth(prevMonthRef.getMonth() - 1);
+    const prevWeekStart = getMonthGridStart(prevMonthRef);
     const savedEarliest = this.mobileEarliestWeekStart;
     this.mobileEarliestWeekStart = prevWeekStart;
 
     this.calendarService.getWeekView(this.selectedServiceId, formatCalendarDate(prevWeekStart)).subscribe({
       next: (data: CalendarWeekData) => {
         this.mobileDays = [...this.weekDataToDays(data), ...this.mobileDays];
+        this.refreshAllOrdersForSearch();
         this.loadingMobilePrev = false;
       },
       error: () => {
@@ -379,14 +413,17 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
     if (!this.selectedServiceId || this.loadingMobileNext || !this.mobileLatestWeekStart) return;
     this.loadingMobileNext = true;
 
-    const nextWeekStart = new Date(this.mobileLatestWeekStart);
-    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+    const nextMonthRef = new Date(this.mobileLatestWeekStart);
+    nextMonthRef.setDate(nextMonthRef.getDate() + 6); // przesuń w głąb wyświetlanego miesiąca (grid start może być w poprzednim)
+    nextMonthRef.setMonth(nextMonthRef.getMonth() + 1);
+    const nextWeekStart = getMonthGridStart(nextMonthRef);
     const savedLatest = this.mobileLatestWeekStart;
     this.mobileLatestWeekStart = nextWeekStart;
 
     this.calendarService.getWeekView(this.selectedServiceId, formatCalendarDate(nextWeekStart)).subscribe({
       next: (data: CalendarWeekData) => {
         this.mobileDays = [...this.mobileDays, ...this.weekDataToDays(data)];
+        this.refreshAllOrdersForSearch();
         this.loadingMobileNext = false;
       },
       error: () => {
@@ -543,6 +580,10 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
     this.showAcceptBikeModal = true;
   }
 
+  private refreshAllOrdersForSearch(): void {
+    this.allOrdersForSearch = this.getAllOrders();
+  }
+
   private getAllOrders(): CalendarOrder[] {
     const fromWeek = Object.values(this.weekData?.ordersByDay ?? {}).flat();
     const fromDay = this.dayData?.orders ?? [];
@@ -583,6 +624,7 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
           : d
       );
     }
+    this.refreshAllOrdersForSearch();
   }
 
   /**

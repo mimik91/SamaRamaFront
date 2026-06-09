@@ -15,6 +15,14 @@
       </div>
     </div>
 
+    <div class="kanban-header-center">
+      <app-order-search
+        *ngIf="selectedServiceId"
+        [allOrders]="allOrders"
+        (filterChange)="onSearchFilterChange($event)"
+      ></app-order-search>
+    </div>
+
     <div class="kanban-header-right">
       <div class="service-selector-wrapper" *ngIf="myServices.length > 1">
         <label class="selector-label">Serwis:</label>
@@ -53,7 +61,7 @@
   <div class="kanban-board-inner">
     <div
       class="kanban-column"
-      *ngFor="let col of columns"
+      *ngFor="let col of filteredColumns"
       [style.--col-color]="col.color"
       [style.--col-bg]="col.bgColor"
     >
@@ -110,10 +118,14 @@
             <span *ngIf="order.bicycleModel" class="card-model"> {{ order.bicycleModel }}</span>
           </div>
 
-          <!-- Client name -->
+          <!-- Client info -->
           <div class="card-client">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             {{ order.clientName }}
+          </div>
+          <div class="card-contact" *ngIf="order.clientPhone || order.clientEmail">
+            <span *ngIf="order.clientPhone" class="card-phone">{{ order.clientPhone }}</span>
+            <span *ngIf="order.clientEmail" class="card-email">{{ order.clientEmail }}</span>
           </div>
 
           <!-- Description snippet -->

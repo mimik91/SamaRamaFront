@@ -10,9 +10,9 @@
     <!-- Sentinel: gdy zjechał z ekranu → pokaż fixed bar -->
     <div #headerSentinel class="header-sentinel"></div>
 
-    <!-- Załaduj poprzedni tydzień -->
+    <!-- Załaduj poprzedni miesiąc -->
     <button class="btn-load-prev" (click)="loadPreviousDays.emit()">
-      ↑ Wcześniejszy tydzień
+      ↑ Wcześniejszy miesiąc
     </button>
 
     <!-- Lista dni -->
@@ -60,18 +60,25 @@
   </div>
 </ng-container>
 
-<!-- Desktop: siatka tygodniowa -->
+<!-- Desktop: siatka miesięczna 5×7 -->
 <ng-template #desktopView>
   <div class="week-view">
     <div class="week-grid">
+      <!-- Nagłówki dni tygodnia -->
+      <div class="week-headers">
+        <div class="day-name-header" *ngFor="let name of weekDayNames">{{ name }}</div>
+      </div>
+
+      <!-- Wiersze tygodni (5 × 7) -->
+      <div class="week-row" *ngFor="let week of weeks">
       <div
         class="day-column"
-        *ngFor="let day of days"
+        *ngFor="let day of week"
         [class.today]="isDayToday(day)"
         [class.selected]="isDaySelected(day)"
+        [class.other-month]="isDayOtherMonth(day)"
       >
         <div class="day-header" (click)="onDayClick(day)">
-          <span class="day-name">{{ getDayName(day) }}</span>
           <span class="day-number" [class.today]="isDayToday(day)">{{ getDayNumber(day) }}</span>
         </div>
 
@@ -143,6 +150,7 @@
             <span class="empty-icon">+</span>
           </div>
         </div>
+      </div>
       </div>
     </div>
   </div>

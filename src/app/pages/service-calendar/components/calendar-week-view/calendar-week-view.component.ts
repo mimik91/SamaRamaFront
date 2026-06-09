@@ -129,6 +129,20 @@ export class CalendarWeekViewComponent implements OnDestroy {
     });
   }
 
+  readonly weekDayNames: string[] = [1, 2, 3, 4, 5, 6, 0].map(i => this.i18nService.translate(getDayNameKey(i, true)));
+
+  get weeks(): CalendarDayData[][] {
+    const all = this.days;
+    const result: CalendarDayData[][] = [];
+    for (let i = 0; i < all.length; i += 7) result.push(all.slice(i, i + 7));
+    return result;
+  }
+
+  isDayOtherMonth(dayData: CalendarDayData): boolean {
+    const date = parseCalendarDate(dayData.date);
+    return date.getMonth() !== this.selectedDate.getMonth();
+  }
+
   isDayToday(dayData: CalendarDayData): boolean {
     return isToday(parseCalendarDate(dayData.date));
   }

@@ -16,8 +16,13 @@ import {
   Technician,
   getWeekStart,
   formatCalendarDate,
-  getOrderClientKey
+  getOrderClientKey,
+  OrderSearchFilter,
+  EMPTY_ORDER_SEARCH_FILTER,
+  matchesOrderFilter,
+  hasActiveFilter
 } from '../../shared/models/service-calendar.models';
+import { OrderSearchComponent } from '../../shared/components/order-search/order-search.component';
 
 interface KanbanColumn {
   id: string;
@@ -93,7 +98,7 @@ const COLUMN_DEFS: Omit<KanbanColumn, 'orders'>[] = [
 @Component({
   selector: 'app-service-kanban',
   standalone: true,
-  imports: [CommonModule, DragDropModule, OrderDetailsModalComponent, AcceptBikeModalComponent, MarkReadyModalComponent],
+  imports: [CommonModule, DragDropModule, OrderDetailsModalComponent, AcceptBikeModalComponent, MarkReadyModalComponent, OrderSearchComponent],
   templateUrl: './service-kanban.component.html',
   styleUrls: ['./service-kanban.component.css']
 })
@@ -110,7 +115,9 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
 
   loading = false;
   columns: KanbanColumn[] = COLUMN_DEFS.map(d => ({ ...d, orders: [] }));
+  allOrders: CalendarOrder[] = [];
   technicians: Technician[] = [];
+  searchFilter: OrderSearchFilter = { ...EMPTY_ORDER_SEARCH_FILTER };
 
   currentWeekStart: Date = getWeekStart(new Date());
 
@@ -230,9 +237,15 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
       if (col) col.orders.push(order);
     }
     for (const col of cols) {
-      col.orders.sort((a, b) => a.plannedDate.localeCompare(b.plannedDate));
+      col.orders.sort((a, b) => {
+        const aPrio = a.status === 'PENDING_CONFIRMATION' ? 0 : 1;
+        const bPrio = b.status === 'PENDING_CONFIRMATION' ? 0 : 1;
+        if (aPrio !== bPrio) return aPrio - bPrio;
+        return a.plannedDate.localeCompare(b.plannedDate);
+      });
     }
     this.columns = cols;
+    this.allOrders = cols.flatMap(c => c.orders);
     this.updateScrollbarWidth();
   }
 
@@ -421,6 +434,19 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     return this.columns.flatMap(c =>
       c.orders.filter(o => o.status === 'WAITING_FOR_BIKE' || o.status === 'CONFIRMED')
     );
+  }
+
+  get filteredColumns(): KanbanColumn[] {
+    if (!hasActiveFilter(this.searchFilter)) return this.columns;
+    const f = this.searchFilter;
+    return this.columns.map(col => ({
+      ...col,
+      orders: col.orders.filter(o => matchesOrderFilter(o, f))
+    }));
+  }
+
+  onSearchFilterChange(filter: OrderSearchFilter): void {
+    this.searchFilter = filter;
   }
 
   goToCalendar(): void {

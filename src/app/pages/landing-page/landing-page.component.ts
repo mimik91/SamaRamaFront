@@ -5,6 +5,7 @@ import { Meta, Title, DomSanitizer, SafeStyle } from '@angular/platform-browser'
 import { ServiceProfileService } from '../service-profile/service-profile.service';
 import { SeoService } from '../../core/seo.service';
 import { SchemaOrgHelper } from '../../core/schema-org.helper';
+import { TRANSPORT_PRICING } from '../../shared/constants/transport-pricing.constants';
 
 @Component({
   selector: 'app-landing-page',
@@ -56,18 +57,16 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly onReviewsTouchMoveBound = (e: TouchEvent) => this.onReviewsTouchMove(e);
   private readonly onReviewsTouchEndBound = () => this.onReviewsDragEnd();
 
+  readonly partnerTransportLabel = `${TRANSPORT_PRICING.partnerCost} zł`;
+  readonly standardTransportLabel = `${TRANSPORT_PRICING.standardCost} zł`;
+
   readonly reviewImages = [
     'assets/images/opinie/opinia 1.webp',
     'assets/images/opinie/opinia 2.webp',
     'assets/images/opinie/opinia 3.webp',
     'assets/images/opinie/opinia 4.webp',
     'assets/images/opinie/opinia 5.webp',
-    'assets/images/opinie/opinia 6.webp',
-    'assets/images/opinie/opinia 7.webp',
-    'assets/images/opinie/opinia 8.webp',
-    'assets/images/opinie/opinia 9.webp',
-    'assets/images/opinie/opinia 10.webp',
-    'assets/images/opinie/opinia 11.webp'
+    'assets/images/opinie/opinia 6.webp'
   ];
 
 
@@ -84,8 +83,8 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       icon: 'truck',
-      title: 'Transport rowerów Kraków – 0 zł lub 60 zł',
-      description: 'U Partnerów CycloPick transport jest w cenie serwisu (0 zł). Do dowolnego serwisu rowerowego w Krakowie – stała cena 60 zł w obie strony.'
+      title: `Transport rowerów Kraków – ${TRANSPORT_PRICING.partnerCost} zł lub ${TRANSPORT_PRICING.standardCost} zł`,
+      description: `U Partnerów CycloPick transport jest w cenie serwisu (${TRANSPORT_PRICING.partnerCost} zł). Do dowolnego serwisu rowerowego w Krakowie – stała cena ${TRANSPORT_PRICING.standardCost} zł w obie strony.`
     },
     {
       icon: 'star',
@@ -102,15 +101,15 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   faqData = [
     {
       question: 'Co oznacza niebieska pinezka na mapie CycloPick?',
-      answer: 'Niebieska pinezka oznacza Partnera CycloPick w Krakowie. U Partnerów CycloPick zarezerwujesz serwis rowerowy online i zyskasz darmowy transport door-to-door – kurier odbiera rower spod Twoich drzwi i odwozi po naprawie. Transport kosztuje 0 zł.'
+      answer: `Niebieska pinezka oznacza Partnera CycloPick w Krakowie. U Partnerów CycloPick zarezerwujesz serwis rowerowy online i zyskasz darmowy transport door-to-door – kurier odbiera rower spod Twoich drzwi i odwozi po naprawie. Transport kosztuje ${TRANSPORT_PRICING.partnerCost} zł.`
     },
     {
       question: 'Co oznacza zielona pinezka na mapie CycloPick?',
-      answer: 'Zielona pinezka to zweryfikowany serwis rowerowy w Krakowie, który nie należy jeszcze do sieci Partnerów CycloPick. Możesz do niego zamówić transport rowerów w Krakowie za stałą cenę 60 zł w obie strony.'
+      answer: `Zielona pinezka to zweryfikowany serwis rowerowy w Krakowie, który nie należy jeszcze do sieci Partnerów CycloPick. Możesz do niego zamówić transport rowerów w Krakowie za stałą cenę ${TRANSPORT_PRICING.standardCost} zł w obie strony.`
     },
     {
       question: 'Ile kosztuje transport roweru w Krakowie przez CycloPick?',
-      answer: 'Transport roweru w Krakowie kosztuje 0 zł do serwisów Partnerskich CycloPick (transport jest wliczony w cenę serwisu). Do dowolnego innego serwisu rowerowego w Krakowie – stała cena 60 zł za transport tam i z powrotem. Płatność gotówką lub BLIKIEM przy odbiorze roweru.'
+      answer: `Transport roweru w Krakowie kosztuje ${TRANSPORT_PRICING.partnerCost} zł do serwisów Partnerskich CycloPick (transport jest wliczony w cenę serwisu). Do dowolnego innego serwisu rowerowego w Krakowie – stała cena ${TRANSPORT_PRICING.standardCost} zł za transport tam i z powrotem. Płatność gotówką lub BLIKIEM przy odbiorze roweru.`
     },
     {
       question: 'Jak zamówić serwis rowerowy door-to-door w Krakowie?',
@@ -359,7 +358,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private setMetaTags(): void {
     const pageTitle = 'Serwis Rowerowy Kraków Door-to-Door – Darmowy Transport | CycloPick';
-    const pageDescription = 'Serwis rowerowy door-to-door w Krakowie z darmowym transportem. Kurier odbiera rower spod drzwi. Partnerzy CycloPick: transport 0 zł. Inne serwisy: 60 zł. Rezerwacja online, cyfrowa historia napraw.';
+    const pageDescription = `Serwis rowerowy door-to-door w Krakowie z darmowym transportem. Kurier odbiera rower spod drzwi. Partnerzy CycloPick: transport ${TRANSPORT_PRICING.partnerCost} zł. Inne serwisy: ${TRANSPORT_PRICING.standardCost} zł. Rezerwacja online, cyfrowa historia napraw.`;
 
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });
@@ -397,12 +396,12 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
       '@id': 'https://www.cyclopick.pl/#transport-service',
       name: 'Transport roweru door-to-door Kraków',
       serviceType: 'Serwis rowerowy z transportem door-to-door',
-      description: 'Kompleksowy serwis rowerowy door-to-door w Krakowie. U Partnerów CycloPick transport gratis, do pozostałych serwisów 60 zł w obie strony.',
+      description: `Kompleksowy serwis rowerowy door-to-door w Krakowie. U Partnerów CycloPick transport gratis, do pozostałych serwisów ${TRANSPORT_PRICING.standardCost} zł w obie strony.`,
       areaServed: { '@type': 'City', name: 'Kraków', addressCountry: 'PL' },
       provider: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' },
       offers: [
-        { '@type': 'Offer', name: 'Transport roweru do Partnera CycloPick', price: '0', priceCurrency: 'PLN', availability: 'https://schema.org/InStock' },
-        { '@type': 'Offer', name: 'Transport roweru do dowolnego serwisu w Krakowie', price: '60', priceCurrency: 'PLN', availability: 'https://schema.org/InStock' }
+        { '@type': 'Offer', name: 'Transport roweru do Partnera CycloPick', price: String(TRANSPORT_PRICING.partnerCost), priceCurrency: 'PLN', availability: 'https://schema.org/InStock' },
+        { '@type': 'Offer', name: 'Transport roweru do dowolnego serwisu w Krakowie', price: String(TRANSPORT_PRICING.standardCost), priceCurrency: 'PLN', availability: 'https://schema.org/InStock' }
       ]
     };
 

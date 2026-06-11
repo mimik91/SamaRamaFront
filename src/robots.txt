@@ -8,7 +8,7 @@ Allow: /*.js$
 Allow: /*.css$
 Allow: /*/zarezerwuj
 Allow: /serwisy
-Allow: /for-services
+Allow: /dla-serwisow
 Allow: /cooperation
 Allow: /register-service
 Allow: /terms-of-service
@@ -31,7 +31,7 @@ Allow: /*.js$
 Allow: /*.css$
 Allow: /*/zarezerwuj
 Allow: /serwisy
-Allow: /for-services
+Allow: /dla-serwisow
 Allow: /cooperation
 Allow: /register-service
 Allow: /terms-of-service
@@ -69,7 +69,7 @@ Allow: /*.js$
 Allow: /*.css$
 Allow: /*/zarezerwuj
 Allow: /serwisy
-Allow: /for-services
+Allow: /dla-serwisow
 Allow: /cooperation
 Allow: /register-service
 Allow: /terms-of-service

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constants';
 
 @Component({
   selector: 'app-pricing-services',
@@ -14,7 +15,7 @@ import { RouterLink } from '@angular/router';
           <div class="pricing-header-icon emoji">🛠️</div>
           <h1>OFERTA DLA SERWISÓW ROWEROWYCH<span class="b2b-badge">B2B</span></h1>
           <p class="pricing-subtitle">
-            Do&#322;&#261;cz teraz &ndash; pierwsze 20 serwisów w Krakowie korzysta z Cyclopick
+            Do&#322;&#261;cz teraz &ndash; pierwsze 20 serwisów korzysta z Cyclopick
             <strong>bez op&#322;at przez 3 lata.</strong>
           </p>
           <button class="back-btn" (click)="goBack()">&#8592; Powrót</button>
@@ -24,7 +25,7 @@ import { RouterLink } from '@angular/router';
           <span class="emoji">⚡</span>
           <span>
             <strong>Early Access aktywny!</strong>
-            Trwa nabór pierwszych 20 partnerskich serwisów w Krakowie.
+            Trwa nabór pierwszych 20 partnerskich serwisów.
             Zostań jednym z nich i ciesz się planem 0 zł przez 3 lata &ndash; z gwarancją.
           </span>
         </div>
@@ -51,19 +52,19 @@ import { RouterLink } from '@angular/router';
               <tbody>
                 <tr class="row-highlight">
                   <td class="offer-name">
-                    <strong>Early Access (Kraków)</strong>
+                    <strong>Early Access</strong>
                     <span class="offer-tag emoji">🌟 Najlepsza oferta</span>
                   </td>
-                  <td class="price partner-price" data-label="Cena Partner">
+                  <td class="price partner-price price-with-chip" data-label="Cena Partner">
                     <span class="price-big">0 z&#322;</span>
-                    <span class="price-period">/ rok</span>
+                    <span class="price-period">/ rok</span><br>
+                    <span class="guarantee-chip emoji">✅ Gwarancja 3 lata!</span>
                   </td>
                   <td class="price" data-label="Cena (Pozostałe)">
-                    <span class="dash">&mdash;</span>
+                    <span class="price-std">1&nbsp;200 z&#322; / rok</span>
                   </td>
                   <td class="conditions" data-label="Warunki">
                     Pierwsze 20 serwisów
-                    <span class="guarantee-chip emoji">✅ Gwarancja 3 lata!</span>
                   </td>
                 </tr>
                 <tr>
@@ -105,8 +106,7 @@ import { RouterLink } from '@angular/router';
                     <span class="price-period">/ rok</span>
                   </td>
                   <td class="price" data-label="Cena (Pozostałe)">
-                    <span class="price-big free-color">0 z&#322;</span>
-                    <span class="price-period">/ rok</span>
+                    <span class="price-std">1&nbsp;200 z&#322; / rok</span>
                   </td>
                   <td class="conditions" data-label="Warunki">
                     Oferta ogólnopolska (obecnie)
@@ -133,18 +133,34 @@ import { RouterLink } from '@angular/router';
             </div>
 
             <div class="benefit-card">
-              <div class="benefit-icon emoji">🚚</div>
-              <div class="benefit-body">
-                <h3>Logistyka Cyclopick</h3>
-                <p>My dostarczamy Ci klientów. Darmowy transport (0 z&#322;) to pot&#281;&#380;ny argument sprzeda&#380;owy &ndash; klienci chętniej wybieraj&#261; serwis z odbiorem roweru spod domu.</p>
-              </div>
-            </div>
-
-            <div class="benefit-card">
               <div class="benefit-icon emoji">📍</div>
               <div class="benefit-body">
                 <h3>Wyró&#380;nienie na mapie</h3>
                 <p>Du&#380;a, widoczna pinezka, która przyci&#261;ga wzrok u&#380;ytkowników aplikacji szukaj&#261;cych serwisu w Twojej okolicy.</p>
+              </div>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon emoji">🌐</div>
+              <div class="benefit-body">
+                <h3>Logo i link na stronie głównej CycloPick</h3>
+                <p>Twój serwis pojawia się bezpośrednio na <strong>cyclopick.pl</strong> &ndash; wśród pierwszych wyników, które widzą wszyscy odwiedzający stronę. Więcej odsłon, więcej kliknięć w Twój profil, więcej klientów bez dodatkowych kosztów reklamowych.</p>
+              </div>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon emoji">💬</div>
+              <div class="benefit-body">
+                <h3>Powiadomienia SMS dla klientów <span class="coming-soon-badge emoji">⏳ Już wkrótce</span></h3>
+                <p>Automatyczne SMS-y do klientów &ndash; potwierdzenie przyjęcia roweru do serwisu oraz informacja o zakończonych pracach. Zero telefonów z pytaniem „czy rower gotowy?".</p>
+              </div>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon emoji">🚚</div>
+              <div class="benefit-body">
+                <h3>Logistyka Cyclopick <span class="city-badge emoji">📍 Kraków</span></h3>
+                <p>My dostarczamy Ci klientów. Darmowy transport ({{ partnerTransportLabel }}) to pot&#281;&#380;ny argument sprzeda&#380;owy &ndash; klienci chętniej wybieraj&#261; serwis z odbiorem roweru spod domu. Usługa dostępna na terenie Krakowa.</p>
               </div>
             </div>
 
@@ -161,19 +177,13 @@ import { RouterLink } from '@angular/router';
             <li>
               <span class="cond-icon emoji">✅</span>
               <div>
-                <strong>Aktywne korzystanie z panelu rezerwacji</strong> Cyclopick.
-              </div>
-            </li>
-            <li>
-              <span class="cond-icon emoji">✅</span>
-              <div>
                 <strong>Kompletny profil:</strong> uzupe&#322;nione pakiety serwisowe i godziny otwarcia.
               </div>
             </li>
             <li>
               <span class="cond-icon emoji">✅</span>
               <div>
-                <strong>Marketing:</strong> minimum 1 post na kwarta&#322; w social mediach z linkiem do rezerwacji
+                <strong>Marketing:*</strong> minimum 1 post na kwarta&#322; w social mediach z linkiem do rezerwacji
                 i oznaczeniem cyclopick.pl.
                 <span class="cond-note">
                   <span class="emoji">⏰</span>
@@ -181,8 +191,29 @@ import { RouterLink } from '@angular/router';
                 </span>
               </div>
             </li>
+            <li>
+              <span class="cond-icon emoji">✅</span>
+              <div>
+                <strong>Google Maps:</strong> dodanie formularza rezerwacji CycloPick do profilu firmy na Google Maps.
+              </div>
+            </li>
+            <li>
+              <span class="cond-icon emoji">✅</span>
+              <div>
+                <strong>Aktywne korzystanie z panelu rezerwacji</strong> Cyclopick.
+              </div>
+            </li>
           </ul>
+          <p class="conditions-footnote">* W przypadku nieposiadania konta na Facebooku, Instagramie ani innych mediach społecznościowych &ndash; warunek niewymagany.</p>
         </section>
+
+        <div class="first-year-note">
+          <span class="emoji">ℹ️</span>
+          <div>
+            <strong>Pierwszy rok dla wszystkich po cenie Partnera.</strong>
+            Cena wzrasta na kolejny rok w przypadku niespełnienia warunków statusu Partnera w roku poprzednim.
+          </div>
+        </div>
 
         <div class="cta-section">
           <p class="cta-text">Masz pytania? Napisz do nas lub zarejestruj swój warsztat.</p>
@@ -441,9 +472,11 @@ import { RouterLink } from '@angular/router';
       font-size: 0.83rem;
       color: var(--color-gray-600, #4b5563);
       vertical-align: middle;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
+      text-align: center;
+    }
+
+    .price-with-chip {
+      line-height: 1.6;
     }
 
     .guarantee-chip {
@@ -577,6 +610,60 @@ import { RouterLink } from '@angular/router';
       border-radius: 6px;
       padding: 4px 10px;
       width: fit-content;
+    }
+
+    /* ── COMING SOON BADGE ── */
+    .coming-soon-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #92400e;
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      border-radius: 20px;
+      padding: 2px 8px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* ── CONDITIONS FOOTNOTE ── */
+    .conditions-footnote {
+      margin: 10px 0 0;
+      font-size: 0.8rem;
+      color: var(--color-gray-500, #6b7280);
+      line-height: 1.5;
+    }
+
+    /* ── CITY BADGE ── */
+    .city-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-primary, #1B5E20);
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 20px;
+      padding: 2px 8px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* ── FIRST YEAR NOTE ── */
+    .first-year-note {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-top: none;
+      padding: 16px 28px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 0.875rem;
+      color: var(--color-gray-700, #374151);
+      line-height: 1.55;
+    }
+
+    .first-year-note .emoji {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
     }
 
     /* ── CTA ── */
@@ -732,6 +819,8 @@ import { RouterLink } from '@angular/router';
   `]
 })
 export class PricingServicesComponent {
+  readonly partnerTransportLabel = `${TRANSPORT_PRICING.partnerCost} zł`;
+
   goBack(): void {
     window.history.back();
   }

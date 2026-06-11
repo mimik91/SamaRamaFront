@@ -13,7 +13,7 @@ CycloPick umożliwia właścicielom serwisów rowerowych prowadzenie profilu war
 - [Serwisy we Wrocławiu](https://www.cyclopick.pl/serwisy/wroclaw)
 - [Serwisy w Poznaniu](https://www.cyclopick.pl/serwisy/poznan)
 - [Serwisy w Gdańsku](https://www.cyclopick.pl/serwisy/gdansk)
-- [Dla serwisów rowerowych](https://www.cyclopick.pl/for-services) — oferta dla warsztatów
+- [Dla serwisów rowerowych](https://www.cyclopick.pl/dla-serwisow) — oferta dla warsztatów
 
 ## Profile serwisów
 

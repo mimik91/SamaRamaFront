@@ -188,12 +188,13 @@ export const routes: Routes = [
     // Przekierowanie z /about na stronę główną (z zachowaniem query params)
     { path: 'about', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `?${qs}` : ''; }, pathMatch: 'full' },
 
+    { path: 'for-services', redirectTo: 'dla-serwisow', pathMatch: 'full' },
 
     // About page - usługi dla serwisów rowerowych
     {
-      path: 'for-services',
+      path: 'dla-serwisow',
       component: ForServicesComponent,
-      title: 'Usługi dla serwisów rowerowych | CycloPick - mapa warsztatów'
+      title: 'Dla serwisów rowerowych – rezerwacje online i system zarządzania | CycloPick'
     },
 
      // === CHRONIONE TRASY UŻYTKOWNIKÓW SERVICE ===

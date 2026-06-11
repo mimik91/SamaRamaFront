@@ -1,5 +1,3 @@
-// for-services.component.ts
-
 import { Component, OnInit, OnDestroy, Inject, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -17,24 +15,66 @@ import { SchemaOrgHelper } from '../core/schema-org.helper';
 export class ForServicesComponent implements OnInit, OnDestroy {
   private seoService = inject(SeoService);
 
-  // Powrót do logo CycloPick
-  heroImage = {
-    src: '\\assets\\images\\logo-cyclopick.png',
-    alt: 'Logo CycloPick - Usługi dla serwisów rowerowych'
-  };
+  featureSections = [
+    {
+      title: 'Mapa lokalnych serwisów rowerowych – znajdź najlepszy warsztat rowerowy w Twojej okolicy',
+      summary: 'Twój warsztat zostanie wyróżniony na naszej <span class="feature-highlight">mapie serwisów rowerowych</span> unikalną niebieską pinezką, która rzuca się w oczy bardziej niż standardowe punkty. Zapewnij sobie wyższą pozycję w wynikach i spraw, by lokalni klienci błyskawicznie Cię odnaleźli.',
+      image: '/assets/images/for-services/panel-rezerwacji.webp',
+      imageAlt: 'Panel rezerwacji online CycloPick',
+    },
+    {
+      title: 'Wizytówka Twojego serwisu',
+      summary: 'Zyskaj profesjonalną stronę-wizytówkę z galerią zdjęć i ofertą, bez kosztów własnej domeny. Nasza technologia optymalizuje Twoje dane pod <span class="feature-highlight">chatboty AI (ChatGPT, Copilot)</span>, budując nowoczesny wizerunek Twojego serwisu rowerowego w sieci.',
+      image: '/assets/images/for-services/kanban.webp',
+      imageAlt: 'System zarządzania zleceniami CycloPick',
+    },
+    {
+      title: 'My karmimy algorytmy, Ty zbierasz klientów',
+      summary: 'Automatycznie promuj swój serwis w Google Maps i wynikach wyszukiwania dzięki ustrukturyzowanym danym. <span class="feature-highlight">„Karmimy" algorytmy precyzyjnymi informacjami</span>, dzięki czemu chatboty i wyszukiwarki <span class="feature-highlight">rekomendują właśnie Twój warsztat</span>. Na 6 serwisów rowerowych na Salwatorze w Krakowie — <span class="feature-highlight">4 pierwsze miejsca w Google zajmują 2 serwisy zarejestrowane w CycloPick</span>.',
+      image: '/assets/images/for-services/seo.webp',
+      imageAlt: 'Widoczność serwisu rowerowego w Google i AI',
+    },
+    {
+      title: 'Pełny zakres usług w zasięgu jednego kliknięcia',
+      summary: 'Wykorzystaj zaawansowane <span class="feature-highlight">filtry usług</span>, aby docierać do klientów szukających konkretnych napraw. Prezentuj pełną ofertę, <span class="feature-highlight">ogranicz przypadkowe zapytania</span> i pozyskuj tylko zdecydowanych klientów, którzy szukają Twojej wiedzy.',
+      image: '/assets/images/for-services/filtrowanie-po-uslugach.webp',
+      imageAlt: 'Filtry usług serwisów rowerowych w CycloPick',
+    }
+  ];
 
-  // Nowe kreatywne hasło CTA
-  mainCtaText: string = 'Zacznij zyskiwać klientów';
+  getSafeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
 
-  // FAQ - Często zadawane pytania
   faqCategories = [
+    {
+      title: 'Rezerwacje i System',
+      icon: 'settings',
+      items: [
+        {
+          question: 'Jak działa panel rezerwacji online?',
+          answer: 'Po rejestracji i aktywacji rezerwacji klienci mogą umawiać wizyty bezpośrednio na Twojej stronie profilu — o każdej porze dnia i nocy. Dostajesz powiadomienie, możesz potwierdzić lub zaproponować inny termin. Wszystko bez telefonów.',
+          expanded: false
+        },
+        {
+          question: 'Czy mogę zarządzać zleceniami i historią klientów?',
+          answer: 'Tak. System pozwala prowadzić zlecenia od przyjęcia roweru do wydania — z przypisanymi statusami, notatkami i pełną historią klienta. Jednym kliknięciem wysyłasz SMS "rower gotowy".',
+          expanded: false
+        },
+        {
+          question: 'Czy muszę używać wszystkich funkcji od razu?',
+          answer: 'Nie. Możesz zacząć od samej wizytówki i mapy, a rezerwacje czy system zarządzania włączyć kiedy będziesz gotowy. Każda funkcja działa niezależnie.',
+          expanded: false
+        }
+      ]
+    },
     {
       title: 'Widoczność i Marketing',
       icon: 'visibility',
       items: [
         {
           question: 'Jak CycloPick realnie pomaga zdobywać nowych klientów?',
-          answer: 'CycloPick zwiększa widoczność Twojego serwisu rowerowego w Google, Google Maps i lokalnym wyszukiwaniu. Gdy ktoś w Twojej okolicy szuka „serwis rowerowy" lub „naprawa roweru blisko mnie", Twój profil może pojawić się wyżej i szybciej niż konkurencja.',
+          answer: 'CycloPick zwiększa widoczność Twojego serwisu w Google, Google Maps i lokalnym wyszukiwaniu. Twój profil jest zoptymalizowany pod chatboty AI (ChatGPT, Copilot) — gdy ktoś pyta asystenta o serwis rowerowy w okolicy, Twój warsztat może być wskazany jako odpowiedź.',
           expanded: false
         },
         {
@@ -46,52 +86,26 @@ export class ForServicesComponent implements OnInit, OnDestroy {
           question: 'Czy to ma sens dla małych, jednoosobowych warsztatów?',
           answer: 'Tak. Większość serwisów w CycloPick to małe, lokalne punkty. Dzięki naszej platformie mogą konkurować z większymi warsztatami bez płatnych reklam.',
           expanded: false
-        },
-        {
-          question: 'Czy profil CycloPick może zastąpić stronę internetową?',
-          answer: 'Tak. Twój profil działa jak gotowa wizytówka online: opis usług, cennik, zdjęcia, dane kontaktowe. Jeśli masz własną stronę, możesz ją podlinkować i wzmocnić jej pozycjonowanie.',
-          expanded: false
         }
       ]
     },
     {
-      title: 'Zarządzanie Profilem',
-      icon: 'settings',
-      items: [
-        {
-          question: 'Jakie informacje mogę dodać do profilu?',
-          answer: 'Możesz dodać: zakres usług i specjalizacje (MTB, szosa, e-bike), cennik i pakiety, godziny pracy, dane kontaktowe, zdjęcia warsztatu oraz linki do strony i social mediów. Im więcej danych, tym lepsza widoczność.',
-          expanded: false
-        },
-        {
-          question: 'Czy mogę samodzielnie edytować dane?',
-          answer: 'Tak. Wszystkie zmiany (ceny, godziny, zdjęcia) wykonasz w prostym panelu. Efekt widać od razu.',
-          expanded: false
-        },
-        {
-          question: 'Czy mogę dodać zdjęcia i cennik usług?',
-          answer: 'Tak. Zdjęcia warsztatu i szczegółowy cennik budują zaufanie klientów i zmniejszają liczbę telefonów z podstawowymi pytaniami.',
-          expanded: false
-        }
-      ]
-    },
-    {
-      title: 'Koszty i Zasady Współpracy',
+      title: 'Koszty i Zasady',
       icon: 'payments',
       items: [
         {
           question: 'Ile kosztuje korzystanie z CycloPick?',
-          answer: 'Rejestracja i prowadzenie profilu są całkowicie darmowe. Nie pobieramy prowizji ani ukrytych opłat.',
+          answer: 'Szczegóły znajdziesz na stronie cennika. Nie pobieramy prowizji od napraw ani ukrytych opłat transakcyjnych.',
           expanded: false
         },
         {
           question: 'Czy muszę podpisywać umowę lub zobowiązywać się na stałe?',
-          answer: 'Nie. Nie ma żadnych umów długoterminowych. Możesz korzystać z CycloPick tak długo, jak chcesz.',
+          answer: 'Nie. Nie ma żadnych umów długoterminowych. Możesz korzystać z CycloPick tak długo, jak chcesz, i zrezygnować w każdej chwili.',
           expanded: false
         },
         {
           question: 'Jak szybko mój profil stanie się aktywny?',
-          answer: 'Rejestracja zajmuje około 5 minut. Każdy profil jest ręcznie weryfikowany. Zazwyczaj staje się publiczny w ciągu 24 godzin (maksymalnie do 3 dni roboczych).',
+          answer: 'Rejestracja zajmuje około 5 minut. Każdy profil jest ręcznie weryfikowany — zazwyczaj staje się publiczny w ciągu 24 godzin (maksymalnie 3 dni robocze).',
           expanded: false
         }
       ]
@@ -102,22 +116,17 @@ export class ForServicesComponent implements OnInit, OnDestroy {
       items: [
         {
           question: 'W jaki sposób klienci będą się ze mną kontaktować?',
-          answer: 'Bezpośrednio. Klienci dzwonią, piszą e-mail lub korzystają z linków do social mediów. CycloPick nie pobiera prowizji ani nie pośredniczy w płatnościach.',
+          answer: 'Przez rezerwację online, telefon, e-mail lub social media — zależnie od tego, co udostępniasz. CycloPick nie pobiera prowizji ani nie pośredniczy w płatnościach za naprawy.',
           expanded: false
         },
         {
           question: 'Czy mój serwis znajdą osoby korzystające z AI i chatbotów?',
-          answer: 'Tak. Przygotowujemy dane Twojego serwisu rowerowego tak, aby były czytelne dla nowoczesnych wyszukiwarek, chatbotów i asystentów AI. Dzięki temu, gdy ktoś zapyta np. „Gdzie w Krakowie naprawię rower cargo?", CycloPick może wskazać Twój warsztat – bez dodatkowych kosztów.',
-          expanded: false
-        },
-        {
-          question: 'Czy planujecie rezerwacje wizyt online?',
-          answer: 'Tak. W przyszłości wprowadzimy możliwość rezerwacji online, dzięki której klienci będą mogli umawiać wizyty bezpośrednio w Twoim serwisie.',
+          answer: 'Tak. Przygotowujemy dane Twojego serwisu tak, aby były czytelne dla nowoczesnych wyszukiwarek, chatbotów i asystentów AI. Gdy ktoś zapyta np. „Gdzie w Krakowie naprawię rower cargo?", CycloPick może wskazać Twój warsztat.',
           expanded: false
         },
         {
           question: 'Czy mogę usunąć swój profil i dane?',
-          answer: 'Tak. Wystarczy wiadomość e-mail – profil i wszystkie dane zostaną usunięte bez formalności.',
+          answer: 'Tak. Wystarczy wiadomość e-mail — profil i wszystkie dane zostaną usunięte bez formalności.',
           expanded: false
         }
       ]
@@ -127,75 +136,6 @@ export class ForServicesComponent implements OnInit, OnDestroy {
   toggleFaq(categoryIndex: number, itemIndex: number): void {
     this.faqCategories[categoryIndex].items[itemIndex].expanded =
       !this.faqCategories[categoryIndex].items[itemIndex].expanded;
-  }
-
-  // 4 sekcje z obrazkami i rozwijalnym tekstem
-  featureSections = [
-    {
-      title: 'Mapa lokalnych serwisów rowerowych – znajdź najlepszy warsztat rowerowy w Twojej okolicy',
-      summary: 'Twój warsztat zostanie wyróżniony na naszej <span class="feature-highlight">mapie serwisów rowerowych</span> unikalną niebieską pinezką, która rzuca się w oczy bardziej niż standardowe punkty. Zapewnij sobie wyższą pozycję w wynikach i spraw, by lokalni klienci błyskawicznie Cię odnaleźli.',
-      fullText: 'Twój warsztat trafi na interaktywną mapę z wyróżniającą się, niebieską pinezką, która jest znacznie lepiej widoczna od zielonych punktów. Dodatkowo Twój serwis będzie promowany na górze listy, co ułatwi klientom szybki kontakt właśnie z Tobą.',
-      buttonText: 'Sprawdź opcje widoczności na mapie',
-      image: '/assets/images/for-services/widocznosc-na-mapie-serwisow.webp',
-      imageAlt: 'Interaktywna mapa serwisów rowerowych CycloPick',
-      expanded: false
-    },
-    {
-      title: 'Wizytówka Twojego serwisu',
-      summary: 'Zyskaj profesjonalną stronę-wizytówkę z galerią zdjęć i ofertą, bez kosztów własnej domeny. Nasza technologia optymalizuje Twoje dane pod <span class="feature-highlight">chatboty AI (ChatGPT, Copilot)</span>, budując nowoczesny wizerunek Twojego serwisu rowerowego w sieci.',
-      fullText: `Zyskaj profesjonalną wizytówkę w ramach CycloPick, która w pełni zastępuje potrzebę tworzenia i utrzymywania własnej strony internetowej. To Twoje centrum kontaktu z klientem, zaprojektowane tak, by pracować dla Ciebie na wielu poziomach.
-
-Podczas gdy klienci cieszą się estetycznym wyglądem, przejrzystymi danymi i galerią zdjęć Twojego warsztatu, pod spodem dzieje się techniczna magia. Nasza platforma udostępnia Twoje dane w sposób zoptymalizowany dla wyszukiwarek oraz chatbotów AI, takich jak ChatGPT czy Copilot.
-
-Uzupełniając szczegółowo swój profil, nie tylko budujesz zaufanie u rowerzystów, ale też realnie zwiększasz swoje szanse na pojawienie się w odpowiedziach asystentów AI, gdy ktoś zapyta: „Gdzie w mojej okolicy najlepiej naprawię rower?".`,
-      buttonText: 'Zobacz funkcje wizytówki serwisu',
-      image: '/assets/images/for-services/strona-wizytowka.webp',
-      imageAlt: 'Wizytówka serwisu rowerowego w CycloPick',
-      expanded: false
-    },
-    {
-      title: 'My karmimy algorytmy, Ty zbierasz klientów',
-      summary: 'Automatycznie promuj swój serwis w Google Maps i wynikach wyszukiwania dzięki ustrukturyzowanym danym. <span class="feature-highlight">„Karmimy" algorytmy precyzyjnymi informacjami</span>, dzięki czemu chatboty i wyszukiwarki <span class="feature-highlight">rekomendują właśnie Twój warsztat</span>.',
-      fullText: `W CycloPick nie czekamy biernie, aż ktoś Cię znajdzie. Aktywnie karmimy danymi chatboty, wyszukiwarkę i mapy Google, serwując im informacje o Twoim serwisie w sposób, który te systemy po prostu uwielbiają.
-
-Dzięki temu zyskujesz technologiczną przewagę na trzech poziomach:
-
-Rekomendacje AI: Udostępniamy dane w formacie gotowym dla ChatGPT czy Copilota. Gdy klient zapyta sztuczną inteligencję o serwis w okolicy, Twój warsztat jest „podany na tacy" jako gotowa odpowiedź.
-
-Wysoka pozycja w Google: Dostarczamy wyszukiwarce uporządkowane informacje, które Google premiuje wyższymi pozycjami. Twoja wizytówka jest zaprojektowana tak, by algorytmy uznawały ją za najbardziej wartościowe źródło informacji.
-
-Wiarygodność w Mapach: Przekazujemy Google precyzyjne współrzędne wraz z danymi biznesowymi. Ta spójność buduje cyfrowy autorytet Twojego serwisu, dzięki czemu Twój punkt staje się pewnym wyborem na mapie każdego rowerzysty.
-
-Efekt? Ty skupiasz się na naprawie rowerów, a my dbamy o to, by każda licząca się technologia na rynku wiedziała o Twoim istnieniu i polecała Twoje usługi.`,
-      buttonText: 'Dowiedz się więcej o technologii AI i SEO',
-      image: '/assets/images/for-services/seo-aio.webp',
-      imageAlt: 'Technologia AI i SEO dla serwisów rowerowych',
-      expanded: false
-    },
-    {
-      title: 'Pełny zakres usług w zasięgu jednego kliknięcia',
-      summary: 'Wykorzystaj zaawansowane filtry usług, aby docierać do klientów szukających konkretnych napraw. Prezentuj pełną ofertę, <span class="feature-highlight">ogranicz przypadkowe zapytania</span> i pozyskuj tylko zdecydowanych klientów, którzy szukają Twojej wiedzy.',
-      fullText: `Nie trać czasu na zapytania o usługi, których nie świadczysz. Dzięki naszym zaawansowanym filtrom wyszukiwania, klienci znajdują Twój serwis dokładnie wtedy, gdy potrzebują Twojej specjalistycznej wiedzy.
-
-Jak to działa na Twoją korzyść?
-Widoczność Twoich specjalizacji: Klient szukający konkretnej naprawy (np. serwisu przerzutek elektronicznych czy naprawy ram tytanowych) może zaznaczyć te opcje w filtrach. Jeśli zaznaczysz je w swoim profilu, Twój warsztat pojawi się jako idealna odpowiedź na jego potrzeby.
-
-Mniej „pustych" zapytań: Dzięki precyzyjnemu filtrowaniu trafiają do Ciebie osoby zdecydowane na konkretną usługę, co oszczędza Twój czas na wyjaśnianie zakresu prac przez telefon.
-
-Elastyczność i rozwój: Nasza lista usług jest żywa. Jeśli oferujesz coś unikalnego, czego nie ma jeszcze w naszym systemie, możesz to bez problemu dodać. Dzięki temu budujesz wizerunek eksperta w niszowych naprawach.
-
-Dlaczego warto zaznaczyć każdą wykonywaną usługę? Dla klienta liczy się pewność. Jeśli szuka jednocześnie regulacji przerzutek i centrowania koła, wybierze ten serwis, który na liście ma zaznaczone obie te pozycje. Pamiętaj: każda zaznaczona usługa to dodatkowa „furtka", przez którą klient może do Ciebie trafić.
-
-Nie widzisz swojej specjalizacji na liście? Bez obaw! Możesz ją dodać samodzielnie w kilka sekund. Dzięki temu Twoja oferta zawsze będzie aktualna i dopasowana do tego, co faktycznie dzieje się w Twoim warsztacie.`,
-      buttonText: 'Zobacz, jak działają filtry usług',
-      image: '/assets/images/for-services/filtrowanie-po-uslugach.webp',
-      imageAlt: 'Filtry usług serwisów rowerowych w CycloPick',
-      expanded: false
-    }
-  ];
-
-  toggleExpanded(index: number): void {
-    this.featureSections[index].expanded = !this.featureSections[index].expanded;
   }
 
   constructor(
@@ -223,19 +163,19 @@ Nie widzisz swojej specjalizacji na liście? Bez obaw! Możesz ją dodać samodz
 
     const howTo = SchemaOrgHelper.generateHowTo(
       'Jak dołączyć do CycloPick jako serwis rowerowy',
-      'Rejestracja serwisu rowerowego na platformie CycloPick w 3 prostych krokach. Bezpłatnie.',
+      'Rejestracja serwisu rowerowego na platformie CycloPick w 4 krokach — od rejestracji do spotkania onboardingowego.',
       [
         {
-          name: 'Szybka rejestracja',
-          text: 'Wypełnij podstawowe dane i wybierz zakres usług – zajmie Ci to mniej niż 5 minut.'
+          name: 'Wypełnij formularz rejestracyjny',
+          text: 'Podaj podstawowe dane, zakres usług i lokalizację — zajmie Ci to mniej niż 5 minut.'
         },
         {
-          name: 'Weryfikacja profilu',
-          text: 'Potwierdź maila i poczekaj na nasze sprawdzenie (robimy to w max. 3 dni, by dbać o jakość bazy).'
+          name: 'Czekaj na weryfikację',
+          text: 'Sprawdzamy każdy profil ręcznie. Zazwyczaj do 24 godzin, maksymalnie 3 dni robocze.'
         },
         {
-          name: 'Pokaż się z najlepszej strony',
-          text: 'Po weryfikacji uzupełnij zdjęcia i pochwal się współpracą na FB – my zrobimy to samo, promując Twój warsztat!'
+          name: 'Uzupełnij profil i zbieraj klientów',
+          text: 'Dodaj zdjęcia, cennik i specjalizacje. Każde uzupełnienie zwiększa widoczność w Google.'
         }
       ]
     );
@@ -248,40 +188,34 @@ Nie widzisz swojej specjalizacji na liście? Bez obaw! Możesz ją dodać samodz
   }
 
   private setMetaTags(): void {
-    // Title
-    this.title.setTitle('Usługi dla serwisów rowerowych | CycloPick - mapa warsztatów');
+    this.title.setTitle('Dla serwisów rowerowych – rezerwacje online i system zarządzania | CycloPick');
 
-    // Meta description
     this.meta.updateTag({
       name: 'description',
-      content: 'Zarejestruj swój serwis rowerowy w CycloPick. Zyskaj widoczność na mapie, profesjonalną wizytówkę i nowych klientów. Dołącz do najlepszej bazy serwisów rowerowych w Polsce.'
+      content: 'Zarejestruj swój serwis rowerowy w CycloPick. Panel rezerwacji online, system zarządzania zleceniami, wizytówka i widoczność w Google.'
     });
 
-    // Meta keywords
     this.meta.updateTag({
       name: 'keywords',
-      content: 'serwis rowerowy, warsztat rowerowy, naprawa rowerów, mapa serwisów, usługi dla serwisów, rejestracja serwisu, CycloPick'
+      content: 'serwis rowerowy, panel rezerwacji online, system zarządzania serwisem, warsztat rowerowy, mapa serwisów, CycloPick'
     });
 
-    // Open Graph
-    this.meta.updateTag({ property: 'og:title', content: 'Usługi dla serwisów rowerowych | CycloPick' });
-    this.meta.updateTag({ property: 'og:description', content: 'Zarejestruj swój serwis rowerowy w CycloPick. Zyskaj widoczność na mapie, profesjonalną wizytówkę i nowych klientów.' });
+    this.meta.updateTag({ property: 'og:title', content: 'Dla serwisów rowerowych | CycloPick' });
+    this.meta.updateTag({ property: 'og:description', content: 'Rezerwacje online, system zarządzania zleceniami i widoczność w Google dla Twojego warsztatu rowerowego.' });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
-    this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/for-services' });
+    this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/dla-serwisow' });
     this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/for-services/widocznosc-na-mapie-serwisow.webp' });
     this.meta.updateTag({ property: 'og:locale', content: 'pl_PL' });
 
-    // Twitter Card
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
-    this.meta.updateTag({ name: 'twitter:title', content: 'Usługi dla serwisów rowerowych | CycloPick' });
-    this.meta.updateTag({ name: 'twitter:description', content: 'Zarejestruj swój serwis rowerowy w CycloPick. Zyskaj widoczność na mapie i nowych klientów.' });
+    this.meta.updateTag({ name: 'twitter:title', content: 'Dla serwisów rowerowych | CycloPick' });
+    this.meta.updateTag({ name: 'twitter:description', content: 'Rezerwacje online i system zarządzania dla serwisów rowerowych. Sprawdź cennik i dołącz.' });
 
-    // Robots
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
   }
 
   private setCanonicalUrl(): void {
-    const canonicalUrl = 'https://www.cyclopick.pl/for-services';
+    const canonicalUrl = 'https://www.cyclopick.pl/dla-serwisow';
     let link: HTMLLinkElement | null = this.document.querySelector("link[rel='canonical']");
 
     if (link) {
@@ -292,10 +226,6 @@ Nie widzisz swojej specjalizacji na liście? Bez obaw! Możesz ją dodać samodz
       link.setAttribute('href', canonicalUrl);
       this.document.head.appendChild(link);
     }
-  }
-
-  getSafeHtml(html: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
   navigateToRegisterService(): void {

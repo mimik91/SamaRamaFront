@@ -38,7 +38,7 @@ export class NavigationComponent implements OnInit {
     'cennik-rowerzysci', 'cennik-serwisy', 'cooperation', 'ordersummary',
     'login', 'register', 'verify-account', 'password-reset-request', 'password-reset',
     'complete-registration', 'register-service', 'register-serviceman', 'about',
-    'for-services', 'service-pending-verification', 'client-dashboard', 'admin-dashboard',
+    'dla-serwisow', 'service-pending-verification', 'client-dashboard', 'admin-dashboard',
     'bicycles', 'admin-orders', 'account', 'admin-users', 'admin-services-verification',
     'admin-service-edit', 'admin-enumerations', 'admin-service-slots', 'admin-bike-services',
     'admin-office-addresses', 'mistrzauta', 'order-transport', 'reserve-service',

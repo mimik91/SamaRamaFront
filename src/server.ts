@@ -76,12 +76,12 @@ app.use(
  * so we inject them after rendering.
  */
 const ROUTE_JSONLD: Record<string, object> = {
-  '/for-services': {
+  '/dla-serwisow': {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     'name': 'Usługi dla serwisów rowerowych',
     'description': 'Zarejestruj swój serwis rowerowy w CycloPick. Zyskaj widoczność na mapie, profesjonalną wizytówkę i nowych klientów.',
-    'url': 'https://www.cyclopick.pl/for-services',
+    'url': 'https://www.cyclopick.pl/dla-serwisow',
     'mainEntity': {
       '@type': 'Service',
       'name': 'CycloPick - platforma dla serwisów rowerowych',

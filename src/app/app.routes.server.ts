@@ -23,7 +23,7 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender
   },
   {
-    path: 'for-services',
+    path: 'dla-serwisow',
     renderMode: RenderMode.Prerender
   },
   {

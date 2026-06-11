@@ -19,18 +19,18 @@ export class ForServicesComponent implements OnInit, OnDestroy {
     {
       title: 'Mapa lokalnych serwisów rowerowych – znajdź najlepszy warsztat rowerowy w Twojej okolicy',
       summary: 'Twój warsztat zostanie wyróżniony na naszej <span class="feature-highlight">mapie serwisów rowerowych</span> unikalną niebieską pinezką, która rzuca się w oczy bardziej niż standardowe punkty. Zapewnij sobie wyższą pozycję w wynikach i spraw, by lokalni klienci błyskawicznie Cię odnaleźli.',
-      image: '/assets/images/for-services/panel-rezerwacji.webp',
-      imageAlt: 'Panel rezerwacji online CycloPick',
+      image: '/assets/images/for-services/widocznosc-na-mapie-serwisow.webp',
+      imageAlt: 'Mapa lokalnych serwisów rowerowych CycloPick',
     },
     {
       title: 'Wizytówka Twojego serwisu',
       summary: 'Zyskaj profesjonalną stronę-wizytówkę z galerią zdjęć i ofertą, bez kosztów własnej domeny. Nasza technologia optymalizuje Twoje dane pod <span class="feature-highlight">chatboty AI (ChatGPT, Copilot)</span>, budując nowoczesny wizerunek Twojego serwisu rowerowego w sieci.',
-      image: '/assets/images/for-services/kanban.webp',
-      imageAlt: 'System zarządzania zleceniami CycloPick',
+      image: '/assets/images/for-services/strona-wizytowka.webp',
+      imageAlt: 'Wizytówka serwisu rowerowego CycloPick',
     },
     {
       title: 'My karmimy algorytmy, Ty zbierasz klientów',
-      summary: 'Automatycznie promuj swój serwis w Google Maps i wynikach wyszukiwania dzięki ustrukturyzowanym danym. <span class="feature-highlight">„Karmimy" algorytmy precyzyjnymi informacjami</span>, dzięki czemu chatboty i wyszukiwarki <span class="feature-highlight">rekomendują właśnie Twój warsztat</span>. Na 6 serwisów rowerowych na Salwatorze w Krakowie — <span class="feature-highlight">4 pierwsze miejsca w Google zajmują 2 serwisy zarejestrowane w CycloPick</span>.',
+      summary: 'Zdobądź lepszą pozycję w Google Maps i wynikach wyszukiwania. Serwujemy algorytmom i chatbotom precyzyjne dane, dzięki czemu chętniej rekomendują Twój warsztat. Przykład z życia to krakowski Salwator. Funkcjonuje tam 6 serwisów rowerowych. <span class="feature-highlight">Pierwsze cztery miejsca w Google obstawiły dwa warsztaty i oba działają na CycloPick.</span>',
       image: '/assets/images/for-services/seo.webp',
       imageAlt: 'Widoczność serwisu rowerowego w Google i AI',
     },

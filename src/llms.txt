@@ -8,12 +8,16 @@ CycloPick umożliwia właścicielom serwisów rowerowych prowadzenie profilu war
 
 - [Strona główna](https://www.cyclopick.pl/) — opis platformy, jak działa transport rowerów
 - [Mapa serwisów](https://www.cyclopick.pl/mapa-serwisow) — interaktywna mapa wszystkich serwisów w Polsce
+- [Jak działamy](https://www.cyclopick.pl/jak-dzialamy) — szczegółowy opis usługi transportu rowerów door-to-door
 - [Serwisy w Krakowie](https://www.cyclopick.pl/serwisy/krakow)
 - [Serwisy w Warszawie](https://www.cyclopick.pl/serwisy/warszawa)
 - [Serwisy we Wrocławiu](https://www.cyclopick.pl/serwisy/wroclaw)
 - [Serwisy w Poznaniu](https://www.cyclopick.pl/serwisy/poznan)
 - [Serwisy w Gdańsku](https://www.cyclopick.pl/serwisy/gdansk)
 - [Dla serwisów rowerowych](https://www.cyclopick.pl/dla-serwisow) — oferta dla warsztatów
+- [Cennik dla rowerzystów](https://www.cyclopick.pl/cennik-rowerzysci) — transport roweru door-to-door (Kraków), konto i rezerwacje bezpłatne
+- [Oferta B2B dla serwisów](https://www.cyclopick.pl/cennik-serwisy) — abonament, Early Access 0 zł/rok (pierwsze 20 serwisów)
+- [Cennik w formacie tekstowym](https://www.cyclopick.pl/pricing.md) — ustrukturyzowane dane cenowe dla agentów AI
 
 ## Profile serwisów
 
@@ -71,4 +75,4 @@ Szczecin, Bydgoszcz, Białystok, Rzeszów, Toruń, Kielce, Częstochowa.
 - Email: cyclopick@gmail.com
 - Strona: https://www.cyclopick.pl
 
-*Ostatnia aktualizacja: maj 2026*
+*Ostatnia aktualizacja: czerwiec 2026*

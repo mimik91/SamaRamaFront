@@ -107,6 +107,10 @@ export const serverRoutes: ServerRoute[] = [
     path: 'password-reset',
     renderMode: RenderMode.Client
   },
+  {
+    path: 'complete-registration',
+    renderMode: RenderMode.Client
+  },
 
   // User dashboards - client only (auth required)
   {
@@ -193,6 +197,18 @@ export const serverRoutes: ServerRoute[] = [
   // Service admin panel - client only (auth required)
   {
     path: ':suffix/panel-administratora',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: ':suffix/panel-administratora/kanban',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: ':suffix/panel-administratora/profil',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: ':suffix/historia-zlecen',
     renderMode: RenderMode.Client
   },
 

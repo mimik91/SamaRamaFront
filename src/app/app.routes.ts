@@ -96,27 +96,27 @@ export const routes: Routes = [
     },
 
     // Jak działamy
-    { 
-      path: 'jak-dzialamy', 
+    {
+      path: 'jak-dzialamy',
       component: HowItWorksPageComponent,
-      title: 'CycloPick | mapa serwisów rowerowych'
+      title: 'Transport rowerów w Krakowie | Odbiór i dostawa door-to-door | CycloPick'
     },
-    
+
     // Legal pages
-    { 
-      path: 'terms-of-service', 
-      component: TermsOfServiceComponent, 
-      title: 'CycloPick | mapa serwisów rowerowych'
+    {
+      path: 'terms-of-service',
+      component: TermsOfServiceComponent,
+      title: 'Regulamin | CycloPick'
     },
-    { 
-      path: 'terms-of-service-workshops', 
-      component: TermsOfServiceWorkshopsComponent, 
-      title: 'CycloPick | mapa serwisów rowerowych'
+    {
+      path: 'terms-of-service-workshops',
+      component: TermsOfServiceWorkshopsComponent,
+      title: 'Regulamin dla serwisów | CycloPick'
     },
     {
       path: 'privacy-policy',
       component: PrivacyPolicyComponent,
-      title: 'CycloPick | mapa serwisów rowerowych'
+      title: 'Polityka prywatności | CycloPick'
     },
     {
       path: 'cookie-policy',
@@ -135,10 +135,10 @@ export const routes: Routes = [
     },
     
     // Pricing route - dostępna dla wszystkich
-    { 
-      path: 'cooperation', 
+    {
+      path: 'cooperation',
       component: CooperationComponent,
-      title: 'CycloPick | mapa serwisów rowerowych'
+      title: 'Współpraca z CycloPick | Dołącz do zespołu rowerowego startupu'
     },
     
     { 

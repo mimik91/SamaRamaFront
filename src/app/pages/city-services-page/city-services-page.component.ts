@@ -118,8 +118,6 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
         this.updateMetaTags();
         this.updateStructuredData();
-
-        console.log('✅ City services initialized from resolver data:', cityData.city.name);
       } else {
         // Resolver zwrócił null - miasto nie znalezione
         const citySlug = this.route.snapshot.paramMap.get('city') || '';

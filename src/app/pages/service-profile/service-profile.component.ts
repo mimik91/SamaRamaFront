@@ -175,8 +175,6 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     if (this.isBrowser) {
       this.loadServiceImages();
     }
-
-    console.log('✅ Service profile initialized from resolver data');
   }
 
   private updateSeoForSection(): void {
@@ -483,7 +481,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     if (bikeShopSchema) {
       const citySlug = environment.settings.seoCities.find((c: { name: string; slug: string }) => c.name === city)?.slug;
       const cityUrl = citySlug
-        ? `https://www.cyclopick.pl/serwisy-rowerowe-${citySlug}`
+        ? `https://www.cyclopick.pl/serwisy/${citySlug}`
         : 'https://www.cyclopick.pl';
 
       const breadcrumb = SchemaOrgHelper.generateBreadcrumb([

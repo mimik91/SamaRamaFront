@@ -44,6 +44,20 @@ export const serverRoutes: ServerRoute[] = [
     path: 'privacy-policy',
     renderMode: RenderMode.Prerender
   },
+  {
+    path: 'cookie-policy',
+    renderMode: RenderMode.Prerender
+  },
+
+  // Pricing pages - prerender (static content)
+  {
+    path: 'cennik-rowerzysci',
+    renderMode: RenderMode.Prerender
+  },
+  {
+    path: 'cennik-serwisy',
+    renderMode: RenderMode.Prerender
+  },
 
   // === SERVER RENDERED ROUTES (Dynamic content) ===
 

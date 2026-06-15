@@ -54,7 +54,7 @@ export class SeoService {
 
     const cleanPath = path.split('?')[0];
 
-    const url = `${environment.siteUrl}${cleanPath === '/' ? '' : cleanPath}`;
+    const url = `${environment.siteUrl}${cleanPath === '/' ? '/' : cleanPath}`;
 
 
 

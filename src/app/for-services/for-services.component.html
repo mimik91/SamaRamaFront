@@ -1,251 +1,256 @@
 <div class="dla-serwisow-container">
 
-  <!-- HERO -->
+  <!-- ===== HERO — dark SaaS ===== -->
   <section class="hero-section">
     <div class="hero-inner">
-      <div class="hero-text">
-        <span class="hero-eyebrow">Dla serwisów rowerowych</span>
-        <h1>Twój serwis pracuje na klientów,<br>nawet gdy jesteś zamknięty</h1>
-        <p class="hero-sub">
-          Dołącz do serwisów rowerowych w Polsce, które zyskały nowych klientów i oszczędzają czas dzięki CycloPick.
-        </p>
-        <div class="hero-cta">
-          <button class="btn-primary" (click)="navigateToRegisterService()">Zarejestruj serwis →</button>
-          <a class="hero-note hero-note--link" routerLink="/cennik-serwisy">Sprawdź cennik →</a>
-        </div>
-      </div>
-      <div class="hero-visual">
-        <img src="/assets/images/logo-cyclopick.png" alt="CycloPick – platforma dla serwisów rowerowych" class="hero-logo">
+      <span class="hero-badge">Dla serwisów rowerowych</span>
+      <h1>Twój serwis pracuje na klientów,<br><em class="hero-accent">nawet gdy jesteś zamknięty</em></h1>
+      <p class="hero-sub">
+        Dołącz do serwisów rowerowych w Polsce, które zyskały nowych klientów i oszczędzają czas dzięki CycloPick.
+      </p>
+      <div class="hero-cta">
+        <button class="btn-cta-primary" (click)="navigateToRegisterService()">Zarejestruj serwis →</button>
+        <a class="btn-cta-ghost" routerLink="/cennik-serwisy">Sprawdź cennik</a>
       </div>
     </div>
   </section>
 
-  <!-- BENEFIT 1: Rezerwacje online -->
-  <section class="benefit-section benefit--green">
-    <div class="benefit-inner">
-
-      <div class="benefit-proof">
-        <span class="proof-number">18</span>
-        <span class="proof-label">serwisów<br>już korzysta</span>
+  <!-- ===== STATS BAR ===== -->
+  <div class="stats-bar">
+    <div class="stats-bar-inner">
+      <div class="stat-item">
+        <span class="stat-num">18+</span>
+        <span class="stat-label">serwisów korzysta</span>
       </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item">
+        <span class="stat-num">50%+</span>
+        <span class="stat-label">zapytań po godzinach pracy</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item">
+        <span class="stat-num">5 min</span>
+        <span class="stat-label">czas rejestracji</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item">
+        <span class="stat-num">24h</span>
+        <span class="stat-label">aktywacja profilu</span>
+      </div>
+    </div>
+  </div>
 
-      <div class="benefit-content">
-        <div class="benefit-header">
-          <span class="benefit-icon-wrap">📅</span>
-          <h2>Panel rezerwacji online – pracuj w dzień, łap klientów w nocy</h2>
+  <!-- ===== BENEFIT 1: Rezerwacje online ===== -->
+  <section class="split-section split-section--white">
+    <div class="split-inner">
+      <div class="split-text">
+        <span class="section-tag">Rezerwacje online</span>
+        <h2>Panel rezerwacji online –<br>pracuj w dzień, łap klientów w nocy</h2>
+        <div class="insight-pill">
+          <span class="insight-bulb">💡</span>
+          <p>Ponad <strong>50% zapytań o serwis rowerowy</strong> wpada w nocy i w niedziele — kiedy Twój warsztat jest zamknięty, a klient chce informacji „na już".</p>
         </div>
-
-        <div class="insight-box">
-          <div class="insight-bulb">💡</div>
-          <div>
-            <p>Wiedziałeś, że <strong>ponad 50% zapytań o serwis rowerowy</strong> wpada w nocy i w niedziele? To moment, kiedy Twój warsztat jest zamknięty, a klient chce informacji „na już".</p>
-            <p class="insight-sub">Nie trać tych klientów i nie zarywaj nocy. Daj im możliwość sprawdzenia statusu zlecenia online o każdej porze. Ty zyskujesz wolny wieczór, a oni obsługę 24/7 bez angażowania Twojego czasu.</p>
-          </div>
-        </div>
-
-        <ul class="benefit-list">
+        <ul class="check-list">
           <li>
             <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <div><strong>Klienci rezerwują, kiedy mają czas:</strong> Żyjemy w biegu. Bez opcji online klient odkłada temat na jutro, a rano zapomina lub odpuszcza.</div>
+            <span><strong>Klienci rezerwują, kiedy mają czas</strong> — nie czekają na otwarcie, nie zapominają.</span>
           </li>
           <li>
             <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <div><strong>Młodzi nie lubią dzwonić:</strong> Chętnie klikną „Zarezerwuj", ale tradycyjny telefon ich zniechęca. Daj im swobodę.</div>
+            <span><strong>Młodzi nie lubią dzwonić</strong> — chętnie klikną „Zarezerwuj", ale telefon ich zniechęca.</span>
           </li>
           <li>
             <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <div><strong>Ułatwienie = wyższa sprzedaż:</strong> Im mniejszy opór przy zapisie, tym większa szansa, że rower ostatecznie trafi na Twój stojak.</div>
+            <span><strong>Ułatwienie = wyższa sprzedaż</strong> — im mniej kroków, tym więcej rowerów na Twoim stojaku.</span>
           </li>
         </ul>
-
-        <img src="/assets/images/for-services/panel-rezerwacji.webp" alt="Panel rezerwacji online CycloPick – formularz umówienia wizyty w serwisie rowerowym" class="benefit-screenshot" loading="lazy">
-
-        <button class="btn-primary" (click)="navigateToRegisterService()">Włącz rezerwacje online w swoim serwisie</button>
+        <button class="btn-green" (click)="navigateToRegisterService()">Włącz rezerwacje w swoim serwisie →</button>
       </div>
-
+      <div class="split-media">
+        <div class="screenshot-frame">
+          <div class="screenshot-chrome">
+            <span class="chrome-dot"></span>
+            <span class="chrome-dot"></span>
+            <span class="chrome-dot"></span>
+          </div>
+          <img src="/assets/images/for-services/panel-rezerwacji.webp"
+               alt="Panel rezerwacji online CycloPick – formularz umówienia wizyty w serwisie rowerowym"
+               class="split-screenshot"
+               loading="lazy">
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- BENEFIT 2: System zarządzania -->
-  <section class="benefit-section benefit--light">
-    <div class="benefit-inner">
-
-      <div class="benefit-proof">
-        <span class="proof-number">33</span>
-        <span class="proof-label">serwisy<br>aktywnie<br>korzystają</span>
-      </div>
-
-      <div class="benefit-content">
-        <div class="benefit-header">
-          <span class="benefit-icon-wrap">🗂️</span>
-          <h2>Zarządzanie warsztatem – koniec z karteczkami i notesami</h2>
+  <!-- ===== BENEFIT 2: Zarządzanie ===== -->
+  <section class="split-section split-section--light">
+    <div class="split-inner split-inner--reverse">
+      <div class="split-media">
+        <div class="screenshot-frame">
+          <div class="screenshot-chrome">
+            <span class="chrome-dot"></span>
+            <span class="chrome-dot"></span>
+            <span class="chrome-dot"></span>
+          </div>
+          <img src="/assets/images/for-services/kanban.webp"
+               alt="Panel Kanban CycloPick – zarządzanie zleceniami serwisowymi w widoku tablicy"
+               class="split-screenshot"
+               loading="lazy">
         </div>
-
-        <p class="benefit-lead">Koniec z tonięciem w papierach i marnowaniem pół dnia na wiszenie na telefonie z klientami. Tutaj masz wszystko w jednym miejscu: od ręki sprawdzisz status zlecenia, historię napraw i co jeszcze jest do zrobienia. Po prostu święty spokój.</p>
-
-        <div class="feature-bullets">
-          <div class="feature-bullet">
-            <span class="bullet-emoji">📱</span>
+      </div>
+      <div class="split-text">
+        <span class="section-tag">System zarządzania</span>
+        <h2>Koniec z karteczkami –<br>wszystko w jednym miejscu</h2>
+        <p class="split-lead">Koniec z tonięciem w papierach i marnowaniem pół dnia na wiszenie na telefonie z klientami. Statusy, historia, notatki i SMS-y — z panelu, z telefonu, w każdej chwili.</p>
+        <div class="pill-list">
+          <div class="pill-item">
+            <span class="pill-icon">📱</span>
             <div>
               <strong>Automatyczny SMS „Rower gotowy"</strong>
-              <p>Jedno kliknięcie i klient wie, że może odebrać sprzęt. Nie tracisz czasu na wiszenie na słuchawce.</p>
+              <p>Jedno kliknięcie i klient wie, że może odebrać sprzęt. Zero telefonów.</p>
             </div>
           </div>
-          <div class="feature-bullet">
-            <span class="bullet-emoji">📋</span>
+          <div class="pill-item">
+            <span class="pill-icon">📋</span>
             <div>
-              <strong>Zlecenia w systemie i historia</strong>
-              <p>Wiesz wszystko o każdym rowerze. Koniec z szukaniem informacji w stercie brudnych notatek.</p>
+              <strong>Zlecenia i historia napraw</strong>
+              <p>Wiesz wszystko o każdym rowerze. Koniec z szukaniem w stercie notatek.</p>
             </div>
           </div>
-          <div class="feature-bullet">
-            <span class="bullet-emoji">⏰</span>
+          <div class="pill-item">
+            <span class="pill-icon">⏰</span>
             <div>
               <strong>Oszczędzasz 1–2 godziny dziennie</strong>
-              <p>Zdejmij z siebie papierkową robotę i skup się na tym, co naprawdę przynosi Ci zysk.</p>
+              <p>Papierkowa robota z głowy — skup się na naprawach.</p>
             </div>
           </div>
         </div>
-
-        <img src="/assets/images/for-services/kanban.webp" alt="Panel Kanban CycloPick – zarządzanie zleceniami serwisowymi w widoku tablicy" class="benefit-screenshot" loading="lazy">
-
-        <button class="btn-primary" (click)="navigateToRegisterService()">Wypróbuj system zarządzania</button>
+        <button class="btn-green" (click)="navigateToRegisterService()">Wypróbuj system zarządzania →</button>
       </div>
-
     </div>
   </section>
 
-  <!-- FEATURES SECTION -->
+  <!-- ===== FEATURES GRID ===== -->
   <section class="features-section">
-    <div class="features-header">
-      <h2>Dołącz do CycloPick – najlepszej bazy serwisów rowerowych</h2>
-      <p class="features-subheader">Wprowadź swój warsztat w erę AI i zyskaj technologiczną przewagę</p>
-    </div>
-
-    <div class="features-grid" role="list">
-      <article *ngFor="let feature of featureSections" class="feature-card" role="listitem">
-        <div class="feature-image-container">
-          <img [src]="feature.image" [alt]="feature.imageAlt" class="feature-image" loading="lazy">
-        </div>
-        <div class="feature-content">
-          <h3>{{ feature.title }}</h3>
-          <p [innerHTML]="getSafeHtml(feature.summary)"></p>
-          <button class="feature-btn" (click)="navigateToRegisterService()" type="button">
-            Zarejestruj swój serwis →
-          </button>
-        </div>
-      </article>
+    <div class="features-inner">
+      <div class="features-header">
+        <h2>Wszystko, czego potrzebuje Twój serwis</h2>
+        <p>Jedno miejsce — widoczność, rezerwacje, klienci i historia napraw.</p>
+      </div>
+      <div class="features-grid" role="list">
+        <article *ngFor="let feature of featureSections" class="feature-card" role="listitem">
+          <div class="feature-chrome-bar">
+            <span class="chrome-dot"></span>
+            <span class="chrome-dot"></span>
+            <span class="chrome-dot"></span>
+          </div>
+          <div class="feature-img-wrap">
+            <img [src]="feature.image" [alt]="feature.imageAlt" class="feature-img" loading="lazy">
+          </div>
+          <div class="feature-body">
+            <h3>{{ feature.title }}</h3>
+            <p [innerHTML]="getSafeHtml(feature.summary)"></p>
+            <button class="feature-cta-btn" (click)="navigateToRegisterService()" type="button">
+              Zarejestruj serwis →
+            </button>
+          </div>
+        </article>
+      </div>
     </div>
   </section>
 
-  <!-- CTA SECTION -->
-  <section class="cta-section">
-    <div class="cta-content">
-      <h2>Dołącz do nas w 4 prostych krokach</h2>
-      <p class="cta-sub">Rejestracja w 5 minut. Po dołączeniu umawiamy krótkie spotkanie, żeby wszystko dobrze wystartowało.</p>
-      <div class="cta-steps">
-        <div class="cta-step">
-          <span class="step-number">1</span>
-          <div class="step-content">
-            <strong>Wypełnij formularz rejestracyjny</strong>
-            <p>Podstawowe dane, zakres usług, lokalizacja — mniej niż 5 minut.</p>
+  <!-- ===== HOW IT WORKS ===== -->
+  <section class="how-section">
+    <div class="how-inner">
+      <div class="how-header">
+        <h2>Dołącz w 4 prostych krokach</h2>
+        <p>Rejestracja w 5 minut. Po dołączeniu umawiamy krótkie Google Meet.</p>
+      </div>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-num">1</div>
+          <div class="how-step-body">
+            <strong>Wypełnij formularz</strong>
+            <p>Dane, zakres usług, lokalizacja — mniej niż 5 minut.</p>
           </div>
         </div>
-        <div class="cta-step">
-          <span class="step-number">2</span>
-          <div class="step-content">
-            <strong>Czekaj na weryfikację</strong>
-            <p>Sprawdzamy każdy profil ręcznie, by utrzymać jakość. Zazwyczaj do 24 godzin, max. 3 dni robocze.</p>
+        <div class="how-arrow" aria-hidden="true">→</div>
+        <div class="how-step">
+          <div class="how-step-num">2</div>
+          <div class="how-step-body">
+            <strong>Weryfikacja</strong>
+            <p>Sprawdzamy każdy profil ręcznie. Do 24 godzin, max. 3 dni.</p>
           </div>
         </div>
-        <div class="cta-step">
-          <span class="step-number">3</span>
-          <div class="step-content">
-            <strong>Uzupełnij profil i zbieraj klientów</strong>
-            <p>Dodaj zdjęcia, cennik i specjalizacje. Każde uzupełnienie to więcej klientów.</p>
+        <div class="how-arrow" aria-hidden="true">→</div>
+        <div class="how-step">
+          <div class="how-step-num">3</div>
+          <div class="how-step-body">
+            <strong>Uzupełnij profil</strong>
+            <p>Zdjęcia, cennik, specjalizacje — każde uzupełnienie to więcej klientów.</p>
           </div>
         </div>
-        <div class="cta-step">
-          <span class="step-number">4</span>
-          <div class="step-content">
-            <strong>Krótkie spotkanie na Google Meet</strong>
-            <p>Umawiamy się, żeby się poznać i pokazać Ci jak działa system, abyś mógł od razu wyciągnąć z niego maksimum.</p>
+        <div class="how-arrow" aria-hidden="true">→</div>
+        <div class="how-step">
+          <div class="how-step-num">4</div>
+          <div class="how-step-body">
+            <strong>Google Meet</strong>
+            <p>Krótkie spotkanie — żebyś od razu wyciągnął z systemu maksimum.</p>
           </div>
         </div>
       </div>
-      <button class="btn-primary btn-primary--large" (click)="navigateToRegisterService()">Zarejestruj swój serwis</button>
+      <div class="how-cta">
+        <button class="btn-green btn-green--large" (click)="navigateToRegisterService()">Zarejestruj swój serwis</button>
+      </div>
     </div>
   </section>
 
-  <!-- TEAM SECTION -->
-  <section class="team-section">
-    <h2>Budujmy CycloPick wspólnie</h2>
-    <p>
-      Tworzymy tę platformę, bo sami codziennie wsiadamy na rower. Jako rowerzyści doskonale wiemy, czego szukają Twoi klienci. Z kolei to Ty najlepiej znasz codzienne wyzwania swojego warsztatu. Jeśli masz pomysł, który ułatwi Ci pracę, lub wiesz, co możemy ulepszyć w CycloPick, koniecznie daj nam znać. Zależy nam na tym, żeby ten system rozwiązywał Twoje realne problemy, a nie tylko dobrze wyglądał.
-    </p>
+  <!-- ===== CTA DARK ===== -->
+  <section class="cta-dark-section">
+    <div class="cta-dark-inner">
+      <h2>Gotowy, żeby zyskać więcej klientów?</h2>
+      <p>Bezpłatna wizytówka. Zero prowizji od napraw. Rejestracja w 5 minut.</p>
+      <button class="btn-cta-white" (click)="navigateToRegisterService()">Zarejestruj swój serwis →</button>
+    </div>
   </section>
 
-  <!-- FAQ Section -->
+  <!-- ===== FAQ ===== -->
   <section class="faq-section">
-    <div class="faq-header">
-      <h2>Często zadawane pytania</h2>
-      <p class="faq-subheader">Wszystko, co musisz wiedzieć o współpracy z CycloPick</p>
-    </div>
-
-    <div class="faq-categories">
-      <div *ngFor="let category of faqCategories; let catIndex = index" class="faq-category">
-        <h3 class="faq-category-title">
-          <svg *ngIf="category.icon === 'visibility'" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          <svg *ngIf="category.icon === 'settings'" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-          <svg *ngIf="category.icon === 'payments'" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-            <line x1="1" y1="10" x2="23" y2="10"></line>
-          </svg>
-          <svg *ngIf="category.icon === 'rocket'" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
-            <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
-            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
-            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
-          </svg>
-          {{ category.title }}
-        </h3>
-
-        <div class="faq-items">
+    <div class="faq-inner">
+      <div class="faq-header">
+        <h2>Często zadawane pytania</h2>
+        <p>Wszystko, co musisz wiedzieć o współpracy z CycloPick</p>
+      </div>
+      <div class="faq-list">
+        <ng-container *ngFor="let category of faqCategories; let catIndex = index">
           <div *ngFor="let item of category.items; let itemIndex = index"
                class="faq-item"
-               [class.expanded]="item.expanded">
-            <button class="faq-question"
+               [class.faq-item--open]="item.expanded">
+            <button class="faq-q"
                     (click)="toggleFaq(catIndex, itemIndex)"
                     [attr.aria-expanded]="item.expanded"
                     type="button">
               <span>{{ item.question }}</span>
-              <svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
-            <div class="faq-answer" [class.show]="item.expanded">
+            <div class="faq-a" [class.faq-a--open]="item.expanded">
               <p>{{ item.answer }}</p>
             </div>
           </div>
-        </div>
+        </ng-container>
       </div>
-    </div>
-
-    <div class="faq-cta">
-      <p class="faq-cta-text">
-        Gotowy, aby zacząć?<br>
-        <span>Rejestracja zajmuje tylko 5 minut. Po dołączeniu umawiamy krótkie Google Meet, żeby wszystko dobrze wystartowało.</span>
-      </p>
-      <button class="btn-primary" (click)="navigateToRegisterService()">Zarejestruj swój serwis</button>
+      <div class="faq-bottom">
+        <p>Gotowy, aby zacząć? Rejestracja zajmuje tylko 5 minut.</p>
+        <button class="btn-green" (click)="navigateToRegisterService()">Zarejestruj swój serwis →</button>
+      </div>
     </div>
   </section>
 
+  <!-- ===== CONTACT ===== -->
   <section class="contact-section">
     <h2>Kontakt dla partnerów serwisowych</h2>
     <div class="contact-info-container">
@@ -283,6 +288,7 @@
     </div>
   </section>
 
+  <!-- ===== SEO FOOTER ===== -->
   <footer class="seo-footer">
     <div class="seo-footer-content">
       <div class="seo-footer-section seo-footer-cities">

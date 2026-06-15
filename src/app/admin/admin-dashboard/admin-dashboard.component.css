@@ -142,6 +142,7 @@
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   text-align: center;
   cursor: pointer;
+  position: relative;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -189,6 +190,27 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.action-card--express {
+  border-color: #1B5E20;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.action-card--express .action-icon svg {
+  color: #1B5E20;
+}
+
+.action-badge--express {
+  background-color: #1B5E20;
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  position: absolute;
+  top: 8px;
+  right: 8px;
 }
 
 /* Responsive adjustments */

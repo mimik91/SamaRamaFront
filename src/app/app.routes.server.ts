@@ -150,6 +150,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
   {
+    path: 'admin-express-service',
+    renderMode: RenderMode.Client
+  },
+  {
     path: 'mistrzauta',
     renderMode: RenderMode.Client
   },
@@ -197,6 +201,11 @@ export const serverRoutes: ServerRoute[] = [
     path: ':suffix/zamow-transport',
     renderMode: RenderMode.Server
   },
+  // Serwis ekspresowy — SSR (SEO)
+  {
+    path: 'krakow/zarezerwuj',
+    renderMode: RenderMode.Server
+  },
   {
     path: ':suffix/zarezerwuj',
     renderMode: RenderMode.Server
@@ -211,7 +220,7 @@ export const serverRoutes: ServerRoute[] = [
     path: 'sukces',
     renderMode: RenderMode.Client
   },
-    // Podsumowanie zamówienia przed płatnością — client only (stan z routera)
+  // Podsumowanie zamówienia przed płatnością — client only (stan z routera)
   {
     path: 'platnosc/podsumowanie',
     renderMode: RenderMode.Client

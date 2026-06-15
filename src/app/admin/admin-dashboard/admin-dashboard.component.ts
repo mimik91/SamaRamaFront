@@ -124,4 +124,8 @@ export class AdminDashboardComponent implements OnInit {
   navigateToOfficeAddresses(): void {
     this.router.navigate(['/admin-office-addresses']);
   }
+
+  navigateToExpressService(): void {
+    this.router.navigate(['/admin-express-service']);
+  }
 }

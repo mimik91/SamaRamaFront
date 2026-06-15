@@ -1,0 +1,361 @@
+<div class="express-container">
+  <h1 class="express-title">Serwis rowerowy CycloPick – Kraków</h1>
+
+  <!-- Express info banner -->
+  <div class="express-banner">
+    <div class="express-banner-icon">
+      <img src="/assets/images/logo-cyclopick.png" alt="CycloPick" class="express-banner-logo">
+    </div>
+    <div class="express-banner-content">
+      <p class="express-banner-headline">Serwis rowerowy tego samego dnia</p>
+      <p class="express-banner-text">
+        Odbierzemy Twój rower rano z biura lub spod domu i zwrócimy <strong>tego samego dnia przed 17:00</strong>.
+        Serwis zostanie wybrany przez CycloPick spośród najlepszych warsztatów w Krakowie.
+      </p>
+    </div>
+  </div>
+
+  <!-- Packages info panel -->
+  <div *ngIf="packagesConfig && packages.length > 0" class="packages-panel">
+    <button class="packages-panel-toggle" type="button" (click)="togglePackages()">
+      <span>Cennik pakietów serwisowych</span>
+      <svg class="packages-chevron" [class.expanded]="packagesExpanded"
+           xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+
+    <div class="packages-panel-content" *ngIf="packagesExpanded">
+      <p *ngIf="packagesConfig.generalDescription?.trim()" class="packages-info">
+        {{ packagesConfig.generalDescription }}
+      </p>
+
+      <div class="bike-type-selector" *ngIf="bikeTypes.length > 1">
+        <label for="pkgBikeType">Wybierz typ roweru:</label>
+        <select id="pkgBikeType" class="bike-type-dropdown"
+                (change)="onBikeTypeChange($any($event.target).value)">
+          <option *ngFor="let type of bikeTypes" [value]="type" [selected]="type === selectedBikeType">{{ type }}</option>
+        </select>
+      </div>
+
+      <div class="packages-grid" [class.packages-grid--single]="filteredPackages.length === 1" *ngIf="selectedBikeType">
+        <ng-container *ngFor="let level of packageLevels">
+          <div *ngIf="getPackageForLevel(level) as pkg" class="package-card">
+            <div class="package-level-badge">{{ pkg.packageLevelDisplayName }}</div>
+            <h3 class="package-title">{{ getPackageDisplayName(pkg) }}</h3>
+            <p *ngIf="pkg.description" class="package-desc">{{ pkg.description }}</p>
+            <div class="package-price">
+              <span class="price-amount">{{ pkg.price }}</span>
+              <span class="price-currency">zł</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="steps-indicator">
+    <div class="step" [class.active]="isStepActive(1)" [class.completed]="isStepCompleted(1)">
+      <div class="step-circle">{{ isStepCompleted(1) ? '✓' : '1' }}</div>
+      <span class="step-label">Szczegóły</span>
+    </div>
+    <div class="step-line" [class.completed]="isStepCompleted(1)"></div>
+    <div class="step" [class.active]="isStepActive(2)" [class.completed]="isStepCompleted(2)">
+      <div class="step-circle">{{ isStepCompleted(2) ? '✓' : '2' }}</div>
+      <span class="step-label">Podsumowanie</span>
+    </div>
+  </div>
+
+  <!-- STEP 1: Form -->
+  <div *ngIf="currentStep === 1">
+
+    <!-- Personal data section -->
+    <div class="form-section">
+      <h2 class="section-title">Twoje dane</h2>
+      <div [formGroup]="reservationForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">Imię *</label>
+            <input id="firstName" type="text" class="form-input" formControlName="firstName"
+                   placeholder="Jan"
+                   [class.invalid]="isFieldInvalid('firstName')">
+            <span *ngIf="isFieldInvalid('firstName')" class="error-message">Podaj imię (min. 2 znaki)</span>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Nazwisko *</label>
+            <input id="lastName" type="text" class="form-input" formControlName="lastName"
+                   placeholder="Kowalski"
+                   [class.invalid]="isFieldInvalid('lastName')">
+            <span *ngIf="isFieldInvalid('lastName')" class="error-message">Podaj nazwisko (min. 2 znaki)</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input id="email" type="email" class="form-input" formControlName="email"
+                   placeholder="jan@przyklad.pl"
+                   [class.invalid]="isFieldInvalid('email')">
+            <span *ngIf="isFieldInvalid('email')" class="error-message">Podaj poprawny adres email</span>
+          </div>
+          <div class="form-group">
+            <label for="phone">Telefon *</label>
+            <input id="phone" type="tel" class="form-input" formControlName="phone"
+                   placeholder="500600700"
+                   [class.invalid]="isFieldInvalid('phone')">
+            <span *ngIf="isFieldInvalid('phone')" class="error-message">Podaj 9-cyfrowy numer telefonu</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bikes section -->
+    <div class="form-section">
+      <h2 class="section-title">Rower(y)</h2>
+
+      <div *ngFor="let bikeCtrl of bikeControls; let i = index" [formGroup]="bikeCtrl" class="bike-card">
+        <div class="bike-card-header">
+          <span class="bike-number">Rower {{ i + 1 }}</span>
+          <button *ngIf="bikeControls.length > 1" type="button" class="remove-bike-btn"
+                  (click)="removeBike(i)" aria-label="Usuń rower">✕</button>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group brand-group">
+            <label [for]="'brand-' + i">Marka *</label>
+            <div class="autocomplete-wrapper">
+              <input [id]="'brand-' + i" type="text" class="form-input"
+                     [value]="bikeCtrl.get('brand')?.value"
+                     (input)="onBrandInput($event, i)"
+                     (focus)="onBrandFocus(i)"
+                     (blur)="onBrandBlur(i)"
+                     placeholder="np. Trek, Giant"
+                     [class.invalid]="isBikeFieldInvalid(i, 'brand')">
+              <button type="button" class="expand-brands-btn" (click)="expandAllBrands(i)"
+                      *ngIf="brands.length > 0" aria-label="Pokaż wszystkie marki">▾</button>
+              <div *ngIf="bikeBrandStates[i]?.showDropdown" class="brand-dropdown">
+                <div *ngFor="let brand of bikeBrandStates[i].filtered"
+                     class="dropdown-option" (mousedown)="selectBrand(brand, i)">{{ brand }}</div>
+              </div>
+            </div>
+            <span *ngIf="isBikeFieldInvalid(i, 'brand')" class="error-message">Podaj markę roweru</span>
+          </div>
+          <div class="form-group">
+            <label [for]="'model-' + i">Model</label>
+            <input [id]="'model-' + i" type="text" class="form-input"
+                   formControlName="model" placeholder="np. FX 3">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label [for]="'info-' + i">Opis usterki / zakres serwisu *</label>
+          <textarea [id]="'info-' + i" class="form-textarea" formControlName="additionalInfo"
+                    placeholder="np. Pisk hamulców, luz w sterach, wymiana opon..."
+                    rows="2"
+                    [class.invalid]="isBikeFieldInvalid(i, 'additionalInfo')"></textarea>
+          <span *ngIf="isBikeFieldInvalid(i, 'additionalInfo')" class="error-message">Opisz co wymaga serwisu</span>
+        </div>
+      </div>
+
+      <button *ngIf="canAddBike" type="button" class="add-bike-btn" (click)="addBike()">
+        + Dodaj kolejny rower
+      </button>
+      <p *ngIf="!canAddBike && availableSlotsForDate !== null" class="slots-info">
+        Na wybrany dzień dostępne są jeszcze {{ availableSlotsForDate }} miejsce(a).
+      </p>
+    </div>
+
+    <!-- Date section -->
+    <div class="form-section" [formGroup]="reservationForm">
+      <h2 class="section-title">Preferowana data serwisu</h2>
+      <p class="section-hint">{{ acceptedDaysHint }}</p>
+
+      <div class="form-group datepicker-group">
+        <label for="plannedDate">Data *</label>
+        <mat-form-field appearance="outline" class="date-field">
+          <input matInput [matDatepicker]="picker" formControlName="plannedDate"
+                 [min]="minDateObj" [max]="maxDateObj"
+                 [matDatepickerFilter]="dateFilter"
+                 placeholder="Wybierz datę" readonly>
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+        <div *ngIf="checkingAvailability" class="checking-availability">
+          Sprawdzam dostępność...
+        </div>
+        <div *ngIf="availabilityError" class="error-message">{{ availabilityError }}</div>
+        <div *ngIf="isFieldInvalid('plannedDate') && !availabilityError" class="error-message">
+          Wybierz dostępną datę
+        </div>
+      </div>
+    </div>
+
+    <!-- Transport section (mandatory, OFFICE or DOOR_TO_DOOR only) -->
+    <div class="form-section">
+      <h2 class="section-title">Adres odbioru roweru</h2>
+      <p *ngIf="deliveryType === 'OFFICE'" class="section-hint">Kurier odbierze rower rano z biura i odwiezie po serwisie tego samego dnia.</p>
+      <p *ngIf="deliveryType === 'DOOR_TO_DOOR'" class="section-hint">Kurier odbierze rower wieczorem i zwróci następnego dnia wieczorem.</p>
+
+      <!-- Delivery type selector -->
+      <div class="delivery-type-selector" [formGroup]="reservationForm">
+        <button type="button" class="delivery-type-btn"
+                [class.selected]="deliveryType === 'OFFICE'"
+                (click)="setDeliveryType('OFFICE')">
+          🏢 Biuro / kompleks biurowy
+        </button>
+        <button type="button" class="delivery-type-btn"
+                [class.selected]="deliveryType === 'DOOR_TO_DOOR'"
+                (click)="setDeliveryType('DOOR_TO_DOOR')">
+          🏠 Adres domowy
+        </button>
+      </div>
+
+      <!-- Office autocomplete -->
+      <div *ngIf="isOfficePick" class="form-group office-group">
+        <label for="officeName">Nazwa biurowca / kompleksu *</label>
+        <div class="autocomplete-wrapper">
+          <input id="officeName" type="text" class="form-input"
+                 [formControl]="officeNameControl"
+                 (input)="onOfficeInput($event)"
+                 (focus)="onOfficeFocus()"
+                 (blur)="onOfficeBlur()"
+                 placeholder="Zacznij wpisywać nazwę..."
+                 [class.invalid]="!officeNameControl.value?.trim() && officeNameControl.touched">
+          <button type="button" *ngIf="officeAddresses.length > 0"
+                  class="expand-brands-btn" (click)="expandAllOffices()" aria-label="Pokaż wszystkie biurowce">▾</button>
+          <button type="button" *ngIf="selectedOffice" class="clear-btn"
+                  (click)="clearOfficeSelection()" aria-label="Wyczyść wybór">✕</button>
+          <div *ngIf="showOfficeDropdown" class="brand-dropdown">
+            <div *ngFor="let office of filteredOffices"
+                 class="dropdown-option" (mousedown)="selectOffice(office)">
+              <strong>{{ office.name }}</strong>
+              <span class="office-address-hint">{{ office.street }} {{ office.building }}, {{ office.city }}</span>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!selectedOffice && officeNameControl.value?.trim() && !showOfficeDropdown" class="hint-text">
+          Nie znaleziono biurowca na liście. Możesz wpisać adres ręcznie poniżej.
+        </p>
+      </div>
+
+      <!-- Transport address form -->
+      <div [formGroup]="transportForm" class="transport-address">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pickupStreet">Ulica *</label>
+            <input id="pickupStreet" type="text" class="form-input" formControlName="pickupStreet"
+                   placeholder="ul. Kwiatowa"
+                   [class.invalid]="isFieldInvalid('pickupStreet', transportForm)">
+            <span *ngIf="isFieldInvalid('pickupStreet', transportForm)" class="error-message">Podaj ulicę</span>
+          </div>
+          <div class="form-group form-group--small">
+            <label for="pickupBuildingNumber">Numer *</label>
+            <input id="pickupBuildingNumber" type="text" class="form-input" formControlName="pickupBuildingNumber"
+                   placeholder="5A"
+                   [class.invalid]="isFieldInvalid('pickupBuildingNumber', transportForm)">
+            <span *ngIf="isFieldInvalid('pickupBuildingNumber', transportForm)" class="error-message">Wymagane</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pickupCity">Miasto *</label>
+            <input id="pickupCity" type="text" class="form-input" formControlName="pickupCity"
+                   placeholder="Kraków"
+                   [class.invalid]="isFieldInvalid('pickupCity', transportForm)">
+            <span *ngIf="isFieldInvalid('pickupCity', transportForm)" class="error-message">Podaj miasto</span>
+          </div>
+          <div class="form-group form-group--small">
+            <label for="pickupPostalCode">Kod pocztowy</label>
+            <input id="pickupPostalCode" type="text" class="form-input" formControlName="pickupPostalCode"
+                   placeholder="30-001">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="transportNotes">Uwagi do odbioru</label>
+          <textarea id="transportNotes" class="form-textarea" formControlName="transportNotes"
+                    placeholder="np. Wejście od ul. Bocznej, portier poinformowany..." rows="2"></textarea>
+          <p class="transport-footnote">* Transport jest wliczony w usługę. Termin dotyczy serwisu bez dodatkowych napraw wymagających zamówienia części.</p>
+        </div>
+      </div>
+
+      <div class="transport-info-box" *ngIf="transportDate">
+        <span>📅 Kurier odbierze rower: <strong>{{ formatDatePL(transportDate) }}</strong></span>
+      </div>
+    </div>
+
+    <!-- Navigate next -->
+    <div class="form-actions">
+      <button type="button" class="btn-primary btn-full" (click)="nextStep()">
+        Przejdź do podsumowania →
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Summary -->
+  <div *ngIf="currentStep === 2">
+    <div class="summary-card">
+      <h2 class="section-title">Podsumowanie zamówienia</h2>
+
+      <div class="summary-row">
+        <span class="summary-label">Usługa</span>
+        <span class="summary-value">Serwis rowerowy CycloPick – Kraków</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Klient</span>
+        <span class="summary-value">{{ reservationForm.get('firstName')?.value }} {{ reservationForm.get('lastName')?.value }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Email</span>
+        <span class="summary-value">{{ reservationForm.get('email')?.value }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Telefon</span>
+        <span class="summary-value">{{ reservationForm.get('phone')?.value }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Data serwisu</span>
+        <span class="summary-value">{{ formatDatePL(reservationForm.get('plannedDate')?.value) }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Odbiór roweru</span>
+        <span class="summary-value">{{ formatDatePL(transportDate) }}, {{ isOfficePick ? officeNameControl.value : (transportForm.get('pickupStreet')?.value + ' ' + transportForm.get('pickupBuildingNumber')?.value) }}, {{ transportForm.get('pickupCity')?.value }}</span>
+      </div>
+      <div *ngFor="let bike of bikeControls; let i = index" class="summary-row">
+        <span class="summary-label">Rower {{ i + 1 }}</span>
+        <span class="summary-value">{{ bike.get('brand')?.value }} {{ bike.get('model')?.value }}</span>
+      </div>
+
+      <div class="summary-express-info">
+        <p>📋 Serwis zostanie wybrany przez CycloPick i otrzymasz potwierdzenie emailem.</p>
+      </div>
+    </div>
+
+    <!-- Terms -->
+    <div class="terms-section">
+      <label class="terms-label">
+        <input type="checkbox" [formControl]="termsControl" class="terms-checkbox">
+        <span>
+          Akceptuję
+          <a [href]="links.termsOfService" target="_blank">Regulamin</a>
+          i
+          <a [href]="links.privacyPolicy" target="_blank">Politykę Prywatności</a>
+          *
+        </span>
+      </label>
+      <span *ngIf="termsControl.invalid && termsControl.touched" class="error-message">
+        Musisz zaakceptować regulamin
+      </span>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="prevStep()" [disabled]="submitting">
+        ← Wróć
+      </button>
+      <button type="button" class="btn-primary" (click)="onSubmit()" [disabled]="submitting">
+        <span *ngIf="!submitting">Wyślij zamówienie</span>
+        <span *ngIf="submitting">Wysyłanie...</span>
+      </button>
+    </div>
+  </div>
+</div>

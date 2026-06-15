@@ -12,6 +12,7 @@ import { ClientPanelFormComponent } from './pages/client-panel/client-panel-form
 import { ClientPanelDetailsComponent } from './pages/client-panel/client-panel-bicycle-details/client-panel-bicycle-details.component';
 import { TransportOrderFormComponent } from './transport-orders/transport-order-form.component';
 import { GuestReservationFormComponent } from './service-reservation/guest-reservation-form.component';
+import { ExpressReservationFormComponent } from './service-reservation/express-reservation-form/express-reservation-form.component';
 import { ServiceHistoryPageComponent } from './pages/service-history-page/service-history-page.component';
 import { OrderSummaryComponent } from './transport-orders/order-summary/order-summary.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
@@ -24,6 +25,7 @@ import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { AdminServicesVerificationComponent } from './admin/admin-services-verification/admin-services-verification.component';
 import { AdminRegisteredServiceEditionComponent } from './admin/admin-registered-service-edition/admin-registered-service-edition.component';
 import { AdminOfficeAddressesComponent } from './admin/admin-office-addresses/admin-office-addresses.component';
+import { AdminExpressServiceComponent } from './admin/admin-express-service/admin-express-service.component';
 import { AccountComponent } from './account/account.component';
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
@@ -188,6 +190,7 @@ export const routes: Routes = [
     // Przekierowanie z /about na stronę główną (z zachowaniem query params)
     { path: 'about', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `?${qs}` : ''; }, pathMatch: 'full' },
 
+    // Legacy redirect: /for-services → /dla-serwisow (301 SEO)
     { path: 'for-services', redirectTo: 'dla-serwisow', pathMatch: 'full' },
 
     // About page - usługi dla serwisów rowerowych
@@ -360,6 +363,12 @@ export const routes: Routes = [
       canActivate: [adminGuard],
       title: 'Kompleksy biurowe - Admin'
     },
+    {
+      path: 'admin-express-service',
+      component: AdminExpressServiceComponent,
+      canActivate: [adminGuard],
+      title: 'Serwis Ekspresowy - Admin'
+    },
     
     {
       path: 'mistrzauta',
@@ -401,6 +410,13 @@ export const routes: Routes = [
       title: 'Zamów Transport'
     },
 
+    // Serwis ekspresowy CycloPick — PRZED :suffix/zarezerwuj (bardziej specyficzne)
+    {
+      path: 'krakow/zarezerwuj',
+      component: ExpressReservationFormComponent,
+      title: 'Serwis Ekspresowy Kraków | CycloPick'
+    },
+
     // Zarezerwuj serwis (must be before base :suffix route)
     {
       path: ':suffix/zarezerwuj',
@@ -426,7 +442,6 @@ export const routes: Routes = [
       title: 'Dziękujemy! | CycloPick'
     },
 
-    
     // Podsumowanie zamówienia przed płatnością — wybór "opłać" lub "opłacę później"
     {
       path: 'platnosc/podsumowanie',

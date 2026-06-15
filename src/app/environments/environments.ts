@@ -30,7 +30,14 @@ export const environment = {
       orders: '/admin/orders',
       orderById: '/admin/orders/:id',
       orderTransportStatus: '/admin/orders/transport/:id/status',
-      officeAddresses: '/admin/office-addresses'
+      officeAddresses: '/admin/office-addresses',
+      expressService: {
+        config: '/admin/express-service/config',
+        orders: '/admin/express-service/orders',
+        assignOrder: '/admin/express-service/orders/:id/assign',
+        packages: '/admin/express-service/packages',
+        services: '/admin/express-service/services'
+      }
     },
 
     orders: {
@@ -45,7 +52,10 @@ export const environment = {
       serviceAvailability: '/guest-orders/service-reservation/:serviceId/availability',
       officeAddresses: '/guest-orders/office-addresses',
       sessionSync: '/guest-orders/session-sync',
-      report: '/guest-orders/report'
+      report: '/guest-orders/report',
+      expressAvailability: '/guest-orders/express/availability',
+      expressReservation: '/guest-orders/express/reservation',
+      expressPackages: '/guest-orders/express/packages'
     },
 
     payment: {

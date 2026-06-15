@@ -1,0 +1,429 @@
+<div class="express-admin-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <a routerLink="/admin-dashboard" class="back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Wróć do panelu
+      </a>
+      <h1>Serwis Ekspresowy</h1>
+      <span class="city-badge">Kraków</span>
+    </div>
+    <div class="status-indicator" [class.status-active]="config?.active" [class.status-inactive]="config && !config.active">
+      {{ config?.active ? 'Aktywny' : (config ? 'Nieaktywny' : '—') }}
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'orders'" (click)="selectTab('orders')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      Zlecenia ekspresowe
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'config'" (click)="selectTab('config')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"></path>
+      </svg>
+      Konfiguracja
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'packages'" (click)="selectTab('packages')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="1" x2="12" y2="23"></line>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      </svg>
+      Cennik
+    </button>
+  </div>
+
+  <!-- ===== TAB: ORDERS ===== -->
+  <div class="tab-panel" *ngIf="activeTab === 'orders'">
+    <div class="panel-toolbar">
+      <h2>Zlecenia oczekujące na przypisanie</h2>
+      <button class="refresh-btn" (click)="loadOrders()" [disabled]="loadingOrders">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        Odśwież
+      </button>
+    </div>
+
+    <div *ngIf="loadingOrders" class="loading-row">
+      <div class="spinner"></div>
+      Ładowanie zleceń...
+    </div>
+
+    <div *ngIf="!loadingOrders && orders.length === 0" class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <p>Brak aktywnych zleceń ekspresowych</p>
+    </div>
+
+    <div *ngIf="!loadingOrders && orders.length > 0" class="orders-table-wrapper">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Data serwisu</th>
+            <th>Rowery</th>
+            <th>Klient</th>
+            <th>Adres odbioru</th>
+            <th>Status</th>
+            <th>Akcja</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of orders">
+            <td class="date-cell">{{ order.plannedDate | date:'dd.MM.yyyy' }}</td>
+            <td class="bikes-cell">
+              <div class="bike-tag" *ngFor="let bike of order.bikes">
+                {{ bike.brand }}{{ bike.model ? ' ' + bike.model : '' }}
+              </div>
+            </td>
+            <td class="client-cell">
+              <div class="client-name">{{ order.clientFirstName }} {{ order.clientLastName }}</div>
+              <div class="client-email">{{ order.clientEmail }}</div>
+              <div class="client-phone" *ngIf="order.clientPhone">{{ order.clientPhone }}</div>
+            </td>
+            <td class="address-cell">
+              <span *ngIf="order.pickupAddress; else noAddress">{{ order.pickupAddress }}</span>
+              <ng-template #noAddress><span class="muted">—</span></ng-template>
+            </td>
+            <td class="status-cell">
+              <span class="status-badge" [class]="'status-' + order.status.toLowerCase()">
+                {{ order.statusLabel || order.status }}
+              </span>
+            </td>
+            <td class="action-cell">
+              <button class="assign-btn" (click)="openAssignModal(order)">
+                Przypisz do serwisu
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== TAB: CONFIG ===== -->
+  <div class="tab-panel" *ngIf="activeTab === 'config'">
+    <div *ngIf="loadingConfig" class="loading-row">
+      <div class="spinner"></div>
+      Ładowanie konfiguracji...
+    </div>
+
+    <form *ngIf="!loadingConfig && config" [formGroup]="configForm" (ngSubmit)="saveConfig()" class="config-form">
+      <div class="config-card">
+        <div class="config-section">
+          <h3 class="section-title">Status usługi</h3>
+          <label class="toggle-row">
+            <span class="toggle-label">Serwis ekspresowy aktywny</span>
+            <div class="toggle-wrapper">
+              <input type="checkbox" class="toggle-checkbox" formControlName="active" id="activeToggle">
+              <label for="activeToggle" class="toggle-track"></label>
+            </div>
+          </label>
+          <p class="hint">Gdy wyłączone, formularz rezerwacji na /krakow/zarezerwuj zwraca komunikat o braku dostępności.</p>
+        </div>
+
+        <div class="config-section">
+          <h3 class="section-title">Akceptowane dni tygodnia</h3>
+          <p class="hint">Zaznacz dni, w których przyjmujemy zlecenia ekspresowe.</p>
+          <div class="days-grid">
+            <button
+              *ngFor="let day of allDays"
+              type="button"
+              class="day-btn"
+              [class.day-selected]="isDaySelected(day)"
+              (click)="toggleDay(day)"
+            >
+              {{ dayLabels[day] }}
+            </button>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <h3 class="section-title">Limit rowerów dziennie</h3>
+          <p class="hint">Maksymalna łączna liczba rowerów przyjmowanych w ciągu jednego dnia.</p>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Limit rowerów</label>
+              <input
+                type="number"
+                class="form-input"
+                formControlName="dailyBikeLimit"
+                placeholder="np. 10"
+                min="1"
+                max="100"
+              >
+            </div>
+            <div class="form-field">
+              <label class="form-label">Szacowana data realizacji (domyślna)</label>
+              <input
+                type="date"
+                class="form-input"
+                formControlName="estimatedReservationDay"
+              >
+              <span class="hint">Opcjonalnie. Pokazywana klientom jako orientacyjna data serwisu.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-actions">
+          <button type="submit" class="btn-primary" [disabled]="savingConfig || configForm.invalid">
+            <span *ngIf="savingConfig" class="spinner-inline"></span>
+            {{ savingConfig ? 'Zapisywanie...' : 'Zapisz konfigurację' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== TAB: PACKAGES ===== -->
+  <div class="tab-panel" *ngIf="activeTab === 'packages'">
+    <div class="panel-toolbar">
+      <h2>Cennik pakietów serwisowych</h2>
+      <button class="refresh-btn" (click)="loadPackages()" [disabled]="loadingPackages">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        Odśwież
+      </button>
+    </div>
+
+    <div *ngIf="loadingPackages" class="loading-row">
+      <div class="spinner"></div>
+      Ładowanie pakietów...
+    </div>
+
+    <div *ngIf="!loadingPackages && packagesConfig" class="packages-list">
+      <div *ngIf="packagesConfig.packages.length === 0 && !showNewPackageForm" class="empty-state">
+        <p>Brak skonfigurowanych pakietów.</p>
+      </div>
+
+      <!-- Istniejące pakiety -->
+      <div *ngFor="let pkg of packagesConfig.packages" class="package-card">
+        <!-- Widok normalny -->
+        <ng-container *ngIf="editingPackageId !== pkg.id">
+          <div class="package-header">
+            <div class="package-level-badge" [class]="'level-' + pkg.packageLevel.toLowerCase()">
+              {{ pkg.packageLevelDisplayName }}
+            </div>
+            <div class="package-name">{{ pkg.displayName }}</div>
+            <div class="package-price">{{ pkg.price | number:'1.2-2' }} zł</div>
+            <div class="package-status" [class.pkg-active]="pkg.active" [class.pkg-inactive]="!pkg.active">
+              {{ pkg.active ? 'Aktywny' : 'Nieaktywny' }}
+            </div>
+            <button class="btn-edit-sm" (click)="startEditPackage(pkg)">Edytuj</button>
+            <button class="btn-danger-sm" (click)="deletePackage(pkg.id)">Usuń</button>
+          </div>
+          <div class="package-description" *ngIf="pkg.description">{{ pkg.description }}</div>
+          <div class="package-bike-types" *ngIf="pkg.bikeTypes && pkg.bikeTypes.length > 0">
+            <span class="bike-type-tag" *ngFor="let bt of pkg.bikeTypes">{{ bt }}</span>
+          </div>
+        </ng-container>
+
+        <!-- Formularz edycji -->
+        <ng-container *ngIf="editingPackageId === pkg.id">
+          <div class="package-form">
+            <div class="package-form-header">
+              <div class="package-level-badge" [class]="'level-' + pkg.packageLevel.toLowerCase()">
+                {{ pkg.packageLevelDisplayName }}
+              </div>
+              <span class="form-title">Edycja pakietu</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label">Nazwa własna (opcjonalna)</label>
+                <input type="text" class="form-input" [(ngModel)]="editForm.customName" placeholder="np. Przegląd ekspresowy">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Cena (zł)</label>
+                <input type="number" class="form-input" [(ngModel)]="editForm.price" min="0" step="0.01" placeholder="np. 99.00">
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Typy rowerów (oddzielone przecinkami, opcjonalne)</label>
+              <input type="text" class="form-input" [(ngModel)]="editForm.bikeTypes" placeholder="np. Miejski, Szosowy, MTB">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Opis</label>
+              <textarea class="form-input form-textarea" [(ngModel)]="editForm.description" rows="3" placeholder="Co zawiera pakiet..."></textarea>
+            </div>
+            <div class="form-toggle-row">
+              <label class="toggle-row">
+                <span class="toggle-label">Aktywny</span>
+                <div class="toggle-wrapper">
+                  <input type="checkbox" class="toggle-checkbox" [(ngModel)]="editForm.active" [id]="'activeToggle-' + pkg.id">
+                  <label [for]="'activeToggle-' + pkg.id" class="toggle-track"></label>
+                </div>
+              </label>
+            </div>
+            <div class="form-actions">
+              <button class="btn-secondary" (click)="cancelEditPackage()" [disabled]="savingPackage">Anuluj</button>
+              <button class="btn-primary" (click)="saveEditPackage(pkg.id)" [disabled]="savingPackage">
+                <span *ngIf="savingPackage" class="spinner-inline"></span>
+                {{ savingPackage ? 'Zapisywanie...' : 'Zapisz' }}
+              </button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Formularz nowego pakietu -->
+      <div *ngIf="showNewPackageForm" class="package-card package-card-new">
+        <div class="package-form">
+          <div class="package-form-header">
+            <span class="form-title">Nowy pakiet</span>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Poziom pakietu</label>
+            <select class="form-input" [(ngModel)]="newPackageForm.packageLevel">
+              <option *ngFor="let lvl of packageLevels" [value]="lvl">{{ packageLevelLabels[lvl] }} ({{ lvl }})</option>
+            </select>
+          </div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label">Nazwa własna (opcjonalna)</label>
+              <input type="text" class="form-input" [(ngModel)]="newPackageForm.customName" placeholder="np. Przegląd ekspresowy">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Cena (zł)</label>
+              <input type="number" class="form-input" [(ngModel)]="newPackageForm.price" min="0" step="0.01" placeholder="np. 99.00">
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Typy rowerów (oddzielone przecinkami, opcjonalne)</label>
+            <input type="text" class="form-input" [(ngModel)]="newPackageForm.bikeTypes" placeholder="np. Miejski, Szosowy, MTB">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Opis</label>
+            <textarea class="form-input form-textarea" [(ngModel)]="newPackageForm.description" rows="3" placeholder="Co zawiera pakiet..."></textarea>
+          </div>
+          <div class="form-toggle-row">
+            <label class="toggle-row">
+              <span class="toggle-label">Aktywny</span>
+              <div class="toggle-wrapper">
+                <input type="checkbox" class="toggle-checkbox" [(ngModel)]="newPackageForm.active" id="newPkgActiveToggle">
+                <label for="newPkgActiveToggle" class="toggle-track"></label>
+              </div>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" (click)="cancelNewPackage()" [disabled]="savingPackage">Anuluj</button>
+            <button class="btn-primary" (click)="saveNewPackage()" [disabled]="savingPackage">
+              <span *ngIf="savingPackage" class="spinner-inline"></span>
+              {{ savingPackage ? 'Dodawanie...' : 'Dodaj pakiet' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Przycisk dodaj nowy pakiet -->
+    <div *ngIf="!loadingPackages" class="packages-actions">
+      <button class="btn-primary" (click)="openNewPackageForm()" [disabled]="showNewPackageForm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Dodaj nowy pakiet
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ASSIGN MODAL ===== -->
+<div class="modal-overlay" *ngIf="showAssignModal" (click)="closeAssignModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Przypisz zlecenie do serwisu</h2>
+      <button class="modal-close" (click)="closeAssignModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="assigningOrder">
+      <div class="order-summary">
+        <div class="order-summary-row">
+          <span class="summary-label">Data:</span>
+          <span>{{ assigningOrder.plannedDate | date:'dd.MM.yyyy' }}</span>
+        </div>
+        <div class="order-summary-row">
+          <span class="summary-label">Klient:</span>
+          <span>{{ assigningOrder.clientFirstName }} {{ assigningOrder.clientLastName }}</span>
+        </div>
+        <div class="order-summary-row">
+          <span class="summary-label">Rowery:</span>
+          <span>{{ formatBikes(assigningOrder.bikes) }}</span>
+        </div>
+        <div class="order-summary-row" *ngIf="assigningOrder.pickupAddress">
+          <span class="summary-label">Odbiór:</span>
+          <span>{{ assigningOrder.pickupAddress }}</span>
+        </div>
+      </div>
+
+      <div class="service-search-section">
+        <label class="form-label">Wyszukaj serwis rowerowy</label>
+        <div class="search-wrapper">
+          <input
+            type="text"
+            class="form-input"
+            placeholder="Wpisz nazwę serwisu (min. 2 znaki)..."
+            [value]="serviceSearchQuery"
+            (input)="onServiceSearch($event)"
+          >
+          <div class="search-spinner" *ngIf="searchingServices">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <div class="service-dropdown" *ngIf="serviceSearchResults.length > 0">
+          <div
+            *ngFor="let svc of serviceSearchResults"
+            class="service-option"
+            (click)="selectServiceForAssign(svc)"
+          >
+            <div class="service-option-name">{{ svc.name }}</div>
+            <div class="service-option-address">{{ svc.address }}, {{ svc.city }}</div>
+          </div>
+        </div>
+
+        <div class="selected-service" *ngIf="selectedService">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <div>
+            <div class="selected-service-name">{{ selectedService.name }}</div>
+            <div class="selected-service-address">{{ selectedService.address }}, {{ selectedService.city }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeAssignModal()" [disabled]="assigning">Anuluj</button>
+      <button class="btn-primary" (click)="confirmAssign()" [disabled]="!selectedService || assigning">
+        <span *ngIf="assigning" class="spinner-inline"></span>
+        {{ assigning ? 'Przypisywanie...' : 'Potwierdź przypisanie' }}
+      </button>
+    </div>
+  </div>
+</div>

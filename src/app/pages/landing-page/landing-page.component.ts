@@ -430,7 +430,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   navigateToKrakowMap(): void {
-    const zoom = window.innerWidth < 768 ? '12' : '14';
+    const zoom = window.innerWidth < 768 ? '11' : '13';
     this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '50.0647', lng: '19.9450', zoom } });
   }
 
@@ -439,7 +439,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   navigateToKrakowMapPartner(): void {
-    const zoom = window.innerWidth < 768 ? '12' : '14';
+    const zoom = window.innerWidth < 768 ? '11' : '13';
     this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '50.0647', lng: '19.9450', zoom, coverages: '342' } });
   }
 

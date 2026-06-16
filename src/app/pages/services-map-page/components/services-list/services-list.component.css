@@ -1,381 +1,334 @@
-/* src/app/pages/services-map-page/components/services-list/services-list.component.css */
-
-.services-list-container {
+/* Host element fills flex container from parent */
+:host {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  background-color: var(--color-white-alt);
   overflow: hidden;
 }
 
-/* ============ RESULTS INFO ============ */
+/* ============ CONTAINER ============ */
 
-.results-info {
-  padding: 12px 20px;
-  background: var(--gradient-slate);
-  border-bottom: 1px solid var(--border-color);
-  text-align: center;
+.list-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* ============ RESULTS BAR ============ */
+
+.results-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
 }
 
-.results-count {
-  font-size: 0.85rem;
-  color: var(--color-slate-600);
-  margin: 0;
-  font-weight: 600;
+.results-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
-.results-count strong {
+.results-text strong {
   color: var(--color-primary);
   font-weight: 700;
 }
 
-/* ============ SERVICES LIST ============ */
-
-.services-list {
-  flex: 1;
-  min-height: 0;
-  padding: 0;
-  background-color: var(--color-white-alt);
+.results-page {
+  font-size: 0.68rem;
+  color: #94a3b8;
 }
 
-/* Virtual scroll viewport styling */
-cdk-virtual-scroll-viewport {
+/* ============ VIRTUAL SCROLL ============ */
+
+.services-scroll {
   flex: 1;
+  min-height: 0;
   width: 100%;
-  min-height: 0;
 }
 
-cdk-virtual-scroll-viewport.hidden {
+.services-scroll.hidden {
   display: none;
 }
 
-/* CDK viewport content wrapper */
+cdk-virtual-scroll-viewport {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+}
+
 .cdk-virtual-scroll-content-wrapper {
   width: 100%;
 }
 
-.service-item {
-  padding: 18px 20px;
-  border-bottom: 1px solid var(--color-slate-100);
-  cursor: pointer;
-  transition: all 0.25s ease;
-  background-color: var(--color-white);
+.services-scroll::-webkit-scrollbar,
+cdk-virtual-scroll-viewport::-webkit-scrollbar {
+  width: 4px;
 }
 
-.service-item:hover {
-  background-color: var(--color-slate-50);
-  transform: translateX(3px);
-  box-shadow: 0 2px 12px var(--color-primary-alpha-08);
+.services-scroll::-webkit-scrollbar-track,
+cdk-virtual-scroll-viewport::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.service-item.selected {
-  background-color: var(--color-green-50);
-  border-left: 4px solid var(--color-primary);
-  transform: translateX(0);
-  box-shadow: inset 0 0 0 1px var(--color-primary-alpha-10);
+.services-scroll::-webkit-scrollbar-thumb,
+cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
 }
 
-/* ============ SERVICE LOGO ============ */
+/* ============ SERVICE CARD ============ */
 
-.service-logo-container {
-  display: flex;
-  justify-content: left;
-  align-items: left;
-  margin-bottom: 12px;
-  padding: 8px;
-  background-color: var(--color-white-alt);
-  border-radius: 8px;
-  min-height: 70px;
-  height: 70px;
-  width: 100%;
-}
-
-.service-logo {
-  max-width: 120px;
-  max-height: 54px;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-/* ============ SERVICE INFO ============ */
-
-.service-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.service-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-dark);
-  margin: 0;
-  line-height: 1.4;
-  flex: 1;
-}
-
-.service-address {
-  font-size: 0.8rem;
-  color: var(--color-slate-500);
-  margin: 0 0 10px 0;
-  line-height: 1.4;
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-}
-
-.service-phone {
-  font-size: 0.8rem;
-  color: var(--color-success-emerald);
-  margin: 6px 0;
-  font-weight: 500;
+.service-card {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 11px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  background: #fff;
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+  min-height: 80px;
+  box-sizing: border-box;
 }
 
-.service-phone a {
+.service-card:hover {
+  background: #f8fafc;
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.service-card.selected {
+  background: rgba(27, 94, 32, 0.05);
+  box-shadow: inset 4px 0 0 var(--color-primary);
+}
+
+/* Logo column */
+.card-logo {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+/* Info column */
+.card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.card-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.verified-chip {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.58rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-address,
+.card-phone {
+  font-size: 0.72rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.card-phone a {
   color: inherit;
   text-decoration: none;
-  transition: color 0.2s ease;
 }
 
-.service-phone a:hover {
-  color: var(--color-success-emerald-dark);
-  text-decoration: underline;
+.card-phone a:hover {
+  color: var(--color-primary);
 }
 
-/* ============ SERVICE ACTIONS ============ */
-
-.service-actions {
+/* Arrow button */
+.btn-details {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: #94a3b8;
+  font-size: 1.3rem;
+  cursor: pointer;
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  line-height: 1;
+  padding: 0;
 }
 
-.service-action-btn {
-  padding: 8px 14px;
-  border: 2px solid transparent;
+.service-card:hover .btn-details {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(27, 94, 32, 0.06);
+}
+
+.service-card.selected .btn-details {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ============ STATE VIEWS ============ */
+
+.state-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  text-align: center;
+  color: #64748b;
+}
+
+.state-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  opacity: 0.45;
+}
+
+.state-view p {
+  margin: 0 0 4px 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.state-hint {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.state-error .state-icon {
+  opacity: 0.7;
+}
+
+.state-error p {
+  color: var(--color-danger);
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 2.5px solid #e2e8f0;
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  margin-bottom: 10px;
+}
+
+.btn-retry {
+  margin-top: 10px;
+  padding: 7px 16px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  flex: 1;
-  text-align: center;
 }
 
-.service-action-btn.primary {
-  background-color: var(--color-primary);
-  color: var(--color-white);
-  border-color: var(--color-primary);
+.btn-retry:hover {
+  background: var(--color-primary-dark);
 }
 
-.service-action-btn.primary:hover {
-  background-color: var(--color-primary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-primary-hover);
+/* ============ LOADING MORE ============ */
+
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  flex-shrink: 0;
+  border-top: 1px solid #f1f5f9;
 }
 
-/* ============ LOADING STATES ============ */
-
-.loading-container,
-.error-container,
-.empty-container {
-  text-align: center;
-  padding: 30px 20px;
-}
-
-.loading-spinner {
-  border: 3px solid var(--color-slate-100);
+.spinner-sm {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e2e8f0;
+  border-top-color: var(--color-primary);
   border-radius: 50%;
-  border-top: 3px solid var(--color-primary);
-  width: 32px;
-  height: 32px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 10px;
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-.loading-container p,
-.empty-container p {
-  margin: 0;
-  color: var(--color-slate-500);
-  font-size: 0.9rem;
-}
-
-.error-container {
-  color: var(--color-danger-red);
-}
-
-.error-icon {
-  font-size: 2.5rem;
-  margin-bottom: 12px;
-  opacity: 0.8;
-}
-
-.error-container p {
-  margin: 0 0 12px 0;
-  color: var(--color-danger-red);
-  font-size: 0.9rem;
-}
-
-.retry-button {
-  margin-top: 12px;
-  padding: 10px 20px;
-  background-color: var(--color-primary);
-  color: var(--color-white);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.retry-button:hover {
-  background-color: var(--color-primary);
-  transform: translateY(-1px);
-}
-
-.empty-icon {
-  font-size: 2rem;
-  margin-bottom: 10px;
-  opacity: 0.5;
-}
-
-.loading-more {
-  text-align: center;
-  padding: 20px;
-  color: var(--color-slate-500);
-  border-top: 1px solid var(--color-slate-100);
-}
-
-.loading-more .loading-spinner {
-  margin: 0 auto 10px;
-}
-
-.loading-more p {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-/* ============ SCROLLBAR ============ */
-
-.services-list::-webkit-scrollbar,
-cdk-virtual-scroll-viewport::-webkit-scrollbar {
-  width: 6px;
-}
-
-.services-list::-webkit-scrollbar-track,
-cdk-virtual-scroll-viewport::-webkit-scrollbar-track {
-  background: var(--color-slate-50);
-}
-
-.services-list::-webkit-scrollbar-thumb,
-cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
-  background: var(--color-slate-300);
-  border-radius: 3px;
-}
-
-.services-list::-webkit-scrollbar-thumb:hover,
-cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb:hover {
-  background: var(--color-slate-400);
-}
-
-/* ============ MOBILE RESPONSIVE ============ */
-
-@media screen and (max-width: 768px) {
-  .service-logo-container {
-    min-height: 66px;
-    height: 66px;
-  }
-
-  .service-logo {
-    max-width: 100px;
-    max-height: 50px;
-  }
-
-  .service-name {
-    font-size: 0.9rem;
-  }
-
-  .service-address,
-  .service-phone {
-    font-size: 0.75rem;
-  }
-
-  .service-action-btn {
-    font-size: 0.7rem;
-    padding: 6px 12px;
-  }
-}
+/* ============ MOBILE ============ */
 
 @media screen and (max-width: 480px) {
-  .results-info {
-    padding: 10px 16px;
+  .service-card {
+    padding: 9px 12px;
+    gap: 9px;
   }
 
-  .results-count {
+  .card-logo {
+    width: 42px;
+    height: 42px;
+  }
+
+  .card-name {
     font-size: 0.8rem;
   }
 
-  .service-item {
-    padding: 14px 16px;
-  }
-
-  .service-logo-container {
-    min-height: 57px;
-    height: 57px;
-    padding: 6px;
-  }
-
-  .service-logo {
-    max-width: 90px;
-    max-height: 45px;
-  }
-
-  .service-name {
-    font-size: 0.85rem;
-  }
-
-  .service-address,
-  .service-phone {
-    font-size: 0.7rem;
-  }
-
-  .service-action-btn {
-    font-size: 0.65rem;
-    padding: 6px 10px;
-  }
-}
-
-@media screen and (min-width: 1200px) {
-  .service-logo-container {
-    height: 86px;
-  }
-  
-  .service-logo {
-    max-width: 140px;
-    max-height: 70px;
-  }
-
-  .service-name {
-    font-size: 1.05rem;
-  }
-
-  .service-address,
-  .service-phone {
-    font-size: 0.85rem;
+  .card-address,
+  .card-phone {
+    font-size: 0.68rem;
   }
 }

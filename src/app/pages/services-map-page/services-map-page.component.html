@@ -1,85 +1,44 @@
-<!-- src/app/pages/services-map-page/services-map-page.component.html -->
-
 <div class="map-page-layout">
-  <!-- Fixed header with search and filters - MOBILE ONLY -->
-  <div class="fixed-header" *ngIf="isMobileView">
-    <app-search-filters
-      [isMobileView]="isMobileView"
-      [citySuggestions]="citySuggestions"
-      [serviceSuggestions]="serviceSuggestions"
-      [citySearchLoading]="citySearchLoading"
-      [serviceSearchLoading]="serviceSearchLoading"
-      [coverageCategories]="coverageCategories"
-      [filtersState]="filtersState"
-      [servicesListUrl]="servicesListUrl"
-      (citySearchChanged)="onCitySearchChanged($event)"
-      (citySelected)="onCitySelected($event)"
-      (cityClearRequested)="onCityClearRequested()"
-      (serviceSearchChanged)="onServiceSearchChanged($event)"
-      (serviceSelected)="onServiceSelected($event)"
-      (serviceClearRequested)="onServiceClearRequested()"
-      (verifiedOnlyChanged)="onVerifiedOnlyChanged($event)"
-      (coverageToggled)="onCoverageToggled($event)"
-      (advancedFiltersApplied)="onAdvancedFiltersApplied()"
-      (advancedFiltersCleared)="onAdvancedFiltersCleared()"
-    ></app-search-filters>
+
+  <!-- Search bar (horizontal, overlays map when filters open) -->
+  <app-map-search-bar
+    [citySuggestions]="citySuggestions"
+    [serviceSuggestions]="serviceSuggestions"
+    [citySearchLoading]="citySearchLoading"
+    [serviceSearchLoading]="serviceSearchLoading"
+    [coverageCategories]="coverageCategories"
+    [filtersState]="filtersState"
+    [servicesListUrl]="servicesListUrl"
+    (citySearchChanged)="onCitySearchChanged($event)"
+    (citySelected)="onCitySelected($event)"
+    (cityClearRequested)="onCityClearRequested()"
+    (serviceSearchChanged)="onServiceSearchChanged($event)"
+    (serviceSelected)="onServiceSelected($event)"
+    (serviceClearRequested)="onServiceClearRequested()"
+    (coverageToggled)="onCoverageToggled($event)"
+    (advancedFiltersCleared)="onAdvancedFiltersCleared()"
+  ></app-map-search-bar>
+
+  <!-- Full-width map -->
+  <div class="map-area">
+    <app-map
+      [pins]="mapPins"
+      [selectedPinId]="selectedServiceId"
+      [pendingPopupServiceId]="pendingPopup?.serviceId ?? null"
+      [initialView]="currentMapView"
+      [visible]="mapVisible"
+      (mapReady)="onMapReady()"
+      (mapMoved)="onMapMoved($event)"
+      (pinClicked)="onPinClicked($event)"
+      (clusterClicked)="onClusterClicked($event)"
+      (mapError)="onMapError($event)"
+      (viewServiceDetails)="onViewServiceDetails($event)"
+      (registerService)="onRegisterService($event)"
+      (orderTransport)="onOrderTransport($event)"
+      (reserveService)="onReserveService($event)"
+      (popupReopenRequested)="onPopupReopenRequested($event)"
+      (popupClosed)="onPopupClosed($event)"
+    ></app-map>
   </div>
 
-  <!-- Main content area -->
-  <div class="content-area">
-    <!-- Sidebar with filters -->
-    <div class="sidebar" [class.hidden]="isMobileView">
-      <!-- Sidebar header -->
-      <header class="sidebar-header">
-        <h1 class="sidebar-title">Mapa serwisów rowerowych</h1>
-        <p class="sidebar-subtitle">Znajdź najbliższy warsztat rowerowy w Polsce</p>
-      </header>
-
-      <!-- Search and filters - DESKTOP ONLY -->
-      <div class="sidebar-filters">
-        <app-search-filters
-          [isMobileView]="isMobileView"
-          [citySuggestions]="citySuggestions"
-          [serviceSuggestions]="serviceSuggestions"
-          [citySearchLoading]="citySearchLoading"
-          [serviceSearchLoading]="serviceSearchLoading"
-          [coverageCategories]="coverageCategories"
-          [filtersState]="filtersState"
-          [servicesListUrl]="servicesListUrl"
-          (citySearchChanged)="onCitySearchChanged($event)"
-          (citySelected)="onCitySelected($event)"
-          (cityClearRequested)="onCityClearRequested()"
-          (serviceSearchChanged)="onServiceSearchChanged($event)"
-          (serviceSelected)="onServiceSelected($event)"
-          (serviceClearRequested)="onServiceClearRequested()"
-          (verifiedOnlyChanged)="onVerifiedOnlyChanged($event)"
-          (coverageToggled)="onCoverageToggled($event)"
-          (advancedFiltersApplied)="onAdvancedFiltersApplied()"
-          (advancedFiltersCleared)="onAdvancedFiltersCleared()"
-        ></app-search-filters>
-      </div>
-    </div>
-
-    <!-- Map container -->
-    <div class="map-container">
-      <app-map
-        [pins]="mapPins"
-        [selectedPinId]="selectedServiceId"
-        [pendingPopupServiceId]="pendingPopup?.serviceId ?? null"
-        [initialView]="currentMapView"
-        [visible]="mapVisible"
-        (mapReady)="onMapReady()"
-        (mapMoved)="onMapMoved($event)"
-        (pinClicked)="onPinClicked($event)"
-        (clusterClicked)="onClusterClicked($event)"
-        (mapError)="onMapError($event)"
-        (viewServiceDetails)="onViewServiceDetails($event)"
-        (registerService)="onRegisterService($event)"
-        (orderTransport)="onOrderTransport($event)"
-        (reserveService)="onReserveService($event)"
-        (popupReopenRequested)="onPopupReopenRequested($event)"
-        (popupClosed)="onPopupClosed($event)"
-      ></app-map>
-    </div>
-  </div>
 </div>

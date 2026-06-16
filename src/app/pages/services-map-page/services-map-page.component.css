@@ -1,175 +1,21 @@
+/* ============ ROOT LAYOUT ============ */
 
 .map-page-layout {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: calc(100vh - 60px);
-  margin-top: 0px;
-  position: relative;
-  background-color: var(--color-slate-50);
+  height: calc(100dvh - 60px);
   overflow: hidden;
 }
 
-/* ============ FIXED HEADER - MOBILE ONLY ============ */
+/* ============ MAP AREA ============ */
 
-.fixed-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: var(--color-white);
-  border-bottom: 2px solid var(--color-slate-200);
-  box-shadow: var(--shadow-sm);
-  display: none;
-  overflow-y: auto;
-  max-height: calc(100vh - 60px);
-}
-
-@media screen and (max-width: 1024px) {
-  .fixed-header {
-    display: block;
-  }
-}
-
-/* ============ CONTENT AREA ============ */
-
-.content-area {
+.map-area {
   flex: 1;
-  display: flex;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-}
-
-/* ============ SIDEBAR ============ */
-
-.sidebar {
-  width: 420px;
-  background-color: var(--color-white);
-  border-right: 1px solid var(--color-slate-200);
-  display: flex;
-  flex-direction: column;
-  box-shadow: 2px 0 10px var(--color-black-alpha-08);
-  height: 100%;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
   position: relative;
-  z-index: 100;
-}
-
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-  background: var(--color-slate-100);
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: var(--color-slate-300);
-  border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-slate-400);
-}
-
-.sidebar.hidden {
-  display: none;
-}
-
-.sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--border-color-light);
-  background-color: var(--color-primary);
-  color: var(--color-white);
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.sidebar-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--color-white);
-  margin: 0 0 6px 0;
-  text-shadow: 0 1px 2px var(--color-black-alpha-10);
-}
-
-.sidebar-subtitle {
-  font-size: 0.85rem;
-  color: var(--overlay-light-alt);
-  margin: 0;
-  font-weight: 400;
-}
-
-.sidebar-filters {
-  flex: 1;
-  overflow: visible;
-  position: relative;
-  z-index: 101;
-}
-
-/* ============ MAP CONTAINER ============ */
-
-.map-container {
-  flex: 1;
-  position: relative;
-  height: 100%;
-  z-index: 1;
-}
-
-/* ============ RESPONSIVE DESIGN ============ */
-
-@media screen and (max-width: 1024px) {
-  .map-page-layout {
-    height: 100vh;
-    margin-top: 0;
-  }
-
-  .fixed-header {
-    position: relative;
-  }
-
-  .content-area {
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-  }
-
-  .map-container {
-    width: 100%;
-    flex: 1;
-    min-height: 300px;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .sidebar-header {
-    padding: 16px;
-  }
-
-  .sidebar-title {
-    font-size: 1rem;
-  }
-
-  .sidebar-subtitle {
-    font-size: 0.75rem;
-  }
-}
-
-/* ============ DESKTOP IMPROVEMENTS ============ */
-
-@media screen and (min-width: 1025px) {
-  .sidebar {
-    min-width: 380px;
-    max-width: 450px;
-  }
-}
-
-@media screen and (min-width: 1200px) {
-  .sidebar {
-    width: 480px;
-  }
+  /* Explicit stacking context keeps Leaflet's z-indexes (max ~1000)
+     from bleeding above the search bar (z-index: 2000) */
+  z-index: 0;
 }

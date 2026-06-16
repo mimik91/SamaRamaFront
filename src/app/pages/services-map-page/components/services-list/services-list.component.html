@@ -1,95 +1,93 @@
 <!-- src/app/pages/services-map-page/components/services-list/services-list.component.html -->
 
-<div class="services-list-container">
-  <!-- Header with results info -->
-  <div class="results-info" *ngIf="services.length > 0 || (!loading && !error)">
-    <p class="results-count">
-      <strong>{{ totalServices }}</strong> {{ totalServices === 1 ? 'serwis' : 'serwisów' }} • Strona {{ currentPage + 1 }}/{{ totalPages }}
-    </p>
+<div class="list-container">
+
+  <!-- Results header -->
+  <div class="results-bar" *ngIf="totalServices > 0 || (!loading && !error)">
+    <span class="results-text">
+      <strong>{{ totalServices }}</strong> {{ totalServices === 1 ? 'serwis' : 'serwisów' }}
+    </span>
+    <span class="results-page" *ngIf="totalPages > 1">str. {{ currentPage + 1 }}/{{ totalPages }}</span>
   </div>
 
-  <!-- Initial loading state -->
-  <div *ngIf="loading && services.length === 0" class="service-item">
-    <div class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>Ładowanie serwisów...</p>
-    </div>
+  <!-- Loading: initial -->
+  <div class="state-view" *ngIf="loading && services.length === 0">
+    <div class="spinner"></div>
+    <p>Ładowanie serwisów...</p>
   </div>
 
   <!-- Error state -->
-  <div *ngIf="error" class="service-item error-state">
-    <div class="error-container">
-      <div class="error-icon">⚠️</div>
-      <p>Nie udało się załadować serwisów</p>
-      <button class="retry-button" (click)="onRetry()">Spróbuj ponownie</button>
-    </div>
+  <div class="state-view state-error" *ngIf="error">
+    <span class="state-icon">⚠️</span>
+    <p>Nie udało się załadować serwisów</p>
+    <button class="btn-retry" (click)="onRetry()" type="button">Spróbuj ponownie</button>
   </div>
 
   <!-- Empty state -->
-  <div *ngIf="services.length === 0 && !loading && !error" class="service-item">
-    <div class="empty-container">
-      <div class="empty-icon">🔍</div>
-      <p>Nie znaleziono serwisów dla podanych kryteriów</p>
-    </div>
+  <div class="state-view" *ngIf="services.length === 0 && !loading && !error">
+    <span class="state-icon">🔍</span>
+    <p>Nie znaleziono serwisów</p>
+    <span class="state-hint">Spróbuj zmienić filtry lub obszar mapy</span>
   </div>
 
-  <!-- Services list with virtual scroll -->
+  <!-- Virtual scroll list -->
   <cdk-virtual-scroll-viewport
     [itemSize]="itemSize"
     [minBufferPx]="itemSize * 3"
-    [maxBufferPx]="itemSize * 6"
-    class="services-list"
+    [maxBufferPx]="itemSize * 8"
+    class="services-scroll"
     [class.hidden]="services.length === 0"
     (scrolledIndexChange)="onScrollIndexChange($event)"
   >
-    <!-- Service items with virtual scrolling -->
     <div
       *cdkVirtualFor="let service of services; trackBy: trackByServiceId"
-      class="service-item"
+      class="service-card"
       [class.selected]="selectedServiceId === service.id"
       (click)="onServiceClick(service)"
     >
-      <!-- Service Logo -->
-      <div class="service-logo-container">
+      <!-- Logo -->
+      <div class="card-logo">
         <img
           [src]="getServiceLogo(service)"
           [alt]="service.name + ' logo'"
           [attr.data-service-id]="service.id"
-          class="service-logo"
+          class="logo-img"
           loading="lazy"
           (error)="onImageError($event)"
         />
       </div>
 
-      <div class="service-header">
-        <h3 class="service-name">{{ service.name }}</h3>
+      <!-- Info -->
+      <div class="card-body">
+        <div class="card-name-row">
+          <h3 class="card-name">{{ service.name }}</h3>
+          <span class="verified-chip" *ngIf="isVerified(service)" title="Zweryfikowany serwis">✓</span>
+        </div>
+        <div class="card-address" *ngIf="buildAddress(service)">
+          📍 {{ buildAddress(service) }}
+        </div>
+        <div class="card-phone" *ngIf="service.phoneNumber">
+          <a href="tel:{{ service.phoneNumber }}" (click)="$event.stopPropagation()">
+            📞 {{ service.phoneNumber }}
+          </a>
+        </div>
       </div>
 
-      <div class="service-address" *ngIf="buildAddress(service)">
-        <span>📍</span>
-        <span>{{ buildAddress(service) }}</span>
-      </div>
+      <!-- Arrow to details -->
+      <button
+        *ngIf="isVerified(service)"
+        class="btn-details"
+        (click)="onViewDetails(service, $event)"
+        type="button"
+        title="Zobacz szczegóły"
+      >›</button>
 
-      <div class="service-phone" *ngIf="service.phoneNumber">
-        <span>📞</span>
-        <a href="tel:{{ service.phoneNumber }}">{{ service.phoneNumber }}</a>
-      </div>
-
-      <div class="service-actions">
-        <button
-          class="service-action-btn primary"
-          (click)="onViewDetails(service, $event)"
-          *ngIf="isVerified(service)"
-        >
-          Zobacz szczegóły
-        </button>
-      </div>
     </div>
   </cdk-virtual-scroll-viewport>
 
   <!-- Loading more indicator -->
-  <div *ngIf="loadingMore && services.length > 0" class="loading-more">
-    <div class="loading-spinner"></div>
-    <p>Ładowanie kolejnych serwisów...</p>
+  <div class="loading-more" *ngIf="loadingMore && services.length > 0">
+    <div class="spinner-sm"></div>
   </div>
+
 </div>

@@ -20,7 +20,7 @@ export class ServicesListComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Virtual scrolling configuration
-  readonly itemSize = 220; // Approximate height of each service item in pixels
+  readonly itemSize = 100; // Approximate height of each service item in pixels
 
   @Input() services: MapPin[] = [];
   @Input() set servicesInput(value: MapPin[]) {

@@ -30,7 +30,7 @@ import {
 
 // Components
 import { MapComponent } from './components/map/map.component';
-import { SearchFiltersComponent } from './components/search-filters/search-filters.component';
+import { MapSearchBarComponent } from './components/map-search-bar/map-search-bar.component';
 
 // Interface for pending popup state
 interface PendingPopup {
@@ -52,7 +52,7 @@ interface MapBounds {
   imports: [
     CommonModule,
     MapComponent,
-    SearchFiltersComponent
+    MapSearchBarComponent
   ],
   templateUrl: './services-map-page.component.html',
   styleUrls: ['./services-map-page.component.css'],

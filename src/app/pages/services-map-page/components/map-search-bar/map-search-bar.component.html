@@ -1,0 +1,287 @@
+<div class="search-bar">
+
+  <!-- ── Main search row ── -->
+  <div class="search-row">
+
+    <!-- City -->
+    <div class="search-field city-field">
+      <span class="field-icon" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+      </span>
+      <input
+        type="search"
+        class="field-input"
+        placeholder="Szukaj po mieście..."
+        [(ngModel)]="filtersState.cityQuery"
+        (input)="onCitySearchChange()"
+        (focus)="onCityFocus($event)"
+        (keydown.enter)="onCityEnter()"
+        autocomplete="off"
+        role="combobox"
+        aria-label="Szukaj po mieście"
+        aria-autocomplete="list"
+        aria-haspopup="listbox"
+        aria-controls="city-suggestions"
+        [attr.aria-expanded]="citySearchFocused"
+      >
+      <button
+        *ngIf="filtersState.cityQuery"
+        class="field-clear"
+        (click)="clearCitySearch()"
+        type="button"
+        aria-label="Wyczyść miasto"
+      >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="search-divider" aria-hidden="true"></div>
+
+    <!-- Service name -->
+    <div class="search-field service-field">
+      <span class="field-icon" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+      </span>
+      <input
+        type="search"
+        class="field-input"
+        placeholder="Nazwa serwisu..."
+        [(ngModel)]="filtersState.serviceQuery"
+        (input)="onServiceSearchChange()"
+        (focus)="onServiceFocus($event)"
+        (keydown.enter)="onServiceEnter()"
+        autocomplete="off"
+        role="combobox"
+        aria-label="Szukaj po nazwie serwisu"
+        aria-autocomplete="list"
+        aria-haspopup="listbox"
+        aria-controls="service-suggestions"
+        [attr.aria-expanded]="serviceSearchFocused"
+      >
+      <button
+        *ngIf="filtersState.serviceQuery"
+        class="field-clear"
+        (click)="clearServiceSearch()"
+        type="button"
+        aria-label="Wyczyść nazwę serwisu"
+      >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div class="search-actions">
+      <button
+        class="btn-filters"
+        [class.active]="filtersOpen || activeFilterCount > 0"
+        (click)="toggleFilters(); $event.stopPropagation()"
+        type="button"
+        [attr.aria-expanded]="filtersOpen"
+        aria-controls="filter-panel"
+      >
+        <span>Filtry</span>
+        <span class="filter-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
+        <svg class="filter-arrow" [class.open]="filtersOpen" aria-hidden="true"
+          width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+
+      <a [routerLink]="servicesListUrl" class="btn-list" title="Przeglądaj listę serwisów rowerowych">
+        <span class="btn-list-icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </span>
+        <span class="btn-list-text">Lista serwisów</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Active filters bar (desktop only) ── -->
+  <div class="active-filters-bar" *ngIf="activeFilterCount > 0" (click)="$event.stopPropagation()">
+    <span class="active-filters-label" aria-live="polite">
+      Aktywne: <strong>{{ activeFilterCount }}</strong>
+    </span>
+    <div class="active-filters-pills" role="list" aria-label="Aktywne filtry">
+      <span
+        class="active-filter-pill"
+        *ngFor="let coverage of selectedCoverages; trackBy: trackByCoverageId"
+        role="listitem"
+      >
+        {{ coverage.name }}
+        <button
+          class="pill-remove"
+          (click)="toggleCoverage(coverage.id); $event.stopPropagation()"
+          type="button"
+          [attr.aria-label]="'Usuń filtr: ' + coverage.name"
+        >
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </span>
+    </div>
+    <button
+      class="btn-clear-filters"
+      (click)="clearAllFilters(); $event.stopPropagation()"
+      type="button"
+      aria-label="Wyczyść wszystkie aktywne filtry"
+    >Wyczyść wszystkie</button>
+  </div>
+
+  <!-- ── Expandable coverage filter panel (overlays the map) ── -->
+  <div
+    id="filter-panel"
+    class="filter-panel"
+    [class.open]="filtersOpen"
+    role="region"
+    aria-label="Filtry usług"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="filter-panel-inner">
+
+      <div class="filter-panel-header">
+        <span class="filter-panel-title">Filtruj po usługach</span>
+        <button
+          class="btn-clear-all"
+          *ngIf="activeFilterCount > 0"
+          (click)="clearAllFilters()"
+          type="button"
+          aria-label="Wyczyść wszystkie filtry"
+        >Wyczyść ({{ activeFilterCount }})</button>
+      </div>
+
+      <div class="filter-search-wrap" *ngIf="coverageCategories.length > 0">
+        <span class="filter-search-icon" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input
+          #filterSearchInput
+          type="search"
+          class="filter-search-input"
+          placeholder="Szukaj usługi..."
+          [(ngModel)]="filterSearch"
+          (click)="$event.stopPropagation()"
+          autocomplete="off"
+          aria-label="Szukaj wśród filtrów usług"
+        >
+        <button
+          *ngIf="filterSearch"
+          class="filter-search-clear"
+          (click)="filterSearch = ''; $event.stopPropagation()"
+          type="button"
+          aria-label="Wyczyść wyszukiwarkę filtrów"
+        >
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="filter-loading" *ngIf="coverageCategories.length === 0">
+        Ładowanie filtrów…
+      </div>
+
+      <div class="filter-categories" *ngIf="coverageCategories.length > 0">
+        <div class="filter-no-results" *ngIf="filteredCategories.length === 0" role="status">
+          Brak wyników dla „{{ filterSearch }}"
+        </div>
+        <div
+          class="filter-category"
+          *ngFor="let cat of filteredCategories; trackBy: trackByCategoryId"
+        >
+          <span class="category-label">{{ cat.category.name }}</span>
+          <div class="coverage-pills">
+            <label
+              class="pill"
+              *ngFor="let coverage of cat.coverages; trackBy: trackByCoverageId"
+              [class.selected]="isCoverageSelected(coverage.id)"
+            >
+              <input
+                type="checkbox"
+                class="pill-check"
+                [checked]="isCoverageSelected(coverage.id)"
+                (change)="toggleCoverage(coverage.id)"
+                [attr.aria-label]="coverage.name"
+              >
+              {{ coverage.name }}
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── City autocomplete ── -->
+  <div
+    id="city-suggestions"
+    class="autocomplete-dropdown"
+    *ngIf="citySearchFocused && (citySuggestions.length > 0 || citySearchLoading)"
+    [ngStyle]="cityDropdownStyle"
+    role="listbox"
+    aria-label="Sugestie miast"
+  >
+    <div class="ac-loading" *ngIf="citySearchLoading" role="status">Szukam miast…</div>
+    <div
+      class="ac-item"
+      *ngFor="let city of citySuggestions; trackBy: trackByCityName"
+      (click)="onCitySelect(city)"
+      role="option"
+      aria-selected="false"
+    >
+      <span class="ac-title">{{ city.cityName }}</span>
+      <span class="ac-sub" *ngIf="city.cityLabel">{{ city.cityLabel }}</span>
+    </div>
+  </div>
+
+  <!-- ── Service autocomplete ── -->
+  <div
+    id="service-suggestions"
+    class="autocomplete-dropdown"
+    *ngIf="serviceSearchFocused && (serviceSuggestions.length > 0 || serviceSearchLoading)"
+    [ngStyle]="serviceDropdownStyle"
+    role="listbox"
+    aria-label="Sugestie serwisów"
+  >
+    <div class="ac-loading" *ngIf="serviceSearchLoading" role="status">Szukam serwisów…</div>
+    <div
+      class="ac-item"
+      *ngFor="let service of serviceSuggestions; trackBy: trackByServiceId"
+      (click)="onServiceSelect(service)"
+      role="option"
+      aria-selected="false"
+    >
+      <span class="ac-title">
+        {{ service.name }}
+        <span class="ac-verified" *ngIf="service.verified" role="img" aria-label="Zweryfikowany">✓</span>
+      </span>
+      <span class="ac-sub" *ngIf="service.address">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+        {{ service.address }}
+      </span>
+    </div>
+    <div
+      class="ac-empty"
+      *ngIf="!serviceSearchLoading && serviceSuggestions.length === 0 && filtersState.serviceQuery.length >= 3"
+      role="status"
+    >
+      Brak wyników dla „{{ filtersState.serviceQuery }}"
+    </div>
+  </div>
+
+</div>

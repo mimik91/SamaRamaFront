@@ -1,5 +1,6 @@
 <article class="city-services-container" itemscope itemtype="https://schema.org/ItemList">
-  <!-- Header section -->
+
+  <!-- Header -->
   <header class="city-header" *ngIf="!cityNotFound">
     <h1 itemprop="name">
       Serwis rowerowy {{ currentCity?.name }} &#8211; lista warsztat&#243;w i napraw rower&#243;w
@@ -9,24 +10,7 @@
     </p>
   </header>
 
-  <!-- CTA Banner for service owners -->
-  <aside class="service-cta-banner" *ngIf="!cityNotFound">
-    <div class="service-cta-content">
-      <div class="service-cta-text">
-        <strong>Nie ma tutaj Twojego serwisu?</strong>
-        <span>Sprawd&#378; co mo&#380;esz zyska&#263; i zarejestruj sw&#243;j serwis rowerowy w CycloPick!</span>
-      </div>
-      <a routerLink="/register-service" class="service-cta-button">
-        Zarejestruj serwis
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </a>
-    </div>
-  </aside>
-
-  <!-- City selector & actions -->
+  <!-- Actions bar: city search + map -->
   <div class="actions-bar" *ngIf="!cityNotFound">
     <div class="city-autocomplete-wrapper">
       <label class="city-label">Zmień miasto:</label>
@@ -51,7 +35,7 @@
           (click)="clearCityInput()"
           type="button"
           title="Wszystkie miasta"
-        >✕</button>
+        >&#10005;</button>
       </div>
       <div class="city-suggestions" *ngIf="showCitySuggestions">
         <div
@@ -70,11 +54,11 @@
     </div>
 
     <button class="map-button" (click)="navigateToMap()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
         <circle cx="12" cy="10" r="3"></circle>
       </svg>
-      Pokaż na mapie serwisów
+      Poka&#380; na mapie
     </button>
   </div>
 
@@ -119,7 +103,7 @@
           class="city-input-clear"
           (click)="clearCityInput()"
           type="button"
-        >✕</button>
+        >&#10005;</button>
       </div>
       <div class="city-suggestions" *ngIf="showCitySuggestions">
         <div
@@ -158,93 +142,176 @@
         itemtype="https://schema.org/ListItem"
       >
         <meta itemprop="position" [attr.content]="i + 1">
-        <div class="service-info" itemprop="item" itemscope itemtype="https://schema.org/LocalBusiness">
-          <h3 class="service-name" itemprop="name">{{ service.name }}</h3>
-          <p class="service-address" *ngIf="service.address && service.address !== 'brak ,'" itemprop="address">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            {{ service.address }}
-          </p>
-          <p class="service-phone" *ngIf="service.phoneNumber" itemprop="telephone">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-            <a [href]="'tel:' + service.phoneNumber">{{ service.phoneNumber }}</a>
-          </p>
-        </div>
 
-        <div class="service-actions">
-          
+        <div class="service-body" itemprop="item" itemscope itemtype="https://schema.org/LocalBusiness">
 
-          <!-- Przycisk strony serwisu dla zweryfikowanych (zarejestrowanych) -->
-          <button
-            *ngIf="service.verified"
-            (click)="navigateToServicePage(service)"
-            class="service-page-button"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
-            Profil serwisu {{ service.name }}
-          </button>
+          <!-- Logo serwisu -->
+          <div class="service-logo-wrap">
+            <img
+              *ngIf="service.logoUrl"
+              [src]="service.logoUrl"
+              [alt]="service.name + ' logo'"
+              class="service-logo"
+              loading="lazy"
+              width="104"
+              height="104"
+            >
+            <img
+              *ngIf="!service.logoUrl"
+              src="assets/images/logo-cyclopick.webp"
+              alt=""
+              class="service-logo service-logo--default"
+              loading="lazy"
+              width="104"
+              height="104"
+            >
+          </div>
 
-          <!-- Przycisk rejestracji dla niezweryfikowanych (niezarejestrowanych) -->
-          <button
-            *ngIf="!service.verified"
-            (click)="registerService(service)"
-            class="register-service-button"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="8.5" cy="7" r="4"></circle>
-              <line x1="20" y1="8" x2="20" y2="14"></line>
-              <line x1="23" y1="11" x2="17" y2="11"></line>
-            </svg>
-            Zarejestruj ten serwis
-          </button>
+          <!-- Informacje: nazwa, adres, telefon, mapa -->
+          <div class="service-info">
+            <h3 class="service-name" itemprop="name">{{ service.name }}</h3>
 
-          <!-- Przycisk rezerwacji (gdy reservationAvailable = true; zastępuje transport) -->
-          <button
-            *ngIf="service.reservationAvailable"
-            (click)="navigateToReservation(service)"
-            class="reservation-button"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            Zarezerwuj wizyt&#281; w serwisie {{ service.name }}
-          </button>
+            <p class="service-address" *ngIf="service.address && service.address !== 'brak ,'" itemprop="address">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              {{ service.address }}
+            </p>
 
-          <!-- Transport button only for Krak&#243;w i gdy brak rezerwacji -->
-          <a
-            *ngIf="isKrakow && !service.reservationAvailable"
-            (click)="navigateToTransport(service)"
-            class="transport-button"
-            style="cursor:pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="3" width="15" height="13"></rect>
-              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-              <circle cx="5.5" cy="18.5" r="2.5"></circle>
-              <circle cx="18.5" cy="18.5" r="2.5"></circle>
-            </svg>
-            Zamów transport do serwisu {{ service.name }}
-          </a>
+            <a
+              *ngIf="service.phoneNumber"
+              [href]="'tel:' + service.phoneNumber"
+              class="service-phone-link"
+              itemprop="telephone"
+              [attr.aria-label]="'Zadzwoń do ' + service.name + ': ' + service.phoneNumber"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              {{ service.phoneNumber }}
+            </a>
+
+            <!-- Link do mapy na dole karty -->
+            <div class="service-map-row">
+              <button class="service-map-link" (click)="navigateToServiceOnMap(service)" [attr.aria-label]="'Pokaż ' + service.name + ' na mapie'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+                  <line x1="9" y1="3" x2="9" y2="18"></line>
+                  <line x1="15" y1="6" x2="15" y2="21"></line>
+                </svg>
+                Poka&#380; na mapie
+              </button>
+            </div>
+          </div>
+
+          <!-- Przyciski akcji -->
+          <div class="service-actions">
+
+            <!-- Profil serwisu -->
+            <button
+              *ngIf="service.verified"
+              (click)="navigateToServicePage(service)"
+              class="btn-action btn-action--outline"
+              [disabled]="isServiceLoading(service.id)"
+              [attr.aria-label]="'Zobacz profil serwisu ' + service.name"
+            >
+              <svg *ngIf="!isLoadingAction(service.id, 'profile')" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span *ngIf="isLoadingAction(service.id, 'profile')" class="btn-mini-spinner" aria-hidden="true"></span>
+              <span *ngIf="!isLoadingAction(service.id, 'profile')">Profil serwisu</span>
+            </button>
+
+            <!-- Rejestracja (niezweryfikowane) -->
+            <button
+              *ngIf="!service.verified"
+              (click)="registerService(service)"
+              class="btn-action btn-action--ghost"
+              [disabled]="isServiceLoading(service.id)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+              </svg>
+              Zarejestruj serwis
+            </button>
+
+            <!-- Rezerwacja -->
+            <button
+              *ngIf="service.reservationAvailable"
+              (click)="navigateToReservation(service)"
+              class="btn-action btn-action--primary"
+              [disabled]="isServiceLoading(service.id)"
+              [attr.aria-label]="'Zarezerwuj wizytę w serwisie ' + service.name"
+            >
+              <svg *ngIf="!isLoadingAction(service.id, 'reserve')" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span *ngIf="isLoadingAction(service.id, 'reserve')" class="btn-mini-spinner" aria-hidden="true"></span>
+              <span *ngIf="!isLoadingAction(service.id, 'reserve')">Zarezerwuj wizyt&#281;</span>
+            </button>
+
+            <!-- Transport (Kraków, brak rezerwacji) -->
+            <button
+              *ngIf="isKrakow && !service.reservationAvailable"
+              (click)="navigateToTransport(service)"
+              class="btn-action btn-action--primary"
+              [disabled]="isServiceLoading(service.id)"
+              [attr.aria-label]="'Zamów transport do serwisu ' + service.name"
+            >
+              <svg *ngIf="!isLoadingAction(service.id, 'transport')" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="1" y="3" width="15" height="13"></rect>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+              </svg>
+              <span *ngIf="isLoadingAction(service.id, 'transport')" class="btn-mini-spinner" aria-hidden="true"></span>
+              <span *ngIf="!isLoadingAction(service.id, 'transport')">Zam&#243;w transport</span>
+            </button>
+
+          </div>
+
         </div>
       </li>
     </ul>
 
     <div *ngIf="services.length === 0" class="no-services">
       <p>Nie znaleziono serwis&#243;w rowerowych w tym obszarze.</p>
+      <button class="no-services-cta" (click)="navigateToMap()" *ngIf="currentCity">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+          <line x1="9" y1="3" x2="9" y2="18"></line>
+          <line x1="15" y1="6" x2="15" y2="21"></line>
+        </svg>
+        Sprawd&#378; na mapie
+      </button>
     </div>
   </main>
+
+  <!-- CTA Banner for service owners (po liście serwisów) -->
+  <aside class="service-cta-banner" *ngIf="!cityNotFound">
+    <div class="service-cta-content">
+      <div class="service-cta-text">
+        <strong>Nie ma tutaj Twojego serwisu?</strong>
+        <span>Sprawd&#378; co mo&#380;esz zyska&#263; i zarejestruj sw&#243;j serwis rowerowy w CycloPick!</span>
+      </div>
+      <a routerLink="/register-service" class="service-cta-button">
+        Zarejestruj serwis
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </div>
+  </aside>
 
   <!-- SEO content - generic for other cities -->
   <section class="seo-content" *ngIf="!isKrakow && !cityNotFound">
@@ -254,7 +321,6 @@
       <strong>warsztat&#243;w rowerowych</strong> dzia&#322;aj&#261;cych w {{ currentCity?.name }} i okolicach.
       Ka&#380;dy serwis posiada dane kontaktowe, dzi&#281;ki czemu mo&#380;esz szybko um&#243;wi&#263; si&#281; na <strong>napraw&#281; roweru</strong>.
     </p>
-
     <h2>Znajd&#378; najlepszy warsztat rowerowy w mie&#347;cie {{ currentCity?.name }}</h2>
     <p>
       CycloPick to platforma &#322;&#261;cz&#261;ca rowerzyst&#243;w z serwisami rowerowymi w ca&#322;ej Polsce.
@@ -281,4 +347,5 @@
       </a>
     </nav>
   </footer>
+
 </article>

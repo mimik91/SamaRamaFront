@@ -58,6 +58,15 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   activeSuggestionIndex = -1;
 
   isBrowser: boolean;
+  loadingAction: { serviceId: number; type: string } | null = null;
+
+  isServiceLoading(serviceId: number): boolean {
+    return this.loadingAction?.serviceId === serviceId;
+  }
+
+  isLoadingAction(serviceId: number, type: string): boolean {
+    return this.loadingAction?.serviceId === serviceId && this.loadingAction?.type === type;
+  }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -240,21 +249,37 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
   navigateToMap(): void {
     if (this.currentCity) {
+      const zoom = this.isBrowser && window.innerWidth < 768 ? '11' : '13';
       this.router.navigate(['/mapa-serwisow'], {
         queryParams: {
           lat: this.currentCity.latitude,
           lng: this.currentCity.longitude,
-          zoom: '14'
+          zoom
         }
       });
     }
   }
 
+  navigateToServiceOnMap(service: MapPin): void {
+    this.router.navigate(['/mapa-serwisow'], {
+      queryParams: {
+        lat: service.latitude,
+        lng: service.longitude,
+        zoom: '16'
+      }
+    });
+  }
+
   navigateToTransport(service: MapPin): void {
+    if (this.isServiceLoading(service.id)) return;
+    this.loadingAction = { serviceId: service.id, type: 'transport' };
+    this.cdr.markForCheck();
     this.mapService.getServiceSuffix(service.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
           if (response && response.suffix) {
             this.router.navigate(['/', response.suffix, 'zamow-transport']);
           } else {
@@ -262,6 +287,8 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
           }
         },
         error: () => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
           this.router.navigate(['/order-transport'], { queryParams: { serviceId: service.id } });
         }
       });
@@ -325,38 +352,46 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
   // Nawiguj do strony serwisu (pobierz suffix z API)
   navigateToServicePage(service: MapPin): void {
+    if (this.isServiceLoading(service.id)) return;
+    this.loadingAction = { serviceId: service.id, type: 'profile' };
+    this.cdr.markForCheck();
     this.mapService.getServiceSuffix(service.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
           if (response && response.suffix) {
             this.router.navigate([response.suffix]);
-          } else {
-            console.error('Could not retrieve suffix for service:', service.id);
           }
         },
-        error: (err) => {
-          console.error('Error during suffix fetch:', err);
+        error: () => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
         }
       });
   }
 
   // Nawiguj do rezerwacji wizyty w serwisie
   navigateToReservation(service: MapPin): void {
+    if (this.isServiceLoading(service.id)) return;
+    this.loadingAction = { serviceId: service.id, type: 'reserve' };
+    this.cdr.markForCheck();
     this.mapService.getServiceSuffix(service.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
           if (response && response.suffix) {
             this.router.navigate(['/', response.suffix, 'zarezerwuj'], {
               state: { serviceId: service.id }
             });
-          } else {
-            console.error('Could not retrieve suffix for service:', service.id);
           }
         },
-        error: (err) => {
-          console.error('Error during suffix fetch for reservation:', err);
+        error: () => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
         }
       });
   }

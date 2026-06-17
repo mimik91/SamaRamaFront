@@ -45,7 +45,7 @@
     <!-- INFO -->
     <section class="main-content" id="info">
       <div class="content-left">
-        <h1>{{ publicInfo.name }} – serwis rowerowy {{ publicInfo.city }}</h1>
+        <h1>{{ publicInfo.name }} – serwis rowerowy {{ publicInfo.city }}{{ publicInfo.district ? ' ' + publicInfo.district : '' }}</h1>
         <!-- Logo z skeleton -->
         <div class="logo-container">
           <div *ngIf="!logoUrl" class="skeleton skeleton-logo"></div>

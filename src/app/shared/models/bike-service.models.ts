@@ -43,6 +43,7 @@ export interface BikeServiceRegisteredDto {
   flat?: string;
   postalCode?: string;
   city?: string;
+  district?: string | null;
   latitude?: number;
   longitude?: number;
   phoneNumber?: string;

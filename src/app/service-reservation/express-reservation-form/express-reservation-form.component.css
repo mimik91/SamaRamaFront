@@ -44,20 +44,8 @@
 
 .express-banner-text {
   color: var(--text-secondary);
-  margin: 0 0 var(--spacing-2) 0;
-  font-size: var(--font-size-sm);
-  line-height: 1.5;
-}
-
-.express-banner-options {
-  list-style: none;
-  padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -370,6 +358,9 @@
   border-radius: 50%;
   width: 24px;
   height: 24px;
+  min-width: 24px;
+  aspect-ratio: 1;
+  flex-shrink: 0;
   cursor: pointer;
   font-size: 12px;
   display: flex;
@@ -380,6 +371,31 @@
 
 .remove-bike-btn:hover {
   background: rgba(239, 68, 68, 0.08);
+}
+
+.pricing-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  margin-bottom: 24px;
+  padding: 12px 14px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-card);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.pricing-info-banner svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #d97706;
+}
+
+.pricing-info-banner p {
+  margin: 0;
 }
 
 .add-bike-btn {

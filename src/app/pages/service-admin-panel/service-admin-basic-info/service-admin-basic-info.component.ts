@@ -13,6 +13,7 @@ interface BikeServiceRegisteredDto {
   flat?: string;
   postalCode?: string;
   city?: string;
+  district?: string | null;
   latitude?: number;
   longitude?: number;
   phoneNumber?: string;
@@ -38,6 +39,7 @@ interface ServiceProfileUpdateDto {
   email?: string;
   phoneNumber?: string;
   contactPerson?: string;
+  district?: string;
   website?: string;
   facebook?: string;
   instagram?: string;
@@ -64,8 +66,12 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
   isSaving: boolean = false;
   saveError: string = '';
   saveSuccess: boolean = false;
-  
+
   editableData: ServiceProfileUpdateDto = {};
+
+  availableDistricts: string[] = [];
+  filteredDistricts: string[] = [];
+  showDistrictDropdown: boolean = false;
 
   constructor(private http: HttpClient) {}
 
@@ -75,11 +81,12 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
 
   initEditableData(): void {
     if (!this.serviceDetails) return;
-    
+
     this.editableData = {
       email: this.serviceDetails.email || '',
       phoneNumber: this.serviceDetails.phoneNumber || '',
       contactPerson: this.serviceDetails.contactPerson || '',
+      district: this.serviceDetails.district || '',
       website: this.serviceDetails.website || '',
       facebook: this.serviceDetails.facebook || '',
       instagram: this.serviceDetails.instagram || '',
@@ -94,12 +101,56 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
 
   toggleEditMode(): void {
     if (this.isEditMode) {
-      // Cancel - restore original data
       this.initEditableData();
+      this.showDistrictDropdown = false;
+    } else {
+      this.loadDistrictSuggestions();
     }
     this.isEditMode = !this.isEditMode;
     this.saveError = '';
     this.saveSuccess = false;
+  }
+
+  private loadDistrictSuggestions(): void {
+    const city = this.serviceDetails?.city;
+    if (!city) return;
+    const url = `${environment.apiUrl}/bike-services/districts?city=${encodeURIComponent(city)}`;
+    this.http.get<string[]>(url).subscribe({
+      next: (districts) => {
+        this.availableDistricts = districts;
+        this.filteredDistricts = districts;
+      },
+      error: () => {
+        this.availableDistricts = [];
+        this.filteredDistricts = [];
+      }
+    });
+  }
+
+  onDistrictInput(): void {
+    const val = (this.editableData.district || '').toLowerCase();
+    this.filteredDistricts = val
+      ? this.availableDistricts.filter(d => d.toLowerCase().includes(val))
+      : this.availableDistricts;
+    this.showDistrictDropdown = this.filteredDistricts.length > 0;
+  }
+
+  openDistrictDropdown(): void {
+    this.filteredDistricts = this.availableDistricts;
+    if (this.filteredDistricts.length > 0) {
+      this.showDistrictDropdown = true;
+    }
+  }
+
+  selectDistrict(district: string): void {
+    this.editableData.district = district;
+    this.showDistrictDropdown = false;
+  }
+
+  closeDistrictDropdown(): void {
+    setTimeout(() => {
+      this.showDistrictDropdown = false;
+    }, 150);
   }
 
   saveChanges(): void {

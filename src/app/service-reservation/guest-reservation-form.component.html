@@ -300,6 +300,11 @@
         <button type="button" class="add-bike-btn" (click)="addBike()" [disabled]="!canAddBike">
           + Dodaj kolejny rower
         </button>
+
+        <div class="pricing-info-banner">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p>Cena pakietu obejmuje robociznę – koszt części zamiennych wyceniany jest osobno. Jeśli mechanik zauważy dodatkowe usterki lub zużyte elementy, skontaktuje się z Tobą i przedstawi wycenę – ewentualne naprawy wykraczające poza zakres pakietu wykonywane są wyłącznie po Twojej akceptacji.</p>
+        </div>
         <p class="bikes-limit-info" *ngIf="!canAddBike && maxBikesPerReservation > 0">
           W jednym zleceniu możesz dodać maksymalnie {{ maxBikesPerReservation }} {{ maxBikesPerReservation === 1 ? 'rower' : maxBikesPerReservation < 5 ? 'rowery' : 'rowerów' }}.
         </p>

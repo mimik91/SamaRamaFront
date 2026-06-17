@@ -66,6 +66,11 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   serviceNameCheckResult: 'available' | 'taken' | null = null;
   private serviceNameStatusSubscription?: Subscription;
 
+  // City autocomplete
+  availableCities: string[] = [];
+  filteredCities: string[] = [];
+  showCityDropdown: boolean = false;
+
   // Dane coverage
   availableCoverages: BikeRepairCoverageMapDto | null = null;
   categories: BikeRepairCoverageCategory[] = [];
@@ -236,6 +241,7 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadCities();
     this.route.queryParams.subscribe(params => {
       console.log('Received query params:', params);
       
@@ -268,6 +274,37 @@ export class ServiceRegistrationComponent implements OnInit, OnDestroy {
     if (this.serviceNameStatusSubscription) {
       this.serviceNameStatusSubscription.unsubscribe();
     }
+  }
+
+  private loadCities(): void {
+    this.http.get<string[]>(`${environment.apiUrl}/bike-services/cities`).subscribe({
+      next: (cities) => { this.availableCities = cities; },
+      error: () => { this.availableCities = []; }
+    });
+  }
+
+  onCityInput(): void {
+    const val = (this.basicInfoForm.get('city')?.value || '').toLowerCase();
+    this.filteredCities = val
+      ? this.availableCities.filter(c => c.toLowerCase().includes(val))
+      : this.availableCities;
+    this.showCityDropdown = this.filteredCities.length > 0;
+  }
+
+  openCityDropdown(): void {
+    this.filteredCities = this.availableCities;
+    if (this.filteredCities.length > 0) {
+      this.showCityDropdown = true;
+    }
+  }
+
+  selectCity(city: string): void {
+    this.basicInfoForm.get('city')?.setValue(city);
+    this.showCityDropdown = false;
+  }
+
+  closeCityDropdown(): void {
+    setTimeout(() => { this.showCityDropdown = false; }, 150);
   }
 
   private loadAvailableCoverages(): void {

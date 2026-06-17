@@ -182,7 +182,9 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
 
     const serviceName = this.publicInfo.name;
     const city = this.publicInfo.city;
-    const title = `${serviceName} – serwis rowerowy ${city} | CycloPick`;
+    const district = this.publicInfo.district;
+    const locationLabel = district ? `${city} ${district}` : city;
+    const title = `${serviceName} – serwis rowerowy ${locationLabel} | CycloPick`;
 
     const keywords: string[] = [
       'serwis rowerowy',
@@ -195,8 +197,11 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
       'kontakt',
       'adres serwisu'
     ];
+    if (district) {
+      keywords.push(`serwis rowerowy ${locationLabel}`, `naprawa rowerów ${district}`);
+    }
 
-    const parts: string[] = [`${serviceName} – serwis rowerowy ${city}.`];
+    const parts: string[] = [`${serviceName} – serwis rowerowy ${locationLabel}.`];
     if (this.activeStatus?.pricelistActive || this.activeStatus?.packagesActive) {
       parts.push('Sprawdź cennik i pakiety serwisowe.');
       keywords.push('cennik serwisu rowerowego', 'ceny naprawy rowerów');

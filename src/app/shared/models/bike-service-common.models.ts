@@ -41,6 +41,7 @@ export interface BikeServiceRegisteredDto {
   flat?: string;
   postalCode?: string;
   city?: string;
+  district?: string | null;
   latitude?: number;
   longitude?: number;
   phoneNumber?: string;
@@ -78,6 +79,7 @@ export interface BikeServicePublicInfo {
   flat: string | null;
   postalCode: string | null;
   city: string | null;
+  district?: string | null;
   phoneNumber: string | null;
   transportCost: number | null;
   transportAvailable: boolean;

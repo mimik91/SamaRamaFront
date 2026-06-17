@@ -259,14 +259,28 @@
 
             <div class="form-group">
               <label for="city">Miasto</label>
-              <input 
-                type="text" 
-                id="city" 
-                formControlName="city"
-                [class.is-invalid]="isFieldInvalid(basicInfoForm, 'city')"
-                placeholder="Kraków"
-                maxlength="100"
-              >
+              <div class="city-combobox">
+                <input
+                  type="text"
+                  id="city"
+                  formControlName="city"
+                  [class.is-invalid]="isFieldInvalid(basicInfoForm, 'city')"
+                  placeholder="Kraków"
+                  maxlength="100"
+                  autocomplete="off"
+                  (input)="onCityInput()"
+                  (focus)="openCityDropdown()"
+                  (blur)="closeCityDropdown()"
+                >
+                <ul *ngIf="showCityDropdown" class="city-dropdown">
+                  <li
+                    *ngFor="let c of filteredCities"
+                    (mousedown)="selectCity(c)"
+                    class="city-option">
+                    {{ c }}
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

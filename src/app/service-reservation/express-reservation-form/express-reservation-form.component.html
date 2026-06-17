@@ -7,14 +7,11 @@
       <img src="/assets/images/logo-cyclopick.png" alt="CycloPick" class="express-banner-logo">
     </div>
     <div class="express-banner-content">
-      <p class="express-banner-headline">Serwis rowerowy z transportem door-to-door</p>
+      <p class="express-banner-headline">Serwis rowerowy tego samego dnia</p>
       <p class="express-banner-text">
+        Odbierzemy Twój rower rano z biura lub spod domu i zwrócimy <strong>tego samego dnia przed 17:00</strong>.
         Serwis zostanie wybrany przez CycloPick spośród najlepszych warsztatów w Krakowie.
       </p>
-      <ul class="express-banner-options">
-        <li><strong>Z biura:</strong> odbiór rano, zwrot <strong>tego samego dnia przed 17:00</strong></li>
-        <li><strong>Spod domu:</strong> odbiór wieczorem, zwrot <strong>następnego dnia wieczorem</strong></li>
-      </ul>
     </div>
   </div>
 
@@ -164,6 +161,11 @@
       <button *ngIf="canAddBike" type="button" class="add-bike-btn" (click)="addBike()">
         + Dodaj kolejny rower
       </button>
+
+      <div class="pricing-info-banner">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>Cena pakietu obejmuje robociznę – koszt części zamiennych wyceniany jest osobno. Jeśli mechanik zauważy dodatkowe usterki lub zużyte elementy, skontaktuje się z Tobą i przedstawi wycenę – ewentualne naprawy wykraczające poza zakres pakietu wykonywane są wyłącznie po Twojej akceptacji.</p>
+      </div>
       <p *ngIf="!canAddBike && availableSlotsForDate !== null" class="slots-info">
         Na wybrany dzień dostępne są jeszcze {{ availableSlotsForDate }} miejsce(a).
       </p>

@@ -120,6 +120,29 @@
           class="edit-input"
           placeholder="Jan Kowalski" />
       </div>
+      <div class="detail-item">
+        <span class="label">Dzielnica:</span>
+        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.district || '-' }}</span>
+        <div *ngIf="isEditMode" class="district-combobox">
+          <input
+            type="text"
+            [(ngModel)]="editableData.district"
+            (input)="onDistrictInput()"
+            (focus)="openDistrictDropdown()"
+            (blur)="closeDistrictDropdown()"
+            class="edit-input"
+            placeholder="np. Krowodrza, Podgórze..."
+            autocomplete="off" />
+          <ul *ngIf="showDistrictDropdown" class="district-dropdown">
+            <li
+              *ngFor="let d of filteredDistricts"
+              (mousedown)="selectDistrict(d)"
+              class="district-option">
+              {{ d }}
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <!-- Adres -->

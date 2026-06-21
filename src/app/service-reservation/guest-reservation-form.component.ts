@@ -32,6 +32,7 @@ import { NotificationService } from '../core/notification.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { environment } from '../environments/environments';
 import { OfficeAddressDto } from '../shared/models/office-address.model';
+import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constants';
 
 interface ServiceInfo {
   id: number;
@@ -148,6 +149,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   officeNameControl = new FormControl('');
 
   readonly links = environment.links;
+  readonly transportPricing = TRANSPORT_PRICING;
 
   reservationForm!: FormGroup;
   bikesArray!: FormArray;

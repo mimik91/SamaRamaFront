@@ -2,11 +2,9 @@
 
   <!-- Header -->
   <header class="city-header" *ngIf="!cityNotFound">
-    <h1 itemprop="name">
-      Serwis rowerowy {{ currentCity?.name }} &#8211; lista warsztat&#243;w i napraw rower&#243;w
-    </h1>
+    <h1 itemprop="name">Serwisy rowerowe {{ currentCity?.name }}</h1>
     <p class="subtitle">
-      Lista serwis&#243;w rowerowych w mie&#347;cie {{ currentCity?.name }} i okolicach
+      Lista warsztat&#243;w rowerowych w mie&#347;cie {{ currentCity?.name }} i okolicach
     </p>
   </header>
 
@@ -35,7 +33,7 @@
           (click)="clearCityInput()"
           type="button"
           title="Wszystkie miasta"
-        >&#10005;</button>
+        ><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
       </div>
       <div class="city-suggestions" *ngIf="showCitySuggestions">
         <div
@@ -103,7 +101,7 @@
           class="city-input-clear"
           (click)="clearCityInput()"
           type="button"
-        >&#10005;</button>
+        ><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
       </div>
       <div class="city-suggestions" *ngIf="showCitySuggestions">
         <div

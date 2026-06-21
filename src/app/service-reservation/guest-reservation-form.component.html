@@ -335,7 +335,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
               <div class="delivery-card-content">
                 <span class="delivery-card-title">Transport door-to-door
-                  <span class="transport-cost-badge" *ngIf="serviceInfo.transportCost">{{ serviceInfo.transportCost }} PLN</span>
+                  <span class="transport-cost-badge">{{ serviceInfo.transportCost ?? transportPricing.partnerCost }} PLN</span>
                 </span>
                 <span class="delivery-card-desc">Odbierzemy rower spod Twojego domu między 18:00 a 22:00</span>
               </div>
@@ -348,7 +348,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h2M7 12h2M11 8h2M11 12h2M15 8h2M15 12h2"/></svg>
               <div class="delivery-card-content">
                 <span class="delivery-card-title">Transport spod biurowca
-                  <span class="transport-cost-badge" *ngIf="serviceInfo.transportCost">{{ serviceInfo.transportCost }} PLN</span>
+                  <span class="transport-cost-badge">{{ serviceInfo.transportCost ?? transportPricing.partnerCost }} PLN</span>
                 </span>
                 <span class="delivery-card-desc">Odbierzemy rower spod Twojej pracy 10:00 – 16:00</span>
               </div>
@@ -360,6 +360,13 @@
           <p class="transport-toggle-hint">
             {{ isOfficePick ? 'Transport odbędzie się w dniu serwisu (10:00–16:00)' : 'Transport zostanie zarezerwowany na dzień przed serwisem' }}
           </p>
+
+          <div class="transport-info-hints">
+            <div class="transport-info-hint-item" *ngIf="withTransport">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Zwrot roweru odbędzie się w tych samych godzinach co odbiór</span>
+            </div>
+          </div>
 
           <!-- Transport address section (shown when transport selected) -->
           <div class="transport-address-section" *ngIf="withTransport" [formGroup]="transportForm">

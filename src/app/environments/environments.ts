@@ -53,9 +53,9 @@ export const environment = {
       officeAddresses: '/guest-orders/office-addresses',
       sessionSync: '/guest-orders/session-sync',
       report: '/guest-orders/report',
-      expressAvailability: '/guest-orders/express/availability',
-      expressReservation: '/guest-orders/express/reservation',
-      expressPackages: '/guest-orders/express/packages'
+      expressAvailability: '/guest-orders/express-reservation/availability',
+      expressReservation: '/guest-orders/express-reservation',
+      expressPackages: '/guest-orders/express-packages'
     },
 
     payment: {

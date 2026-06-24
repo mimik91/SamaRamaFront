@@ -661,6 +661,22 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
       discountCoupon: this.finalTransportPrice !== null ? this.discountCouponControl.value : null
     };
 
+    if (finalPrice === 0) {
+      this.submitting = true;
+      this.transportOrderService.createGuestTransportOrder(orderData).subscribe({
+        next: (response) => {
+          this.submitting = false;
+          const ids = response.orderIds ?? (response.id ? [response.id] : []);
+          this.router.navigate(['/ordersummary'], { queryParams: { orderIds: ids.join(',') } });
+        },
+        error: () => {
+          this.submitting = false;
+          this.notificationService.error(this.i18n.instant('transport_order.validation.submit_error'));
+        }
+      });
+      return;
+    }
+
     this.router.navigate(['/platnosc/podsumowanie'], {
       state: {
         orderType: 'TRANSPORT',

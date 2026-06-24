@@ -785,7 +785,20 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     this.http.post<{ message: string; orderIds: number[] }>(url, reservationPayload).subscribe({
       next: (res) => {
         if (this.withTransport) {
-          this.submitTransport(rv, res.orderIds);
+          if (this.effectiveTransportPrice > 0) {
+            this.submitting = false;
+            const orderData = this.buildTransportPayload(rv, res.orderIds);
+            this.router.navigate(['/platnosc/podsumowanie'], {
+              state: {
+                orderType: 'TRANSPORT',
+                orderData,
+                totalPrice: this.effectiveTransportPrice,
+                bikeCount: this.bikesArray.length
+              }
+            });
+          } else {
+            this.submitTransport(rv, res.orderIds);
+          }
         } else {
           this.onSuccess();
         }
@@ -844,7 +857,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     return this.finalTransportPrice ?? this.serviceInfo?.transportCost ?? 0;
   }
 
-  private submitTransport(rv: any, serviceOrderIds: number[]): void {
+  private buildTransportPayload(rv: any, serviceOrderIds: number[]): Record<string, unknown> {
     const tv = this.transportForm.value;
     const bikesPayload = this.bikesArray.value.map((b: { brand: string; model: string; additionalInfo: string }) => ({
       brand: b.brand.trim(),
@@ -857,7 +870,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     const officePrefix = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
     const transportNotes = [officePrefix, userNotes].filter(Boolean).join('\n');
 
-    const payload = {
+    return {
       serviceOrderIds,
       bicycles: bikesPayload,
       email: rv.email.trim(),
@@ -874,7 +887,10 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       discountCoupon: this.finalTransportPrice !== null ? this.couponControl.value : null,
       pickupOfficeName: officeLabel || null
     };
+  }
 
+  private submitTransport(rv: any, serviceOrderIds: number[]): void {
+    const payload = this.buildTransportPayload(rv, serviceOrderIds);
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.transport}`;
 
     this.sendDebugReport('transport', payload);

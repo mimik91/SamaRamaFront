@@ -7,6 +7,7 @@ import { environment } from '../../../environments/environments';
 import { PaymentNavigationState, PaymentOrderType } from '../../../shared/models/payment.models';
 
 const PENDING_ORDER_KEY = 'pendingOrderData';
+const VALID_ORDER_TYPES: PaymentOrderType[] = ['TRANSPORT', 'SERVICE_ORDER'];
 
 @Component({
   selector: 'app-payment-summary',
@@ -38,7 +39,7 @@ export class PaymentSummaryComponent implements OnInit {
     const state = window.history.state as PaymentNavigationState | undefined;
 
     if (state?.orderData && Object.keys(state.orderData).length > 0) {
-      this.orderType = state.orderType ?? 'TRANSPORT';
+      this.orderType = this.sanitizeOrderType(state.orderType);
       this.orderData = state.orderData;
       this.totalPrice = state.totalPrice ?? 0;
       this.hasData = true;
@@ -52,7 +53,7 @@ export class PaymentSummaryComponent implements OnInit {
       if (stored) {
         try {
           const parsed = JSON.parse(stored) as PaymentNavigationState;
-          this.orderType = parsed.orderType ?? 'TRANSPORT';
+          this.orderType = this.sanitizeOrderType(parsed.orderType);
           this.orderData = parsed.orderData ?? {};
           this.totalPrice = parsed.totalPrice ?? 0;
           this.hasData = true;
@@ -65,6 +66,10 @@ export class PaymentSummaryComponent implements OnInit {
     if (!this.hasData) {
       this.router.navigate([environment.links.homepage]);
     }
+  }
+
+  private sanitizeOrderType(type: PaymentOrderType | undefined): PaymentOrderType {
+    return type && VALID_ORDER_TYPES.includes(type) ? type : 'TRANSPORT';
   }
 
   pay(): void {

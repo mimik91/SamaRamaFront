@@ -554,9 +554,23 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
 
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.expressReservation}`;
 
-    this.http.post<{ message: string; orderIds: number[]; expressServiceId: number }>(url, reservationPayload).subscribe({
+    this.http.post<{ message: string; orderIds: number[]; expressServiceId: number; transportPrice?: number }>(url, reservationPayload).subscribe({
       next: (res) => {
-        this.submitTransport(rv, res.orderIds, res.expressServiceId);
+        const transportPrice = res.transportPrice ?? 0;
+        if (transportPrice > 0) {
+          this.submitting = false;
+          const orderData = this.buildTransportPayload(rv, res.orderIds, res.expressServiceId, transportPrice);
+          this.router.navigate(['/platnosc/podsumowanie'], {
+            state: {
+              orderType: 'TRANSPORT',
+              orderData,
+              totalPrice: transportPrice,
+              bikeCount: this.bikesArray.length
+            }
+          });
+        } else {
+          this.submitTransport(rv, res.orderIds, res.expressServiceId, transportPrice);
+        }
       },
       error: (err) => {
         this.submitting = false;
@@ -566,7 +580,7 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  private submitTransport(rv: { [key: string]: string }, serviceOrderIds: number[], expressServiceId: number): void {
+  private buildTransportPayload(rv: { [key: string]: string }, serviceOrderIds: number[], expressServiceId: number, transportPrice: number): Record<string, unknown> {
     const tv = this.transportForm.value;
     const bikesPayload = this.bikesArray.value.map((b: { brand: string; model: string; additionalInfo: string }) => ({
       brand: b.brand.trim(),
@@ -579,7 +593,7 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     const officePrefix = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
     const transportNotes = [officePrefix, userNotes].filter(Boolean).join('\n');
 
-    const payload = {
+    return {
       serviceOrderIds,
       bicycles: bikesPayload,
       email: rv['email'].trim(),
@@ -590,13 +604,16 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
       pickupPostalCode: tv['pickupPostalCode'] || '',
       pickupDate: this.transportDate,
       targetServiceId: expressServiceId,
-      transportPrice: 0,
+      transportPrice,
       transportNotes,
       additionalNotes: '',
       discountCoupon: null,
       pickupOfficeName: officeLabel || null
     };
+  }
 
+  private submitTransport(rv: { [key: string]: string }, serviceOrderIds: number[], expressServiceId: number, transportPrice: number): void {
+    const payload = this.buildTransportPayload(rv, serviceOrderIds, expressServiceId, transportPrice);
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.transport}`;
 
     this.http.post(url, payload).subscribe({

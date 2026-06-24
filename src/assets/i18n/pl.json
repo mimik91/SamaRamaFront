@@ -520,7 +520,8 @@
       "no_service_selected": "Nie wybrano serwisu docelowego",
       "slots_not_available": "Brak wystarczającej liczby slotów na wybraną datę. Dostępnych rowerów:",
       "slots_available": "Sloty dostępne!",
-      "slots_check_error": "Nie można sprawdzić dostępności slotów. Spróbuj ponownie."
+      "slots_check_error": "Nie można sprawdzić dostępności slotów. Spróbuj ponownie.",
+      "submit_error": "Nie udało się złożyć zamówienia. Spróbuj ponownie lub skontaktuj się z nami."
     },
     "messages": {
       "order_success": "Zamówienie transportu zostało złożone pomyślnie!",

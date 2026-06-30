@@ -51,6 +51,16 @@ export class AllServicesPageComponent implements OnInit, OnDestroy {
   isCityInputFocused = false;
   activeSuggestionIndex = -1;
 
+  loadingAction: { serviceId: number; type: string } | null = null;
+
+  isServiceLoading(serviceId: number): boolean {
+    return this.loadingAction?.serviceId === serviceId;
+  }
+
+  isLoadingAction(serviceId: number, type: string): boolean {
+    return this.loadingAction?.serviceId === serviceId && this.loadingAction?.type === type;
+  }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -224,44 +234,74 @@ export class AllServicesPageComponent implements OnInit, OnDestroy {
     this.router.navigate(['/mapa-serwisow']);
   }
 
+  navigateToServiceOnMap(service: MapPin): void {
+    this.router.navigate(['/mapa-serwisow'], {
+      queryParams: { lat: service.latitude, lng: service.longitude, zoom: '16' }
+    });
+  }
+
   navigateToTransport(service: MapPin): void {
+    if (this.isServiceLoading(service.id)) return;
+    this.loadingAction = { serviceId: service.id, type: 'transport' };
+    this.cdr.markForCheck();
     this.mapService.getServiceSuffix(service.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
           if (response?.suffix) {
             this.router.navigate(['/', response.suffix, 'zamow-transport']);
           }
         },
-        error: () => {}
+        error: () => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
+        }
       });
   }
 
   navigateToServicePage(service: MapPin): void {
+    if (this.isServiceLoading(service.id)) return;
+    this.loadingAction = { serviceId: service.id, type: 'profile' };
+    this.cdr.markForCheck();
     this.mapService.getServiceSuffix(service.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
           if (response?.suffix) {
             this.router.navigate([response.suffix]);
           }
         },
-        error: () => {}
+        error: () => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
+        }
       });
   }
 
   navigateToReservation(service: MapPin): void {
+    if (this.isServiceLoading(service.id)) return;
+    this.loadingAction = { serviceId: service.id, type: 'reserve' };
+    this.cdr.markForCheck();
     this.mapService.getServiceSuffix(service.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
           if (response?.suffix) {
             this.router.navigate(['/', response.suffix, 'zarezerwuj'], {
               state: { serviceId: service.id }
             });
           }
         },
-        error: () => {}
+        error: () => {
+          this.loadingAction = null;
+          this.cdr.markForCheck();
+        }
       });
   }
 

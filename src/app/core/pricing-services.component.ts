@@ -160,7 +160,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
               <div class="benefit-icon emoji">🚚</div>
               <div class="benefit-body">
                 <h3>Logistyka Cyclopick <span class="city-badge emoji">📍 Kraków</span></h3>
-                <p>My dostarczamy Ci klientów. Darmowy transport ({{ partnerTransportLabel }}) to pot&#281;&#380;ny argument sprzeda&#380;owy &ndash; klienci chętniej wybieraj&#261; serwis z odbiorem roweru spod domu. Usługa dostępna na terenie Krakowa.</p>
+                <p>My dostarczamy Ci klientów. Transport door-to-door ({{ partnerTransportLabel }}) to pot&#281;&#380;ny argument sprzeda&#380;owy &ndash; klienci chętniej wybieraj&#261; serwis z odbiorem roweru spod domu. Usługa dostępna na terenie Krakowa.</p>
               </div>
             </div>
 

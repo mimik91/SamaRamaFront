@@ -4,7 +4,7 @@
   <section
     class="landing-hero"
     [style.backgroundImage]="heroBgStyle"
-    aria-label="Serwis rowerowy door-to-door w Krakowie z darmowym transportem"
+    aria-label="Serwis rowerowy door-to-door w Krakowie z transportem door-to-door"
   >
     <div class="hero-overlay" aria-hidden="true"></div>
     <div class="hero-inner">
@@ -19,7 +19,7 @@
         >
       </div>
 
-      <h1>Serwis rowerowy Kraków<br>door-to-door –<br>z darmowym transportem!</h1>
+      <h1>Serwis rowerowy Kraków<br>door-to-door –<br>transport od {{ partnerTransportLabel }}!</h1>
 
       <p class="hero-tagline">Przyjedziemy po Twój rower i odwieziemy go gotowego – wieczorem, bez wychodzenia z domu.</p>
 
@@ -84,7 +84,7 @@
     <section id="options-section" class="options-section" aria-labelledby="options-heading">
       <div class="section-eyebrow">Transport roweru · Kraków</div>
       <h2 id="options-heading">Jak zamówić transport rowerów w Krakowie?</h2>
-      <p class="section-subtitle">Wybierz model dopasowany do Twoich potrzeb – darmowy u Partnerów, stały koszt {{ standardTransportLabel }} do dowolnego warsztatu, lub zarezerwuj online i przywieź rower sam.</p>
+      <p class="section-subtitle">Wybierz model dopasowany do Twoich potrzeb – od {{ partnerTransportLabel }} u Partnerów, stały koszt {{ standardTransportLabel }} do dowolnego warsztatu, lub zarezerwuj online i przywieź rower sam.</p>
       <div class="options-grid">
 
         <!-- Opcja 1: Serwis partnerski -->
@@ -101,7 +101,7 @@
           <ul class="option-benefits" aria-label="Korzyści serwisu partnerskiego">
             <li class="benefit-yes">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Darmowy odbiór i zwrot roweru pod drzwi
+              Odbiór i zwrot roweru pod drzwi – {{ partnerTransportLabel }}
             </li>
             <li class="benefit-yes">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -116,7 +116,7 @@
               Pełne ubezpieczenie sprzętu w transporcie
             </li>
           </ul>
-          <button class="btn-option-primary" (click)="navigateToKrakowMapPartner()">Zarezerwuj bezp&#322;atny odbiór roweru</button>
+          <button class="btn-option-primary" (click)="navigateToKrakowMapPartner()">Zarezerwuj odbiór roweru</button>
         </article>
 
         <!-- Opcja 2: Transport dowolny -->
@@ -308,7 +308,7 @@
             <div>
               <span class="how-v2-krok-label">KROK 3</span>
               <h3 class="how-v2-body-title">Płatność i transport do serwisu</h3>
-              <p class="how-v2-body-text">Płacisz nam stałą stawkę <strong>{{ standardTransportLabel }}</strong> (gotówką lub BLIKiem) przy odbiorze roweru (Opcja&nbsp;B), LUB zyskujesz darmowy transport (Opcja&nbsp;A). <strong>Płacisz tylko za transport</strong> – za samą naprawę rozliczasz się bezpośrednio z&nbsp;serwisem.</p>
+              <p class="how-v2-body-text">Płacisz nam stałą stawkę <strong>{{ standardTransportLabel }}</strong> (gotówką lub BLIKiem) przy odbiorze roweru (Opcja&nbsp;B), LUB korzystasz z transportu za <strong>{{ partnerTransportLabel }}</strong> (Opcja&nbsp;A). <strong>Płacisz tylko za transport</strong> – za samą naprawę rozliczasz się bezpośrednio z&nbsp;serwisem.</p>
             </div>
           </div>
 

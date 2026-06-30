@@ -83,17 +83,17 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       icon: 'map-pin',
       title: 'Serwis rowerowy door-to-door w Krakowie',
-      description: 'Znajdź certyfikowanego Partnera CycloPick w Krakowie z darmowym transportem roweru. Odbiór spod drzwi, dostawa po naprawie – bez wychodzenia z domu.'
+      description: `Znajdź certyfikowanego Partnera CycloPick w Krakowie z transportem roweru od ${TRANSPORT_PRICING.partnerCost} zł. Odbiór spod drzwi, dostawa po naprawie – bez wychodzenia z domu.`
     },
     {
       icon: 'truck',
       title: `Transport rowerów Kraków – ${TRANSPORT_PRICING.partnerCost} zł lub ${TRANSPORT_PRICING.standardCost} zł`,
-      description: `U Partnerów CycloPick transport jest w cenie serwisu (${TRANSPORT_PRICING.partnerCost} zł). Do dowolnego serwisu rowerowego w Krakowie – stała cena ${TRANSPORT_PRICING.standardCost} zł w obie strony.`
+      description: `U Partnerów CycloPick transport to tylko ${TRANSPORT_PRICING.partnerCost} zł. Do dowolnego serwisu rowerowego w Krakowie – stała cena ${TRANSPORT_PRICING.standardCost} zł w obie strony.`
     },
     {
       icon: 'star',
-      title: 'Niebieska pinezka = darmowy transport',
-      description: 'Niebieskie pinezki na mapie CycloPick to zweryfikowani Partnerzy z darmowym transportem door-to-door, systemem rezerwacji online i cyfrową historią napraw.'
+      title: `Niebieska pinezka = transport ${TRANSPORT_PRICING.partnerCost} zł`,
+      description: `Niebieskie pinezki na mapie CycloPick to zweryfikowani Partnerzy z transportem door-to-door od ${TRANSPORT_PRICING.partnerCost} zł, systemem rezerwacji online i cyfrową historią napraw.`
     },
     {
       icon: 'clock',
@@ -105,7 +105,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   faqData = [
     {
       question: 'Co oznacza niebieska pinezka na mapie CycloPick?',
-      answer: `Niebieska pinezka oznacza Partnera CycloPick w Krakowie. U Partnerów CycloPick zarezerwujesz serwis rowerowy online i zyskasz darmowy transport door-to-door – kurier odbiera rower spod Twoich drzwi i odwozi po naprawie. Transport kosztuje ${TRANSPORT_PRICING.partnerCost} zł.`
+      answer: `Niebieska pinezka oznacza Partnera CycloPick w Krakowie. U Partnerów CycloPick zarezerwujesz serwis rowerowy online i zyskasz transport door-to-door – kurier odbiera rower spod Twoich drzwi i odwozi po naprawie. Transport kosztuje tylko ${TRANSPORT_PRICING.partnerCost} zł.`
     },
     {
       question: 'Co oznacza zielona pinezka na mapie CycloPick?',
@@ -113,7 +113,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       question: 'Ile kosztuje transport roweru w Krakowie przez CycloPick?',
-      answer: `Transport roweru w Krakowie kosztuje ${TRANSPORT_PRICING.partnerCost} zł do serwisów Partnerskich CycloPick (transport jest wliczony w cenę serwisu). Do dowolnego innego serwisu rowerowego w Krakowie – stała cena ${TRANSPORT_PRICING.standardCost} zł za transport tam i z powrotem. Płatność gotówką lub BLIKIEM przy odbiorze roweru.`
+      answer: `Transport roweru w Krakowie kosztuje ${TRANSPORT_PRICING.partnerCost} zł do serwisów Partnerskich CycloPick. Do dowolnego innego serwisu rowerowego w Krakowie – stała cena ${TRANSPORT_PRICING.standardCost} zł za transport tam i z powrotem. Każdy kolejny rower to +${TRANSPORT_PRICING.additionalBikeCost} zł. Płatność gotówką lub BLIKIEM przy odbiorze roweru.`
     },
     {
       question: 'Jak zamówić serwis rowerowy door-to-door w Krakowie?',
@@ -125,7 +125,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       question: 'Czy korzystanie z mapy serwisów rowerowych CycloPick jest darmowe?',
-      answer: 'Tak, przeglądanie mapy serwisów rowerowych i korzystanie z wyszukiwarki CycloPick jest całkowicie bezpłatne. Płacisz wyłącznie za naprawę roweru – transport do Partnerów CycloPick jest w cenie serwisu.'
+      answer: `Tak, przeglądanie mapy serwisów rowerowych i korzystanie z wyszukiwarki CycloPick jest całkowicie bezpłatne. Płacisz wyłącznie za naprawę roweru i transport – transport do Partnerów CycloPick kosztuje tylko ${TRANSPORT_PRICING.partnerCost} zł.`
     },
     {
       question: 'Czy mój rower jest bezpieczny podczas transportu?',
@@ -361,8 +361,8 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   // ============================================================
 
   private setMetaTags(): void {
-    const pageTitle = 'Serwis Rowerowy Kraków Door-to-Door – Darmowy Transport | CycloPick';
-    const pageDescription = `Serwis rowerowy door-to-door w Krakowie z darmowym transportem. Kurier odbiera rower spod drzwi. Partnerzy CycloPick: transport ${TRANSPORT_PRICING.partnerCost} zł. Inne serwisy: ${TRANSPORT_PRICING.standardCost} zł. Rezerwacja online, cyfrowa historia napraw.`;
+    const pageTitle = `Serwis Rowerowy Kraków Door-to-Door – Transport od ${TRANSPORT_PRICING.partnerCost} zł | CycloPick`;
+    const pageDescription = `Serwis rowerowy door-to-door w Krakowie z transportem od ${TRANSPORT_PRICING.partnerCost} zł. Kurier odbiera rower spod drzwi. Partnerzy CycloPick: transport ${TRANSPORT_PRICING.partnerCost} zł. Inne serwisy: ${TRANSPORT_PRICING.standardCost} zł. Rezerwacja online, cyfrowa historia napraw.`;
 
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });
@@ -400,7 +400,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
       '@id': 'https://www.cyclopick.pl/#transport-service',
       name: 'Transport roweru door-to-door Kraków',
       serviceType: 'Serwis rowerowy z transportem door-to-door',
-      description: `Kompleksowy serwis rowerowy door-to-door w Krakowie. U Partnerów CycloPick transport gratis, do pozostałych serwisów ${TRANSPORT_PRICING.standardCost} zł w obie strony.`,
+      description: `Kompleksowy serwis rowerowy door-to-door w Krakowie. U Partnerów CycloPick transport ${TRANSPORT_PRICING.partnerCost} zł, do pozostałych serwisów ${TRANSPORT_PRICING.standardCost} zł w obie strony.`,
       areaServed: { '@type': 'City', name: 'Kraków', addressCountry: 'PL' },
       provider: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' },
       offers: [

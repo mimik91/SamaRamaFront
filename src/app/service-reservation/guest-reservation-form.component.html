@@ -672,8 +672,8 @@
         </div>
         <div class="cost-row" *ngIf="withTransport">
           <span class="cost-label">Koszt transportu:</span>
-          <span class="cost-value" [class.cost-value--free]="!serviceInfo!.transportCost">
-            <ng-container *ngIf="!serviceInfo!.transportCost">0 PLN <span class="cost-promo">(Promocja)</span></ng-container>
+          <span class="cost-value">
+            <ng-container *ngIf="!serviceInfo!.transportCost">{{ transportPricing.partnerCost }} PLN</ng-container>
             <ng-container *ngIf="serviceInfo!.transportCost">
               <span *ngIf="finalTransportPrice !== null" class="cost-original">{{ serviceInfo!.transportCost }} PLN</span>
               {{ effectiveTransportPrice }} PLN
@@ -683,7 +683,7 @@
         <div class="cost-row cost-row--total">
           <span class="cost-label">Łącznie do zapłaty teraz:</span>
           <span class="cost-value cost-value--total">
-            {{ (withTransport && serviceInfo!.transportCost) ? effectiveTransportPrice + ' PLN' : '0 PLN' }}
+            {{ withTransport ? (serviceInfo!.transportCost ? effectiveTransportPrice : transportPricing.partnerCost) + ' PLN' : '0 PLN' }}
           </span>
         </div>
       </div>

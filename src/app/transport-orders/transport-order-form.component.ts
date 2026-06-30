@@ -14,6 +14,7 @@ import { SessionSyncService } from '../core/session-sync.service';
 import { environment } from '../environments/environments';
 import { BicycleFormData, BicycleData } from '../shared/models/bicycle.model';
 import { OfficeAddressDto } from '../shared/models/office-address.model';
+import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constants';
 
 type PickupType = 'ADDRESS' | 'OFFICE';
 
@@ -542,8 +543,7 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
     if (selectedCount === 1) {
       return baseCost;
     }
-    const perAdditionalBikeCost = 20;
-    return baseCost + (selectedCount - 1) * perAdditionalBikeCost;
+    return baseCost + (selectedCount - 1) * TRANSPORT_PRICING.additionalBikeCost;
   }
 
   getBaseTransportCost(): number {
@@ -556,7 +556,7 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
   getAdditionalBikesCost(): number {
     const selectedCount = this.getSelectedBicyclesCount();
     if (selectedCount <= 1) return 0;
-    return (selectedCount - 1) * 20;
+    return (selectedCount - 1) * TRANSPORT_PRICING.additionalBikeCost;
   }
 
   getFinalPriceToSend(): number {

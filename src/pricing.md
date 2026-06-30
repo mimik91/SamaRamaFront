@@ -13,8 +13,8 @@ Konto klienta, rezerwacje online i historia serwisowa są bezpłatne.
 
 | Usługa | Serwisy Partnerskie — PROMOCJA (do odwołania) | Serwisy Partnerskie — cena standardowa | Pozostałe serwisy w Krakowie |
 |--------|-----------------------------------------------|----------------------------------------|------------------------------|
-| Odbiór i zwrot roweru (transport w obie strony) | 0 zł | 30 zł | 60 zł |
-| Tylko zwrot roweru (gdy rower już w serwisie) | 0 zł | 20 zł | Niedostępne |
+| Odbiór i zwrot roweru (transport w obie strony) | 10 zł | 30 zł | 60 zł |
+| Tylko zwrot roweru (gdy rower już w serwisie) | 10 zł | 20 zł | Niedostępne |
 | Konto klienta, rezerwacje, historia serwisowa | 0 zł | 0 zł | 0 zł |
 
 **Zasięg odbioru:** Kraków, Batowice, Bibice, Bołętów, Bosutów, Dziekanowice, Michałowice, Raciborowice, Węgrzce, Zielonki.
@@ -46,7 +46,7 @@ Konto klienta, rezerwacje online i historia serwisowa są bezpłatne.
 - Wyróżnienie serwisu na mapie CycloPick (duża pinezka)
 - Logo i link do profilu serwisu na stronie głównej CycloPick
 - Powiadomienia e-mail do klientów (potwierdzenia, statusy zleceń)
-- Logistyka CycloPick — bezpłatny transport roweru door-to-door dla klientów (Kraków)
+- Logistyka CycloPick — transport roweru door-to-door od 10 zł dla klientów (Kraków)
 - Powiadomienia SMS dla klientów — wkrótce
 
 ### Warunki statusu Partnera (weryfikowane rocznie)

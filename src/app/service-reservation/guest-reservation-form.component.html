@@ -645,10 +645,10 @@
               {{ transportForm.value.pickupPostalCode }}
             </span>
           </div>
-          <div class="summary-row" *ngIf="serviceInfo.transportCost">
+          <div class="summary-row">
             <span class="summary-label">Koszt transportu:</span>
             <span class="summary-value">
-              <span *ngIf="finalTransportPrice !== null" class="summary-price-original">{{ serviceInfo.transportCost }} PLN</span>
+              <span *ngIf="serviceInfo.transportCost && finalTransportPrice !== null" class="summary-price-original">{{ serviceInfo.transportCost }} PLN</span>
               <span class="summary-price">{{ effectiveTransportPrice }} PLN</span>
             </span>
           </div>
@@ -673,17 +673,14 @@
         <div class="cost-row" *ngIf="withTransport">
           <span class="cost-label">Koszt transportu:</span>
           <span class="cost-value">
-            <ng-container *ngIf="!serviceInfo!.transportCost">{{ transportPricing.partnerCost }} PLN</ng-container>
-            <ng-container *ngIf="serviceInfo!.transportCost">
-              <span *ngIf="finalTransportPrice !== null" class="cost-original">{{ serviceInfo!.transportCost }} PLN</span>
-              {{ effectiveTransportPrice }} PLN
-            </ng-container>
+            <span *ngIf="serviceInfo!.transportCost && finalTransportPrice !== null" class="cost-original">{{ serviceInfo!.transportCost }} PLN</span>
+            {{ effectiveTransportPrice }} PLN
           </span>
         </div>
         <div class="cost-row cost-row--total">
           <span class="cost-label">Łącznie do zapłaty teraz:</span>
           <span class="cost-value cost-value--total">
-            {{ withTransport ? (serviceInfo!.transportCost ? effectiveTransportPrice : transportPricing.partnerCost) + ' PLN' : '0 PLN' }}
+            {{ withTransport ? effectiveTransportPrice + ' PLN' : '0 PLN' }}
           </span>
         </div>
       </div>

@@ -854,7 +854,9 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   }
 
   get effectiveTransportPrice(): number {
-    return this.finalTransportPrice ?? this.serviceInfo?.transportCost ?? 0;
+    const basePrice = this.finalTransportPrice ?? this.serviceInfo?.transportCost ?? this.transportPricing.partnerCost;
+    const additionalBikes = Math.max(0, this.bikesArray.length - 1);
+    return basePrice + additionalBikes * this.transportPricing.additionalBikeCost;
   }
 
   private buildTransportPayload(rv: any, serviceOrderIds: number[]): Record<string, unknown> {

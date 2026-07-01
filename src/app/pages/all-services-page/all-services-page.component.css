@@ -272,7 +272,7 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Card body: mobile = [logo][actions] row + [info] below; desktop = single row */
+/* Card body: mobile = wrap (logo+actions row, then info below); desktop = single row */
 .service-body {
   flex: 1;
   min-width: 0;
@@ -307,7 +307,7 @@
   background: var(--color-slate-50);
 }
 
-/* Info section: name, address, phone, map */
+/* Info section: name, address, phone, map — on mobile wraps below logo+actions */
 .service-info {
   order: 3;
   min-width: 0;
@@ -384,7 +384,7 @@
 
 /* ============ SERVICE ACTIONS ============ */
 
-/* Mobile: next to logo (order:2, flex:1 fills remaining width) */
+/* Mobile: next to logo (order:2, flex:1 fills remaining width in same row as logo) */
 .service-actions {
   display: flex;
   flex-direction: column;
@@ -640,7 +640,7 @@
     padding: var(--spacing-8) var(--spacing-6);
   }
 
-  /* Desktop: logo | info (flex-grow) | buttons (fixed right) */
+  /* Desktop: logo | info (flex-grow) | buttons (fixed right) — DOM order: logo, actions, info */
   .service-body {
     flex-wrap: nowrap;
     align-items: center;

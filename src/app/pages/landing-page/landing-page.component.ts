@@ -435,12 +435,12 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   navigateToKrakow(): void {
-    this.router.navigate(['/serwisy/krakow']).then(() => { window.scrollTo({ top: 0 }); });
+    const zoom = window.innerWidth < 768 ? '11' : '13';
+    this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '50.0647', lng: '19.9450', zoom } });
   }
 
   navigateToKrakowMapPartner(): void {
-    const zoom = window.innerWidth < 768 ? '11' : '13';
-    this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '50.0647', lng: '19.9450', zoom, coverages: '342' } });
+    this.router.navigate(['/serwisy/krakow']).then(() => { window.scrollTo({ top: 0 }); });
   }
 
   navigateToPolandMapPartner(): void {

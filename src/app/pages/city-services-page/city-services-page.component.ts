@@ -12,6 +12,7 @@ import { SeoService } from '../../core/seo.service';
 import { SchemaOrgHelper } from '../../core/schema-org.helper';
 import { environment } from '../../environments/environments';
 import { CityServicesResolvedData } from './city-services-page.resolver';
+import { TRANSPORT_PRICING } from '../../shared/constants/transport-pricing.constants';
 
 export interface CityConfig {
   slug: string;
@@ -56,6 +57,16 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   filteredCities: CityConfig[] = [];
   showCitySuggestions = false;
   activeSuggestionIndex = -1;
+
+  readonly transportPricing = TRANSPORT_PRICING;
+
+  // Rozwijane szczegóły promo serwisu ekspresowego (kompaktowy widok na mobilce)
+  expressPromoExpanded = false;
+
+  toggleExpressPromo(): void {
+    this.expressPromoExpanded = !this.expressPromoExpanded;
+    this.cdr.markForCheck();
+  }
 
   isBrowser: boolean;
   loadingAction: { serviceId: number; type: string } | null = null;

@@ -8,7 +8,10 @@
     </div>
 
     <h1>Zamówienie złożone!</h1>
-    <p class="subtitle">Twoje zamówienie transportu zostało zarejestrowane w systemie. Teraz możesz je opłacić online przez PayU.</p>
+    <p class="subtitle" *ngIf="orderType === 'SERVICE_ORDER'; else transportSubtitle">Sprawdziliśmy dostępność terminu i wyceniliśmy Twój serwis ekspresowy CycloPick. Opłać go teraz online przez PayU, aby dokończyć rezerwację.</p>
+    <ng-template #transportSubtitle>
+      <p class="subtitle">Twoje zamówienie transportu zostało zarejestrowane w systemie. Teraz możesz je opłacić online przez PayU.</p>
+    </ng-template>
 
     <div class="order-details">
       <div class="detail-row">
@@ -38,9 +41,14 @@
       </span>
     </button>
 
-    <p class="disclaimer">
-      Zamówienie jest zarezerwowane. Kurier skontaktuje się z Tobą po zaksięgowaniu płatności.
+    <p class="disclaimer" *ngIf="orderType === 'SERVICE_ORDER'; else transportDisclaimer">
+      Twoja wizyta zostanie zarezerwowana automatycznie po zaksięgowaniu płatności. Otrzymasz potwierdzenie e-mail.
     </p>
+    <ng-template #transportDisclaimer>
+      <p class="disclaimer">
+        Zamówienie jest zarezerwowane. Kurier skontaktuje się z Tobą po zaksięgowaniu płatności.
+      </p>
+    </ng-template>
 
   </div>
 </div>

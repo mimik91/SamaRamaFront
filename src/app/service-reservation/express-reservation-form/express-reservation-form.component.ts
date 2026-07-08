@@ -17,10 +17,7 @@ import { Subscription, forkJoin, of } from 'rxjs';
 import { filter, distinctUntilChanged, catchError } from 'rxjs/operators';
 import {
   ServicePackagesConfigDto,
-  ServicePackageDto,
-  PackageLevel,
-  ALL_PACKAGE_LEVELS,
-  filterPackagesByBikeType
+  ServicePackageDto
 } from '../../shared/models/service-packages.models';
 import { SessionSyncService } from '../../core/session-sync.service';
 import { SeoService } from '../../core/seo.service';
@@ -105,14 +102,11 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   checkingAvailability = false;
   availabilityError: string | null = null;
 
-  // Packages pricelist panel
-  packagesConfig: ServicePackagesConfigDto | null = null;
+  // Wybór pakietu serwisowego (wymagany — jeden pakiet dla całej rezerwacji)
+  packagesLoaded = false;
   packages: ServicePackageDto[] = [];
-  bikeTypes: string[] = [];
-  selectedBikeType: string | null = null;
-  filteredPackages: ServicePackageDto[] = [];
-  packagesExpanded = false;
-  readonly packageLevels = ALL_PACKAGE_LEVELS;
+  selectedPackage: ServicePackageDto | null = null;
+  packageSelectionAttempted = false;
 
   // Office address autocomplete
   officeAddresses: OfficeAddressDto[] = [];
@@ -166,7 +160,7 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     return this.fb.group({
       brand: ['', Validators.required],
       model: [''],
-      additionalInfo: ['', Validators.required]
+      additionalInfo: ['']
     });
   }
 
@@ -487,7 +481,10 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
       this.markAllTouched(this.reservationForm);
       this.bikesArray.controls.forEach(c => this.markAllTouched(c as FormGroup));
       this.markAllTouched(this.transportForm);
-      this.notificationService.warning('Wypełnij wszystkie wymagane pola poprawnie.');
+      this.packageSelectionAttempted = true;
+      this.notificationService.warning(
+        !this.selectedPackage ? 'Wybierz pakiet serwisowy.' : 'Wypełnij wszystkie wymagane pola poprawnie.'
+      );
     }
   }
 
@@ -501,7 +498,7 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   isStep1Valid(): boolean {
     const officeNameFilled = !this.isOfficePick || !!this.officeNameControl.value?.trim();
     const transportValid = this.transportForm.valid && officeNameFilled;
-    return this.reservationForm.valid && this.bikesArray.valid && transportValid;
+    return this.reservationForm.valid && this.bikesArray.valid && transportValid && !!this.selectedPackage;
   }
 
   isStepCompleted(step: number): boolean {
@@ -526,12 +523,45 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (!this.isStep1Valid() || !this.termsControl.valid) {
       this.termsControl.markAsTouched();
-      this.notificationService.warning('Zaakceptuj regulamin aby kontynuować.');
+      this.packageSelectionAttempted = true;
+      this.notificationService.warning(
+        !this.selectedPackage ? 'Wybierz pakiet serwisowy.' : 'Zaakceptuj regulamin aby kontynuować.'
+      );
       return;
     }
 
     this.submitting = true;
+    const orderData = this.buildServiceOrderPayload();
+    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.expressReservationQuote}`;
+
+    this.http.post<{ expressServiceId: number; totalPrice: number }>(url, orderData).subscribe({
+      next: (res) => {
+        this.submitting = false;
+        const finalOrderData = { ...orderData, serviceId: res.expressServiceId };
+        this.router.navigate(['/platnosc/podsumowanie'], {
+          state: {
+            orderType: 'SERVICE_ORDER',
+            orderData: finalOrderData,
+            totalPrice: res.totalPrice,
+            bikeCount: this.bikesArray.length
+          }
+        });
+      },
+      error: (err) => {
+        this.submitting = false;
+        const msg = err.error?.message || 'Nie udało się wycenić rezerwacji. Spróbuj ponownie.';
+        this.notificationService.error(msg);
+      }
+    });
+  }
+
+  /**
+   * Buduje pełny payload rezerwacji + odbioru — nic jeszcze nie zapisuje w bazie.
+   * ServiceOrder i powiązany (bezpłatny) TransportOrder powstają dopiero po opłaceniu.
+   */
+  private buildServiceOrderPayload(): Record<string, unknown> {
     const rv = this.reservationForm.value;
+    const tv = this.transportForm.value;
 
     const plannedDateVal = rv.plannedDate;
     const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
@@ -542,126 +572,52 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
       additionalInfo: b.additionalInfo?.trim() || null
     }));
 
-    const reservationPayload = {
-      firstName: rv.firstName.trim(),
-      lastName: rv.lastName.trim(),
-      email: rv.email.trim(),
-      phone: rv.phone?.trim() || null,
-      bicycles: bikesPayload,
-      plannedDate: plannedDateStr,
-      description: bikesPayload[0]?.additionalInfo || null
-    };
-
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.expressReservation}`;
-
-    this.http.post<{ message: string; orderIds: number[]; expressServiceId: number; transportPrice?: number }>(url, reservationPayload).subscribe({
-      next: (res) => {
-        const transportPrice = res.transportPrice ?? 0;
-        if (transportPrice > 0) {
-          this.submitting = false;
-          const orderData = this.buildTransportPayload(rv, res.orderIds, res.expressServiceId, transportPrice);
-          this.router.navigate(['/platnosc/podsumowanie'], {
-            state: {
-              orderType: 'TRANSPORT',
-              orderData,
-              totalPrice: transportPrice,
-              bikeCount: this.bikesArray.length
-            }
-          });
-        } else {
-          this.submitTransport(rv, res.orderIds, res.expressServiceId, transportPrice);
-        }
-      },
-      error: (err) => {
-        this.submitting = false;
-        const msg = err.error?.message || 'Nie udało się złożyć rezerwacji. Spróbuj ponownie.';
-        this.notificationService.error(msg);
-      }
-    });
-  }
-
-  private buildTransportPayload(rv: { [key: string]: string }, serviceOrderIds: number[], expressServiceId: number, transportPrice: number): Record<string, unknown> {
-    const tv = this.transportForm.value;
-    const bikesPayload = this.bikesArray.value.map((b: { brand: string; model: string; additionalInfo: string }) => ({
-      brand: b.brand.trim(),
-      model: b.model?.trim() || '',
-      additionalInfo: b.additionalInfo?.trim() || ''
-    }));
-
     const officeLabel = this.isOfficePick ? this.officeNameControl.value?.trim() : null;
     const userNotes = tv['transportNotes']?.trim() || '';
     const officePrefix = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
     const transportNotes = [officePrefix, userNotes].filter(Boolean).join('\n');
 
     return {
-      serviceOrderIds,
+      firstName: rv.firstName.trim(),
+      lastName: rv.lastName.trim(),
+      email: rv.email.trim(),
+      phone: rv.phone?.trim() || null,
       bicycles: bikesPayload,
-      email: rv['email'].trim(),
-      phone: rv['phone']?.trim() || '',
+      plannedDate: plannedDateStr,
+      description: bikesPayload[0]?.additionalInfo || null,
+      packageId: this.selectedPackage!.id,
       pickupStreet: tv['pickupStreet'],
       pickupBuildingNumber: tv['pickupBuildingNumber'],
+      pickupApartmentNumber: null,
       pickupCity: tv['pickupCity'],
       pickupPostalCode: tv['pickupPostalCode'] || '',
+      pickupOfficeName: officeLabel || null,
       pickupDate: this.transportDate,
-      targetServiceId: expressServiceId,
-      transportPrice,
-      transportNotes,
-      additionalNotes: '',
-      discountCoupon: null,
-      pickupOfficeName: officeLabel || null
+      transportNotes
     };
-  }
-
-  private submitTransport(rv: { [key: string]: string }, serviceOrderIds: number[], expressServiceId: number, transportPrice: number): void {
-    const payload = this.buildTransportPayload(rv, serviceOrderIds, expressServiceId, transportPrice);
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.transport}`;
-
-    this.http.post(url, payload).subscribe({
-      next: () => this.onSuccess(),
-      error: (err) => {
-        this.submitting = false;
-        const msg = err.error?.message ||
-          'Rezerwacja złożona, ale nie udało się zarezerwować transportu. Skontaktuj się z nami.';
-        this.notificationService.error(msg);
-      }
-    });
-  }
-
-  private onSuccess(): void {
-    this.submitting = false;
-    this.router.navigate(['/sukces'], { queryParams: { typ: 'rezerwacja' }, replaceUrl: true });
   }
 
   // ===== Packages =====
 
-  togglePackages(): void {
-    this.packagesExpanded = !this.packagesExpanded;
+  get noPackagesAvailable(): boolean {
+    return this.packagesLoaded && this.packages.length === 0;
   }
 
-  onBikeTypeChange(type: string): void {
-    this.selectedBikeType = type;
-    this.filteredPackages = filterPackagesByBikeType(this.packages, type);
-  }
-
-  getPackageForLevel(level: PackageLevel): ServicePackageDto | null {
-    return this.filteredPackages.find(p => p.packageLevel === level) || null;
-  }
-
-  getPackageDisplayName(pkg: ServicePackageDto): string {
-    return pkg.customName || pkg.packageLevelDisplayName;
+  selectPackage(pkg: ServicePackageDto): void {
+    this.selectedPackage = pkg;
+    this.packageSelectionAttempted = false;
   }
 
   private loadPackages(): void {
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.expressPackages}`;
     this.http.get<ServicePackagesConfigDto>(url).pipe(catchError(() => of(null))).subscribe({
       next: (config) => {
-        if (!config?.packages?.some(p => p.active)) return;
-        this.packagesConfig = config;
-        this.packages = config.packages.filter(p => p.active);
-        const types = [...new Set(this.packages.flatMap(p => p.bikeTypes))].sort((a, b) => a.localeCompare(b, 'pl'));
-        this.bikeTypes = types;
-        this.selectedBikeType = config.defaultBikeType || types[0] || null;
-        this.filteredPackages = filterPackagesByBikeType(this.packages, this.selectedBikeType);
+        this.packages = (config?.active && config.packages) ? config.packages.filter(p => p.active) : [];
+        this.packagesLoaded = true;
+        // Domyślnie zaznaczamy najtańszy pakiet — klient może zmienić wybór ręcznie
+        if (this.packages.length > 0) {
+          this.selectedPackage = this.packages.reduce((cheapest, pkg) => pkg.price < cheapest.price ? pkg : cheapest);
+        }
       }
     });
   }

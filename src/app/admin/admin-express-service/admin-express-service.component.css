@@ -389,6 +389,14 @@
   font-weight: 500;
 }
 
+.toggle-label small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b7280;
+}
+
 .toggle-checkbox {
   display: none;
 }

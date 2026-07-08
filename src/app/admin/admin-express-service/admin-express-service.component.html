@@ -210,6 +210,21 @@
       Ładowanie pakietów...
     </div>
 
+    <div *ngIf="!loadingPackages && packagesConfig" class="config-section">
+      <label class="toggle-row">
+        <span class="toggle-label">
+          Sekcja pakietów opublikowana
+          <small>Jeśli wyłączone, formularz rezerwacji serwisu ekspresowego pokazuje komunikat o niedostępności — niezależnie od tego, czy pakiety poniżej są aktywne.</small>
+        </span>
+        <div class="toggle-wrapper">
+          <input type="checkbox" class="toggle-checkbox" [checked]="packagesConfig.active"
+                 [disabled]="savingPackagesConfigActive" (change)="togglePackagesConfigActive()"
+                 id="packagesConfigActiveToggle">
+          <label for="packagesConfigActiveToggle" class="toggle-track"></label>
+        </div>
+      </label>
+    </div>
+
     <div *ngIf="!loadingPackages && packagesConfig" class="packages-list">
       <div *ngIf="packagesConfig.packages.length === 0 && !showNewPackageForm" class="empty-state">
         <p>Brak skonfigurowanych pakietów.</p>

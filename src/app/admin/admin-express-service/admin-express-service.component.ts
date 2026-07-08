@@ -50,6 +50,8 @@ interface PackagesConfig {
   id: number;
   active: boolean;
   generalDescription: string | null;
+  comment: string | null;
+  defaultBikeType: string | null;
   packages: ExpressPackage[];
 }
 
@@ -98,6 +100,7 @@ export class AdminExpressServiceComponent implements OnInit {
   packagesConfig: PackagesConfig | null = null;
   loadingPackages = false;
   savingPackage = false;
+  savingPackagesConfigActive = false;
   editingPackageId: number | null = null;
   showNewPackageForm = false;
   editForm: {
@@ -303,6 +306,32 @@ export class AdminExpressServiceComponent implements OnInit {
       },
       error: () => {
         this.loadingPackages = false;
+      }
+    });
+  }
+
+  togglePackagesConfigActive(): void {
+    if (!this.packagesConfig || this.savingPackagesConfigActive) return;
+
+    const newActive = !this.packagesConfig.active;
+    this.savingPackagesConfigActive = true;
+    const payload = {
+      generalDescription: this.packagesConfig.generalDescription,
+      comment: this.packagesConfig.comment,
+      defaultBikeType: this.packagesConfig.defaultBikeType,
+      active: newActive
+    };
+
+    const url = `${environment.apiUrl}${environment.endpoints.admin.expressService.packagesConfig}`;
+    this.http.put(url, payload).subscribe({
+      next: () => {
+        this.notificationService.success(newActive ? 'Sekcja pakietów opublikowana' : 'Sekcja pakietów ukryta');
+        this.savingPackagesConfigActive = false;
+        this.loadPackages();
+      },
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Nie udało się zmienić statusu sekcji pakietów');
+        this.savingPackagesConfigActive = false;
       }
     });
   }

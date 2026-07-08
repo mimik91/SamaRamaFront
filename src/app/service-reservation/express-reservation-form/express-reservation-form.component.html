@@ -7,55 +7,44 @@
       <img src="/assets/images/logo-cyclopick.png" alt="CycloPick" class="express-banner-logo">
     </div>
     <div class="express-banner-content">
-      <p class="express-banner-headline">Serwis rowerowy z transportem door-to-door</p>
+      <p class="express-banner-headline">Serwis rowerowy tego samego dnia</p>
       <p class="express-banner-text">
+        Odbierzemy Twój rower rano z biura lub spod domu i zwrócimy <strong>tego samego dnia przed 17:00</strong>.
         Serwis zostanie wybrany przez CycloPick spośród najlepszych warsztatów w Krakowie.
       </p>
-      <ul class="express-banner-options">
-        <li><strong>Z biura:</strong> odbiór rano, zwrot <strong>tego samego dnia przed 17:00</strong></li>
-        <li><strong>Spod domu:</strong> odbiór wieczorem, zwrot <strong>następnego dnia wieczorem</strong></li>
-      </ul>
     </div>
   </div>
 
-  <!-- Packages info panel -->
-  <div *ngIf="packagesConfig && packages.length > 0" class="packages-panel">
-    <button class="packages-panel-toggle" type="button" (click)="togglePackages()">
-      <span>Cennik pakietów serwisowych</span>
-      <svg class="packages-chevron" [class.expanded]="packagesExpanded"
-           xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
-    </button>
+  <!-- Loading state while checking package availability -->
+  <div *ngIf="!packagesLoaded" class="packages-loading">
+    Sprawdzam dostępność serwisu ekspresowego...
+  </div>
 
-    <div class="packages-panel-content" *ngIf="packagesExpanded">
-      <p *ngIf="packagesConfig.generalDescription?.trim()" class="packages-info">
-        {{ packagesConfig.generalDescription }}
-      </p>
+  <!-- No active package — hide the whole reservation form -->
+  <div *ngIf="packagesLoaded && noPackagesAvailable" class="packages-unavailable">
+    <p>Serwis ekspresowy jest obecnie niedostępny do zamówienia. Spróbuj ponownie później.</p>
+  </div>
 
-      <div class="bike-type-selector" *ngIf="bikeTypes.length > 1">
-        <label for="pkgBikeType">Wybierz typ roweru:</label>
-        <select id="pkgBikeType" class="bike-type-dropdown"
-                (change)="onBikeTypeChange($any($event.target).value)">
-          <option *ngFor="let type of bikeTypes" [value]="type" [selected]="type === selectedBikeType">{{ type }}</option>
-        </select>
-      </div>
+  <ng-container *ngIf="packagesLoaded && !noPackagesAvailable">
 
-      <div class="packages-grid" [class.packages-grid--single]="filteredPackages.length === 1" *ngIf="selectedBikeType">
-        <ng-container *ngFor="let level of packageLevels">
-          <div *ngIf="getPackageForLevel(level) as pkg" class="package-card">
-            <div class="package-level-badge">{{ pkg.packageLevelDisplayName }}</div>
-            <h3 class="package-title">{{ getPackageDisplayName(pkg) }}</h3>
-            <p *ngIf="pkg.description" class="package-desc">{{ pkg.description }}</p>
-            <div class="package-price">
-              <span class="price-amount">{{ pkg.price }}</span>
-              <span class="price-currency">zł</span>
-            </div>
-          </div>
-        </ng-container>
+  <!-- Package selection (required) -->
+  <div class="packages-panel">
+    <h2 class="section-title">Wybierz pakiet serwisowy *</h2>
+    <div class="packages-grid" [class.packages-grid--single]="packages.length === 1">
+      <div *ngFor="let pkg of packages" class="package-card"
+           [class.selected]="selectedPackage?.id === pkg.id"
+           (click)="selectPackage(pkg)">
+        <h3 class="package-title">{{ pkg.displayName }}</h3>
+        <p *ngIf="pkg.description" class="package-desc">{{ pkg.description }}</p>
+        <div class="package-price">
+          <span class="price-amount">{{ pkg.price }}</span>
+          <span class="price-currency">zł</span>
+        </div>
       </div>
     </div>
+    <span *ngIf="packageSelectionAttempted && !selectedPackage" class="error-message">
+      Wybierz pakiet serwisowy
+    </span>
   </div>
 
   <!-- Step indicator -->
@@ -152,12 +141,10 @@
         </div>
 
         <div class="form-group">
-          <label [for]="'info-' + i">Opis usterki / zakres serwisu *</label>
+          <label [for]="'info-' + i">Zauważone usterki (opcjonalnie)</label>
           <textarea [id]="'info-' + i" class="form-textarea" formControlName="additionalInfo"
-                    placeholder="np. Pisk hamulców, luz w sterach, wymiana opon..."
-                    rows="2"
-                    [class.invalid]="isBikeFieldInvalid(i, 'additionalInfo')"></textarea>
-          <span *ngIf="isBikeFieldInvalid(i, 'additionalInfo')" class="error-message">Opisz co wymaga serwisu</span>
+                    placeholder="Co Cię niepokoi w działaniu roweru? np. Pisk hamulców, luz w sterach..."
+                    rows="6"></textarea>
         </div>
       </div>
 
@@ -366,4 +353,6 @@
       </button>
     </div>
   </div>
+
+  </ng-container>
 </div>

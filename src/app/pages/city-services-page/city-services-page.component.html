@@ -8,6 +8,85 @@
     </p>
   </header>
 
+  <!-- Express reservation promo — Kraków only -->
+  <section class="express-promo" *ngIf="isKrakow && !cityNotFound" aria-labelledby="express-promo-heading">
+    <div class="express-promo-inner">
+
+      <div class="express-promo-text">
+        <div class="express-promo-top">
+          <span class="express-promo-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>
+            Wybierzemy dla Ciebie
+          </span>
+        </div>
+        <h2 id="express-promo-heading" class="express-promo-title">
+          Najprostszy sposób na sprawny rower
+        </h2>
+      </div>
+
+      <div class="express-promo-cta-wrap">
+        <div class="express-promo-cta-card">
+          <div class="express-cta-label">Zarezerwuj online</div>
+          <a routerLink="/krakow/zarezerwuj" class="btn-express-primary" aria-label="Zarezerwuj serwis ekspresowy w Krakowie">
+            Zarezerwuj teraz
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <p class="express-cta-note">Potwierdzenie na email · Bezpłatne anulowanie</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="express-promo-toggle"
+        (click)="toggleExpressPromo()"
+        [attr.aria-expanded]="expressPromoExpanded"
+        aria-controls="express-promo-details"
+      >
+        {{ expressPromoExpanded ? 'Zwiń szczegóły' : 'Zobacz szczegóły' }}
+        <svg
+          class="express-promo-toggle-icon"
+          [class.rotated]="expressPromoExpanded"
+          xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+        ><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+
+      <div class="express-promo-details" id="express-promo-details" [class.expanded]="expressPromoExpanded">
+        <div class="express-promo-details-inner">
+          <p class="express-promo-desc">
+            Odbierzemy Twój rower <strong>rano z biura lub spod domu</strong> i&nbsp;zwrócimy sprawny <strong>przed&nbsp;17:00&nbsp;tego&nbsp;samego&nbsp;dnia</strong>. Transport wliczony&nbsp;w&nbsp;usługę.
+          </p>
+          <ul class="express-promo-features" aria-label="Zalety serwisu ekspresowego">
+            <li class="express-feature">
+              <span class="express-feature-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </span>
+              <span>Serwis i zwrot <strong>tego samego dnia</strong></span>
+            </li>
+            <li class="express-feature">
+              <span class="express-feature-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+              </span>
+              <span>Odbiór z biura lub spod domu</span>
+            </li>
+            <li class="express-feature">
+              <span class="express-feature-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span>Transport <strong>wliczony</strong> w cenę serwisu</span>
+            </li>
+            <li class="express-feature">
+              <span class="express-feature-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <span>Bez zakładania konta</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
   <!-- Actions bar: city search + map -->
   <div class="actions-bar" *ngIf="!cityNotFound">
     <div class="city-autocomplete-wrapper">
@@ -189,6 +268,23 @@
               </svg>
               {{ service.phoneNumber }}
             </a>
+
+            <!-- Cena transportu (tylko Kraków) -->
+            <div *ngIf="isKrakow" class="transport-badge-wrap">
+              <span
+                class="transport-badge"
+                [class.transport-badge--partner]="service.reservationAvailable"
+                [class.transport-badge--standard]="!service.reservationAvailable"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="1" y="3" width="15" height="13"></rect>
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+                Transport {{ service.reservationAvailable ? transportPricing.partnerCost : transportPricing.standardCost }} z&#322;
+              </span>
+            </div>
 
             <!-- Link do mapy na dole karty -->
             <div class="service-map-row">

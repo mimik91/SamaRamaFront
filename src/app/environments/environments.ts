@@ -36,6 +36,7 @@ export const environment = {
         orders: '/admin/express-service/orders',
         assignOrder: '/admin/express-service/orders/:id/assign',
         packages: '/admin/express-service/packages',
+        packagesConfig: '/admin/express-service/packages-config',
         services: '/admin/express-service/services'
       }
     },
@@ -54,7 +55,7 @@ export const environment = {
       sessionSync: '/guest-orders/session-sync',
       report: '/guest-orders/report',
       expressAvailability: '/guest-orders/express-reservation/availability',
-      expressReservation: '/guest-orders/express-reservation',
+      expressReservationQuote: '/guest-orders/express-reservation/quote',
       expressPackages: '/guest-orders/express-packages'
     },
 

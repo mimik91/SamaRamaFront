@@ -8,7 +8,7 @@ declare global {
   interface Window { dataLayer: unknown[]; }
 }
 
-const REDIRECT_SECONDS = 5;
+const REDIRECT_SECONDS = 30; // TYMCZASOWO wydłużone do testów Tag Assistant - przywrócić do 5 po teście
 
 @Component({
   selector: 'app-express-service-success',

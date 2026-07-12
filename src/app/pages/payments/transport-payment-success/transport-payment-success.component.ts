@@ -4,6 +4,9 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environments';
 
 declare function gtag(...args: unknown[]): void;
+declare global {
+  interface Window { dataLayer: unknown[]; }
+}
 
 const REDIRECT_SECONDS = 5;
 
@@ -36,6 +39,14 @@ export class TransportPaymentSuccessComponent implements OnInit, OnDestroy {
   private fireGa4Event(): void {
     try {
       gtag('event', 'konwersja_sukces', {
+        event_category: 'konwersja',
+        event_label: 'transport'
+      });
+      // Push jawnego obiektu {event: ...} - gtag() wysyła do dataLayer surowy
+      // obiekt arguments, którego trigger Custom Event w GTM nie rozpoznaje.
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'konwersja_sukces',
         event_category: 'konwersja',
         event_label: 'transport'
       });

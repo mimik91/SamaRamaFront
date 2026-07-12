@@ -1,26 +1,26 @@
 import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { environment } from '../../environments/environments';
+import { environment } from '../../../environments/environments';
 
 declare function gtag(...args: unknown[]): void;
 
 const REDIRECT_SECONDS = 5;
 
 @Component({
-  selector: 'app-order-success',
+  selector: 'app-express-service-success',
   standalone: true,
   imports: [],
-  templateUrl: './order-success.component.html',
-  styleUrls: ['./order-success.component.css']
+  templateUrl: './express-service-success.component.html',
+  styleUrls: ['./express-service-success.component.css']
 })
-export class OrderSuccessComponent implements OnInit, OnDestroy {
+export class ExpressServiceSuccessComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
 
   countdown = REDIRECT_SECONDS;
-  readonly heading = 'Rezerwacja złożona!';
-  readonly message = 'Twoja rezerwacja została przyjęta. Serwis skontaktuje się z Tobą wkrótce.';
+  readonly heading = 'Wizyta serwisowa opłacona!';
+  readonly message = 'Twoja płatność została potwierdzona. Wizyta w serwisie ekspresowym CycloPick została zarezerwowana — potwierdzenie otrzymasz na e-mail.';
 
   private timer: ReturnType<typeof setInterval> | null = null;
 
@@ -37,7 +37,7 @@ export class OrderSuccessComponent implements OnInit, OnDestroy {
     try {
       gtag('event', 'konwersja_sukces', {
         event_category: 'konwersja',
-        event_label: 'rezerwacja'
+        event_label: 'serwis-ekspresowy'
       });
     } catch {
       // gtag niedostępny

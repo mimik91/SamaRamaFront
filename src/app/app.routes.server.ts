@@ -260,6 +260,15 @@ export const serverRoutes: ServerRoute[] = [
     path: 'platnosc/powrot',
     renderMode: RenderMode.Client
   },
+  // Strony sukcesu po opłaceniu zamówienia — client only (countdown + GA4)
+  {
+    path: 'platnosc/sukces/transport',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'platnosc/sukces/serwis-ekspresowy',
+    renderMode: RenderMode.Client
+  },
   {
     path: ':suffix',
     renderMode: RenderMode.Server

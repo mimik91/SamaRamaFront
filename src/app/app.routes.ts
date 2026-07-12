@@ -57,6 +57,8 @@ import { FlyerRedirectComponent } from './pages/flyer-redirect/flyer-redirect.co
 import { OrderSuccessComponent } from './pages/order-success/order-success.component';
 import { PaymentReturnComponent } from './pages/payments/payment-return/payment-return.component';
 import { PaymentSummaryComponent } from './pages/payments/payment-summary/payment-summary.component';
+import { TransportPaymentSuccessComponent } from './pages/payments/transport-payment-success/transport-payment-success.component';
+import { ExpressServiceSuccessComponent } from './pages/payments/express-service-success/express-service-success.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
@@ -96,27 +98,27 @@ export const routes: Routes = [
     },
 
     // Jak działamy
-    {
-      path: 'jak-dzialamy',
+    { 
+      path: 'jak-dzialamy', 
       component: HowItWorksPageComponent,
-      title: 'Transport rowerów w Krakowie | Odbiór i dostawa door-to-door | CycloPick'
+      title: 'CycloPick | mapa serwisów rowerowych'
     },
-
+    
     // Legal pages
-    {
-      path: 'terms-of-service',
-      component: TermsOfServiceComponent,
-      title: 'Regulamin | CycloPick'
+    { 
+      path: 'terms-of-service', 
+      component: TermsOfServiceComponent, 
+      title: 'CycloPick | mapa serwisów rowerowych'
     },
-    {
-      path: 'terms-of-service-workshops',
-      component: TermsOfServiceWorkshopsComponent,
-      title: 'Regulamin dla serwisów | CycloPick'
+    { 
+      path: 'terms-of-service-workshops', 
+      component: TermsOfServiceWorkshopsComponent, 
+      title: 'CycloPick | mapa serwisów rowerowych'
     },
     {
       path: 'privacy-policy',
       component: PrivacyPolicyComponent,
-      title: 'Polityka prywatności | CycloPick'
+      title: 'CycloPick | mapa serwisów rowerowych'
     },
     {
       path: 'cookie-policy',
@@ -135,10 +137,10 @@ export const routes: Routes = [
     },
     
     // Pricing route - dostępna dla wszystkich
-    {
-      path: 'cooperation',
+    { 
+      path: 'cooperation', 
       component: CooperationComponent,
-      title: 'Współpraca z CycloPick | Dołącz do zespołu rowerowego startupu'
+      title: 'CycloPick | mapa serwisów rowerowych'
     },
     
     { 
@@ -454,6 +456,18 @@ export const routes: Routes = [
       path: 'platnosc/powrot',
       component: PaymentReturnComponent,
       title: 'Status płatności | CycloPick'
+    },
+
+    // Strony sukcesu po opłaceniu zamówienia przez PayU
+    {
+      path: 'platnosc/sukces/transport',
+      component: TransportPaymentSuccessComponent,
+      title: 'Transport opłacony! | CycloPick'
+    },
+    {
+      path: 'platnosc/sukces/serwis-ekspresowy',
+      component: ExpressServiceSuccessComponent,
+      title: 'Wizyta opłacona! | CycloPick'
     },
 
     // Service profile - base route (default - "O nas" section)

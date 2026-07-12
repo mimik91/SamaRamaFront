@@ -118,6 +118,8 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
 
     this.contactAndTransportForm = this.fb.group({
       // Dane kontaktowe
+      clientFirstName: ['', [Validators.required, Validators.minLength(2)]],
+      clientLastName: ['', [Validators.required, Validators.minLength(2)]],
       clientEmail: ['', [Validators.required, Validators.email]],
       clientPhone: ['', [Validators.required, Validators.pattern(new RegExp(`^\\d{${environment.settings.validation.phoneNumberLength}}$`))]],
 
@@ -649,6 +651,8 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
       })),
       email: contactAndTransportData.clientEmail,
       phone: contactAndTransportData.clientPhone,
+      firstName: contactAndTransportData.clientFirstName?.trim() || '',
+      lastName: contactAndTransportData.clientLastName?.trim() || '',
       pickupStreet: contactAndTransportData.pickupStreet,
       pickupBuildingNumber: contactAndTransportData.pickupBuildingNumber,
       pickupCity: contactAndTransportData.pickupCity,
@@ -779,8 +783,8 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
 
     const contact = this.contactAndTransportForm.value;
     this.sessionSyncService.send({
-      firstName: '',
-      lastName: '',
+      firstName: contact.clientFirstName?.trim() || '',
+      lastName: contact.clientLastName?.trim() || '',
       email: contact.clientEmail?.trim() || '',
       phone: contact.clientPhone?.trim() || ''
     });

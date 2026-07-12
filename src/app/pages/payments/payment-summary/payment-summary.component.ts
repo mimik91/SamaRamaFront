@@ -80,6 +80,7 @@ export class PaymentSummaryComponent implements OnInit {
       next: (response) => {
         if (isPlatformBrowser(this.platformId)) {
           sessionStorage.removeItem(PENDING_ORDER_KEY);
+          sessionStorage.setItem('pendingPaymentOrderType', this.orderType);
           if (response.payuOrderId) {
             sessionStorage.setItem('pendingPayuOrderId', response.payuOrderId);
           }

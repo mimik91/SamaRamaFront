@@ -315,6 +315,36 @@
           <h3>{{ t('transport_order.contact_form.section_title') }}</h3>
           <div class="form-row">
             <div class="form-group">
+              <label for="clientFirstName">{{ t('transport_order.contact_form.first_name_label') }} *</label>
+              <input
+                type="text"
+                id="clientFirstName"
+                formControlName="clientFirstName"
+                [class.is-invalid]="isFieldInvalid('clientFirstName')"
+                [placeholder]="t('transport_order.contact_form.first_name_placeholder')"
+              >
+              <div *ngIf="isFieldInvalid('clientFirstName')" class="error-message">
+                {{ t('transport_order.contact_form.first_name_invalid') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="clientLastName">{{ t('transport_order.contact_form.last_name_label') }} *</label>
+              <input
+                type="text"
+                id="clientLastName"
+                formControlName="clientLastName"
+                [class.is-invalid]="isFieldInvalid('clientLastName')"
+                [placeholder]="t('transport_order.contact_form.last_name_placeholder')"
+              >
+              <div *ngIf="isFieldInvalid('clientLastName')" class="error-message">
+                {{ t('transport_order.contact_form.last_name_invalid') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
               <label for="clientEmail">{{ t('transport_order.contact_form.email_label') }} *</label>
               <input 
                 type="email" 
@@ -570,6 +600,14 @@
         <div class="summary-section">
           <h4>{{ t('transport_order.summary.contact_data') }}</h4>
           <div class="summary-details">
+            <div class="summary-row">
+              <span class="label">{{ t('transport_order.summary.first_name') }}</span>
+              <span class="value">{{ contactAndTransportForm.get('clientFirstName')?.value }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">{{ t('transport_order.summary.last_name') }}</span>
+              <span class="value">{{ contactAndTransportForm.get('clientLastName')?.value }}</span>
+            </div>
             <div class="summary-row">
               <span class="label">{{ t('transport_order.summary.email') }}</span>
               <span class="value">{{ contactAndTransportForm.get('clientEmail')?.value }}</span>

@@ -877,6 +877,8 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       bicycles: bikesPayload,
       email: rv.email.trim(),
       phone: rv.phone?.trim() || '',
+      firstName: rv.firstName?.trim() || '',
+      lastName: rv.lastName?.trim() || '',
       pickupStreet: tv.pickupStreet,
       pickupBuildingNumber: tv.pickupBuildingNumber,
       pickupCity: tv.pickupCity,
@@ -922,7 +924,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   private onSuccess(): void {
     this.submitting = false;
-    this.router.navigate(['/sukces'], { queryParams: { typ: 'rezerwacja' }, replaceUrl: true });
+    this.router.navigate(['/sukces'], { replaceUrl: true });
   }
 
   goBack(): void {

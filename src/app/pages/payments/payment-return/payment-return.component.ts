@@ -42,8 +42,20 @@ export class PaymentReturnComponent implements OnInit, OnDestroy {
       this.startPolling(payuOrderId);
     } else {
       const statusParam = this.route.snapshot.queryParamMap.get('status')?.toUpperCase() as PaymentStatus | null;
-      this.status = statusParam ?? 'PENDING';
+      this.applyStatus(statusParam ?? 'PENDING');
     }
+  }
+
+  private applyStatus(status: PaymentStatus): void {
+    if (status === 'SUCCESS') {
+      this.isChecking = true;
+      const orderType = sessionStorage.getItem('pendingPaymentOrderType');
+      sessionStorage.removeItem('pendingPaymentOrderType');
+      const successPath = orderType === 'SERVICE_ORDER' ? 'serwis-ekspresowy' : 'transport';
+      this.router.navigate(['/platnosc/sukces', successPath], { replaceUrl: true });
+      return;
+    }
+    this.status = status;
   }
 
   private startPolling(payuOrderId: string): void {
@@ -71,11 +83,11 @@ export class PaymentReturnComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         if (response.status !== 'PENDING') consecutiveErrors = 0;
-        this.status = response.status;
         this.isChecking = false;
         this.isRechecking = false;
         this.lastCheckedAt = new Date();
         isFirst = false;
+        this.applyStatus(response.status);
       }
     });
   }

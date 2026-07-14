@@ -23,6 +23,7 @@ export interface MapPin {
   reservationAvailable?: boolean;
   category?: string;
   logoUrl?: string;
+  transportCost?: number;
 }
 
 export interface ServiceDetails {

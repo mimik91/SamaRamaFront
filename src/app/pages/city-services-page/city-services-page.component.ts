@@ -271,6 +271,16 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Realna cena transportu z API, jeśli skonfigurowana; w przeciwnym razie (starsze/niezarejestrowane
+  // serwisy bez ustawionej wartości w bazie) dotychczasowy szacunek. `0` traktujemy jako świadomie
+  // skonfigurowany darmowy transport, nie jako brak danych — stąd porównanie z `null`, nie `||`.
+  getTransportCost(service: MapPin): number {
+    if (service.transportCost != null) {
+      return service.transportCost;
+    }
+    return service.reservationAvailable ? this.transportPricing.partnerCost : this.transportPricing.standardCost;
+  }
+
   navigateToServiceOnMap(service: MapPin): void {
     this.router.navigate(['/mapa-serwisow'], {
       queryParams: {

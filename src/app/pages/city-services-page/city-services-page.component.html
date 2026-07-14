@@ -282,7 +282,7 @@
                   <circle cx="5.5" cy="18.5" r="2.5"></circle>
                   <circle cx="18.5" cy="18.5" r="2.5"></circle>
                 </svg>
-                Transport {{ service.reservationAvailable ? transportPricing.partnerCost : transportPricing.standardCost }} z&#322;
+                Transport {{ getTransportCost(service) }} z&#322;
               </span>
             </div>
 

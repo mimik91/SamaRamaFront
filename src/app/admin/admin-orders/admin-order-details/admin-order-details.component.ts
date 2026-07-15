@@ -115,8 +115,8 @@ export class AdminOrderDetailsComponent implements OnInit {
       return false;
     }
 
-    if (!this.editForm.pickupCity || !this.editForm.pickupPostalCode) {
-      this.notificationService.error('Miasto i kod pocztowy są wymagane');
+    if (!this.editForm.pickupCity) {
+      this.notificationService.error('Miasto jest wymagane');
       return false;
     }
 

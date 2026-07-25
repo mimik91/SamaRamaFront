@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import {
@@ -11,10 +11,10 @@ import {
   AbstractControl,
   ValidationErrors
 } from '@angular/forms';
-import { ActivatedRoute, Router, NavigationStart, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Subscription, forkJoin, of } from 'rxjs';
-import { filter, switchMap, distinctUntilChanged, catchError } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { switchMap, distinctUntilChanged, catchError } from 'rxjs/operators';
 import {
   ServicePackagesConfigDto,
   ServicePackageDto,
@@ -22,7 +22,6 @@ import {
   ALL_PACKAGE_LEVELS,
   filterPackagesByBikeType
 } from '../shared/models/service-packages.models';
-import { SessionSyncService } from '../core/session-sync.service';
 import { SeoService } from '../core/seo.service';
 import { SchemaOrgHelper, BikeRepairShopData } from '../core/schema-org.helper';
 import { SSR_RESPONSE } from '../core/ssr-tokens';
@@ -77,13 +76,9 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
   private enumerationService = inject(EnumerationService);
-  private sessionSyncService = inject(SessionSyncService);
   private seoService = inject(SeoService);
   private platformId = inject(PLATFORM_ID);
   private serverResponse = inject(SSR_RESPONSE, { optional: true });
-
-  private routerSub: Subscription | null = null;
-  private sessionSyncSent = false;
 
   currentStep = 1;
   loading = false;
@@ -438,12 +433,6 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     this.loadCities();
     this.loadOfficeAddresses();
     this.loadServiceInfo();
-
-    if (isPlatformBrowser(this.platformId)) {
-      this.routerSub = this.router.events.pipe(
-        filter(e => e instanceof NavigationStart)
-      ).subscribe(() => this.sendSessionSync());
-    }
 
     this.reservationForm.get('plannedDate')?.valueChanges.pipe(
       distinctUntilChanged((a, b) => this.dateToStr(a instanceof Date ? a : new Date(a + 'T00:00:00')) === this.dateToStr(b instanceof Date ? b : new Date(b + 'T00:00:00')))
@@ -986,13 +975,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  @HostListener('window:beforeunload')
-  onBeforeUnload(): void {
-    this.sendSessionSync();
-  }
-
   ngOnDestroy(): void {
-    this.routerSub?.unsubscribe();
     this.seoService.removeStructuredData();
   }
 
@@ -1040,19 +1023,5 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     if (schema) {
       this.seoService.addStructuredData(schema);
     }
-  }
-
-  private sendSessionSync(): void {
-    if (this.sessionSyncSent) return;
-    if (!isPlatformBrowser(this.platformId)) return;
-    this.sessionSyncSent = true;
-
-    const rv = this.reservationForm.value;
-    this.sessionSyncService.send({
-      firstName: rv.firstName?.trim() || '',
-      lastName: rv.lastName?.trim() || '',
-      email: rv.email?.trim() || '',
-      phone: rv.phone?.trim() || ''
-    });
   }
 }

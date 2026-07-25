@@ -1,16 +1,12 @@
 // src/app/transport-orders/transport-order-form.component.ts
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../core/notification.service';
 import { TransportOrderService } from './transport-order.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { I18nService } from '../core/i18n.service';
-import { SessionSyncService } from '../core/session-sync.service';
 import { environment } from '../environments/environments';
 import { BicycleFormData, BicycleData } from '../shared/models/bicycle.model';
 import { OfficeAddressDto } from '../shared/models/office-address.model';
@@ -26,7 +22,7 @@ type PickupType = 'ADDRESS' | 'OFFICE';
   templateUrl: './transport-order-form.component.html',
   styleUrls: ['./transport-order-form.component.css']
 })
-export class TransportOrderFormComponent implements OnInit, OnDestroy {
+export class TransportOrderFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -34,11 +30,6 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
   private transportOrderService = inject(TransportOrderService);
   private enumerationService = inject(EnumerationService);
   private i18n = inject(I18nService);
-  private sessionSyncService = inject(SessionSyncService);
-  private platformId = inject(PLATFORM_ID);
-
-  private routerSub: Subscription | null = null;
-  private sessionSyncSent = false;
 
   // Multi-step form management
   currentStep = 1;
@@ -159,13 +150,6 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
     this.loadCities();
     this.loadOfficeAddresses();
     this.addBicycleToForm();
-
-    if (isPlatformBrowser(this.platformId)) {
-      this.routerSub = this.router.events.pipe(
-        filter(e => e instanceof NavigationStart)
-      ).subscribe(() => this.sendSessionSync());
-    }
-
   }
 
   private loadServiceInfo(): void {
@@ -765,28 +749,5 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
   // Translation helper for template
   t(key: string, params?: any): string {
     return this.i18n.instant(key, params);
-  }
-
-  @HostListener('window:beforeunload')
-  onBeforeUnload(): void {
-    this.sendSessionSync();
-  }
-
-  ngOnDestroy(): void {
-    this.routerSub?.unsubscribe();
-  }
-
-  private sendSessionSync(): void {
-    if (this.sessionSyncSent) return;
-    if (!isPlatformBrowser(this.platformId)) return;
-    this.sessionSyncSent = true;
-
-    const contact = this.contactAndTransportForm.value;
-    this.sessionSyncService.send({
-      firstName: contact.clientFirstName?.trim() || '',
-      lastName: contact.clientLastName?.trim() || '',
-      email: contact.clientEmail?.trim() || '',
-      phone: contact.clientPhone?.trim() || ''
-    });
   }
 }

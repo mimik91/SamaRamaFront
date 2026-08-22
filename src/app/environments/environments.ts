@@ -55,6 +55,7 @@ export const environment = {
       serviceAvailability: '/guest-orders/service-reservation/:serviceId/availability',
       officeAddresses: '/guest-orders/office-addresses',
       report: '/guest-orders/report',
+      sessionSync: '/guest-orders/session-sync',
       expressAvailability: '/guest-orders/express-reservation/availability',
       expressReservationQuote: '/guest-orders/express-reservation/quote',
       expressPackages: '/guest-orders/express-packages',

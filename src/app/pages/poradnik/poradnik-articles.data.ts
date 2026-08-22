@@ -8,7 +8,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
     title: 'Pętla MTB na Górce Pychowickiej',
     subtitle: 'Budżet obywatelski Kraków, projekt nr 50 — głosuj 11–28 września',
     excerpt: 'Krakowscy rowerzyści mogą zdecydować o nowej, bezpłatnej trasie MTB na Górce Pychowickiej — głosuj w budżecie obywatelskim 11–28 września. Sprawdź szczegóły.',
-    coverImage: 'assets/images/poradnik/projekt-50-petla-pychowicka/single-track-mtb.webp',
+    coverImage: 'assets/images/poradnik/projekt-50-petla-pychowicka/mtb-singletrack-lesny.webp',
     coverImageAlt: 'Poglądowe zdjęcie singletracka MTB w lesie',
     publishedDate: '2026-08-23',
     readingTimeMinutes: 4,
@@ -36,7 +36,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
       <p>Cała trasa ma być bezpłatna i ogólnodostępna — pomyślana jako "flow trail" dla wielu poziomów: od dzieci i rowerzystów rekreacyjnych, po amatorów MTB.</p>
 
       <figure>
-        <img src="assets/images/poradnik/projekt-50-petla-pychowicka/single-track-mtb.webp" alt="Poglądowe zdjęcie singletracka MTB w lesie" loading="lazy">
+        <img src="assets/images/poradnik/projekt-50-petla-pychowicka/mtb-singletrack-lesny.webp" alt="Poglądowe zdjęcie singletracka MTB w lesie" loading="lazy">
         <figcaption>Zdjęcie poglądowe — tak orientacyjnie może wyglądać charakter trasy (nie jest to zdjęcie z Górki Pychowickiej).</figcaption>
       </figure>
 
@@ -44,12 +44,12 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
       <p>Górka Pychowicka leży między Ruczajem a południową częścią trasy rowerowej prowadzącej od Krakowa w stronę Tyńca — czyli praktycznie przy bulwarach wiślanych, ok. 5 minut rowerem od ścieżki nadwiślańskiej. To lokalizacja dobrze znana rowerzystom jeżdżącym w tamtą stronę, tyle że dziś bez wyznaczonej, legalnej trasy MTB.</p>
 
       <figure>
-        <img src="assets/images/poradnik/projekt-50-petla-pychowicka/gorka-pychowicka.webp" alt="Mapa lokalizacji Górki Pychowickiej w Krakowie" loading="lazy">
+        <img src="assets/images/poradnik/projekt-50-petla-pychowicka/mapa-lokalizacji-gorki-pychowickiej.webp" alt="Mapa lokalizacji Górki Pychowickiej w Krakowie" loading="lazy">
         <figcaption>Lokalizacja Górki Pychowickiej — między Ruczajem a trasą w stronę Tyńca.</figcaption>
       </figure>
 
       <figure>
-        <img src="assets/images/poradnik/projekt-50-petla-pychowicka/mapa-trasy-pychowickiej.webp" alt="Mapa planowanego przebiegu pętli rowerowej wraz z opcjami rozbudowy" loading="lazy">
+        <img src="assets/images/poradnik/projekt-50-petla-pychowicka/plan-petli-pychowickiej.webp" alt="Mapa planowanego przebiegu pętli rowerowej wraz z opcjami rozbudowy" loading="lazy">
         <figcaption>Planowany przebieg pętli wraz z opcjami rozbudowy (Etap I i Etap II).</figcaption>
       </figure>
 

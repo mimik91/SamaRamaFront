@@ -1,0 +1,93 @@
+<div class="ssf-container">
+  <div class="ssf-header">
+    <button type="button" class="ssf-toggle-btn" (click)="toggleFilters()" [attr.aria-expanded]="filtersExpanded">
+      <span class="ssf-header-content">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span class="ssf-title">Szukaj i filtruj usługi</span>
+        <span class="ssf-badge" *ngIf="activeFiltersCount > 0">{{ activeFiltersCount }}</span>
+      </span>
+      <svg class="ssf-chevron" [class.expanded]="filtersExpanded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+
+    <!-- Wyszukiwarka usług — zawsze widoczna, także gdy panel zwinięty. Podpowiedzi w rozwijanym pasku, wzorem wyszukiwania miasta. -->
+    <div class="ssf-header-search">
+      <svg class="ssf-input-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        class="ssf-input"
+        placeholder="Szukaj usługi (np. naprawa hamulców)..."
+        [(ngModel)]="filterSearchQuery"
+        (input)="onFilterSearchInput()"
+        (focus)="onFilterSearchFocus()"
+        autocomplete="off"
+      >
+      <button
+        *ngIf="filterSearchQuery"
+        type="button"
+        class="ssf-input-clear"
+        (click)="clearFilterSearch()"
+        aria-label="Wyczyść wyszukiwanie usług"
+      ><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
+
+      <!-- Rozwijana lista podpowiedzi -->
+      <div class="ssf-suggestions" *ngIf="showSuggestions">
+        <button
+          type="button"
+          class="ssf-suggestion-item"
+          *ngFor="let suggestion of suggestions; trackBy: trackBySuggestionId"
+          [class.selected]="isCoverageSelected(suggestion.coverage.id)"
+          (click)="selectSuggestion(suggestion.coverage.id)"
+        >
+          <span class="ssf-suggestion-text">
+            <span class="ssf-suggestion-name">{{ suggestion.coverage.name }}</span>
+            <span class="ssf-suggestion-category">{{ suggestion.categoryName }}</span>
+          </span>
+          <svg *ngIf="isCoverageSelected(suggestion.coverage.id)" class="ssf-suggestion-check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ssf-content" [class.collapsed]="!filtersExpanded">
+    <div class="ssf-inner">
+
+      <div class="ssf-coverages" *ngIf="coverageCategories.length > 0">
+        <div class="ssf-coverages-header">
+          <span class="ssf-label">Usługi serwisu</span>
+          <button
+            type="button"
+            class="ssf-clear-btn"
+            *ngIf="activeFiltersCount > 0"
+            (click)="clearAllFilters()"
+          >Wyczyść filtry</button>
+        </div>
+
+        <div class="ssf-category" *ngFor="let categoryGroup of coverageCategories; trackBy: trackByCategoryId">
+          <h4 class="ssf-category-title">{{ categoryGroup.category.name }}</h4>
+          <div class="ssf-coverage-list">
+            <label class="ssf-coverage-item" *ngFor="let coverage of categoryGroup.coverages; trackBy: trackByCoverageId">
+              <input
+                type="checkbox"
+                class="ssf-checkbox"
+                [checked]="isCoverageSelected(coverage.id)"
+                (change)="toggleCoverage(coverage.id)"
+              >
+              <span class="ssf-coverage-name">{{ coverage.name }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

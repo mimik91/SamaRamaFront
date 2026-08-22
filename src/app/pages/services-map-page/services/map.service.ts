@@ -11,7 +11,8 @@ import {
   CityBounds,
   BikeRepairCoverageMapDto,
   MapServicesRequestDto,
-  MapServicesResponseDto
+  MapServicesResponseDto,
+  StatsSummaryDto
 } from '../../../shared/models/map.models';
 
 @Injectable({
@@ -24,6 +25,13 @@ export class MapService {
   // Cache for service details to avoid redundant API calls
   private serviceDetailsCache = new Map<number, Observable<ServiceDetails | null>>();
   private citySearchCache = new Map<string, Observable<CitySuggestion[]>>();
+  // Katalog usług (coverages) jest statyczną listą referencyjną — pobierany raz na cały czas życia
+  // aplikacji, nie per-komponent. Bez tego cache'a każde zamontowanie widgetu filtrów (np. przy
+  // każdej nawigacji między miastami) odpytywało backend od nowa.
+  private repairCoveragesCache$: Observable<BikeRepairCoverageMapDto | null> | null = null;
+  // Statystyki platformy (liczba serwisów/miast) — zmieniają się powoli, cache na czas życia aplikacji
+  // wystarczy (odświeży się przy pełnym przeładowaniu strony).
+  private statsSummaryCache$: Observable<StatsSummaryDto | null> | null = null;
 
   getServices(request: MapServicesRequestDto): Observable<MapServicesResponseDto> {
     console.log('MapService: Fetching services from:', `${this.apiUrl}/services`);
@@ -38,6 +46,10 @@ export class MapService {
 
   if (request.coverageIds && request.coverageIds.length > 0) {
       finalRequestBody.coverageIds = request.coverageIds;
+  }
+
+  if (request.search && request.search.trim().length > 0) {
+      finalRequestBody.search = request.search.trim();
   }
 
     return this.http.post<MapServicesResponseDto>(`${this.apiUrl}/services`, finalRequestBody).pipe(
@@ -253,17 +265,38 @@ export class MapService {
   }
 
   getAllRepairCoverages(): Observable<BikeRepairCoverageMapDto | null> {
-    console.log('MapService: Fetching repair coverages');
-    
-    return this.http.get<BikeRepairCoverageMapDto>(`${environment.apiUrl}/bike-services/repair-coverage/all`).pipe(
-      tap(coverages => {
-        console.log('MapService: Received repair coverages:', coverages);
-      }),
-      catchError(error => {
-        console.error('MapService: Error fetching repair coverages:', error);
-        return of(null);
-      })
-    );
+    if (!this.repairCoveragesCache$) {
+      console.log('MapService: Fetching repair coverages');
+
+      this.repairCoveragesCache$ = this.http.get<BikeRepairCoverageMapDto>(`${environment.apiUrl}/bike-services/repair-coverage/all`).pipe(
+        tap(coverages => {
+          console.log('MapService: Received repair coverages:', coverages);
+        }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+        catchError(error => {
+          console.error('MapService: Error fetching repair coverages:', error);
+          this.repairCoveragesCache$ = null;
+          return of(null);
+        })
+      );
+    }
+
+    return this.repairCoveragesCache$;
+  }
+
+  getStatsSummary(): Observable<StatsSummaryDto | null> {
+    if (!this.statsSummaryCache$) {
+      this.statsSummaryCache$ = this.http.get<StatsSummaryDto>(`${environment.apiUrl}/bike-services/stats-summary`).pipe(
+        shareReplay({ bufferSize: 1, refCount: false }),
+        catchError(error => {
+          console.error('MapService: Error fetching stats summary:', error);
+          this.statsSummaryCache$ = null;
+          return of(null);
+        })
+      );
+    }
+
+    return this.statsSummaryCache$;
   }
 
     filterByCoverages(coverageIds: number[]): Observable<MapServicesResponseDto> {

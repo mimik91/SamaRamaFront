@@ -24,6 +24,26 @@ export interface MapPin {
   category?: string;
   logoUrl?: string;
   transportCost?: number;
+  // Statystyki z RegisteredServiceInfo (zadanie 3) — null/0 gdy serwis nie ma jeszcze danych
+  averageRating?: number | null;
+  reviewCount?: number | null;
+  medianServiceDurationHours?: number | null;
+  completedOrdersTotalCount?: number | null;
+}
+
+/** Poprawna polska odmiana liczby napraw: 1 naprawa / 2-4 naprawy / 5+ napraw (z wyjątkiem 12-14) */
+export function formatCompletedOrdersLabel(count: number): string {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+  let word: string;
+  if (count === 1) {
+    word = 'naprawa';
+  } else if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwoDigits >= 12 && lastTwoDigits <= 14)) {
+    word = 'naprawy';
+  } else {
+    word = 'napraw';
+  }
+  return `${count} ${word}`;
 }
 
 export interface ServiceDetails {
@@ -68,6 +88,11 @@ export interface CityBounds {
   zoom: number;
 }
 
+export interface StatsSummaryDto {
+  totalServices: number;
+  totalCities: number;
+}
+
 export interface BikeRepairCoverageDto {
   id: number;
   name: string;
@@ -103,6 +128,7 @@ export interface MapServicesRequestDto {
   page?: number;
   perPage?: number;
   coverageIds?: number[];
+  search?: string;
 }
 
 export interface MapServicesResponseDto {
@@ -142,4 +168,24 @@ export interface SearchFiltersState {
 export interface CoverageCategory {
   category: BikeRepairCoverageCategoryDto;
   coverages: BikeRepairCoverageDto[];
+}
+
+/**
+ * Bounds dla widoku miasta na mapie (zoom 13, viewport ~3000x1800m) — używane zarówno przez
+ * resolver strony miasta (SSR), jak i przez odświeżanie listy po zmianie filtrów po stronie klienta.
+ */
+export function calculateCityBounds(lat: number, lng: number): { south: number; west: number; north: number; east: number } {
+  const zoom = 13;
+  const viewportWidth = 3000;
+  const viewportHeight = 1800;
+  const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
+  const halfWidthDeg = (viewportWidth * metersPerPixel) / 111320 / 2;
+  const halfHeightDeg = (viewportHeight * metersPerPixel) / 110540 / 2;
+
+  return {
+    south: lat - halfHeightDeg,
+    north: lat + halfHeightDeg,
+    west: lng - halfWidthDeg,
+    east: lng + halfWidthDeg
+  };
 }

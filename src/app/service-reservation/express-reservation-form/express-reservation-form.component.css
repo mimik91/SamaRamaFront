@@ -695,3 +695,92 @@
     gap: 0;
   }
 }
+
+/* ===== Kupon rabatowy ===== */
+.optional-label {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.transport-address-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 14px 0;
+  color: var(--text-primary);
+}
+
+.coupon-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed #bbf7d0;
+}
+
+.coupon-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.coupon-input {
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.coupon-apply-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.coupon-apply-btn:hover:not(:disabled) { box-shadow: 0 2px 8px var(--color-primary-alpha-40); }
+.coupon-apply-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.coupon-message {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.coupon-message--success {
+  background: var(--color-success-bg, #e6f4ea);
+  color: var(--color-success-text, #2f855a);
+}
+
+.coupon-message--error {
+  background: var(--color-danger-bg, #fde8e8);
+  color: var(--color-danger-text, #e53e3e);
+}
+
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-spinner--sm {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

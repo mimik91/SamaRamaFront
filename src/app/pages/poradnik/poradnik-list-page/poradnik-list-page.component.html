@@ -1,0 +1,22 @@
+<div class="poradnik-list-container">
+  <app-breadcrumb
+    [items]="[{ label: 'Strona główna', url: '/' }, { label: 'Poradnik rowerowy' }]"
+  ></app-breadcrumb>
+
+  <header class="poradnik-list-header">
+    <h1>Poradnik rowerowy</h1>
+    <p class="poradnik-list-subtitle">
+      Praktyczne porady o serwisowaniu, przeglądach i transporcie roweru — zebrane w jednym miejscu.
+    </p>
+  </header>
+
+  <div class="poradnik-list-grid">
+    <app-poradnik-article-card
+      *ngFor="let article of articles; let i = index"
+      [article]="article"
+      [lazyImage]="i > 1"
+    ></app-poradnik-article-card>
+  </div>
+
+  <a routerLink="/" class="poradnik-back-link">← Wróć do strony głównej</a>
+</div>

@@ -33,7 +33,7 @@ export class NavigationComponent implements OnInit {
   serviceSuffix: string = '';
 
   private readonly KNOWN_ROUTES = new Set([
-    'mapa-serwisow', 'mapa', 'services-map', 'serwisy', 'jak-dzialamy',
+    'mapa-serwisow', 'mapa', 'services-map', 'serwisy', 'jak-dzialamy', 'transport-rowerow-krakow', 'poradnik',
     'terms-of-service', 'terms-of-service-workshops', 'privacy-policy', 'cookie-policy',
     'cennik-rowerzysci', 'cennik-serwisy', 'cooperation', 'ordersummary',
     'login', 'register', 'verify-account', 'password-reset-request', 'password-reset',
@@ -41,8 +41,8 @@ export class NavigationComponent implements OnInit {
     'dla-serwisow', 'service-pending-verification', 'client-dashboard', 'admin-dashboard',
     'bicycles', 'admin-orders', 'account', 'admin-users', 'admin-services-verification',
     'admin-service-edit', 'admin-enumerations', 'admin-service-slots', 'admin-bike-services',
-    'admin-office-addresses', 'mistrzauta', 'order-transport', 'reserve-service',
-    'ulotka', 'sukces'
+    'admin-office-addresses', 'admin-coupons', 'mistrzauta', 'order-transport', 'reserve-service',
+    'ulotka', 'sukces', 'opinia', 'moje-zlecenie'
   ]);
 
   getViewedSuffix(): string | null {

@@ -150,6 +150,13 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
       };
     }
 
+    // Link z profilu serwisu (?serviceId=X) — otwórz jego popup automatycznie, gdy lista się załaduje
+    // (checkAndOpenPendingPopup() jest już wołane po loadServicesForList — mirror onPinClicked)
+    const serviceIdParam = parseInt(snapshot.get('serviceId') ?? '', 10);
+    if (!isNaN(serviceIdParam) && serviceIdParam > 0) {
+      this.pendingPopup = { serviceId: serviceIdParam, timestamp: Date.now() };
+    }
+
     // Synchronicznie ustaw tytuł ze snapshotu — krytyczne dla SSR
     // queryParams subscription może wyemitować za późno dla serwera
     const cityFromSnapshot = snapshot.get('city') || '';

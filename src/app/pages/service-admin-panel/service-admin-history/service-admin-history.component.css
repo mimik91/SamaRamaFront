@@ -142,6 +142,12 @@
   font-size: 0.9rem;
 }
 
+.record-duration {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
 .record-client {
   display: flex;
   align-items: center;
@@ -190,6 +196,39 @@
   letter-spacing: 0.05em;
   color: #94a3b8;
   margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-status-badge {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 500;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-primary-alpha-10, rgba(27, 94, 32, 0.1));
+  color: var(--color-primary, #1B5E20);
+}
+
+.review-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-score {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.review-comment {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #475569;
+  white-space: pre-line;
 }
 
 .detail-grid {

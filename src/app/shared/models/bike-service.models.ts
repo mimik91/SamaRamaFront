@@ -64,6 +64,8 @@ export interface BikeServiceRegisteredDto {
   openingHoursNote?: string;
   pricelistInfo?: string;
   pricelistNote?: string;
+  /** Krótka nazwa serwisu używana jako prefiks w SMS-ach (max 12 znaków, bez polskich/specjalnych znaków) */
+  shortName?: string;
 }
 
 // ============================================

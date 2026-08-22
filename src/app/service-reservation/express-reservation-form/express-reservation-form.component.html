@@ -327,6 +327,36 @@
     </div>
 
     <!-- Terms -->
+    <!-- Kupon rabatowy -->
+    <div class="coupon-section">
+      <h4 class="transport-address-title">Kupon rabatowy <span class="optional-label">(opcjonalnie)</span></h4>
+      <div class="coupon-row">
+        <input
+          type="text"
+          [formControl]="couponControl"
+          class="form-input coupon-input"
+          placeholder="Wpisz kod kuponu..."
+        />
+        <button
+          type="button"
+          class="coupon-apply-btn"
+          (click)="applyDiscountCoupon()"
+          [disabled]="isApplyingCoupon || !couponControl.value"
+        >
+          <div *ngIf="isApplyingCoupon" class="btn-spinner btn-spinner--sm"></div>
+          {{ isApplyingCoupon ? '...' : 'Zastosuj' }}
+        </button>
+      </div>
+      <div
+        *ngIf="couponMessage"
+        class="coupon-message"
+        [class.coupon-message--error]="isCouponInvalid"
+        [class.coupon-message--success]="!isCouponInvalid"
+      >
+        {{ couponMessage }}
+      </div>
+    </div>
+
     <div class="terms-section">
       <label class="terms-label">
         <input type="checkbox" [formControl]="termsControl" class="terms-checkbox">

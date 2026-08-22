@@ -9,6 +9,10 @@ Allow: /*.css$
 Allow: /*/zarezerwuj
 Allow: /serwisy
 Allow: /dla-serwisow
+Allow: /jak-dzialamy
+Allow: /transport-rowerow-krakow
+Allow: /cennik-rowerzysci
+Allow: /cennik-serwisy
 Allow: /cooperation
 Allow: /register-service
 Allow: /terms-of-service
@@ -32,6 +36,10 @@ Allow: /*.css$
 Allow: /*/zarezerwuj
 Allow: /serwisy
 Allow: /dla-serwisow
+Allow: /jak-dzialamy
+Allow: /transport-rowerow-krakow
+Allow: /cennik-rowerzysci
+Allow: /cennik-serwisy
 Allow: /cooperation
 Allow: /register-service
 Allow: /terms-of-service
@@ -70,6 +78,10 @@ Allow: /*.css$
 Allow: /*/zarezerwuj
 Allow: /serwisy
 Allow: /dla-serwisow
+Allow: /jak-dzialamy
+Allow: /transport-rowerow-krakow
+Allow: /cennik-rowerzysci
+Allow: /cennik-serwisy
 Allow: /cooperation
 Allow: /register-service
 Allow: /terms-of-service

@@ -1,0 +1,98 @@
+<div class="review-container">
+
+  <!-- Ładowanie -->
+  <div *ngIf="state === 'loading'" class="state-panel">
+    <div class="loading-spinner"></div>
+    <p>Ładowanie...</p>
+  </div>
+
+  <!-- Nieprawidłowy link -->
+  <div *ngIf="state === 'invalid'" class="state-panel card">
+    <h2>Nieprawidłowy link</h2>
+    <p>Ten link do ankiety opinii jest nieprawidłowy lub wygasł. Skontaktuj się z nami, jeśli uważasz, że to pomyłka.</p>
+  </div>
+
+  <!-- Opinia już wysłana -->
+  <div *ngIf="state === 'alreadySubmitted'" class="state-panel card">
+    <h2>Dziękujemy!</h2>
+    <p>Opinia dla tego zlecenia została już wcześniej przesłana.</p>
+  </div>
+
+  <!-- Sukces -->
+  <div *ngIf="state === 'success'" class="state-panel card">
+    <h2>Dziękujemy za opinię!</h2>
+    <p>Twoja odpowiedź pomaga nam i innym rowerzystom — doceniamy, że poświęciłeś na to chwilę.</p>
+  </div>
+
+  <!-- Formularz -->
+  <div *ngIf="state === 'form'" class="card">
+    <h1 class="review-title">Oceń serwis {{ context?.bikeServiceName }}</h1>
+    <p class="review-subtitle">Kilka krótkich pytań o Twoje ostatnie doświadczenie — zajmie mniej niż minutę.</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <div class="question-row">
+        <label class="question-label">Czy obsługa była miła i profesjonalna?</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn" [class.active]="form.get('courteousService')?.value === true" (click)="form.get('courteousService')?.setValue(true)">Tak</button>
+          <button type="button" class="toggle-btn" [class.active]="form.get('courteousService')?.value === false" (click)="form.get('courteousService')?.setValue(false)">Nie</button>
+        </div>
+      </div>
+
+      <div class="question-row">
+        <label class="question-label">Czy wiedziałeś, ile będzie kosztował serwis, zanim doszło do płatności?</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn" [class.active]="form.get('priceWasKnownUpfront')?.value === true" (click)="form.get('priceWasKnownUpfront')?.setValue(true)">Tak</button>
+          <button type="button" class="toggle-btn" [class.active]="form.get('priceWasKnownUpfront')?.value === false" (click)="form.get('priceWasKnownUpfront')?.setValue(false)">Nie</button>
+        </div>
+      </div>
+
+      <div class="question-row">
+        <label class="question-label">Czy czas realizacji naprawy był akceptowalny?</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn" [class.active]="form.get('turnaroundAcceptable')?.value === true" (click)="form.get('turnaroundAcceptable')?.setValue(true)">Tak</button>
+          <button type="button" class="toggle-btn" [class.active]="form.get('turnaroundAcceptable')?.value === false" (click)="form.get('turnaroundAcceptable')?.setValue(false)">Nie</button>
+        </div>
+      </div>
+
+      <div class="question-row">
+        <label class="question-label">Czy problem z rowerem został skutecznie rozwiązany?</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn" [class.active]="form.get('issueResolved')?.value === true" (click)="form.get('issueResolved')?.setValue(true)">Tak</button>
+          <button type="button" class="toggle-btn" [class.active]="form.get('issueResolved')?.value === false" (click)="form.get('issueResolved')?.setValue(false)">Nie</button>
+        </div>
+      </div>
+
+      <div class="question-row question-row--rating">
+        <label class="question-label">Ogólne wrażenie</label>
+        <div class="stars-row">
+          <button
+            type="button"
+            *ngFor="let star of stars"
+            class="star-btn"
+            [class.filled]="form.get('overallRating')?.value >= star"
+            (click)="setRating(star)"
+            [attr.aria-label]="star + ' z 5 gwiazdek'"
+          >★</button>
+        </div>
+      </div>
+
+      <div class="question-row">
+        <label class="question-label" for="comment">Komentarz <span class="optional-label">(opcjonalnie)</span></label>
+        <textarea
+          id="comment"
+          formControlName="comment"
+          class="form-textarea"
+          rows="4"
+          placeholder="Chcesz dodać coś jeszcze? Czytamy każdy komentarz."
+        ></textarea>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="submitting">
+        <div *ngIf="submitting" class="btn-spinner"></div>
+        {{ submitting ? 'Wysyłanie...' : 'Wyślij opinię' }}
+      </button>
+    </form>
+  </div>
+
+</div>

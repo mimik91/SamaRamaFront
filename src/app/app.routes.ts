@@ -2,37 +2,18 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { RegistrationComponent } from './auth/registration/registration.component';
 import { VerificationComponent } from './auth/verification/verification.component';
-import { ServicePendingVerificationComponent } from './pages/service-admin-panel/service-pending-verification/service-pending-verification.component';
-import { ServiceAdminPanelComponent } from './pages/service-admin-panel/service-admin-panel.component';
-import { ServiceCalendarComponent } from './pages/service-calendar/service-calendar.component';
-import { ServiceKanbanComponent } from './pages/service-kanban/service-kanban.component';
+import { ReviewFormComponent } from './review/review-form.component';
+import { GuestOrderAccessComponent } from './guest-order-access/guest-order-access.component';
 import { authGuard, clientGuard, adminGuard, serviceGuard, moderatorGuard } from './auth/auth.guard';
-import { ClientPanelListComponent } from './pages/client-panel/client-panel-list/client-panel-list.component';
-import { ClientPanelFormComponent } from './pages/client-panel/client-panel-form/client-panel-form.component';
-import { ClientPanelDetailsComponent } from './pages/client-panel/client-panel-bicycle-details/client-panel-bicycle-details.component';
 import { TransportOrderFormComponent } from './transport-orders/transport-order-form.component';
 import { GuestReservationFormComponent } from './service-reservation/guest-reservation-form.component';
 import { ExpressReservationFormComponent } from './service-reservation/express-reservation-form/express-reservation-form.component';
-import { ServiceHistoryPageComponent } from './pages/service-history-page/service-history-page.component';
 import { OrderSummaryComponent } from './transport-orders/order-summary/order-summary.component';
-import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
-import { AdminEnumerationsManagerComponent } from './admin/admin-enumerations/admin-enumerations-manager.component';
-import { AdminBikeServicesComponent } from './admin/admin-bike-services/admin-bike-services.component';
-import { AdminServiceSlotsComponent } from './admin/service-slots/admin-service-slots.component';
-import { AdminOrdersComponent } from './admin/admin-orders/admin-orders.component';
-import { AdminOrderDetailsComponent } from './admin/admin-orders/admin-order-details/admin-order-details.component';
-import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
-import { AdminServicesVerificationComponent } from './admin/admin-services-verification/admin-services-verification.component';
-import { AdminRegisteredServiceEditionComponent } from './admin/admin-registered-service-edition/admin-registered-service-edition.component';
-import { AdminOfficeAddressesComponent } from './admin/admin-office-addresses/admin-office-addresses.component';
-import { AdminExpressServiceComponent } from './admin/admin-express-service/admin-express-service.component';
-import { AccountComponent } from './account/account.component';
 import { ServiceRegistrationComponent } from './service-registration/service-registration.component';
 import { PasswordResetRequestComponent } from './auth/password-reset-request/password-reset-request.component';
 import { PasswordResetComponent } from './auth/password-reset/password-reset.component';
 import { CompleteRegistrationComponent } from './auth/complete-registration/complete-registration.component';
 import { ForServicesComponent } from './for-services/for-services.component';
-import { CourierPanelComponent } from './courier-panel/courier-panel.component';
 import { TermsOfServiceComponent } from './core/terms-of-service.component'
 import { TermsOfServiceWorkshopsComponent } from './core/terms-of-service-workshops.component'
 import { PrivacyPolicyComponent } from './core/privacy-policy.component';
@@ -51,8 +32,10 @@ import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-
 import { CooperationComponent } from './cooperation/cooperation.component';
 import { ServiceProfilePageComponent } from './pages/service-profile/service-profile.component';
 import { CityServicesPageComponent } from './pages/city-services-page/city-services-page.component';
-import { AllServicesPageComponent } from './pages/all-services-page/all-services-page.component';
 import { LandingPageComponent } from './pages/landing-page/landing-page.component';
+import { TransportRowerowKrakowComponent } from './pages/transport-rowerow-krakow/transport-rowerow-krakow.component';
+import { PoradnikListPageComponent } from './pages/poradnik/poradnik-list-page/poradnik-list-page.component';
+import { PoradnikArticlePageComponent } from './pages/poradnik/poradnik-article-page/poradnik-article-page.component';
 import { FlyerRedirectComponent } from './pages/flyer-redirect/flyer-redirect.component';
 import { OrderSuccessComponent } from './pages/order-success/order-success.component';
 import { PaymentReturnComponent } from './pages/payments/payment-return/payment-return.component';
@@ -63,11 +46,11 @@ import { ExpressServiceSuccessComponent } from './pages/payments/express-service
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
 
-    // Landing page - SEO-optimized home page
+    // Landing page - katalog serwisów rowerowych z wyszukiwarką (SEO-optimized home page)
     {
       path: '',
       component: LandingPageComponent,
-      title: 'Serwis rowerowy blisko Ciebie | CycloPick - mapa warsztatów'
+      title: 'Znajdź i zarezerwuj serwis rowerowy w Polsce | CycloPick'
     },
 
     // Map page - interaktywna mapa serwisów
@@ -83,10 +66,12 @@ export const routes: Routes = [
     { path: 'mapa', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `mapa-serwisow?${qs}` : 'mapa-serwisow'; }, pathMatch: 'full' },
     { path: 'services-map', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `mapa-serwisow?${qs}` : 'mapa-serwisow'; }, pathMatch: 'full' },
 
-    // SEO - pełna lista serwisów (wszystkie w Polsce)
+    // SEO - pełna lista serwisów (wszystkie w Polsce) — ten sam komponent co /serwisy/:city,
+    // tylko bez segmentu :city (CityServicesResolver rozpoznaje ten przypadek jako tryb nationwide)
     {
       path: 'serwisy',
-      component: AllServicesPageComponent,
+      component: CityServicesPageComponent,
+      resolve: { cityData: CityServicesResolver },
       title: 'Serwisy rowerowe w Polsce | CycloPick'
     },
 
@@ -101,7 +86,25 @@ export const routes: Routes = [
     {
       path: 'jak-dzialamy',
       component: HowItWorksPageComponent,
-      title: 'Transport rowerów w Krakowie | Odbiór i dostawa door-to-door | CycloPick'
+      title: 'Jak działa rezerwacja online w serwisie rowerowym? | CycloPick'
+    },
+
+    // Transport rowerów w Krakowie (dawna treść landing page — dodatek, nie rdzeń platformy)
+    {
+      path: 'transport-rowerow-krakow',
+      component: TransportRowerowKrakowComponent,
+      title: 'Serwis Rowerowy Kraków Door-to-Door | CycloPick'
+    },
+
+    // Poradnik rowerowy — sekcja treściowa (SEO)
+    {
+      path: 'poradnik',
+      component: PoradnikListPageComponent,
+      title: 'Poradnik rowerowy — porady i wskazówki dla rowerzystów | CycloPick'
+    },
+    {
+      path: 'poradnik/:slug',
+      component: PoradnikArticlePageComponent
     },
 
     // Legal pages
@@ -135,39 +138,49 @@ export const routes: Routes = [
       component: PricingServicesComponent,
       title: 'CycloPick | Oferta dla serwisów rowerowych'
     },
-    
+
     // Pricing route - dostępna dla wszystkich
     {
       path: 'cooperation',
       component: CooperationComponent,
       title: 'Współpraca z CycloPick | Dołącz do zespołu rowerowego startupu'
     },
-    
-    { 
-      path: 'ordersummary', 
+
+    {
+      path: 'ordersummary',
       component: OrderSummaryComponent,
       title: 'Podsumowanie Zamówienia'
     },
-    
+
     // Auth routes - NIGDY nie dodawaj guard do tras logowania!
-    { 
-      path: 'login', 
+    {
+      path: 'login',
       component: LoginComponent,
       title: 'Logowanie'
     },
-    { 
-      path: 'register', 
-      component: RegistrationComponent, 
+    {
+      path: 'register',
+      component: RegistrationComponent,
       data: { userType: 'client' },
       title: 'Rejestracja'
     },
-    { 
-      path: 'verify-account', 
+    {
+      path: 'verify-account',
       component: VerificationComponent,
       title: 'Weryfikacja Konta'
     },
-    { 
-      path: 'password-reset-request', 
+    {
+      path: 'opinia',
+      component: ReviewFormComponent,
+      title: 'Twoja opinia | CycloPick'
+    },
+    {
+      path: 'moje-zlecenie',
+      component: GuestOrderAccessComponent,
+      title: 'Twoje zlecenie | CycloPick'
+    },
+    {
+      path: 'password-reset-request',
       component: PasswordResetRequestComponent,
       title: 'Reset Hasła'
     },
@@ -181,14 +194,14 @@ export const routes: Routes = [
       component: CompleteRegistrationComponent,
       title: 'Aktywacja Konta'
     },
-    
+
     // Service registration - teraz dostępna w menu
-    { 
-      path: 'register-service', 
+    {
+      path: 'register-service',
       component: ServiceRegistrationComponent,
       title: 'Zarejestruj Serwis'
     },
-    
+
     // Przekierowanie z /about na stronę główną (z zachowaniem query params)
     { path: 'about', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `?${qs}` : ''; }, pathMatch: 'full' },
 
@@ -203,19 +216,23 @@ export const routes: Routes = [
     },
 
      // === CHRONIONE TRASY UŻYTKOWNIKÓW SERVICE ===
-    
+    // Trasy poniżej są w pełni zagrodzone guardem (serviceGuard/clientGuard/adminGuard/moderatorGuard/authGuard)
+    // i nigdy nie renderują się dla anonimowego/SEO ruchu — lazy loaded (loadComponent), żeby ich kod
+    // (kalendarz + Angular Material, kanban, panele admina) nie trafiał do głównego bundla ładowanego
+    // przez każdego odwiedzającego stronę publiczną.
+
     // Strona oczekiwania na weryfikację
-    { 
-      path: 'service-pending-verification', 
-      component: ServicePendingVerificationComponent,
+    {
+      path: 'service-pending-verification',
+      loadComponent: () => import('./pages/service-admin-panel/service-pending-verification/service-pending-verification.component').then(m => m.ServicePendingVerificationComponent),
       canActivate: [serviceGuard],
       title: 'Oczekiwanie na Weryfikację'
     },
-    
+
     // Kanban serwisu
     {
       path: ':suffix/panel-administratora/kanban',
-      component: ServiceKanbanComponent,
+      loadComponent: () => import('./pages/service-kanban/service-kanban.component').then(m => m.ServiceKanbanComponent),
       canActivate: [serviceGuard, suffixValidationGuard],
       title: 'Kanban Serwisu'
     },
@@ -224,7 +241,7 @@ export const routes: Routes = [
     // WAŻNE: Ta trasa jest bardziej specyficzna niż :suffix, więc ma priorytet
     {
       path: ':suffix/panel-administratora',
-      component: ServiceCalendarComponent,
+      loadComponent: () => import('./pages/service-calendar/service-calendar.component').then(m => m.ServiceCalendarComponent),
       canActivate: [serviceGuard, suffixValidationGuard],
       title: 'Kalendarz Serwisu'
     },
@@ -232,7 +249,7 @@ export const routes: Routes = [
     // Ustawienia profilu serwisu (dotychczasowy panel admina)
     {
       path: ':suffix/panel-administratora/profil',
-      component: ServiceAdminPanelComponent,
+      loadComponent: () => import('./pages/service-admin-panel/service-admin-panel.component').then(m => m.ServiceAdminPanelComponent),
       canActivate: [serviceGuard, suffixValidationGuard],
       title: 'Ustawienia Profilu Serwisu'
     },
@@ -240,17 +257,17 @@ export const routes: Routes = [
     // Historia zleceń serwisu
     {
       path: ':suffix/historia-zlecen',
-      component: ServiceHistoryPageComponent,
+      loadComponent: () => import('./pages/service-history-page/service-history-page.component').then(m => m.ServiceHistoryPageComponent),
       canActivate: [serviceGuard, suffixValidationGuard],
       title: 'Historia Zleceń'
     },
-    
+
     // === DASHBOARD ROUTES (dla przekierowań po logowaniu) ===
-    
+
     // Dashboard dla klientów
-    { 
+    {
       path: 'client-dashboard',
-      component: ClientPanelListComponent,
+      loadComponent: () => import('./pages/client-panel/client-panel-list/client-panel-list.component').then(m => m.ClientPanelListComponent),
       canActivate: [clientGuard],
       data: { roles: ['CLIENT'] },
       title: 'Panel Klienta'
@@ -259,7 +276,7 @@ export const routes: Routes = [
     // Dashboard dla adminów (tylko ADMIN)
     {
       path: 'admin-dashboard',
-      component: AdminDashboardComponent,
+      loadComponent: () => import('./admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
       canActivate: [adminGuard],
       data: { roles: ['ADMIN'] },
       title: 'Panel Administracyjny'
@@ -269,116 +286,122 @@ export const routes: Routes = [
 
     {
       path: 'bicycles',
-      component: ClientPanelListComponent,
+      loadComponent: () => import('./pages/client-panel/client-panel-list/client-panel-list.component').then(m => m.ClientPanelListComponent),
       canActivate: [clientGuard],
       title: 'Moje Rowery'
     },
     {
       path: 'bicycles/add',
-      component: ClientPanelFormComponent,
+      loadComponent: () => import('./pages/client-panel/client-panel-form/client-panel-form.component').then(m => m.ClientPanelFormComponent),
       canActivate: [clientGuard],
       title: 'Dodaj Rower'
     },
     {
       path: 'bicycles/:id',
-      component: ClientPanelDetailsComponent,
+      loadComponent: () => import('./pages/client-panel/client-panel-bicycle-details/client-panel-bicycle-details.component').then(m => m.ClientPanelDetailsComponent),
       canActivate: [clientGuard],
       data: { RenderMode: 'client' },
       title: 'Szczegóły Roweru'
     },
-    
+
     // Service order routes for clients
 
     {
       path: 'admin-orders/:id',
-      component: AdminOrderDetailsComponent,
+      loadComponent: () => import('./admin/admin-orders/admin-order-details/admin-order-details.component').then(m => m.AdminOrderDetailsComponent),
       canActivate: [moderatorGuard],
       title: 'Szczegóły Zamówienia - Admin'
     },
     {
       path: 'admin-orders',
-      component: AdminOrdersComponent,
+      loadComponent: () => import('./admin/admin-orders/admin-orders.component').then(m => m.AdminOrdersComponent),
       canActivate: [moderatorGuard],
       title: 'Zamówienia - Admin'
     },
     // Account route - dostępna dla zalogowanych użytkowników
-    { 
-      path: 'account', 
-      component: AccountComponent, 
+    {
+      path: 'account',
+      loadComponent: () => import('./account/account.component').then(m => m.AccountComponent),
       canActivate: [authGuard],
       title: 'Moje Konto'
     },
-    
+
     // === CHRONIONE TRASY ADMINÓW ===
-    
+
     // Admin Orders Routes
     {
       path: 'admin-orders',
-      component: AdminOrdersComponent,
+      loadComponent: () => import('./admin/admin-orders/admin-orders.component').then(m => m.AdminOrdersComponent),
       canActivate: [moderatorGuard],
       title: 'Zamówienia - Admin'
     },
-    { 
-      path: 'admin-users', 
-      component: AdminUsersComponent, 
+    {
+      path: 'admin-users',
+      loadComponent: () => import('./admin/admin-users/admin-users.component').then(m => m.AdminUsersComponent),
       canActivate: [adminGuard],
       title: 'Użytkownicy - Admin'
     },
-    
+
     // Admin Services Verification - NOWY MODUŁ
-    { 
-      path: 'admin-services-verification', 
-      component: AdminServicesVerificationComponent, 
+    {
+      path: 'admin-services-verification',
+      loadComponent: () => import('./admin/admin-services-verification/admin-services-verification.component').then(m => m.AdminServicesVerificationComponent),
       canActivate: [adminGuard],
       title: 'Weryfikacja Serwisów - Admin'
     },
 
-    { 
-      path: 'admin-service-edit/:id', 
-      component: AdminRegisteredServiceEditionComponent, 
+    {
+      path: 'admin-service-edit/:id',
+      loadComponent: () => import('./admin/admin-registered-service-edition/admin-registered-service-edition.component').then(m => m.AdminRegisteredServiceEditionComponent),
       canActivate: [adminGuard],
       title: 'Edycja Serwisu - Admin'
     },
 
     // Pozostałe admin routes
-    { 
-      path: 'admin-enumerations', 
-      component: AdminEnumerationsManagerComponent, 
+    {
+      path: 'admin-enumerations',
+      loadComponent: () => import('./admin/admin-enumerations/admin-enumerations-manager.component').then(m => m.AdminEnumerationsManagerComponent),
       canActivate: [adminGuard],
       title: 'Słowniki - Admin'
     },
-    { 
-      path: 'admin-service-slots', 
-      component: AdminServiceSlotsComponent, 
+    {
+      path: 'admin-service-slots',
+      loadComponent: () => import('./admin/service-slots/admin-service-slots.component').then(m => m.AdminServiceSlotsComponent),
       canActivate: [adminGuard],
       title: 'Sloty Czasowe - Admin'
     },
     {
       path: 'admin-bike-services',
-      component: AdminBikeServicesComponent,
+      loadComponent: () => import('./admin/admin-bike-services/admin-bike-services.component').then(m => m.AdminBikeServicesComponent),
       canActivate: [adminGuard],
       title: 'Serwisy - Admin'
     },
     {
       path: 'admin-office-addresses',
-      component: AdminOfficeAddressesComponent,
+      loadComponent: () => import('./admin/admin-office-addresses/admin-office-addresses.component').then(m => m.AdminOfficeAddressesComponent),
       canActivate: [adminGuard],
       title: 'Kompleksy biurowe - Admin'
     },
     {
+      path: 'admin-coupons',
+      loadComponent: () => import('./admin/admin-coupons/admin-coupons.component').then(m => m.AdminCouponsComponent),
+      canActivate: [adminGuard],
+      title: 'Kupony - Admin'
+    },
+    {
       path: 'admin-express-service',
-      component: AdminExpressServiceComponent,
+      loadComponent: () => import('./admin/admin-express-service/admin-express-service.component').then(m => m.AdminExpressServiceComponent),
       canActivate: [adminGuard],
       title: 'Serwis Ekspresowy - Admin'
     },
-    
+
     {
       path: 'mistrzauta',
-      component: CourierPanelComponent,
+      loadComponent: () => import('./courier-panel/courier-panel.component').then(m => m.CourierPanelComponent),
       canActivate: [moderatorGuard],
       title: 'Panel Kuriera'
     },
-    
+
     // === PROFIL PUBLICZNY SERWISU ===
     // WAŻNE: Trasy :suffix MUSZĄ być przed wildcard, ale PO wszystkich innych trasach
     // Angular dopasowuje trasy w kolejności, więc bardziej szczegółowe (:suffix/panel-administratora)
@@ -478,9 +501,9 @@ export const routes: Routes = [
       resolve: { profileData: ServiceProfileResolver },
       data: { section: 'info' }
     },
-    
+
     // === FALLBACK ===
-    
+
     // Wildcard route - ZAWSZE na końcu (z zachowaniem query params)
     { path: '**', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `?${qs}` : ''; } }
 ];

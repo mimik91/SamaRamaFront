@@ -22,12 +22,14 @@ export class CalendarHeaderComponent {
   @Input() selectedDate: Date = new Date();
   @Input() maxBikesPerDay: number = 10;
   @Input() showTechnicianButton: boolean = false;
+  @Input() loading: boolean = false;
 
   @Output() viewChange = new EventEmitter<CalendarViewMode>();
   @Output() modeChange = new EventEmitter<CalendarMode>();
   @Output() dateChange = new EventEmitter<Date>();
   @Output() acceptReservationClick = new EventEmitter<void>();
   @Output() acceptBikeClick = new EventEmitter<void>();
+  @Output() refreshClick = new EventEmitter<void>();
   t(key: string, params?: Record<string, any>): string {
     return this.i18nService.translate(key, params);
   }
@@ -131,5 +133,9 @@ export class CalendarHeaderComponent {
 
   onAcceptBike(): void {
     this.acceptBikeClick.emit();
+  }
+
+  onRefresh(): void {
+    this.refreshClick.emit();
   }
 }

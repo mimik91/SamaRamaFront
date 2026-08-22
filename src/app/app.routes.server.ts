@@ -23,6 +23,14 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender
   },
   {
+    path: 'transport-rowerow-krakow',
+    renderMode: RenderMode.Prerender
+  },
+  {
+    path: 'poradnik',
+    renderMode: RenderMode.Prerender
+  },
+  {
     path: 'dla-serwisow',
     renderMode: RenderMode.Prerender
   },
@@ -67,7 +75,7 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
 
-  // All services page - server render (SEO important)
+  // Wszystkie serwisy (bez miasta) - server render (SEO important, data changes)
   {
     path: 'serwisy',
     renderMode: RenderMode.Server
@@ -76,6 +84,13 @@ export const serverRoutes: ServerRoute[] = [
   // City services pages - server render (SEO important, data changes)
   {
     path: 'serwisy/:city',
+    renderMode: RenderMode.Server
+  },
+
+  // Poradnik — artykuł (parametryzowana trasa; ten setup nie ma outputMode ustawionego w angular.json,
+  // więc getPrerenderParams nie jest wywoływane przy buildzie — server render daje pełne SEO bez tego wymogu)
+  {
+    path: 'poradnik/:slug',
     renderMode: RenderMode.Server
   },
 
@@ -97,6 +112,14 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: 'verify-account',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'opinia',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'moje-zlecenie',
     renderMode: RenderMode.Client
   },
   {
@@ -165,6 +188,10 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: 'admin-office-addresses',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: 'admin-coupons',
     renderMode: RenderMode.Client
   },
   {

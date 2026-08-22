@@ -1,0 +1,58 @@
+.poradnik-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-8) var(--spacing-5);
+  box-sizing: border-box;
+}
+
+.poradnik-list-header {
+  text-align: center;
+  margin-bottom: var(--spacing-8);
+}
+
+.poradnik-list-header h1 {
+  font-size: var(--font-size-h1, 2rem);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--spacing-3);
+}
+
+.poradnik-list-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.poradnik-list-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-5);
+  margin-bottom: var(--spacing-8);
+}
+
+.poradnik-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
+.poradnik-back-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 950px) {
+  .poradnik-list-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 639px) {
+  .poradnik-list-grid {
+    grid-template-columns: 1fr;
+  }
+}

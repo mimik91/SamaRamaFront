@@ -330,6 +330,12 @@ export interface CalendarOrder {
   // Zdjecia (opcjonalne - ladowane osobno)
   images?: OrderImage[];
 
+  // Liczba nieprzeczytanych wiadomości od klienta (odznaka w kanbanie)
+  unreadMessageCount?: number;
+
+  // Status potwierdzenia planu naprawy — obecne tylko gdy plan wymaga potwierdzenia i został wysłany
+  repairPlanStatus?: 'SENT_TO_CLIENT' | 'ACCEPTED' | 'REJECTED';
+
   // Metadane
   createdAt?: string;
   updatedAt?: string;

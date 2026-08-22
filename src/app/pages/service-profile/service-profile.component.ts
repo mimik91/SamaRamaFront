@@ -16,8 +16,10 @@ import {
 import { environment } from '../../environments/environments';
 import {
   BikeServicePublicInfo,
-  ServiceActiveStatus
+  ServiceActiveStatus,
+  ServiceReviewsOverviewDto
 } from '../../shared/models/bike-service-common.models';
+import { formatServiceDurationBucket } from '../../service-records/service-duration.util';
 import { OpeningHoursWithInfoDto, DAY_NAMES_PL, DayOfWeek, DayInterval } from '../../shared/models/opening-hours.models';
 import { ServicePricelistDto, CategoryWithItemsDto } from '../../shared/models/service-pricelist.models';
 import {
@@ -26,11 +28,13 @@ import {
   PackageLevel,
   filterPackagesByBikeType
 } from '../../shared/models/service-packages.models';
+import { ServiceLocationMapComponent } from './service-location-map/service-location-map.component';
+import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-service-profile-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ServiceLocationMapComponent, BreadcrumbComponent],
   templateUrl: './service-profile.component.html',
   styleUrls: ['./service-profile.component.css']
 })
@@ -57,6 +61,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   suffix: string = '';
   publicInfo: BikeServicePublicInfo | null = null;
   activeStatus: ServiceActiveStatus | null = null;
+  reviews: ServiceReviewsOverviewDto | null = null;
   
   // Dane opcjonalne (ładowane warunkowo)
   openingHours: OpeningHoursWithInfoDto | null = null;
@@ -153,6 +158,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     this.packagesConfig = data.packagesConfig;
     this.bikeTypes = data.bikeTypes;
     this.logoUrl = data.logoUrl;
+    this.reviews = data.reviews;
 
     // Wyciągnij pakiety z config
     if (this.packagesConfig?.packages) {
@@ -275,6 +281,28 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     this.imagesLoading = false;
   }
 
+  // Czas oczekiwania na wykonanie serwisu w przedziałach — ta sama wartość co na kartach listy
+  formatWaitingTime(hours: number | null | undefined): string {
+    return formatServiceDurationBucket(hours);
+  }
+
+  formatReviewDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('pl-PL', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  // Parametry opinii (courtesy/priceTransparency/turnaround/repairQuality) to średnia z odpowiedzi
+  // tak/nie o różnej maksymalnej wadze (0.5 albo 1) — przeliczamy na % pozytywnych odpowiedzi.
+  scoreToPercent(avgScore: number | null | undefined, maxScore: number): number | null {
+    if (avgScore == null) return null;
+    return Math.round((avgScore / maxScore) * 100);
+  }
+
+  // overallScore = gwiazdki(0-5) * 0.5, więc odwrotność to gwiazdki
+  scoreToStars(overallScore: number | null | undefined): number | null {
+    if (overallScore == null) return null;
+    return Math.round((overallScore / 0.5) * 10) / 10;
+  }
+
   // Metoda do zmiany typu roweru w pakietach
   onBikeTypeChange(bikeType: string): void {
     this.selectedBikeType = bikeType;
@@ -317,6 +345,27 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   }
 
   // Pomocnicze metody dla wyświetlania danych
+  get breadcrumbItems(): { label: string; url?: string }[] {
+    const items: { label: string; url?: string }[] = [
+      { label: 'Strona główna', url: '/' },
+      { label: 'Serwisy rowerowe', url: '/serwisy' }
+    ];
+
+    const cityName = this.publicInfo?.city;
+    if (cityName) {
+      const citySlug = environment.settings.seoCities.find(
+        c => c.name.toLowerCase() === cityName.trim().toLowerCase()
+      )?.slug;
+      items.push(citySlug ? { label: cityName, url: `/serwisy/${citySlug}` } : { label: cityName });
+    }
+
+    if (this.publicInfo) {
+      items.push({ label: this.publicInfo.name });
+    }
+
+    return items;
+  }
+
   getFullAddress(): string {
     if (!this.publicInfo) return '';
     
@@ -338,8 +387,20 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
 
   hasSocialMedia(): boolean {
     if (!this.publicInfo) return false;
-    return !!(this.publicInfo.facebook || this.publicInfo.instagram || 
+    return !!(this.publicInfo.facebook || this.publicInfo.instagram ||
               this.publicInfo.tiktok || this.publicInfo.youtube || this.publicInfo.website);
+  }
+
+  navigateToServiceOnMap(): void {
+    if (!this.publicInfo?.latitude || !this.publicInfo?.longitude) return;
+    this.router.navigate(['/mapa-serwisow'], {
+      queryParams: {
+        lat: this.publicInfo.latitude,
+        lng: this.publicInfo.longitude,
+        zoom: 16,
+        serviceId: this.serviceId
+      }
+    });
   }
 
   getDayInterval(dayKey: DayOfWeek): DayInterval | null {

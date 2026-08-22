@@ -2,13 +2,15 @@ import { Component, OnInit, inject, ViewChild, ElementRef, HostListener } from '
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { BicycleService, GroupedImagesResponse, BicycleImage, ActiveTransportResponse, ActiveServiceOrderCard, ServiceOrderMessage, ServiceOrderDetail } from '../bicycle.service';
 import { Bicycle } from '../../../shared/models/bicycle.model';
+import { RepairPlanResponse } from '../../../shared/models/repair-plan.models';
 import { NotificationService } from '../../../core/notification.service';
 import { ServiceRecord } from '../../../service-records/service-record.model';
 import { ServiceRecordService } from '../../../service-records/service-record.service';
+import { formatServiceDurationDays } from '../../../service-records/service-duration.util';
 import { EnumerationService } from '../../../core/enumeration.service';
 import { BicycleSelectionService } from '../bicycle-selection.service';
 import { ImageUtilsService } from '../../../core/image-utils.service';
@@ -16,7 +18,7 @@ import { ImageUtilsService } from '../../../core/image-utils.service';
 @Component({
   selector: 'app-client-panel-bicycle-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './client-panel-bicycle-details.component.html',
   styleUrls: ['./client-panel-bicycle-details.component.css']
 })
@@ -38,6 +40,17 @@ export class ClientPanelDetailsComponent implements OnInit {
   bicycleForm: FormGroup;
   serviceRecords: ServiceRecord[] = [];
   expandedRecordIds = new Set<number>();
+
+  readonly historyRepairPlanStatusLabels: Record<string, string> = {
+    DRAFT: 'Szkic',
+    SENT_TO_CLIENT: 'Wysłany do klienta',
+    ACCEPTED: 'Zaakceptowany',
+    REJECTED: 'Odrzucony'
+  };
+
+  formatDuration(hours: number | null | undefined): string {
+    return formatServiceDurationDays(hours);
+  }
   loading = true;
   isEditing = false;
   isSubmitting = false;
@@ -72,6 +85,14 @@ export class ClientPanelDetailsComponent implements OnInit {
   isLoadingServiceOrderDetail = false;
   newMessageContent = '';
   isSendingMessage = false;
+
+  // Repair plan (widoczny w rozwiniętych szczegółach zlecenia)
+  repairPlan: RepairPlanResponse | null = null;
+  isDecidingRepairPlan = false;
+  excludedRepairPlanItemIds = new Set<number>();
+  repairPlanPackageExcluded = false;
+  showRejectReasonModal = false;
+  rejectReason = '';
 
   // Service order image lightbox
   soLightboxOpen = false;
@@ -219,6 +240,8 @@ export class ClientPanelDetailsComponent implements OnInit {
   private loadServiceOrderDetails(orderId: number): void {
     this.isLoadingServiceOrderDetail = true;
     this.serviceOrderImages = [];
+    this.excludedRepairPlanItemIds.clear();
+    this.repairPlanPackageExcluded = false;
 
     this.bicycleService.getServiceOrderDetail(orderId).subscribe({
       next: (detail) => { this.serviceOrderDetail = detail; },
@@ -240,6 +263,138 @@ export class ClientPanelDetailsComponent implements OnInit {
     this.bicycleService.getServiceOrderImages(orderId).subscribe({
       next: (images) => { this.serviceOrderImages = images; },
       error: () => { this.serviceOrderImages = []; }
+    });
+
+    this.bicycleService.getRepairPlan(orderId).subscribe({
+      next: (plan) => { this.repairPlan = plan; },
+      error: () => { this.repairPlan = null; }
+    });
+  }
+
+  get repairPlanAwaitingDecision(): boolean {
+    return !!this.repairPlan && this.repairPlan.status === 'SENT_TO_CLIENT' && this.repairPlan.requiresConfirmation;
+  }
+
+  get isEditingRepairPlanItems(): boolean {
+    return this.excludedRepairPlanItemIds.size > 0 || this.repairPlanPackageExcluded;
+  }
+
+  get repairPlanHasDiscount(): boolean {
+    const plan = this.repairPlan;
+    return !this.isEditingRepairPlanItems && !!plan && plan.customTotal != null && plan.customTotal < plan.calculatedTotal;
+  }
+
+  get repairPlanPreviewTotal(): number {
+    const plan = this.repairPlan;
+    if (!plan) return 0;
+    if (!this.isEditingRepairPlanItems) {
+      return plan.customTotal ?? plan.calculatedTotal;
+    }
+    const packagePrice = this.repairPlanPackageExcluded ? 0 : (plan.packagePriceSnapshot ?? 0);
+    const itemsSum = plan.items
+      .filter(item => !this.excludedRepairPlanItemIds.has(item.id))
+      .reduce((sum, item) => sum + item.price, 0);
+    return packagePrice + itemsSum;
+  }
+
+  parseRepairPlanPackageItems(description: string | null): string[] {
+    return (description ?? '')
+      .split('\n')
+      .map(line => line.replace(/^[-–•]\s*/, '').trim())
+      .filter(line => line.length > 0);
+  }
+
+  isRepairPlanItemExcluded(itemId: number): boolean {
+    return this.excludedRepairPlanItemIds.has(itemId);
+  }
+
+  toggleRepairPlanItemExclusion(itemId: number): void {
+    if (!this.repairPlanAwaitingDecision) return;
+    if (this.excludedRepairPlanItemIds.has(itemId)) {
+      this.excludedRepairPlanItemIds.delete(itemId);
+    } else {
+      this.excludedRepairPlanItemIds.add(itemId);
+    }
+  }
+
+  toggleRepairPlanPackageExclusion(): void {
+    if (!this.repairPlanAwaitingDecision) return;
+    this.repairPlanPackageExcluded = !this.repairPlanPackageExcluded;
+  }
+
+  confirmRepairPlan(): void {
+    if (!this.activeServiceOrder || this.isDecidingRepairPlan) return;
+
+    this.isDecidingRepairPlan = true;
+    const excludedItemIds = Array.from(this.excludedRepairPlanItemIds);
+    const excludePackage = this.repairPlanPackageExcluded;
+    this.bicycleService.confirmRepairPlan(this.activeServiceOrder.id, excludedItemIds, excludePackage).subscribe({
+      next: () => {
+        const plan = this.repairPlan;
+        if (plan) {
+          plan.status = 'ACCEPTED';
+          if (excludedItemIds.length > 0 || excludePackage) {
+            plan.items.forEach(item => { item.excluded = excludedItemIds.includes(item.id); });
+            plan.packageExcluded = excludePackage;
+            plan.customTotal = null;
+          }
+        }
+        this.isDecidingRepairPlan = false;
+        this.notificationService.success('Plan naprawy potwierdzony.');
+      },
+      error: (err) => {
+        this.isDecidingRepairPlan = false;
+        this.notificationService.error(err.error?.message || 'Nie udało się potwierdzić planu naprawy.');
+      }
+    });
+  }
+
+  openRejectReasonModal(): void {
+    if (!this.repairPlanAwaitingDecision) return;
+    this.rejectReason = '';
+    this.showRejectReasonModal = true;
+  }
+
+  cancelRejectReasonModal(): void {
+    this.showRejectReasonModal = false;
+    this.rejectReason = '';
+  }
+
+  confirmRejectWithReason(): void {
+    const reason = this.rejectReason.trim();
+    this.showRejectReasonModal = false;
+
+    if (!reason || !this.activeServiceOrder) {
+      this.rejectRepairPlan();
+      return;
+    }
+
+    this.bicycleService.sendServiceOrderMessage(this.activeServiceOrder.id, `Powód odrzucenia planu naprawy: ${reason}`).subscribe({
+      next: (msg) => {
+        this.serviceOrderMessages = [...this.serviceOrderMessages, msg];
+        this.rejectRepairPlan();
+      },
+      error: () => {
+        this.notificationService.error('Nie udało się wysłać powodu odrzucenia, ale plan zostanie odrzucony.');
+        this.rejectRepairPlan();
+      }
+    });
+  }
+
+  private rejectRepairPlan(): void {
+    if (!this.activeServiceOrder || this.isDecidingRepairPlan) return;
+
+    this.isDecidingRepairPlan = true;
+    this.bicycleService.rejectRepairPlan(this.activeServiceOrder.id).subscribe({
+      next: () => {
+        if (this.repairPlan) this.repairPlan.status = 'REJECTED';
+        this.isDecidingRepairPlan = false;
+        this.notificationService.success('Plan naprawy odrzucony.');
+      },
+      error: (err) => {
+        this.isDecidingRepairPlan = false;
+        this.notificationService.error(err.error?.message || 'Nie udało się odrzucić planu naprawy.');
+      }
     });
   }
 

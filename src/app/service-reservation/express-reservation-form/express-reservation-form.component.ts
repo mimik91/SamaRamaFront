@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import {
@@ -11,14 +11,15 @@ import {
   AbstractControl,
   ValidationErrors
 } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, NavigationStart, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, of } from 'rxjs';
-import { distinctUntilChanged, catchError } from 'rxjs/operators';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { filter, distinctUntilChanged, catchError } from 'rxjs/operators';
 import {
   ServicePackagesConfigDto,
   ServicePackageDto
 } from '../../shared/models/service-packages.models';
+import { SessionSyncService } from '../../core/session-sync.service';
 import { SeoService } from '../../core/seo.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,6 +28,7 @@ import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/cor
 import { NotificationService } from '../../core/notification.service';
 import { EnumerationService } from '../../core/enumeration.service';
 import { environment } from '../../environments/environments';
+import { DiscountService } from '../../shared/services/discount.service';
 import { OfficeAddressDto } from '../../shared/models/office-address.model';
 
 interface ReservationSettings {
@@ -60,8 +62,13 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
   private enumerationService = inject(EnumerationService);
+  private sessionSyncService = inject(SessionSyncService);
   private seoService = inject(SeoService);
   private platformId = inject(PLATFORM_ID);
+  private discountService = inject(DiscountService);
+
+  private routerSub: Subscription | null = null;
+  private sessionSyncSent = false;
 
   currentStep = 1;
   loading = false;
@@ -102,6 +109,13 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   packages: ServicePackageDto[] = [];
   selectedPackage: ServicePackageDto | null = null;
   packageSelectionAttempted = false;
+
+  // Kupon rabatowy — tylko podgląd/UX przed submitem; realna cena i tak liczona na backendzie
+  // w quoteExpressReservation (onSubmit).
+  couponControl = new FormControl('');
+  isApplyingCoupon = false;
+  couponMessage: string | null = null;
+  isCouponInvalid = false;
 
   // Office address autocomplete
   officeAddresses: OfficeAddressDto[] = [];
@@ -387,6 +401,12 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
       '/krakow/zarezerwuj'
     );
 
+    if (isPlatformBrowser(this.platformId)) {
+      this.routerSub = this.router.events.pipe(
+        filter(e => e instanceof NavigationStart)
+      ).subscribe(() => this.sendSessionSync());
+    }
+
     this.reservationForm.get('plannedDate')?.valueChanges.pipe(
       distinctUntilChanged((a, b) => {
         const sa = a instanceof Date ? this.dateToStr(a) : (a ? this.dateToStr(new Date(a + 'T00:00:00')) : '');
@@ -582,8 +602,46 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
       pickupPostalCode: tv['pickupPostalCode'] || '',
       pickupOfficeName: officeLabel || null,
       pickupDate: this.transportDate,
-      transportNotes
+      transportNotes,
+      discountCoupon: this.isCouponInvalid ? null : (this.couponControl.value?.trim() || null)
     };
+  }
+
+  applyDiscountCoupon(): void {
+    const coupon = this.couponControl.value?.trim();
+    if (!coupon || this.isApplyingCoupon || !this.selectedPackage) return;
+
+    const plannedDate = this.reservationForm.get('plannedDate')?.value;
+    if (!plannedDate) {
+      this.notificationService.warning('Wybierz najpierw datę serwisu.');
+      return;
+    }
+
+    this.isApplyingCoupon = true;
+    this.couponMessage = null;
+    this.isCouponInvalid = false;
+
+    const plannedDateStr = plannedDate instanceof Date ? this.dateToStr(plannedDate) : plannedDate;
+    const additionalBikes = Math.max(0, this.bikesArray.length - 1);
+
+    this.discountService.applyDiscount({
+      coupon,
+      scope: 'SERVICE_ORDER',
+      firstUnitPrice: this.selectedPackage.price,
+      remainderPrice: this.selectedPackage.price * additionalBikes,
+      orderDate: plannedDateStr
+    }).subscribe({
+      next: (res) => {
+        this.couponMessage = `Kupon zastosowany! Nowa cena: ${res.totalPrice} PLN`;
+        this.isCouponInvalid = false;
+        this.isApplyingCoupon = false;
+      },
+      error: (err) => {
+        this.couponMessage = err.error?.message || 'Kupon jest nieprawidłowy lub już wygasł.';
+        this.isCouponInvalid = true;
+        this.isApplyingCoupon = false;
+      }
+    });
   }
 
   // ===== Packages =====
@@ -619,7 +677,26 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    this.sendSessionSync();
+  }
+
   ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
     this.seoService.removeStructuredData();
+  }
+
+  private sendSessionSync(): void {
+    if (this.sessionSyncSent) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.sessionSyncSent = true;
+    const rv = this.reservationForm.value;
+    this.sessionSyncService.send({
+      firstName: rv.firstName?.trim() || '',
+      lastName: rv.lastName?.trim() || '',
+      email: rv.email?.trim() || '',
+      phone: rv.phone?.trim() || ''
+    });
   }
 }

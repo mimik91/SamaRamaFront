@@ -171,6 +171,20 @@ cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
   justify-content: center;
 }
 
+.rating-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-secondary, #475569);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.rating-chip svg {
+  color: #f59e0b;
+}
+
 .card-address,
 .card-phone {
   font-size: 0.72rem;

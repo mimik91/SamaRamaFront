@@ -2,6 +2,12 @@
 
   <!-- ===== HERO — dark SaaS ===== -->
   <section class="hero-section">
+    <div class="hero-breadcrumb-bar">
+      <app-breadcrumb
+        variant="light"
+        [items]="[{label: 'Strona główna', url: '/'}, {label: 'Dla serwisów rowerowych'}]">
+      </app-breadcrumb>
+    </div>
     <div class="hero-inner">
       <span class="hero-badge">Dla serwisów rowerowych</span>
       <h1>Twój serwis pracuje na klientów,<br><em class="hero-accent">nawet gdy jesteś zamknięty</em></h1>

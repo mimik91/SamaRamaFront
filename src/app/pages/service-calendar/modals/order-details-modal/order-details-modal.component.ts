@@ -391,12 +391,6 @@ export class OrderDetailsModalComponent implements OnDestroy {
     return this.t(key);
   }
 
-  onOverlayClick(event: Event): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.onSaveAndClose();
-    }
-  }
-
   async onSaveAndClose(): Promise<void> {
     if (!this.isDirty) {
       this.close.emit();

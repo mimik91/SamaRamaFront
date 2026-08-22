@@ -10,6 +10,7 @@ import {
 } from '../shared/models/admin.models';
 import { BikeServiceRegisteredDto } from '../shared/models/bike-service.models';
 import { OfficeAddressDto } from '../shared/models/office-address.model';
+import { CouponDto } from '../shared/models/coupon.model';
 
 
 @Injectable({
@@ -235,6 +236,48 @@ export class AdminService {
     return this.http.delete<void>(`${this.officeAddressesUrl}/${id}`).pipe(
       catchError(error => {
         console.error(`Error deleting office address ${id}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // =================== COUPONS ===================
+
+  private get couponsUrl(): string {
+    return `${environment.apiUrl}${environment.endpoints.admin.coupons}`;
+  }
+
+  getAllCoupons(): Observable<CouponDto[]> {
+    return this.http.get<CouponDto[]>(this.couponsUrl).pipe(
+      catchError(error => {
+        console.error('Error fetching coupons:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  createCoupon(dto: Omit<CouponDto, 'id' | 'usageCount'>): Observable<{ message: string; coupon: CouponDto }> {
+    return this.http.post<{ message: string; coupon: CouponDto }>(this.couponsUrl, dto).pipe(
+      catchError(error => {
+        console.error('Error creating coupon:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  updateCoupon(id: number, dto: Omit<CouponDto, 'id' | 'usageCount'>): Observable<{ message: string; coupon: CouponDto }> {
+    return this.http.put<{ message: string; coupon: CouponDto }>(`${this.couponsUrl}/${id}`, dto).pipe(
+      catchError(error => {
+        console.error(`Error updating coupon ${id}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  deleteCoupon(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.couponsUrl}/${id}`).pipe(
+      catchError(error => {
+        console.error(`Error deleting coupon ${id}:`, error);
         return throwError(() => error);
       })
     );

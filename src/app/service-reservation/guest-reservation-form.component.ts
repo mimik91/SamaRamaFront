@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import {
@@ -11,10 +11,10 @@ import {
   AbstractControl,
   ValidationErrors
 } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, NavigationStart, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, of } from 'rxjs';
-import { switchMap, distinctUntilChanged, catchError } from 'rxjs/operators';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { filter, switchMap, distinctUntilChanged, catchError } from 'rxjs/operators';
 import {
   ServicePackagesConfigDto,
   ServicePackageDto,
@@ -22,6 +22,7 @@ import {
   ALL_PACKAGE_LEVELS,
   filterPackagesByBikeType
 } from '../shared/models/service-packages.models';
+import { SessionSyncService } from '../core/session-sync.service';
 import { SeoService } from '../core/seo.service';
 import { SchemaOrgHelper, BikeRepairShopData } from '../core/schema-org.helper';
 import { SSR_RESPONSE } from '../core/ssr-tokens';
@@ -32,6 +33,7 @@ import { EnumerationService } from '../core/enumeration.service';
 import { environment } from '../environments/environments';
 import { OfficeAddressDto } from '../shared/models/office-address.model';
 import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constants';
+import { DiscountService } from '../shared/services/discount.service';
 
 interface ServiceInfo {
   id: number;
@@ -75,10 +77,15 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
+  private discountService = inject(DiscountService);
   private enumerationService = inject(EnumerationService);
+  private sessionSyncService = inject(SessionSyncService);
   private seoService = inject(SeoService);
   private platformId = inject(PLATFORM_ID);
   private serverResponse = inject(SSR_RESPONSE, { optional: true });
+
+  private routerSub: Subscription | null = null;
+  private sessionSyncSent = false;
 
   currentStep = 1;
   loading = false;
@@ -126,6 +133,9 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   couponMessage: string | null = null;
   isCouponInvalid = false;
   finalTransportPrice: number | null = null;
+  // Cena JEDNEJ dodatkowej roweru po rabacie — domyślnie = bez rabatu (transportPricing.additionalBikeCost),
+  // ale kupon WHOLE_ORDER może ją obniżyć (patrz effectiveTransportPrice).
+  discountedAdditionalBikePrice: number | null = null;
 
   // Packages pricelist panel
   packagesConfig: ServicePackagesConfigDto | null = null;
@@ -434,6 +444,12 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     this.loadOfficeAddresses();
     this.loadServiceInfo();
 
+    if (isPlatformBrowser(this.platformId)) {
+      this.routerSub = this.router.events.pipe(
+        filter(e => e instanceof NavigationStart)
+      ).subscribe(() => this.sendSessionSync());
+    }
+
     this.reservationForm.get('plannedDate')?.valueChanges.pipe(
       distinctUntilChanged((a, b) => this.dateToStr(a instanceof Date ? a : new Date(a + 'T00:00:00')) === this.dateToStr(b instanceof Date ? b : new Date(b + 'T00:00:00')))
     ).subscribe((val) => {
@@ -458,6 +474,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         this.couponMessage = null;
         this.isCouponInvalid = false;
         this.finalTransportPrice = null;
+        this.discountedAdditionalBikePrice = null;
       }
     });
 
@@ -748,6 +765,24 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     this.submitting = true;
     const rv = this.reservationForm.value;
 
+    // Płatny transport: NIE twórz rezerwacji od razu (POST /service-reservation) — backend utworzy
+    // ją dopiero po opłaceniu transportu (TransportPaymentHandler.onPaymentCompleted →
+    // createGuestTransportOrder, warunkowo, na podstawie plannedDate w payloadzie transportu).
+    // Zapobiega to zajętym, nieopłaconym terminom gdy klient porzuci płatność.
+    if (this.withTransport && this.effectiveTransportPrice > 0) {
+      this.submitting = false;
+      const orderData = this.buildTransportPayload(rv, []);
+      this.router.navigate(['/platnosc/podsumowanie'], {
+        state: {
+          orderType: 'TRANSPORT',
+          orderData,
+          totalPrice: this.effectiveTransportPrice,
+          bikeCount: this.bikesArray.length
+        }
+      });
+      return;
+    }
+
     const plannedDateVal = rv.plannedDate;
     const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
 
@@ -774,20 +809,9 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     this.http.post<{ message: string; orderIds: number[] }>(url, reservationPayload).subscribe({
       next: (res) => {
         if (this.withTransport) {
-          if (this.effectiveTransportPrice > 0) {
-            this.submitting = false;
-            const orderData = this.buildTransportPayload(rv, res.orderIds);
-            this.router.navigate(['/platnosc/podsumowanie'], {
-              state: {
-                orderType: 'TRANSPORT',
-                orderData,
-                totalPrice: this.effectiveTransportPrice,
-                bikeCount: this.bikesArray.length
-              }
-            });
-          } else {
-            this.submitTransport(rv, res.orderIds);
-          }
+          // effectiveTransportPrice tutaj zawsze === 0 — płatny transport obsłużony wyżej, przed
+          // utworzeniem rezerwacji.
+          this.submitTransport(rv, res.orderIds);
         } else {
           this.onSuccess();
         }
@@ -802,6 +826,8 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   applyDiscountCoupon(): void {
     const coupon = this.couponControl.value?.trim();
+    // !this.serviceInfo?.transportCost celowo odrzuca też transportCost === 0 (transport już
+    // darmowy dla wszystkich rowerów — kupon nie ma nic do obniżenia).
     if (!coupon || this.isApplyingCoupon || !this.serviceInfo?.transportCost) return;
 
     this.isApplyingCoupon = true;
@@ -815,27 +841,27 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.discounts}`;
-    this.http.post<{ newPrice: number }>(url, {
+    const additionalBikes = Math.max(0, this.bikesArray.length - 1);
+    const remainderPrice = additionalBikes * this.transportPricing.additionalBikeCost;
+
+    this.discountService.applyDiscount({
       coupon,
-      currentTransportPrice: this.serviceInfo.transportCost,
+      scope: 'TRANSPORT',
+      firstUnitPrice: this.serviceInfo.transportCost,
+      remainderPrice,
       orderDate: this.transportDate
     }).subscribe({
       next: (res) => {
-        if (res.newPrice < this.serviceInfo!.transportCost!) {
-          this.finalTransportPrice = res.newPrice;
-          this.couponMessage = `Kupon zastosowany! Nowa cena: ${res.newPrice} PLN`;
-          this.isCouponInvalid = false;
-        } else {
-          this.finalTransportPrice = null;
-          this.couponMessage = 'Kupon jest nieprawidłowy lub już wygasł.';
-          this.isCouponInvalid = true;
-        }
+        this.finalTransportPrice = res.firstUnitPrice;
+        this.discountedAdditionalBikePrice = additionalBikes > 0 ? res.remainderPrice / additionalBikes : null;
+        this.couponMessage = `Kupon zastosowany! Nowa cena: ${res.totalPrice} PLN`;
+        this.isCouponInvalid = false;
         this.isApplyingCoupon = false;
       },
-      error: () => {
+      error: (err) => {
         this.finalTransportPrice = null;
-        this.couponMessage = 'Nie udało się sprawdzić kuponu. Spróbuj ponownie.';
+        this.discountedAdditionalBikePrice = null;
+        this.couponMessage = err.error?.message || 'Kupon jest nieprawidłowy lub już wygasł.';
         this.isCouponInvalid = true;
         this.isApplyingCoupon = false;
       }
@@ -843,9 +869,17 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   }
 
   get effectiveTransportPrice(): number {
+    // Darmowy transport skonfigurowany na serwisie (transportCost === 0) obejmuje wszystkie
+    // rowery — nie tylko pierwszy. Kupon nie może tu nic obniżyć (patrz guard w applyDiscountCoupon).
+    if (this.serviceInfo?.transportCost === 0) {
+      return 0;
+    }
     const basePrice = this.finalTransportPrice ?? this.serviceInfo?.transportCost ?? this.transportPricing.partnerCost;
     const additionalBikes = Math.max(0, this.bikesArray.length - 1);
-    return basePrice + additionalBikes * this.transportPricing.additionalBikeCost;
+    // Kupon WHOLE_ORDER może obniżyć też cenę dodatkowych rowerów — jeśli tak, discountedAdditionalBikePrice
+    // jest ustawione (per sztuka); w przeciwnym razie dodatkowe rowery kosztują tyle co bez kuponu.
+    const additionalBikeUnitPrice = this.discountedAdditionalBikePrice ?? this.transportPricing.additionalBikeCost;
+    return basePrice + additionalBikes * additionalBikeUnitPrice;
   }
 
   private buildTransportPayload(rv: any, serviceOrderIds: number[]): Record<string, unknown> {
@@ -861,6 +895,13 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     const officePrefix = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
     const transportNotes = [officePrefix, userNotes].filter(Boolean).join('\n');
 
+    // plannedDate — data rezerwacji u serwisu (inna niż pickupDate, data odbioru przez kuriera).
+    // Backend tworzy rezerwację "przy okazji" transportu tylko gdy serviceOrderIds jest puste —
+    // dla ścieżek gdzie rezerwacja już powstała (serviceOrderIds niepuste) pole jest ignorowane,
+    // więc bezpiecznie wysyłamy je zawsze.
+    const plannedDateVal = rv.plannedDate;
+    const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
+
     return {
       serviceOrderIds,
       bicycles: bikesPayload,
@@ -873,10 +914,11 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       pickupCity: tv.pickupCity,
       pickupPostalCode: tv.pickupPostalCode || '',
       pickupDate: this.transportDate,
+      plannedDate: plannedDateStr,
       targetServiceId: this.serviceInfo!.id,
       transportPrice: this.effectiveTransportPrice,
       transportNotes,
-      additionalNotes: '',
+      additionalNotes: bikesPayload[0]?.additionalInfo || '',
       discountCoupon: this.finalTransportPrice !== null ? this.couponControl.value : null,
       pickupOfficeName: officeLabel || null
     };
@@ -975,7 +1017,13 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    this.sendSessionSync();
+  }
+
   ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
     this.seoService.removeStructuredData();
   }
 
@@ -1023,5 +1071,19 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     if (schema) {
       this.seoService.addStructuredData(schema);
     }
+  }
+
+  private sendSessionSync(): void {
+    if (this.sessionSyncSent) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.sessionSyncSent = true;
+
+    const rv = this.reservationForm.value;
+    this.sessionSyncService.send({
+      firstName: rv.firstName?.trim() || '',
+      lastName: rv.lastName?.trim() || '',
+      email: rv.email?.trim() || '',
+      phone: rv.phone?.trim() || ''
+    });
   }
 }

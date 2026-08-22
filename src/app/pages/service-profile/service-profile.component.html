@@ -42,10 +42,24 @@
       </div>
     </div>
 
+    <app-breadcrumb class="profile-breadcrumb" [items]="breadcrumbItems"></app-breadcrumb>
+
     <!-- INFO -->
     <section class="main-content" id="info">
       <div class="content-left">
         <h1>{{ publicInfo.name }} – serwis rowerowy {{ publicInfo.city }}{{ publicInfo.district ? ' ' + publicInfo.district : '' }}</h1>
+
+        <div class="service-stats-row">
+          <span class="stat-chip">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <ng-container *ngIf="publicInfo.reviewCount; else noRating">{{ publicInfo.averageRating | number:'1.1-1' }} ({{ publicInfo.reviewCount }})</ng-container>
+            <ng-template #noRating>N/A</ng-template>
+          </span>
+          <span class="stat-chip">
+            śr. czas realizacji: {{ formatWaitingTime(publicInfo.medianServiceDurationHours) }}
+          </span>
+        </div>
+
         <!-- Logo z skeleton -->
         <div class="logo-container">
           <div *ngIf="!logoUrl" class="skeleton skeleton-logo"></div>
@@ -251,6 +265,21 @@
           [alt]="t('service_profile.images.opening_hours')"
           class="content-image fade-in">
       </div>
+
+      <div class="location-map-block" *ngIf="publicInfo.latitude && publicInfo.longitude">
+        <app-service-location-map
+          [latitude]="publicInfo.latitude"
+          [longitude]="publicInfo.longitude"
+          [serviceName]="publicInfo.name"
+        ></app-service-location-map>
+        <button type="button" class="show-on-map-btn" (click)="navigateToServiceOnMap()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          Pokaż na mapie
+        </button>
+      </div>
     </section>
 
     <!-- CONTACT SECTION -->
@@ -346,6 +375,50 @@
             </a>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- OPINIE -->
+    <section class="reviews-section" id="opinie">
+      <h2 class="reviews-heading">Opinie – {{ publicInfo.name }}</h2>
+
+      <div *ngIf="!reviews || reviews.reviewCount === 0" class="reviews-empty">
+        <p>Brak opinii.</p>
+      </div>
+
+      <div *ngIf="reviews && reviews.reviewCount > 0" class="reviews-content">
+        <div class="reviews-averages">
+          <div class="review-average-item">
+            <span class="review-average-label">Ocena ogólna</span>
+            <span class="review-average-value">{{ scoreToStars(reviews.avgOverallScore) }} / 5</span>
+          </div>
+          <div class="review-average-item">
+            <span class="review-average-label">Uprzejmość obsługi</span>
+            <span class="review-average-value">{{ scoreToPercent(reviews.avgCourtesyScore, 0.5) }}%</span>
+          </div>
+          <div class="review-average-item">
+            <span class="review-average-label">Przejrzystość cen</span>
+            <span class="review-average-value">{{ scoreToPercent(reviews.avgPriceTransparencyScore, 1) }}%</span>
+          </div>
+          <div class="review-average-item">
+            <span class="review-average-label">Czas realizacji</span>
+            <span class="review-average-value">{{ scoreToPercent(reviews.avgTurnaroundScore, 0.5) }}%</span>
+          </div>
+          <div class="review-average-item">
+            <span class="review-average-label">Jakość naprawy</span>
+            <span class="review-average-value">{{ scoreToPercent(reviews.avgRepairQualityScore, 0.5) }}%</span>
+          </div>
+        </div>
+
+        <ul class="reviews-list">
+          <li *ngFor="let review of reviews.reviews" class="review-item">
+            <div class="review-item-header">
+              <span class="review-item-score">{{ scoreToStars(review.overallScore) }} / 5</span>
+              <span class="review-item-date">{{ formatReviewDate(review.createdAt) }}</span>
+            </div>
+            <p *ngIf="review.comment" class="review-item-comment">{{ review.comment }}</p>
+          </li>
+        </ul>
       </div>
     </section>
   </div>

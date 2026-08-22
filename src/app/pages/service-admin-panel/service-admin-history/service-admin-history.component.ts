@@ -2,11 +2,29 @@ import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environments';
+import { formatServiceDurationDays } from '../../../service-records/service-duration.util';
 
 interface ItemDto {
   name: string;
   price: number;
   quantity: number;
+}
+
+interface RepairPlanItemDto {
+  name: string;
+  price: number;
+}
+
+interface RepairPlanSummaryDto {
+  packageName: string | null;
+  items: RepairPlanItemDto[];
+  totalPrice: number;
+  status: 'DRAFT' | 'SENT_TO_CLIENT' | 'ACCEPTED' | 'REJECTED';
+}
+
+interface ReviewSummaryDto {
+  totalScore: number;
+  comment: string | null;
 }
 
 interface ServiceRecordServiceDto {
@@ -25,6 +43,9 @@ interface ServiceRecordServiceDto {
   serviceNotes: string | null;
   maintenanceAdvice: string | null;
   recommendedRepairs: string | null;
+  repairPlan: RepairPlanSummaryDto | null;
+  actualDurationHours: number | null;
+  review: ReviewSummaryDto | null;
 }
 
 interface Page<T> {
@@ -129,6 +150,17 @@ export class ServiceAdminHistoryComponent implements OnInit {
     if (price == null) return '—';
     return price.toFixed(2).replace('.', ',') + ' zł';
   }
+
+  formatDuration(hours: number | null): string {
+    return formatServiceDurationDays(hours);
+  }
+
+  readonly repairPlanStatusLabels: Record<string, string> = {
+    DRAFT: 'Szkic',
+    SENT_TO_CLIENT: 'Wysłany do klienta',
+    ACCEPTED: 'Zaakceptowany',
+    REJECTED: 'Odrzucony'
+  };
 
   get firstRecord(): number {
     return this.totalElements === 0 ? 0 : this.currentPage * this.pageSize + 1;

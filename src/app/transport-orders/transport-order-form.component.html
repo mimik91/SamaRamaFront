@@ -671,8 +671,8 @@
           </div>
         </div>
 
-        <!-- Sekcja rabatu -->
-        <div class="discount-section">
+        <!-- Sekcja rabatu — ukryta gdy transport już darmowy (kupon nie ma nic do obniżenia) -->
+        <div class="discount-section" *ngIf="getEstimatedTransportCost() > 0">
           <h4>{{ t('transport_order.discount.section_title') }}</h4>
           <div class="discount-form">
             <div class="form-group">

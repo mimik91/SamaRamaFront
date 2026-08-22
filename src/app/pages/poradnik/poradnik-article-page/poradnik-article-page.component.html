@@ -1,0 +1,48 @@
+<article class="poradnik-article-container" *ngIf="article">
+  <div class="poradnik-layout-top">
+    <app-breadcrumb
+      [items]="[{ label: 'Strona główna', url: '/' }, { label: 'Poradnik rowerowy', url: '/poradnik' }, { label: article.title }]"
+    ></app-breadcrumb>
+
+    <header class="poradnik-article-header">
+      <span class="poradnik-kicker">Poradnik rowerowy</span>
+      <h1>{{ article.title }}</h1>
+      <div class="poradnik-article-meta">
+        <span>{{ article.publishedDate | date: 'd MMMM y' }}</span>
+        <span class="poradnik-article-meta-dot">·</span>
+        <span>{{ article.readingTimeMinutes }} min czytania</span>
+      </div>
+    </header>
+
+    <div class="poradnik-article-cover-wrap">
+      <img
+        [src]="article.coverImage"
+        [alt]="article.coverImageAlt"
+        class="poradnik-article-cover"
+        width="900"
+        height="600"
+      />
+    </div>
+  </div>
+
+  <nav class="poradnik-toc" *ngIf="tocItems.length > 1" aria-label="Spis treści">
+    <p class="poradnik-toc-label">Spis treści</p>
+    <ol>
+      <li *ngFor="let item of tocItems">
+        <a [href]="'#' + item.id" (click)="onTocLinkClick($event, item.id)">{{ item.text }}</a>
+      </li>
+    </ol>
+  </nav>
+
+  <div class="poradnik-article-content" [innerHTML]="safeContentHtml"></div>
+
+  <section class="poradnik-related-section" *ngIf="relatedArticles.length > 0">
+    <h2>Powiązane porady</h2>
+    <div class="poradnik-related-grid">
+      <app-poradnik-article-card
+        *ngFor="let related of relatedArticles"
+        [article]="related"
+      ></app-poradnik-article-card>
+    </div>
+  </section>
+</article>

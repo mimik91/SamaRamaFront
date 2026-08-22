@@ -17,7 +17,6 @@ import { OfficeAddressDto } from '../shared/models/office-address.model';
 })
 export class TransportOrderService {
   private apiUrl = `${environment.apiUrl}${environment.endpoints.guestOrders.transport}`;
-  private discountApiUrl = `${environment.apiUrl}${environment.endpoints.guestOrders.discounts}`;
   private http = inject(HttpClient);
 
   constructor() { }
@@ -146,21 +145,6 @@ export class TransportOrderService {
     );
   }
 
-  /**
-   * Sprawdza i aplikuje kupon rabatowy
-   */
-  checkDiscount(data: { 
-    coupon: string; 
-    currentTransportPrice: number; 
-    orderDate: string; 
-  }): Observable<{ newPrice: number }> {
-    return this.http.post<{ newPrice: number }>(this.discountApiUrl, data).pipe(
-      catchError(error => {
-        console.error('Error checking discount coupon:', error);
-        return throwError(() => error);
-      })
-    );
-  }
 
   /**
    * Pobiera podsumowanie zamówień na podstawie ich ID

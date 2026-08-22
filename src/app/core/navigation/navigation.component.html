@@ -72,7 +72,6 @@
       <ng-template #notLoggedInMenu>
         <ng-container *ngTemplateOutlet="mapLink"></ng-container>
         <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Login</a>
-        <a routerLink="/register-service" routerLinkActive="active" (click)="closeMobileMenu()">Zarejestruj serwis</a>
       </ng-template>
 
       <!-- CTA rezerwacji — widoczne dla wszystkich na stronie profilu serwisu -->
@@ -82,6 +81,8 @@
          class="nav-link nav-cta-reserve">
         Zarezerwuj wizytę
       </a>
+
+      <a routerLink="/poradnik" routerLinkActive="active" (click)="closeMobileMenu()">Poradnik</a>
     </div>
 
     <!-- User Settings Dropdown -->

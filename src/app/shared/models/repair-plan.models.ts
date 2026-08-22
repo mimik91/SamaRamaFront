@@ -2,6 +2,7 @@ export interface RepairPlanLineItem {
   pricelistItemId: number | null;
   name: string;
   price: number;
+  excluded?: boolean;
 }
 
 // ===== REQUEST =====
@@ -29,11 +30,15 @@ export interface RepairPlanResponse {
   id: number;
   packageId: number | null;
   packageName: string | null;
+  packageDescription: string | null;
   packagePriceSnapshot: number | null;
+  packageExcluded: boolean;
   items: RepairPlanItemResponse[];
   customTotal: number | null;
+  calculatedTotal: number;
   notes: string | null;
   status: 'DRAFT' | 'SENT_TO_CLIENT' | 'ACCEPTED' | 'REJECTED';
+  requiresConfirmation: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,4 +47,10 @@ export interface RepairPlanItemResponse {
   id: number;
   name: string;
   price: number;
+  excluded: boolean;
+}
+
+export interface ConfirmRepairPlanRequest {
+  excludedItemIds: number[];
+  excludePackage: boolean;
 }

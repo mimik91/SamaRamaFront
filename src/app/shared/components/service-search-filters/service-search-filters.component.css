@@ -1,0 +1,350 @@
+.ssf-container {
+  background: var(--color-white);
+  border: 1px solid var(--border-color-gray);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-4);
+}
+
+/* ============ HEADER ============ */
+
+.ssf-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: 10px 14px;
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--border-color-gray);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+.ssf-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.ssf-toggle-btn:hover {
+  opacity: 0.75;
+}
+
+.ssf-header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.ssf-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.ssf-badge {
+  background: var(--color-primary);
+  color: #fff;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+}
+
+.ssf-chevron {
+  color: var(--text-muted);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.ssf-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+/* ============ HEADER SEARCH (zawsze widoczna) ============ */
+
+.ssf-header-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 160px;
+}
+
+.ssf-input-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.ssf-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 36px;
+  border: 2px solid var(--border-color-gray);
+  border-radius: var(--radius-input);
+  font-size: 0.9rem;
+  background: var(--color-white);
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ssf-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
+}
+
+.ssf-input::placeholder {
+  color: var(--color-slate-600, #475569);
+  font-weight: var(--font-weight-medium);
+}
+
+.ssf-input-clear {
+  position: absolute;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  background: var(--color-gray-100, #f3f4f6);
+  color: var(--text-muted);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.ssf-input-clear:hover {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+/* ============ SUGGESTIONS DROPDOWN ============ */
+
+.ssf-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--color-white);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-input);
+  box-shadow: var(--shadow-lg);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 200;
+}
+
+.ssf-suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-color-gray);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  min-height: 44px;
+  box-sizing: border-box;
+  transition: background 0.15s ease;
+}
+
+.ssf-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.ssf-suggestion-item:hover {
+  background: var(--color-primary-alpha-08);
+}
+
+.ssf-suggestion-item.selected {
+  background: var(--color-primary-alpha-10);
+}
+
+.ssf-suggestion-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ssf-suggestion-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ssf-suggestion-category {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.ssf-suggestion-check {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* ============ CONTENT ============ */
+
+.ssf-content {
+  max-height: 2000px;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+  opacity: 1;
+}
+
+.ssf-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.ssf-inner {
+  padding: 16px 18px;
+}
+
+.ssf-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============ COVERAGES ============ */
+
+.ssf-coverages-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ssf-clear-btn {
+  padding: 5px 11px;
+  background: none;
+  color: var(--color-danger);
+  border: 1.5px solid var(--color-danger);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.ssf-clear-btn:hover {
+  color: #fff;
+  background: var(--color-danger);
+}
+
+.ssf-category {
+  margin-bottom: 16px;
+}
+
+.ssf-category:last-child {
+  margin-bottom: 0;
+}
+
+.ssf-category-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 0 0 8px 0;
+}
+
+.ssf-coverage-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ssf-coverage-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  min-height: 32px;
+  cursor: pointer;
+  border-radius: 20px;
+  background: var(--color-gray-50);
+  border: 1.5px solid var(--border-color-gray);
+  transition: all 0.15s ease;
+}
+
+.ssf-coverage-item:hover {
+  background: var(--color-primary-alpha-08);
+  border-color: var(--color-primary);
+}
+
+.ssf-coverage-item:has(.ssf-checkbox:checked) {
+  background: var(--color-primary-alpha-10);
+  border-color: var(--color-primary);
+}
+
+.ssf-checkbox {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.ssf-coverage-name {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.ssf-coverage-item:has(.ssf-checkbox:checked) .ssf-coverage-name {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ============ MOBILE ============ */
+
+@media (max-width: 768px) {
+  .ssf-header {
+    flex-wrap: wrap;
+  }
+
+  .ssf-header-search {
+    order: 3;
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
+  .ssf-inner {
+    padding: 14px;
+  }
+
+  /* Większy obszar dotyku dla checkboxów usług na mobile (min. 44px) */
+  .ssf-coverage-item {
+    min-height: 44px;
+    padding: 8px 14px;
+  }
+
+  .ssf-checkbox {
+    width: 18px;
+    height: 18px;
+  }
+}

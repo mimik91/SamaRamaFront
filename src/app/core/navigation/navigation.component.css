@@ -21,10 +21,17 @@
 
 .navbar-container, .auth-navbar-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 40px;
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   height: 100%;
+}
+
+/* Menu konta (zalogowani) zostaje po prawej — reszta klastruje się od logo w lewo */
+.navbar-container app-user-settings {
+  margin-left: auto;
 }
 
 .navbar-brand {
@@ -51,8 +58,9 @@
 .navbar-menu a {
   color: var(--color-gray-200);
   text-decoration: none;
-  padding: 5px 10px;
-  border-radius: 4px;
+  padding: 14px 22px;
+  font-size: 1.05rem;
+  border-radius: 6px;
   transition: background-color 0.3s;
 }
 
@@ -61,13 +69,23 @@
   color: var(--color-primary) !important;
   font-weight: var(--font-weight-bold);
   border-radius: var(--radius-button);
-  padding: 6px 14px !important;
+  padding: 14px 24px !important;
   margin-left: 4px;
 }
 
 .nav-cta-reserve:hover {
   background-color: var(--color-slate-100) !important;
   color: var(--color-primary) !important;
+}
+
+.nav-link-secondary {
+  font-size: 0.82rem;
+  opacity: 0.65;
+}
+
+.nav-link-secondary:hover,
+.nav-link-secondary.active {
+  opacity: 1;
 }
 
 .nav-link--icon {
@@ -95,8 +113,9 @@
 .auth-links a {
   color: var(--color-gray-200);
   text-decoration: none;
-  padding: 5px 10px;
-  border-radius: 4px;
+  padding: 14px 22px;
+  font-size: 1.05rem;
+  border-radius: 6px;
   transition: background-color 0.3s;
 }
 

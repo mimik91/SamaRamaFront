@@ -248,10 +248,6 @@ export class CreateOrderModalComponent implements OnInit, OnDestroy {
     return `${year}-${month}-${day}`;
   }
 
-  onOverlayClick(event: Event): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) this.onClose();
-  }
-
   onClose(): void { this.close.emit(); }
 
   get isFormValid(): boolean {

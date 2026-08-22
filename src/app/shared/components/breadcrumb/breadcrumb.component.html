@@ -1,0 +1,7 @@
+<nav class="app-breadcrumb" [class.light]="variant === 'light'" aria-label="Okruszki nawigacyjne">
+  <ng-container *ngFor="let item of items; let last = last">
+    <a *ngIf="item.url && !last" [routerLink]="item.url">{{ item.label }}</a>
+    <span *ngIf="!item.url || last" [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>
+    <span class="app-breadcrumb-sep" *ngIf="!last">/</span>
+  </ng-container>
+</nav>

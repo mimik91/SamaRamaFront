@@ -508,8 +508,8 @@
               ></textarea>
             </div>
 
-            <!-- Kupon rabatowy -->
-            <div class="coupon-section">
+            <!-- Kupon rabatowy — ukryty gdy transport już darmowy (kupon nie ma nic do obniżenia) -->
+            <div class="coupon-section" *ngIf="serviceInfo?.transportCost">
               <h4 class="transport-address-title">Kupon rabatowy <span class="optional-label">(opcjonalnie)</span></h4>
               <div class="coupon-row">
                 <input

@@ -5,6 +5,39 @@
   padding: var(--spacing-5);
 }
 
+/* === STATUS PLANU === */
+
+.rp-status-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-card);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.rp-status-banner--sent_to_client {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-orange);
+}
+
+.rp-status-banner--accepted {
+  background: var(--color-success-bg);
+  color: var(--color-success-dark);
+}
+
+.rp-status-banner--rejected {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
+}
+
+.rp-status-note {
+  font-weight: 400;
+  font-size: var(--font-size-xs);
+  opacity: 0.85;
+}
+
 /* === SEKCJE === */
 
 .rp-section {
@@ -225,6 +258,26 @@
   border-radius: var(--radius-sm);
 }
 
+.rp-item-row--excluded {
+  background: var(--color-danger-bg-lighter, #fff8f8);
+}
+
+.rp-item-row--excluded .rp-item-name,
+.rp-item-row--excluded .rp-item-price-edit {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.rp-item-excluded-tag {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-danger-dark);
+  white-space: nowrap;
+  text-decoration: none;
+  margin-left: var(--spacing-2);
+}
+
 .rp-item-name {
   flex: 1;
   font-size: var(--font-size-sm);
@@ -289,9 +342,34 @@ input[type='number'] {
   color: var(--text-secondary);
 }
 
+.rp-summary-row--excluded span:first-child,
+.rp-summary-row--excluded span:last-child {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
 .rp-summary-divider {
   border-top: 1px dashed var(--border-color-gray);
   margin: var(--spacing-1) 0;
+}
+
+.rp-summary-row--package {
+  align-items: center;
+}
+
+.rp-package-price-edit-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  flex-shrink: 0;
+}
+
+.rp-price-overridden-hint {
+  display: inline-block;
+  margin-left: var(--spacing-2);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 .rp-summary-total {

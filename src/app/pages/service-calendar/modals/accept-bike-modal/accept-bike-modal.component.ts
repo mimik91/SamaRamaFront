@@ -311,10 +311,6 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   // FORM
   // ============================================
 
-  onOverlayClick(event: Event): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) this.onClose();
-  }
-
   onClose(): void { this.close.emit(); }
 
   setMode(mode: ModalMode): void {

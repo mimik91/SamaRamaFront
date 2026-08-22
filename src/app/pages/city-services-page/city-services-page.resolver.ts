@@ -3,21 +3,25 @@ import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { MapService } from '../services-map-page/services/map.service';
-import { MapPin, MapServicesRequestDto, MapServicesResponseDto } from '../../shared/models/map.models';
+import { MapPin, MapServicesRequestDto, MapServicesResponseDto, calculateCityBounds } from '../../shared/models/map.models';
 import { environment } from '../../environments/environments';
 import { CityConfig } from './city-services-page.component';
 
+/** Ile serwisów ładujemy na starcie w trybie "wszystkie miasta" (reszta przez "Załaduj więcej") */
+const NATIONWIDE_INITIAL_PER_PAGE = 20;
+
 /**
  * Dane rozwiązane przez resolver - dostępne w komponencie przez route.data
+ * city === null oznacza tryb "wszystkie serwisy w Polsce" (trasa /serwisy bez :city)
  */
 export interface CityServicesResolvedData {
-  city: CityConfig;
+  city: CityConfig | null;
   services: MapPin[];
   total: number;
 }
 
 /**
- * Resolver dla listy serwisów w mieście
+ * Resolver dla listy serwisów — per miasto (/serwisy/:city) albo dla całej Polski (/serwisy)
  *
  * Angular Universal czeka na zakończenie resolvera przed wysłaniem HTML,
  * dzięki czemu AI crawlery (ChatGPT, Gemini, Claude) widzą pełne dane w HTML.
@@ -31,10 +35,17 @@ export class CityServicesResolver implements Resolve<CityServicesResolvedData | 
 
   resolve(route: ActivatedRouteSnapshot): Observable<CityServicesResolvedData | null> {
     const citySlug = route.paramMap.get('city');
+    // Filtry przekazane z landing page (wyszukiwarka nawiguje tu z queryParams zamiast pokazywać
+    // wyniki na miejscu — patrz landing-page.component.ts onSearchSubmit)
+    const search = route.queryParamMap.get('search') || undefined;
+    const coverageIdsParam = route.queryParamMap.get('coverageIds');
+    const coverageIds = coverageIdsParam
+      ? coverageIdsParam.split(',').map(Number).filter(n => !isNaN(n))
+      : undefined;
 
     if (!citySlug) {
-      console.error('[CityServicesResolver] Brak slug miasta w URL');
-      return of(null);
+      // Brak segmentu :city w URL (trasa /serwisy) — tryb "wszystkie serwisy w Polsce"
+      return this.fetchNationwide(search, coverageIds);
     }
 
     // Znajdź miasto w konfiguracji
@@ -45,17 +56,21 @@ export class CityServicesResolver implements Resolve<CityServicesResolvedData | 
       return of(null);
     }
 
-    // Oblicz bounds dla miasta
-    const bounds = this.calculateBounds(city.latitude, city.longitude, 13, 3000, 1800);
+    return this.fetchForCity(city, search, coverageIds);
+  }
+
+  private fetchForCity(city: CityConfig, search?: string, coverageIds?: number[]): Observable<CityServicesResolvedData> {
+    const bounds = calculateCityBounds(city.latitude, city.longitude);
 
     const request: MapServicesRequestDto = {
       type: 'event',
       bounds: `${bounds.south},${bounds.west},${bounds.north},${bounds.east}`,
       page: 0,
-      perPage: 1000
+      perPage: 1000,
+      search,
+      coverageIds
     };
 
-    // Pobierz serwisy dla miasta
     return this.mapService.getServices(request).pipe(
       map(response => ({
         city,
@@ -64,32 +79,31 @@ export class CityServicesResolver implements Resolve<CityServicesResolvedData | 
       })),
       catchError(err => {
         console.error('[CityServicesResolver] Błąd pobierania serwisów:', err);
-        // Zwróć miasto ale bez serwisów
-        return of({
-          city,
-          services: [],
-          total: 0
-        });
+        return of({ city, services: [], total: 0 });
       })
     );
   }
 
-  private calculateBounds(
-    lat: number,
-    lng: number,
-    zoom: number,
-    viewportWidth: number,
-    viewportHeight: number
-  ): { south: number; west: number; north: number; east: number } {
-    const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
-    const halfWidthDeg = (viewportWidth * metersPerPixel) / 111320 / 2;
-    const halfHeightDeg = (viewportHeight * metersPerPixel) / 110540 / 2;
-
-    return {
-      south: lat - halfHeightDeg,
-      north: lat + halfHeightDeg,
-      west: lng - halfWidthDeg,
-      east: lng + halfWidthDeg
+  private fetchNationwide(search?: string, coverageIds?: number[]): Observable<CityServicesResolvedData> {
+    const request: MapServicesRequestDto = {
+      type: 'event',
+      bounds: undefined,
+      page: 0,
+      perPage: NATIONWIDE_INITIAL_PER_PAGE,
+      search,
+      coverageIds
     };
+
+    return this.mapService.getServices(request).pipe(
+      map((response: MapServicesResponseDto) => ({
+        city: null,
+        services: response?.data || [],
+        total: response?.total || 0
+      })),
+      catchError(err => {
+        console.error('[CityServicesResolver] Błąd pobierania wszystkich serwisów:', err);
+        return of({ city: null, services: [], total: 0 });
+      })
+    );
   }
 }

@@ -1,237 +1,230 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, Inject, inject, ViewChild, ElementRef, PLATFORM_ID, NgZone } from '@angular/core';
-import { isPlatformBrowser, CommonModule, DOCUMENT } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import {
+  Component, OnInit, OnDestroy, HostListener, inject, ChangeDetectionStrategy, ChangeDetectorRef,
+  Inject, PLATFORM_ID, NgZone, ViewChild, ElementRef
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { Meta, Title, DomSanitizer, SafeStyle } from '@angular/platform-browser';
-import { ServiceProfileService } from '../service-profile/service-profile.service';
+import { Subject, takeUntil, debounceTime } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+
+import { MapService } from '../services-map-page/services/map.service';
+import { StatsSummaryDto, CitySuggestion } from '../../shared/models/map.models';
 import { SeoService } from '../../core/seo.service';
 import { SchemaOrgHelper } from '../../core/schema-org.helper';
-import { TRANSPORT_PRICING } from '../../shared/constants/transport-pricing.constants';
+import { environment } from '../../environments/environments';
+import { CityConfig } from '../city-services-page/city-services-page.component';
+import { ServiceProfileService, PartnerLogoDto } from '../service-profile/service-profile.service';
+import { ServiceSearchFiltersComponent, ServiceListFiltersChange } from '../../shared/components/service-search-filters/service-search-filters.component';
+import { PoradnikArticleCardComponent } from '../poradnik/poradnik-article-card/poradnik-article-card.component';
+import { PORADNIK_ARTICLES } from '../poradnik/poradnik-articles.data';
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule, ServiceSearchFiltersComponent, PoradnikArticleCardComponent],
   templateUrl: './landing-page.component.html',
-  styleUrls: ['./landing-page.component.css']
+  styleUrls: ['./landing-page.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
-  private serviceProfileService = inject(ServiceProfileService);
-  private platformId = inject(PLATFORM_ID);
-  private ngZone = inject(NgZone);
+export class LandingPageComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   private seoService = inject(SeoService);
+  private cdr = inject(ChangeDetectorRef);
+  private profileService = inject(ServiceProfileService);
+  private ngZone = inject(NgZone);
 
   @ViewChild('partnerTrack') partnerTrackRef!: ElementRef<HTMLElement>;
-  @ViewChild('reviewsTrack') reviewsTrackRef!: ElementRef<HTMLElement>;
 
-  // Marquee state — partner logos
-  private rafId: number | null = null;
+  readonly cities: CityConfig[] = [...environment.settings.seoCities].sort((a, b) =>
+    a.name.localeCompare(b.name, 'pl')
+  );
+
+  readonly footerCities: CityConfig[] = environment.settings.seoCities.filter(
+    city => environment.settings.seoFooterCities.includes(city.slug)
+  );
+
+  // Pełny proces rezerwacji (6 kroków) — rozbudowane o krok 4 (potwierdzenie wizyty przez serwis)
+  // względem skróconej wersji na /jak-dzialamy
+  readonly steps = [
+    {
+      icon: 'search',
+      title: 'Znajdź serwis rowerowy',
+      description: 'Przeszukaj katalog setek serwisów w całej Polsce — filtruj po mieście i rodzaju usługi, by znaleźć ten najbliższy Ciebie.'
+    },
+    {
+      icon: 'clock',
+      title: 'Sprawdź dostępne terminy i cennik',
+      description: 'Zobacz godziny otwarcia, opinie innych klientów i orientacyjne ceny usług, zanim się zdecydujesz.'
+    },
+    {
+      icon: 'calendar',
+      title: 'Zarezerwuj wizytę online',
+      description: 'Wybierz dogodny termin i wyślij zgłoszenie rezerwacji w kilka minut — bez telefonowania.'
+    },
+    {
+      icon: 'check-circle',
+      title: 'Poczekaj na potwierdzenie wizyty przez serwis',
+      description: 'Serwis potwierdzi Twoją rezerwację — otrzymasz powiadomienie, gdy termin zostanie zaakceptowany.'
+    },
+    {
+      icon: 'tool',
+      title: 'Przyjedź z rowerem w umówionym terminie',
+      description: 'Serwis już na Ciebie czeka — zero kolejek, zero niespodzianek.'
+    },
+    {
+      icon: 'credit-card',
+      title: 'Odbierz naprawiony rower',
+      description: 'Zapłać na miejscu i wróć na trasę — z pewnością, że rower jest w dobrych rękach.'
+    }
+  ];
+
+  statsSummary: StatsSummaryDto | null = null;
+
+  // Poradnik rowerowy — teaser (3 najnowsze artykuły), pod paskiem partnerów
+  readonly latestArticles = PORADNIK_ARTICLES.slice(0, 3);
+
+  // Tło hero – przez sanitizer, żeby Angular nie blokował url() ze spacją w nazwie pliku
+  heroBgStyle!: SafeStyle;
+
+  // City autocomplete state
+  cityInputValue = '';
+  filteredCities: CityConfig[] = [];
+  showCitySuggestions = false;
+  activeSuggestionIndex = -1;
+
+  // Miejscowości spoza sztywnej listy seoCities — dociągane z backendu (jak na /mapa-serwisow),
+  // pokazywane tylko gdy filteredCities jest puste. Wybór przenosi na mapę wycentrowaną na tę lokalizację.
+  dynamicCitySuggestions: CitySuggestion[] = [];
+  private citySearchSubject = new Subject<string>();
+
+  // Wyszukiwarka (nazwa + usługi) — nie filtruje niczego na miejscu, tylko nawiguje do /serwisy
+  // (lub /serwisy/{miasto}, jeśli miasto wybrane) z parametrami w URL — patrz onSearchSubmit
+  serviceNameQuery = '';
+  selectedCoverageIds: number[] = [];
+  // Panel wyszukiwania jest domyślnie węższy — rozszerza się, gdy rozwinięty jest filtr usług
+  searchFiltersExpanded = false;
+
+  // Pasek partnerów — loga serwisów z rezerwacją online (marquee, requestAnimationFrame)
+  partnerLogos: PartnerLogoDto[] = [];
+  private marqueeRafId: number | null = null;
   private marqueePos = 0;
   private marqueeHalfWidth = 0;
   private readonly MARQUEE_SPEED = 0.6;
 
-  // Marquee state — reviews
-  private reviewsRafId: number | null = null;
-  private reviewsPos = 0;
-  private reviewsHalfWidth = 0;
-  private readonly REVIEWS_SPEED = 0.4;
-
-  // Drag state — partner logos
   isDragging = false;
   private dragStartX = 0;
   private dragStartPos = 0;
 
-  // Drag state — reviews
-  isReviewsDragging = false;
-  private reviewsDragStartX = 0;
-  private reviewsDragStartPos = 0;
-
-  // Bound listeners for cleanup — partner logos
   private readonly onMouseMoveBound = (e: MouseEvent) => this.onMouseMove(e);
   private readonly onMouseUpBound = () => this.onDragEnd();
   private readonly onTouchMoveBound = (e: TouchEvent) => this.onTouchMove(e);
   private readonly onTouchEndBound = () => this.onDragEnd();
 
-  // Bound listeners for cleanup — reviews
-  private readonly onReviewsMouseMoveBound = (e: MouseEvent) => this.onReviewsMouseMove(e);
-  private readonly onReviewsMouseUpBound = () => this.onReviewsDragEnd();
-  private readonly onReviewsTouchMoveBound = (e: TouchEvent) => this.onReviewsTouchMove(e);
-  private readonly onReviewsTouchEndBound = () => this.onReviewsDragEnd();
-
-  readonly partnerTransportLabel = `${TRANSPORT_PRICING.partnerCost} zł`;
-  readonly standardTransportLabel = `${TRANSPORT_PRICING.standardCost} zł`;
-
-  readonly reviewImages = [
-    'assets/images/opinie/opinia 1.webp',
-    'assets/images/opinie/opinia 2.webp',
-    'assets/images/opinie/opinia 3.webp',
-    'assets/images/opinie/opinia 4.webp',
-    'assets/images/opinie/opinia 5.webp',
-    'assets/images/opinie/opinia 6.webp',
-    'assets/images/opinie/opinia 7.webp',
-    'assets/images/opinie/opinia 8.webp',
-    'assets/images/opinie/opinia 9.webp',
-    'assets/images/opinie/opinia 10.webp'
-  ];
-
-
-  partnerLogos: { serviceId: number; logoUrl: string; suffix: string }[] = [];
-
-  // Tło hero – przez sanitizer, żeby Angular nie blokował url() ze spacją w nazwie pliku
-  heroBgStyle!: SafeStyle;
-
-  features = [
-    {
-      icon: 'map-pin',
-      title: 'Serwis rowerowy door-to-door w Krakowie',
-      description: `Znajdź certyfikowanego Partnera CycloPick w Krakowie z transportem roweru od ${TRANSPORT_PRICING.partnerCost} zł. Odbiór spod drzwi, dostawa po naprawie – bez wychodzenia z domu.`
-    },
-    {
-      icon: 'truck',
-      title: `Transport rowerów Kraków – ${TRANSPORT_PRICING.partnerCost} zł lub ${TRANSPORT_PRICING.standardCost} zł`,
-      description: `U Partnerów CycloPick transport to tylko ${TRANSPORT_PRICING.partnerCost} zł. Do dowolnego serwisu rowerowego w Krakowie – stała cena ${TRANSPORT_PRICING.standardCost} zł w obie strony.`
-    },
-    {
-      icon: 'star',
-      title: `Niebieska pinezka = transport ${TRANSPORT_PRICING.partnerCost} zł`,
-      description: `Niebieskie pinezki na mapie CycloPick to zweryfikowani Partnerzy z transportem door-to-door od ${TRANSPORT_PRICING.partnerCost} zł, systemem rezerwacji online i cyfrową historią napraw.`
-    },
-    {
-      icon: 'clock',
-      title: 'Cyfrowa historia serwisowa roweru',
-      description: 'Każda naprawa u Partnera CycloPick zapisywana jest w cyfrowej historii. Eksportuj „Certyfikat CycloPick" i zwiększ wartość roweru nawet o 20% przy sprzedaży.'
-    }
-  ];
-
-  faqData = [
-    {
-      question: 'Co oznacza niebieska pinezka na mapie CycloPick?',
-      answer: `Niebieska pinezka oznacza Partnera CycloPick w Krakowie. U Partnerów CycloPick zarezerwujesz serwis rowerowy online i zyskasz transport door-to-door – kurier odbiera rower spod Twoich drzwi i odwozi po naprawie. Transport kosztuje tylko ${TRANSPORT_PRICING.partnerCost} zł.`
-    },
-    {
-      question: 'Co oznacza zielona pinezka na mapie CycloPick?',
-      answer: `Zielona pinezka to zweryfikowany serwis rowerowy w Krakowie, który nie należy jeszcze do sieci Partnerów CycloPick. Możesz do niego zamówić transport rowerów w Krakowie za stałą cenę ${TRANSPORT_PRICING.standardCost} zł w obie strony.`
-    },
-    {
-      question: 'Ile kosztuje transport roweru w Krakowie przez CycloPick?',
-      answer: `Transport roweru w Krakowie kosztuje ${TRANSPORT_PRICING.partnerCost} zł do serwisów Partnerskich CycloPick. Do dowolnego innego serwisu rowerowego w Krakowie – stała cena ${TRANSPORT_PRICING.standardCost} zł za transport tam i z powrotem. Każdy kolejny rower to +${TRANSPORT_PRICING.additionalBikeCost} zł. Płatność gotówką lub BLIKIEM przy odbiorze roweru.`
-    },
-    {
-      question: 'Jak zamówić serwis rowerowy door-to-door w Krakowie?',
-      answer: 'Wejdź na mapę CycloPick, znajdź niebieską pinezkę (Partner CycloPick) w Krakowie, zarezerwuj wizytę online i zamów transport. Nasz kurier odbierze Twój rower między 18:00 a 22:00 dzień przed wizytą, a po naprawie odwiezie go pod Twoje drzwi.'
-    },
-    {
-      question: 'Czym jest cyfrowa historia serwisowa roweru CycloPick?',
-      answer: 'Cyfrowa historia serwisowa to zapis wszystkich napraw wykonanych u Partnerów CycloPick. Każdy wpis zawiera datę, zakres prac i dane serwisanta. Możesz wyeksportować „Certyfikat CycloPick" w PDF – dokumentacja historii serwisowej zwiększa wartość roweru nawet o 20% przy odsprzedaży.'
-    },
-    {
-      question: 'Czy korzystanie z mapy serwisów rowerowych CycloPick jest darmowe?',
-      answer: `Tak, przeglądanie mapy serwisów rowerowych i korzystanie z wyszukiwarki CycloPick jest całkowicie bezpłatne. Płacisz wyłącznie za naprawę roweru i transport – transport do Partnerów CycloPick kosztuje tylko ${TRANSPORT_PRICING.partnerCost} zł.`
-    },
-    {
-      question: 'Czy mój rower jest bezpieczny podczas transportu?',
-      answer: 'Tak – każdy rower przewożony przez CycloPick jest objęty ubezpieczeniem do 20 000 zł. Nasi kurierzy zabezpieczają sprzęt przed załadunkiem i transportują go dedykowanym pojazdem. W razie jakiejkolwiek szkody – choć jeszcze nigdy się to nie zdarzyło – jesteś w pełni chroniony.'
-    },
-    {
-      question: 'Jak dodać swój serwis rowerowy do mapy CycloPick?',
-      answer: 'Zarejestruj się przez formularz „Zarejestruj serwis". Podstawowa wizytówka na mapie jest darmowa. Jako Partner CycloPick zyskujesz klientów door-to-door, system rezerwacji online i cyfrową historię napraw dla Twoich klientów.'
-    }
-  ];
-
   constructor(
     private router: Router,
+    private mapService: MapService,
     private meta: Meta,
     private title: Title,
     private sanitizer: DomSanitizer,
-    @Inject(DOCUMENT) private document: Document
-  ) { }
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.city-autocomplete-wrapper')) {
+      this.showCitySuggestions = false;
+      this.cdr.markForCheck();
+    }
+  }
 
   ngOnInit(): void {
+    this.citySearchSubject
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(query => this.performDynamicCitySearch(query));
+
     this.heroBgStyle = this.sanitizer.bypassSecurityTrustStyle(
-      "url('assets/images/pictures/Rowerzysta na tle wawelu.webp')"
+      "url('assets/images/pictures/serwisanci rowerowi w pracy.webp')"
     );
     this.setMetaTags();
     this.setCanonicalUrl();
-    this.generateSchemaMarkup();
+    this.loadStatsSummary();
     this.loadPartnerLogos();
+    this.updateStructuredData();
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.startReviewsMarquee(), 100);
+  private loadStatsSummary(): void {
+    this.mapService.getStatsSummary()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(stats => {
+        this.statsSummary = stats;
+        this.cdr.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.seoService.removeStructuredData();
     this.stopMarquee();
-    this.stopReviewsMarquee();
     if (isPlatformBrowser(this.platformId)) {
       document.removeEventListener('mousemove', this.onMouseMoveBound);
       document.removeEventListener('mouseup', this.onMouseUpBound);
       document.removeEventListener('touchmove', this.onTouchMoveBound);
       document.removeEventListener('touchend', this.onTouchEndBound);
-      document.removeEventListener('mousemove', this.onReviewsMouseMoveBound);
-      document.removeEventListener('mouseup', this.onReviewsMouseUpBound);
-      document.removeEventListener('touchmove', this.onReviewsTouchMoveBound);
-      document.removeEventListener('touchend', this.onReviewsTouchEndBound);
     }
   }
 
   // ============================================================
-  // PARTNER LOGOS
+  // PASEK PARTNERÓW (marquee)
   // ============================================================
 
   private loadPartnerLogos(): void {
-    this.serviceProfileService.getReservationServicesLogos().subscribe({
-      next: (logos) => {
-        this.partnerLogos = logos;
-        // Dajemy czas na wyrenderowanie *ngFor przed pomiarem szerokości
-        setTimeout(() => this.startMarquee(), 100);
-      },
-      error: () => { /* pasek po prostu nie wyświetli się */ }
-    });
+    this.profileService.getReservationServicesLogos()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (logos) => {
+          this.partnerLogos = logos;
+          this.cdr.markForCheck();
+          // Dajemy czas na wyrenderowanie *ngFor przed pomiarem szerokości
+          setTimeout(() => this.startMarquee(), 100);
+        },
+        error: () => { /* pasek po prostu nie wyświetli się */ }
+      });
   }
-
-  // ============================================================
-  // MARQUEE (requestAnimationFrame)
-  // ============================================================
 
   private startMarquee(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     const track = this.partnerTrackRef?.nativeElement;
     if (!track) return;
 
-    // Połowa szerokości tracka = szerokość jednego zestawu logo (oryginał)
     this.marqueeHalfWidth = track.scrollWidth / 2;
     if (this.marqueeHalfWidth === 0) return;
 
     this.stopMarquee();
 
-    // Uruchamiamy poza strefą Angular – nie triggeruje change detection na każdą klatkę
     this.ngZone.runOutsideAngular(() => {
       const step = () => {
         if (!this.isDragging) {
           this.marqueePos += this.MARQUEE_SPEED;
-          // Gdy przesuniemy o dokładnie połowę – reset do 0 (seamless loop)
           if (this.marqueePos >= this.marqueeHalfWidth) {
             this.marqueePos = 0;
           }
           track.style.transform = `translateX(-${this.marqueePos}px)`;
         }
-        this.rafId = requestAnimationFrame(step);
+        this.marqueeRafId = requestAnimationFrame(step);
       };
-      this.rafId = requestAnimationFrame(step);
+      this.marqueeRafId = requestAnimationFrame(step);
     });
   }
 
   private stopMarquee(): void {
-    if (this.rafId !== null) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
+    if (this.marqueeRafId !== null) {
+      cancelAnimationFrame(this.marqueeRafId);
+      this.marqueeRafId = null;
     }
   }
-
-  // ============================================================
-  // DRAG (mouse + touch)
-  // ============================================================
 
   onMouseDown(e: MouseEvent): void {
     this.startDrag(e.clientX);
@@ -263,7 +256,6 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.isDragging) return;
     const delta = this.dragStartX - clientX;
     let newPos = this.dragStartPos + delta;
-    // Wrap within [0, halfWidth)
     newPos = ((newPos % this.marqueeHalfWidth) + this.marqueeHalfWidth) % this.marqueeHalfWidth;
     this.marqueePos = newPos;
     const track = this.partnerTrackRef?.nativeElement;
@@ -279,172 +271,226 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ============================================================
-  // REVIEWS MARQUEE
+  // WYSZUKIWARKA — nawiguje do /serwisy (lub /serwisy/{miasto}) z filtrami w query params;
+  // sam wynik pokazuje się na stronie docelowej (city-services-page), nie tutaj
   // ============================================================
 
-  private startReviewsMarquee(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const track = this.reviewsTrackRef?.nativeElement;
-    if (!track) return;
-
-    this.reviewsHalfWidth = track.scrollWidth / 2;
-    if (this.reviewsHalfWidth === 0) return;
-
-    this.stopReviewsMarquee();
-
-    this.ngZone.runOutsideAngular(() => {
-      const step = () => {
-        if (!this.isReviewsDragging) {
-          this.reviewsPos += this.REVIEWS_SPEED;
-          if (this.reviewsPos >= this.reviewsHalfWidth) {
-            this.reviewsPos = 0;
-          }
-          track.style.transform = `translateX(-${this.reviewsPos}px)`;
-        }
-        this.reviewsRafId = requestAnimationFrame(step);
-      };
-      this.reviewsRafId = requestAnimationFrame(step);
-    });
+  private buildSearchQueryParams(): Record<string, string> {
+    const params: Record<string, string> = {};
+    if (this.serviceNameQuery.trim()) {
+      params['search'] = this.serviceNameQuery.trim();
+    }
+    if (this.selectedCoverageIds.length > 0) {
+      params['coverageIds'] = this.selectedCoverageIds.join(',');
+    }
+    return params;
   }
 
-  private stopReviewsMarquee(): void {
-    if (this.reviewsRafId !== null) {
-      cancelAnimationFrame(this.reviewsRafId);
-      this.reviewsRafId = null;
+  onFiltersChanged(change: ServiceListFiltersChange): void {
+    this.selectedCoverageIds = change.coverageIds;
+  }
+
+  onSearchSubmit(): void {
+    const queryParams = this.buildSearchQueryParams();
+    this.router.navigate(['/serwisy'], { queryParams });
+  }
+
+  clearServiceNameSearch(): void {
+    this.serviceNameQuery = '';
+    this.cdr.markForCheck();
+  }
+
+  // City autocomplete — wybór miasta nawiguje do /serwisy/{miasto}, zachowując ewentualne
+  // wyszukiwanie po nazwie / filtr usług już wprowadzone w wyszukiwarce
+  onCityInput(): void {
+    const query = this.cityInputValue.trim().toLowerCase();
+    this.activeSuggestionIndex = -1;
+    if (query.length < 1) {
+      this.filteredCities = [];
+      this.dynamicCitySuggestions = [];
+      this.showCitySuggestions = false;
+    } else {
+      this.filteredCities = this.sortWithPriority(
+        this.cities.filter(c => c.name.toLowerCase().includes(query))
+      ).slice(0, 10);
+
+      // Miejscowość spoza sztywnej listy — sprawdź w backendzie (jak na mapie), zamiast pokazywać "brak wyników"
+      if (this.filteredCities.length === 0 && query.length >= 3) {
+        this.citySearchSubject.next(this.cityInputValue.trim());
+      } else {
+        this.dynamicCitySuggestions = [];
+      }
+
+      this.showCitySuggestions = this.filteredCities.length > 0 || this.dynamicCitySuggestions.length > 0;
+    }
+    this.cdr.markForCheck();
+  }
+
+  private performDynamicCitySearch(query: string): void {
+    this.mapService.searchCities(query)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (cities) => {
+          if (this.filteredCities.length > 0 || this.cityInputValue.trim().toLowerCase() !== query.trim().toLowerCase()) {
+            return;
+          }
+          this.dynamicCitySuggestions = cities;
+          this.showCitySuggestions = cities.length > 0;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.dynamicCitySuggestions = [];
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onCityFocus(): void {
+    this.activeSuggestionIndex = -1;
+    if (this.cityInputValue.trim().length >= 1) {
+      this.showCitySuggestions = this.filteredCities.length > 0 || this.dynamicCitySuggestions.length > 0;
+    } else {
+      this.filteredCities = this.footerCities;
+      this.dynamicCitySuggestions = [];
+      this.showCitySuggestions = true;
+    }
+    this.cdr.markForCheck();
+  }
+
+  private sortWithPriority(matches: CityConfig[]): CityConfig[] {
+    const matchSlugs = new Set(matches.map(c => c.slug));
+    const priority = this.footerCities.filter(c => matchSlugs.has(c.slug));
+    const prioritySlugs = new Set(priority.map(c => c.slug));
+    const rest = matches.filter(c => !prioritySlugs.has(c.slug));
+    return [...priority, ...rest];
+  }
+
+  onCityKeydown(event: KeyboardEvent): void {
+    const totalSuggestions = this.filteredCities.length + this.dynamicCitySuggestions.length;
+
+    if (!this.showCitySuggestions || totalSuggestions === 0) {
+      if (event.key === 'ArrowDown') {
+        this.filteredCities = this.footerCities;
+        this.dynamicCitySuggestions = [];
+        this.showCitySuggestions = true;
+        this.activeSuggestionIndex = 0;
+        this.cdr.markForCheck();
+        event.preventDefault();
+      }
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.activeSuggestionIndex = Math.min(this.activeSuggestionIndex + 1, totalSuggestions - 1);
+        this.cdr.markForCheck();
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.activeSuggestionIndex = Math.max(this.activeSuggestionIndex - 1, -1);
+        this.cdr.markForCheck();
+        break;
+      case 'Enter': {
+        event.preventDefault();
+        const index = this.activeSuggestionIndex >= 0 ? this.activeSuggestionIndex : 0;
+        if (index < this.filteredCities.length) {
+          if (this.filteredCities[index]) {
+            this.selectCity(this.filteredCities[index]);
+          }
+        } else {
+          const dynamicCity = this.dynamicCitySuggestions[index - this.filteredCities.length];
+          if (dynamicCity) this.selectDynamicCity(dynamicCity);
+        }
+        break;
+      }
+      case 'Escape':
+        this.showCitySuggestions = false;
+        this.activeSuggestionIndex = -1;
+        this.cdr.markForCheck();
+        break;
     }
   }
 
-  onReviewsMouseDown(e: MouseEvent): void {
-    this.isReviewsDragging = true;
-    this.reviewsDragStartX = e.clientX;
-    this.reviewsDragStartPos = this.reviewsPos;
-    document.addEventListener('mousemove', this.onReviewsMouseMoveBound);
-    document.addEventListener('mouseup', this.onReviewsMouseUpBound);
+  selectCity(city: CityConfig): void {
+    this.cityInputValue = city.name;
+    this.showCitySuggestions = false;
+    this.activeSuggestionIndex = -1;
+    const queryParams = this.buildSearchQueryParams();
+    this.router.navigate(['/serwisy', city.slug], { queryParams });
   }
 
-  onReviewsTouchStart(e: TouchEvent): void {
-    this.isReviewsDragging = true;
-    this.reviewsDragStartX = e.touches[0].clientX;
-    this.reviewsDragStartPos = this.reviewsPos;
-    document.addEventListener('touchmove', this.onReviewsTouchMoveBound, { passive: true });
-    document.addEventListener('touchend', this.onReviewsTouchEndBound);
+  // Miejscowość spoza sztywnej listy seoCities — nie mamy dla niej strony /serwisy/:slug,
+  // więc przenosimy na mapę wycentrowaną na jej współrzędne (tak samo jak wyszukiwanie na /mapa-serwisow)
+  selectDynamicCity(city: CitySuggestion): void {
+    this.showCitySuggestions = false;
+    this.activeSuggestionIndex = -1;
+    this.router.navigate(['/mapa-serwisow'], {
+      queryParams: { lat: city.latitude, lng: city.longitude, zoom: 13, city: city.cityName }
+    });
   }
 
-  private onReviewsMouseMove(e: MouseEvent): void {
-    this.handleReviewsDragMove(e.clientX);
+  clearCityInput(): void {
+    this.cityInputValue = '';
+    this.filteredCities = [];
+    this.dynamicCitySuggestions = [];
+    this.showCitySuggestions = false;
+    this.activeSuggestionIndex = -1;
+    this.cdr.markForCheck();
   }
 
-  private onReviewsTouchMove(e: TouchEvent): void {
-    this.handleReviewsDragMove(e.touches[0].clientX);
+  trackByCitySlug(index: number, city: CityConfig): string {
+    return city.slug;
   }
 
-  private handleReviewsDragMove(clientX: number): void {
-    if (!this.isReviewsDragging) return;
-    const delta = this.reviewsDragStartX - clientX;
-    let newPos = this.reviewsDragStartPos + delta;
-    newPos = ((newPos % this.reviewsHalfWidth) + this.reviewsHalfWidth) % this.reviewsHalfWidth;
-    this.reviewsPos = newPos;
-    const track = this.reviewsTrackRef?.nativeElement;
-    if (track) track.style.transform = `translateX(-${this.reviewsPos}px)`;
+  trackByCityName(index: number, city: CitySuggestion): string {
+    return city.cityName;
   }
 
-  private onReviewsDragEnd(): void {
-    this.isReviewsDragging = false;
-    document.removeEventListener('mousemove', this.onReviewsMouseMoveBound);
-    document.removeEventListener('mouseup', this.onReviewsMouseUpBound);
-    document.removeEventListener('touchmove', this.onReviewsTouchMoveBound);
-    document.removeEventListener('touchend', this.onReviewsTouchEndBound);
+  // Backend nie zwraca nazwy serwisu w PartnerLogoDto (tylko suffix/logoUrl/serviceId) —
+  // czytelna nazwa do alt tekstu logo wyprowadzona ze suffixu, WERSALIKAMI
+  partnerDisplayName(suffix: string): string {
+    return suffix.replace(/-/g, ' ').toUpperCase();
   }
 
-  // ============================================================
-  // META / SEO
-  // ============================================================
+  // Odmiana "zweryfikowany warsztat" przez liczbę (1 / 2-4 / 5+) do etykiety paska partnerów
+  get partnersBarLabel(): string {
+    const n = this.partnerLogos.length;
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    const isFew = mod10 >= 2 && mod10 <= 4 && !(mod100 >= 12 && mod100 <= 14);
+
+    if (n === 1) return '1 zweryfikowany warsztat już rezerwuje się online przez CycloPick';
+    if (isFew) return `${n} zweryfikowane warsztaty już rezerwują się online przez CycloPick`;
+    return `${n} zweryfikowanych warsztatów już rezerwuje się online przez CycloPick`;
+  }
 
   private setMetaTags(): void {
-    const pageTitle = `Serwis Rowerowy Kraków Door-to-Door – Transport od ${TRANSPORT_PRICING.partnerCost} zł | CycloPick`;
-    const pageDescription = `Serwis rowerowy door-to-door w Krakowie z transportem od ${TRANSPORT_PRICING.partnerCost} zł. Kurier odbiera rower spod drzwi. Partnerzy CycloPick: transport ${TRANSPORT_PRICING.partnerCost} zł. Inne serwisy: ${TRANSPORT_PRICING.standardCost} zł. Rezerwacja online, cyfrowa historia napraw.`;
+    const titleText = 'Znajdź i zarezerwuj serwis rowerowy w Polsce | CycloPick';
+    const description = 'Setki sprawdzonych serwisów rowerowych w całej Polsce. Wyszukaj warsztat w swoim mieście, sprawdź opinie i zarezerwuj wizytę online — bez dzwonienia.';
 
-    this.title.setTitle(pageTitle);
-    this.meta.updateTag({ name: 'description', content: pageDescription });
-    this.meta.updateTag({ name: 'keywords', content: 'serwis rowerowy Kraków, transport rowerów Kraków, serwis rowerowy door-to-door, naprawa roweru Kraków, warsztat rowerowy Kraków, CycloPick' });
-    this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large' });
-
-    this.meta.updateTag({ property: 'og:title', content: pageTitle });
-    this.meta.updateTag({ property: 'og:description', content: pageDescription });
+    this.title.setTitle(titleText);
+    this.meta.updateTag({ name: 'description', content: description });
+    this.meta.updateTag({ property: 'og:title', content: titleText });
+    this.meta.updateTag({ property: 'og:description', content: description });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/' });
-    this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/og-image-cyclopick.jpg' });
-    this.meta.updateTag({ property: 'og:locale', content: 'pl_PL' });
-    this.meta.updateTag({ property: 'og:site_name', content: 'CycloPick' });
-
-    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
-    this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
-    this.meta.updateTag({ name: 'twitter:description', content: pageDescription });
-    this.meta.updateTag({ name: 'twitter:image', content: 'https://www.cyclopick.pl/assets/images/og-image-cyclopick.jpg' });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.meta.updateTag({ name: 'keywords', content: 'serwis rowerowy, rezerwacja serwisu rowerowego online, naprawa roweru, warsztat rowerowy, katalog serwisów rowerowych, CycloPick' });
   }
 
   private setCanonicalUrl(): void {
-    const canonicalUrl = 'https://www.cyclopick.pl/';
-    const existingLink = this.document.querySelector('link[rel="canonical"]');
-    if (existingLink) existingLink.remove();
-    const link = this.document.createElement('link');
-    link.setAttribute('rel', 'canonical');
-    link.setAttribute('href', canonicalUrl);
-    this.document.head.appendChild(link);
+    this.seoService.setCanonical('https://www.cyclopick.pl/');
   }
 
-  private generateSchemaMarkup(): void {
-    const transportService = {
-      '@context': 'https://schema.org',
-      '@type': 'Service',
-      '@id': 'https://www.cyclopick.pl/#transport-service',
-      name: 'Transport roweru door-to-door Kraków',
-      serviceType: 'Serwis rowerowy z transportem door-to-door',
-      description: `Kompleksowy serwis rowerowy door-to-door w Krakowie. U Partnerów CycloPick transport ${TRANSPORT_PRICING.partnerCost} zł, do pozostałych serwisów ${TRANSPORT_PRICING.standardCost} zł w obie strony.`,
-      areaServed: { '@type': 'City', name: 'Kraków', addressCountry: 'PL' },
-      provider: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' },
-      offers: [
-        { '@type': 'Offer', name: 'Transport roweru do Partnera CycloPick', price: String(TRANSPORT_PRICING.partnerCost), priceCurrency: 'PLN', availability: 'https://schema.org/InStock' },
-        { '@type': 'Offer', name: 'Transport roweru do dowolnego serwisu w Krakowie', price: String(TRANSPORT_PRICING.standardCost), priceCurrency: 'PLN', availability: 'https://schema.org/InStock' }
-      ]
-    };
-
-    this.seoService.addMultipleStructuredData([
+  private updateStructuredData(): void {
+    const schemas = [
       SchemaOrgHelper.generateOrganization(),
-      SchemaOrgHelper.generateWebSite(),
-      transportService
-    ]);
-  }
+      SchemaOrgHelper.generateWebSite()
+    ].filter(Boolean);
 
-  // ============================================================
-  // NAVIGATION
-  // ============================================================
-
-  scrollToOptions(): void {
-    const el = this.document.getElementById('options-section');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  navigateToMap(): void {
-    this.router.navigate(['/mapa-serwisow']);
-  }
-
-  navigateToKrakowMap(): void {
-    const zoom = window.innerWidth < 768 ? '11' : '13';
-    this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '50.0647', lng: '19.9450', zoom } });
-  }
-
-  navigateToKrakow(): void {
-    const zoom = window.innerWidth < 768 ? '11' : '13';
-    this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '50.0647', lng: '19.9450', zoom } });
-  }
-
-  navigateToKrakowMapPartner(): void {
-    this.router.navigate(['/serwisy/krakow']).then(() => { window.scrollTo({ top: 0 }); });
-  }
-
-  navigateToPolandMapPartner(): void {
-    const zoom = window.innerWidth < 768 ? '6' : '8';
-    this.router.navigate(['/mapa-serwisow'], { queryParams: { lat: '52.0', lng: '19.4', zoom, coverages: '342' } });
+    if (schemas.length > 0) {
+      this.seoService.addMultipleStructuredData(schemas);
+    }
   }
 }

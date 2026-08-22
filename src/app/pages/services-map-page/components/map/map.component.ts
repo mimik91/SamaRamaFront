@@ -20,6 +20,7 @@ import { MapPin, ServiceDetails, MapViewState, MapBounds } from '../../../../sha
 import { MapService } from '../../services/map.service';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { loadLeaflet } from '../../../../shared/utils/leaflet-loader';
 
 declare var L: any;
 
@@ -193,7 +194,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
         return;
       }
 
-      await this.loadLeafletIfNeeded();
+      await loadLeaflet();
       await this.createMap();
       
       this.isMapInitialized = true;
@@ -208,63 +209,6 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
       this.loading = false;
       this.mapError.emit(this.errorMessage);
     }
-  }
-
-  private async loadLeafletIfNeeded(): Promise<void> {
-    if (typeof L !== 'undefined') {
-      return Promise.resolve();
-    }
-
-    return new Promise((resolve, reject) => {
-      if (document.querySelector('script[src*="leaflet.js"]')) {
-        let isResolved = false;
-
-        const checkInterval = setInterval(() => {
-          if (typeof L !== 'undefined' && !isResolved) {
-            isResolved = true;
-            clearInterval(checkInterval);
-            resolve();
-          }
-        }, 100);
-
-        setTimeout(() => {
-          if (!isResolved) {
-            isResolved = true;
-            clearInterval(checkInterval);
-            reject(new Error('Leaflet loading timeout'));
-          }
-        }, 10000);
-        return;
-      }
-
-      if (!document.querySelector('link[href*="leaflet.css"]')) {
-        const cssLink = document.createElement('link');
-        cssLink.rel = 'stylesheet';
-        cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        cssLink.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-        cssLink.crossOrigin = '';
-        document.head.appendChild(cssLink);
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
-      script.crossOrigin = '';
-      script.async = true;
-      
-      script.onload = () => {
-        setTimeout(() => {
-          if (typeof L !== 'undefined') {
-            resolve();
-          } else {
-            reject(new Error('Leaflet loaded but not available'));
-          }
-        }, 100);
-      };
-      
-      script.onerror = () => reject(new Error('Failed to load Leaflet'));
-      document.head.appendChild(script);
-    });
   }
 
   private async createMap(): Promise<void> {

@@ -1,0 +1,17 @@
+<a class="article-card" [routerLink]="['/poradnik', article.slug]">
+  <div class="article-card-image-wrap">
+    <img
+      [src]="article.coverImage"
+      [alt]="article.coverImageAlt"
+      class="article-card-image"
+      [loading]="lazyImage ? 'lazy' : 'eager'"
+      width="400"
+      height="500"
+    />
+  </div>
+  <div class="article-card-body">
+    <span class="article-card-date">{{ article.publishedDate | date: 'd MMMM y' }}</span>
+    <h3 class="article-card-title">{{ article.title }}</h3>
+    <p class="article-card-excerpt">{{ article.excerpt }}</p>
+  </div>
+</a>

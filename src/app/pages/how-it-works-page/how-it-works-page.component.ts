@@ -6,7 +6,6 @@ import { Meta, Title } from '@angular/platform-browser';
 import { EnumerationService } from '../../core/enumeration.service';
 import { BikeFormService, BikeFormData } from '../../home/bike-form.service';
 import { ServiceSlotService } from '../../service-slots/service-slot.service';
-import { HomeHeroComponent } from '../../home/home-hero.component';
 import { NotificationService } from '../../core/notification.service';
 import { I18nService } from '../../core/i18n.service';
 
@@ -14,9 +13,8 @@ import { I18nService } from '../../core/i18n.service';
   selector: 'app-how-it-works-page',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     ReactiveFormsModule,
-    HomeHeroComponent,
   ],
   templateUrl: './how-it-works-page.component.html',
   styleUrls: ['./how-it-works-page.component.css']
@@ -34,11 +32,9 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
   private i18n = inject(I18nService);
   private isBrowser: boolean;
 
-  activeHowItWorksView: 'transport' | 'service' = 'transport';
   formSubmitted = false;
 
-  private readonly transportStepIcons = ['calendar', 'file-text', 'truck', 'tool'];
-  private readonly serviceStepIcons = ['file-text', 'clock', 'package', 'truck', 'tool', 'credit-card'];
+  private readonly reservationStepIcons = ['search', 'clock', 'calendar', 'tool', 'credit-card'];
 
   bikeForm: FormGroup;
   brands: string[] = [];
@@ -47,11 +43,8 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
   loadingMaxBikes = true;
 
   get currentSteps(): { number: number; icon: string; title: string; description: string }[] {
-    const isTransport = this.activeHowItWorksView === 'transport';
-    const icons = isTransport ? this.transportStepIcons : this.serviceStepIcons;
-    const key = isTransport ? 'how_it_works_page.transport_steps' : 'how_it_works_page.service_steps';
-    const steps = this.i18n.instant(key) as { title: string; description: string }[];
-    return steps.map((s, i) => ({ number: i + 1, icon: icons[i], ...s }));
+    const steps = this.i18n.instant('how_it_works_page.reservation_steps') as { title: string; description: string }[];
+    return steps.map((s, i) => ({ number: i + 1, icon: this.reservationStepIcons[i], ...s }));
   }
 
   t(key: string): string {
@@ -252,10 +245,6 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  switchHowItWorksView(view: 'transport' | 'service'): void {
-    this.router.navigate(['/']);
-  }
-
   goToMap(): void {
     this.router.navigate(['/mapa-serwisow']);
   }
@@ -265,9 +254,9 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
   }
 
   private setMetaTags(): void {
-    const pageTitle = 'Transport rowerów w Krakowie | Odbiór i dostawa roweru door-to-door | CycloPick';
-    const pageDescription = 'Zamów transport roweru w Krakowie. Odbieramy rower spod drzwi, dostarczamy do serwisu i przywozimy naprawiony z powrotem. Usługa door-to-door dla rowerów w Krakowie i okolicach. Wygodna naprawa roweru bez wychodzenia z domu.';
-    const keywords = 'transport rowerów Kraków, odbiór roweru Kraków, dostawa roweru, serwis rowerowy door-to-door, naprawa roweru Kraków, kurier rowerowy, przewóz roweru, CycloPick, transport roweru do serwisu';
+    const pageTitle = 'Jak działa rezerwacja online w serwisie rowerowym? | CycloPick';
+    const pageDescription = 'Dowiedz się, jak w kilka minut zarezerwować wizytę w sprawdzonym serwisie rowerowym w Twojej okolicy — znajdź serwis, wybierz termin i zarezerwuj online, bez dzwonienia i czekania w kolejce.';
+    const keywords = 'jak zarezerwować serwis rowerowy, rezerwacja online serwis rowerowy, umów wizytę w serwisie rowerowym, CycloPick, serwis rowerowy online';
 
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });

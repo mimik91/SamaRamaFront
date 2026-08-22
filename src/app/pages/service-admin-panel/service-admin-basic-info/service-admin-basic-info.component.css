@@ -357,6 +357,25 @@
   color: var(--color-danger-text);
 }
 
+/* --- Field with hint text below --- */
+.field-with-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.field-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.field-hint-error {
+  color: var(--color-danger-text, #e53e3e);
+}
+
 /* --- District combobox --- */
 .district-combobox {
   position: relative;

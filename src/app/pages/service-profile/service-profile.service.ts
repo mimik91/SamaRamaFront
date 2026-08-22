@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environments';
 import {
   BikeServicePublicInfo,
-  ServiceActiveStatus
+  ServiceActiveStatus,
+  ServiceReviewsOverviewDto
 } from '../../shared/models/bike-service-common.models';
 import { OpeningHoursDto, OpeningHoursWithInfoDto } from '../../shared/models/opening-hours.models';
 import {
@@ -19,6 +20,12 @@ import {
   ServiceIdResponse,
   ServiceImageResponse
 } from '../../shared/models/api.models';
+
+export interface PartnerLogoDto {
+  serviceId: number;
+  logoUrl: string;
+  suffix: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +47,22 @@ export class ServiceProfileService {
   getPublicInfo(serviceId: number): Observable<BikeServicePublicInfo> {
     const url = `${environment.apiUrl}${environment.endpoints.bikeServices.publicInfo.replace(':id', serviceId.toString())}`;
     return this.http.get<BikeServicePublicInfo>(url);
+  }
+
+  /**
+   * Loga serwisów z włączoną rezerwacją online — pasek partnerów na landing page
+   */
+  getReservationServicesLogos(): Observable<PartnerLogoDto[]> {
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.logosReservationAvailable}`;
+    return this.http.get<PartnerLogoDto[]>(url);
+  }
+
+  /**
+   * Pobiera wszystkie opinie serwisu (średnie per parametr + pełna lista)
+   */
+  getReviews(serviceId: number): Observable<ServiceReviewsOverviewDto> {
+    const url = `${environment.apiUrl}/reviews/service/${serviceId}`;
+    return this.http.get<ServiceReviewsOverviewDto>(url);
   }
 
   /**
@@ -96,13 +119,5 @@ export class ServiceProfileService {
   getServiceImage(serviceId: number, imageType: 'LOGO' | 'ABOUT_US' | 'OPENING_HOURS'): Observable<ServiceImageResponse> {
     const url = `${environment.apiUrl}${environment.endpoints.services.images.replace(':id', serviceId.toString()).replace(':type', imageType)}`;
     return this.http.get<ServiceImageResponse>(url);
-  }
-
-  /**
-   * Pobiera loga serwisów z włączoną rezerwacją (Partnerzy CycloPick)
-   */
-  getReservationServicesLogos(): Observable<{ serviceId: number; logoUrl: string; suffix: string }[]> {
-    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.logosReservationAvailable}`;
-    return this.http.get<{ serviceId: number; logoUrl: string; suffix: string }[]>(url);
   }
 }

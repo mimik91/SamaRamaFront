@@ -1,0 +1,11 @@
+<div class="slm-wrapper">
+  <div #mapContainer class="slm-map" [class.slm-map--hidden]="loading || error"></div>
+
+  <div class="slm-loading" *ngIf="loading && !error">
+    <div class="slm-spinner"></div>
+  </div>
+
+  <div class="slm-error" *ngIf="error">
+    <p>Nie udało się załadować mapy.</p>
+  </div>
+</div>

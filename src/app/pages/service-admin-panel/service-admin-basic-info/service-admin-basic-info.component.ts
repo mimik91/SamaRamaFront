@@ -33,6 +33,7 @@ interface BikeServiceRegisteredDto {
   displayEmail?: boolean;
   displayPhoneNumber?: boolean;
   reservationAvailable?: boolean;
+  shortName?: string;
 }
 
 interface ServiceProfileUpdateDto {
@@ -49,6 +50,7 @@ interface ServiceProfileUpdateDto {
   displayEmail?: boolean;
   displayPhoneNumber?: boolean;
   reservationAvailable?: boolean;
+  shortName?: string;
 }
 
 @Component({
@@ -61,6 +63,9 @@ interface ServiceProfileUpdateDto {
 export class ServiceAdminBasicInfoComponent implements OnInit {
   @Input() serviceDetails!: BikeServiceRegisteredDto;
   @Input() serviceId!: number;
+
+  readonly SHORT_NAME_MAX_LENGTH = 12;
+  readonly SHORT_NAME_PATTERN = /^[A-Za-z0-9 -]*$/;
 
   isEditMode: boolean = false;
   isSaving: boolean = false;
@@ -95,8 +100,15 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
       description: this.serviceDetails.description || '',
       displayEmail: this.serviceDetails.displayEmail ?? true,
       displayPhoneNumber: this.serviceDetails.displayPhoneNumber ?? true,
-      reservationAvailable: this.serviceDetails.reservationAvailable ?? false
+      reservationAvailable: this.serviceDetails.reservationAvailable ?? false,
+      shortName: this.serviceDetails.shortName || ''
     };
+  }
+
+  isShortNameValid(): boolean {
+    const value = this.editableData.shortName || '';
+    if (!value) return true;
+    return value.length <= this.SHORT_NAME_MAX_LENGTH && this.SHORT_NAME_PATTERN.test(value);
   }
 
   toggleEditMode(): void {
@@ -155,6 +167,11 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
 
   saveChanges(): void {
     if (!this.serviceId) return;
+
+    if (!this.isShortNameValid()) {
+      this.saveError = `Krótka nazwa może mieć maksymalnie ${this.SHORT_NAME_MAX_LENGTH} znaków i zawierać tylko litery A-Z, cyfry, spację i myślnik (bez polskich znaków).`;
+      return;
+    }
 
     const url = `${environment.apiUrl}/bike-services-registered/my-service?serviceId=${this.serviceId}`;
     

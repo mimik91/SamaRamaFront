@@ -50,8 +50,12 @@
             <div *ngFor="let record of serviceRecords" class="service-record-card" [class.expanded]="expandedRecordIds.has(record.id)">
               <div class="service-record-header" (click)="toggleRecord(record.id)">
                 <div class="service-record-title">
-                  <h4>{{ record.serviceName }}</h4>
+                  <h4>
+                    <a *ngIf="record.suffix" [routerLink]="['/', record.suffix]" class="service-name-link" (click)="$event.stopPropagation()">{{ record.serviceName }}</a>
+                    <ng-container *ngIf="!record.suffix">{{ record.serviceName }}</ng-container>
+                  </h4>
                   <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+                  <span class="service-duration" *ngIf="record.actualDurationHours != null">Czas realizacji: {{ formatDuration(record.actualDurationHours) }}</span>
                 </div>
                 <div class="service-record-summary">
                   <span class="service-price-badge">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</span>
@@ -74,6 +78,37 @@
                       <tr><td colspan="2"><strong>Łącznie</strong></td><td><strong>{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
                     </tfoot>
                   </table>
+                </div>
+                <div *ngIf="record.repairPlan" class="repair-plan-history">
+                  <h5>
+                    Plan naprawy
+                    <span class="repair-plan-status-badge" [class]="'repair-plan-status-badge--' + record.repairPlan.status.toLowerCase()">
+                      {{ historyRepairPlanStatusLabels[record.repairPlan.status] || record.repairPlan.status }}
+                    </span>
+                  </h5>
+                  <table class="items-table" *ngIf="record.repairPlan.items.length > 0 || record.repairPlan.packageName">
+                    <thead><tr><th>Pozycja</th><th>Cena</th></tr></thead>
+                    <tbody>
+                      <tr *ngIf="record.repairPlan.packageName">
+                        <td>{{ record.repairPlan.packageName }}</td>
+                        <td>&mdash;</td>
+                      </tr>
+                      <tr *ngFor="let item of record.repairPlan.items">
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr><td><strong>Suma</strong></td><td><strong>{{ record.repairPlan.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <div *ngIf="record.review" class="record-review">
+                  <h5>Ocena klienta</h5>
+                  <div class="review-summary">
+                    <span class="review-score">{{ record.review.totalScore }} / 5</span>
+                    <p class="review-comment" *ngIf="record.review.comment">{{ record.review.comment }}</p>
+                  </div>
                 </div>
                 <div *ngIf="record.orderNotes" class="record-note">
                   <h5>Uwagi do zlecenia</h5>
@@ -202,6 +237,99 @@
                     class="service-order-thumb"
                     (click)="openSoLightbox(i)"
                   >
+                </div>
+              </div>
+
+              <!-- Plan naprawy -->
+              <div class="repair-plan-section" *ngIf="repairPlan">
+                <span class="service-section-title">Plan naprawy</span>
+
+                <div class="plan-items" *ngIf="repairPlan.items.length || repairPlan.packageName">
+                  <div class="plan-package-block" *ngIf="repairPlan.packageName">
+                    <div class="plan-item plan-item--package" [class.plan-item--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded">
+                      <span class="plan-item-name">{{ repairPlan.packageName }}</span>
+                      <span class="plan-item-price">{{ repairPlan.packagePriceSnapshot | number:'1.2-2' }} zł</span>
+                      <button
+                        *ngIf="repairPlanAwaitingDecision"
+                        type="button"
+                        class="plan-item-toggle"
+                        (click)="toggleRepairPlanPackageExclusion()"
+                        [title]="repairPlanPackageExcluded ? 'Przywróć pakiet' : 'Zrezygnuj z pakietu'"
+                        [attr.aria-label]="repairPlanPackageExcluded ? 'Przywróć pakiet ' + repairPlan.packageName : 'Zrezygnuj z pakietu ' + repairPlan.packageName"
+                      >
+                        <svg *ngIf="!repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                        <svg *ngIf="repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
+                      </button>
+                    </div>
+                    <ul class="plan-package-items" [class.plan-package-items--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded" *ngIf="parseRepairPlanPackageItems(repairPlan.packageDescription).length">
+                      <li *ngFor="let line of parseRepairPlanPackageItems(repairPlan.packageDescription)">{{ line }}</li>
+                    </ul>
+                  </div>
+                  <div
+                    class="plan-item"
+                    *ngFor="let item of repairPlan.items"
+                    [class.plan-item--excluded]="repairPlanAwaitingDecision ? isRepairPlanItemExcluded(item.id) : item.excluded"
+                  >
+                    <span class="plan-item-name">{{ item.name }}</span>
+                    <span class="plan-item-price">{{ item.price | number:'1.2-2' }} zł</span>
+                    <button
+                      *ngIf="repairPlanAwaitingDecision"
+                      type="button"
+                      class="plan-item-toggle"
+                      (click)="toggleRepairPlanItemExclusion(item.id)"
+                      [title]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję' : 'Zrezygnuj z pozycji'"
+                      [attr.aria-label]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję ' + item.name : 'Zrezygnuj z pozycji ' + item.name"
+                    >
+                      <svg *ngIf="!isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                      <svg *ngIf="isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <p class="plan-notes" *ngIf="repairPlan.notes">{{ repairPlan.notes }}</p>
+
+                <div class="plan-total">
+                  <ng-container *ngIf="repairPlanHasDiscount; else plainPlanTotal">
+                    <span class="plan-total-original">{{ repairPlan.calculatedTotal | number:'1.2-2' }} zł</span>
+                    Łącznie: <strong>{{ repairPlan.customTotal | number:'1.2-2' }} zł</strong>
+                    <span class="plan-discount-badge">Zniżka</span>
+                  </ng-container>
+                  <ng-template #plainPlanTotal>
+                    Łącznie: <strong>{{ repairPlanPreviewTotal | number:'1.2-2' }} zł</strong>
+                  </ng-template>
+                </div>
+
+                <p class="plan-edit-hint" *ngIf="isEditingRepairPlanItems && repairPlan.customTotal != null">
+                  Cena ustalona przez serwis dotyczyła pełnego zestawu — po potwierdzeniu zmian zapłacisz za wybrane pozycje.
+                </p>
+
+                <div class="plan-decision-row" *ngIf="repairPlanAwaitingDecision">
+                  <p class="plan-decision-hint">Możesz zrezygnować z wybranych pozycji (ikona obok), a potem potwierdzić lub odrzucić cały plan.</p>
+                  <div class="plan-decision-buttons">
+                    <button class="btn-reject" [disabled]="isDecidingRepairPlan" (click)="openRejectReasonModal()">Odrzucam</button>
+                    <button class="btn-confirm" [disabled]="isDecidingRepairPlan" (click)="confirmRepairPlan()">Potwierdzam</button>
+                  </div>
+                </div>
+
+                <div class="plan-decision-done" *ngIf="repairPlan.status === 'ACCEPTED'">Plan naprawy potwierdzony.</div>
+                <div class="plan-decision-done plan-decision-done--rejected" *ngIf="repairPlan.status === 'REJECTED'">Plan naprawy odrzucony.</div>
+              </div>
+
+              <!-- Powód odrzucenia planu naprawy -->
+              <div class="reject-reason-overlay" *ngIf="showRejectReasonModal" (click)="cancelRejectReasonModal()">
+                <div class="reject-reason-modal" (click)="$event.stopPropagation()">
+                  <h3 class="reject-reason-title">Powód odrzucenia (opcjonalnie)</h3>
+                  <p class="reject-reason-hint">Jeśli chcesz, napisz serwisowi dlaczego odrzucasz ten plan — trafi to do korespondencji.</p>
+                  <textarea
+                    class="reject-reason-textarea"
+                    [(ngModel)]="rejectReason"
+                    rows="4"
+                    placeholder="Np. cena jest za wysoka, chcę tylko część usług..."
+                  ></textarea>
+                  <div class="reject-reason-buttons">
+                    <button class="btn-cancel" (click)="cancelRejectReasonModal()">Anuluj</button>
+                    <button class="btn-reject" (click)="confirmRejectWithReason()">Odrzuć plan</button>
+                  </div>
                 </div>
               </div>
 
@@ -408,8 +536,12 @@
             <div *ngFor="let record of serviceRecords" class="service-record-card" [class.expanded]="expandedRecordIds.has(record.id)">
               <div class="service-record-header" (click)="toggleRecord(record.id)">
                 <div class="service-record-title">
-                  <h4>{{ record.serviceName }}</h4>
+                  <h4>
+                    <a *ngIf="record.suffix" [routerLink]="['/', record.suffix]" class="service-name-link" (click)="$event.stopPropagation()">{{ record.serviceName }}</a>
+                    <ng-container *ngIf="!record.suffix">{{ record.serviceName }}</ng-container>
+                  </h4>
                   <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+                  <span class="service-duration" *ngIf="record.actualDurationHours != null">Czas realizacji: {{ formatDuration(record.actualDurationHours) }}</span>
                 </div>
                 <div class="service-record-summary">
                   <span class="service-price-badge">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</span>
@@ -432,6 +564,37 @@
                       <tr><td colspan="2"><strong>Łącznie</strong></td><td><strong>{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
                     </tfoot>
                   </table>
+                </div>
+                <div *ngIf="record.repairPlan" class="repair-plan-history">
+                  <h5>
+                    Plan naprawy
+                    <span class="repair-plan-status-badge" [class]="'repair-plan-status-badge--' + record.repairPlan.status.toLowerCase()">
+                      {{ historyRepairPlanStatusLabels[record.repairPlan.status] || record.repairPlan.status }}
+                    </span>
+                  </h5>
+                  <table class="items-table" *ngIf="record.repairPlan.items.length > 0 || record.repairPlan.packageName">
+                    <thead><tr><th>Pozycja</th><th>Cena</th></tr></thead>
+                    <tbody>
+                      <tr *ngIf="record.repairPlan.packageName">
+                        <td>{{ record.repairPlan.packageName }}</td>
+                        <td>&mdash;</td>
+                      </tr>
+                      <tr *ngFor="let item of record.repairPlan.items">
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr><td><strong>Suma</strong></td><td><strong>{{ record.repairPlan.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <div *ngIf="record.review" class="record-review">
+                  <h5>Ocena klienta</h5>
+                  <div class="review-summary">
+                    <span class="review-score">{{ record.review.totalScore }} / 5</span>
+                    <p class="review-comment" *ngIf="record.review.comment">{{ record.review.comment }}</p>
+                  </div>
                 </div>
                 <div *ngIf="record.orderNotes" class="record-note">
                   <h5>Uwagi do zlecenia</h5>

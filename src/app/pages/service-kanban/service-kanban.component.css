@@ -46,7 +46,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 7px 14px;
   background: white;
   color: var(--text-primary);
   border: 2px solid #e2e8f0;
@@ -56,12 +56,9 @@
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
-  touch-action: manipulation;
-  min-height: 40px;
 }
 
 .btn-back:hover { border-color: var(--color-primary); color: var(--color-primary); }
-.btn-back:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 
 .kanban-title-group {
   display: flex;
@@ -117,19 +114,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background: white;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
   cursor: pointer;
   color: var(--text-secondary);
   transition: all 0.15s;
-  touch-action: manipulation;
 }
 
 .btn-refresh:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
-.btn-refresh:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -168,6 +163,11 @@
 
 .kanban-empty-state svg { opacity: 0.3; }
 .kanban-empty-state p { font-size: 1rem; color: var(--text-secondary); }
+
+/* ===== Mobile column tabs (ukryte na desktopie) ===== */
+.mobile-col-tabs {
+  display: none;
+}
 
 /* ===== Board ===== */
 .kanban-board {
@@ -255,22 +255,36 @@
 
 /* ===== Kanban card ===== */
 .kanban-card {
+  position: relative;
   background: white;
   border-radius: 8px;
   padding: 12px 12px 10px;
   border: 1px solid #e2e8f0;
   border-left: 3px solid var(--col-color, #94a3b8);
   cursor: pointer;
-  transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+  transition: all 0.15s;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  touch-action: manipulation;
 }
 
-.kanban-card:focus-visible {
-  outline: 2px solid var(--col-color, #94a3b8);
-  outline-offset: 2px;
+.card-unread-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--color-danger);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  z-index: 1;
 }
 
 .kanban-card:hover {
@@ -374,6 +388,36 @@
   flex-shrink: 0;
 }
 
+.repair-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.repair-plan-badge svg {
+  flex-shrink: 0;
+}
+
+.repair-plan-badge--sent_to_client {
+  color: var(--color-warning-orange);
+  background: var(--color-warning-bg);
+}
+
+.repair-plan-badge--accepted {
+  color: var(--color-success-dark);
+  background: var(--color-success-bg);
+}
+
+.repair-plan-badge--rejected {
+  color: var(--color-danger-dark);
+  background: var(--color-danger-bg);
+}
+
 .card-desc {
   font-size: 0.78rem;
   color: var(--text-muted);
@@ -399,19 +443,15 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 7px 10px;
+  padding: 5px 10px;
   border: none;
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.15s;
   white-space: nowrap;
-  min-height: 36px;
-  touch-action: manipulation;
 }
-
-.btn-action:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
 .btn-action--confirm  { background: #fef3c7; color: #92400e; }
 .btn-action--confirm:hover  { background: #fde68a; }
@@ -481,7 +521,7 @@
 /* ===== Undo bar ===== */
 .undo-bar {
   position: fixed;
-  bottom: 24px;
+  top: 72px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -496,11 +536,11 @@
   z-index: 1000;
   min-width: 320px;
   max-width: 90vw;
-  animation: slide-up 0.2s ease-out;
+  animation: slide-up 0.2s ease;
 }
 
 @keyframes slide-up {
-  from { transform: translateX(-50%) translateY(12px); opacity: 0; }
+  from { transform: translateX(-50%) translateY(-16px); opacity: 0; }
   to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
 }
 
@@ -602,59 +642,124 @@
     gap: 8px;
   }
 
-  /* Board: scroll poziomy ze snap co 2 kolumny */
+  /* Zakładki kolumn — przełączanie statusu zamiast przewijania w bok */
+  .mobile-col-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+    scrollbar-width: none;
+  }
+
+  .mobile-col-tabs::-webkit-scrollbar { display: none; }
+
+  .mobile-col-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .mobile-col-tab.active {
+    border-color: var(--tab-color, var(--color-primary));
+    color: var(--tab-color, var(--color-primary));
+    background: color-mix(in srgb, var(--tab-color, var(--color-primary)) 10%, white);
+  }
+
+  .mobile-col-tab-count {
+    background: #cbd5e1;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .mobile-col-tab.active .mobile-col-tab-count {
+    background: var(--tab-color, var(--color-primary));
+  }
+
+  /* Board: jedna kolumna na raz, pełna szerokość, bez przewijania w bok */
   .kanban-board {
     padding: 8px 0 12px;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
   }
 
   .kanban-board-inner {
-    padding: 0 8px;
-    gap: 8px;
+    padding: 0 12px;
+    gap: 0;
+    width: 100%;
+    margin: 0;
   }
 
-  /* Kolumna = połowa ekranu → 2 jednocześnie widoczne */
   .kanban-column {
-    scroll-snap-align: start;
-    width: calc(50vw - 12px);
-    min-width: calc(50vw - 12px);
-    max-width: calc(50vw - 12px);
-    max-height: calc(100dvh - 140px);
+    display: none;
+  }
+
+  .kanban-column.mobile-active {
+    display: flex;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 190px);
   }
 
   .col-header {
-    padding: 8px 8px;
-    gap: 5px;
+    padding: 10px 14px;
   }
-
-  .col-label { font-size: 0.74rem; }
-  .col-count { font-size: 0.7rem; padding: 1px 6px; }
 
   .col-cards {
-    padding: 6px 5px 8px;
-    gap: 5px;
+    padding: 10px;
+    gap: 10px;
   }
 
-  /* Karty — uproszczone */
+  /* Karty — pełna szerokość, więcej miejsca, większe cele dotykowe */
   .kanban-card {
-    padding: 7px 7px 6px;
-    gap: 3px;
-    border-left-width: 3px;
+    padding: 12px 12px 10px;
+    gap: 6px;
   }
 
-  .card-status-badge { display: none; }
-  .card-technician   { display: none; }
-  .card-desc         { display: none; }
-  .card-contact      { display: none; }
-  .card-actions      { display: none; }
+  .card-technician { max-width: none; }
 
-  .card-date   { font-size: 0.68rem; }
-  .card-bike   { font-size: 0.75rem; gap: 3px; }
-  .card-bike strong { font-weight: 600; }
-  .card-model  { display: none; }
-  .card-client { font-size: 0.72rem; }
-  .card-client svg { display: none; }
+  .card-actions {
+    padding-top: 10px;
+  }
 
-  .col-empty { padding: 12px 6px; font-size: 0.75rem; }
+  .btn-action {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .col-empty { padding: 20px 12px; font-size: 0.82rem; }
+}
+
+@media (max-width: 768px) {
+  .undo-bar {
+    top: auto;
+    bottom: 16px;
+    max-width: calc(100vw - 24px);
+  }
+
+  @keyframes slide-up {
+    from { transform: translateX(-50%) translateY(16px); opacity: 0; }
+    to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+  }
 }

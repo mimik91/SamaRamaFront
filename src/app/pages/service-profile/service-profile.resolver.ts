@@ -5,7 +5,8 @@ import { map, catchError, switchMap } from 'rxjs/operators';
 import { ServiceProfileService } from './service-profile.service';
 import {
   BikeServicePublicInfo,
-  ServiceActiveStatus
+  ServiceActiveStatus,
+  ServiceReviewsOverviewDto
 } from '../../shared/models/bike-service-common.models';
 import { OpeningHoursWithInfoDto } from '../../shared/models/opening-hours.models';
 import { ServicePricelistDto, CategoryWithItemsDto } from '../../shared/models/service-pricelist.models';
@@ -24,6 +25,7 @@ export interface ServiceProfileResolvedData {
   packagesConfig: ServicePackagesConfigDto | null;
   bikeTypes: string[];
   logoUrl: string | null;
+  reviews: ServiceReviewsOverviewDto | null;
 }
 
 /**
@@ -64,6 +66,7 @@ export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedDat
               packagesConfig: Observable<ServicePackagesConfigDto | null>;
               bikeTypes: Observable<string[]>;
               logoUrl: Observable<string | null>;
+              reviews: Observable<ServiceReviewsOverviewDto | null>;
             } = {
               openingHours: of(null),
               pricelist: of(null),
@@ -72,6 +75,9 @@ export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedDat
               bikeTypes: of([]),
               logoUrl: this.profileService.getServiceImage(serviceId, 'LOGO').pipe(
                 map(r => r.url ?? null),
+                catchError(() => of(null))
+              ),
+              reviews: this.profileService.getReviews(serviceId).pipe(
                 catchError(() => of(null))
               )
             };
@@ -116,7 +122,8 @@ export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedDat
                 availableItems: additionalData.availableItems,
                 packagesConfig: additionalData.packagesConfig,
                 bikeTypes: additionalData.bikeTypes,
-                logoUrl: additionalData.logoUrl
+                logoUrl: additionalData.logoUrl,
+                reviews: additionalData.reviews
               }))
             );
           })

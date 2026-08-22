@@ -42,6 +42,7 @@
       <div class="record-header" (click)="toggleExpand(record.id)">
         <div class="record-main-info">
           <span class="record-date">{{ formatDate(record.serviceDate) }}</span>
+          <span class="record-duration" *ngIf="record.actualDurationHours != null">Czas realizacji: {{ formatDuration(record.actualDurationHours) }}</span>
           <span class="record-bike">{{ getBikeName(record) }}</span>
           <span class="record-client">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -107,6 +108,47 @@
               </tr>
             </tfoot>
           </table>
+        </div>
+
+        <!-- Plan naprawy -->
+        <div class="detail-section" *ngIf="record.repairPlan">
+          <h4 class="detail-section-title">
+            Plan naprawy
+            <span class="plan-status-badge">{{ repairPlanStatusLabels[record.repairPlan.status] || record.repairPlan.status }}</span>
+          </h4>
+          <table class="items-table" *ngIf="record.repairPlan.items.length > 0 || record.repairPlan.packageName">
+            <thead>
+              <tr>
+                <th>Pozycja</th>
+                <th class="text-right">Cena</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="record.repairPlan.packageName">
+                <td>{{ record.repairPlan.packageName }}</td>
+                <td class="text-right">—</td>
+              </tr>
+              <tr *ngFor="let item of record.repairPlan.items">
+                <td>{{ item.name }}</td>
+                <td class="text-right">{{ formatPrice(item.price) }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td class="total-label">Suma</td>
+                <td class="text-right total-price">{{ formatPrice(record.repairPlan.totalPrice) }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Ocena klienta -->
+        <div class="detail-section" *ngIf="record.review">
+          <h4 class="detail-section-title">Ocena klienta</h4>
+          <div class="review-summary">
+            <span class="review-score">{{ record.review.totalScore }} / 5</span>
+            <p class="review-comment" *ngIf="record.review.comment">{{ record.review.comment }}</p>
+          </div>
         </div>
 
         <!-- Notes -->

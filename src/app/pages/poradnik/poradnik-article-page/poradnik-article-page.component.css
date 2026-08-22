@@ -1,0 +1,207 @@
+.poradnik-article-container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--spacing-8) var(--spacing-5);
+  box-sizing: border-box;
+}
+
+/* Powyżej 1024px: spis treści jako sticky sidebar obok treści, zamiast karty wciśniętej u góry —
+   wykorzystuje pustą przestrzeń po bokach wąskiej (celowo, dla czytelności) kolumny tekstu */
+@media (min-width: 1024px) {
+  .poradnik-article-container {
+    max-width: 1080px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    column-gap: var(--spacing-10);
+    grid-template-areas:
+      'top      top'
+      'content  toc'
+      'related  related';
+  }
+
+  .poradnik-layout-top {
+    grid-area: top;
+  }
+
+  .poradnik-article-content {
+    grid-area: content;
+    max-width: 760px;
+  }
+
+  .poradnik-toc {
+    grid-area: toc;
+    align-self: start;
+    position: sticky;
+    top: 90px;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+    margin-bottom: 0;
+  }
+
+  .poradnik-related-section {
+    grid-area: related;
+  }
+}
+
+.poradnik-kicker {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.poradnik-article-header h1 {
+  font-size: var(--font-size-h1, 2rem);
+  color: var(--text-dark);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.25;
+  margin: 0 0 var(--spacing-3);
+}
+
+.poradnik-article-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-5);
+  text-transform: capitalize;
+}
+
+.poradnik-article-meta-dot {
+  text-transform: none;
+}
+
+.poradnik-article-cover-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  margin-bottom: var(--spacing-6);
+  background: var(--color-gray-50);
+}
+
+.poradnik-article-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+}
+
+.poradnik-toc {
+  background: var(--color-primary-alpha-08);
+  border: 1px solid var(--color-primary-alpha-15);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-4) var(--spacing-5);
+  margin-bottom: var(--spacing-6);
+}
+
+.poradnik-toc-label {
+  margin: 0 0 var(--spacing-3);
+  font-size: 0.85rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+}
+
+.poradnik-toc ol {
+  margin: 0;
+  padding-left: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.poradnik-toc a {
+  color: var(--text-dark);
+  text-decoration: none;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.poradnik-toc a:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.poradnik-article-content {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--text-dark);
+}
+
+/* Treść artykułu trafia do DOM przez [innerHTML], więc te węzły nigdy nie dostają atrybutu
+   encapsulation (_ngcontent-xxx) — zwykłe scoped selektory Angulara ich nie dopasowują.
+   ::ng-deep celowo przebija encapsulation tylko dla tego jednego, kontrolowanego kontenera. */
+::ng-deep .poradnik-article-content :first-child {
+  margin-top: 0;
+}
+
+::ng-deep .poradnik-article-content h2 {
+  font-size: 1.75rem;
+  color: var(--color-primary);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.3;
+  margin: 6.5rem 0 var(--spacing-3);
+  scroll-margin-top: 90px;
+}
+
+::ng-deep .poradnik-article-content p {
+  margin: 0 0 var(--spacing-4);
+}
+
+::ng-deep .poradnik-article-content strong {
+  color: var(--text-dark);
+  font-weight: var(--font-weight-semibold);
+}
+
+::ng-deep .poradnik-article-content ul {
+  margin: 0 0 var(--spacing-4);
+  padding-left: 1.4rem;
+}
+
+::ng-deep .poradnik-article-content li {
+  margin-bottom: var(--spacing-2);
+}
+
+::ng-deep .poradnik-article-content a {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+  text-decoration: underline;
+  text-decoration-color: var(--color-primary-alpha-40);
+  text-underline-offset: 2px;
+}
+
+::ng-deep .poradnik-article-content a:hover {
+  text-decoration-color: var(--color-primary);
+}
+
+.poradnik-related-section {
+  margin-top: var(--spacing-10);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--border-color-light, var(--border-color-gray));
+}
+
+.poradnik-related-section h2 {
+  font-size: var(--font-size-h3, 1.4rem);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--spacing-5);
+}
+
+.poradnik-related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-5);
+}
+
+@media (max-width: 639px) {
+  .poradnik-related-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -121,6 +121,22 @@
           placeholder="Jan Kowalski" />
       </div>
       <div class="detail-item">
+        <span class="label">Krótka nazwa (SMS):</span>
+        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.shortName || '-' }}</span>
+        <div *ngIf="isEditMode" class="field-with-hint">
+          <input
+            type="text"
+            [(ngModel)]="editableData.shortName"
+            [maxlength]="SHORT_NAME_MAX_LENGTH"
+            class="edit-input"
+            [class.input-invalid]="!isShortNameValid()"
+            placeholder="np. CykloFix" />
+          <p class="field-hint" [class.field-hint-error]="!isShortNameValid()">
+            Maks. {{ SHORT_NAME_MAX_LENGTH }} znaków, tylko A-Z, cyfry, spacja i myślnik (bez polskich znaków). Używana na początku SMS-ów zamiast "Cyclopick".
+          </p>
+        </div>
+      </div>
+      <div class="detail-item">
         <span class="label">Dzielnica:</span>
         <span class="value" *ngIf="!isEditMode">{{ serviceDetails.district || '-' }}</span>
         <div *ngIf="isEditMode" class="district-combobox">

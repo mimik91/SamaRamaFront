@@ -115,6 +115,14 @@
   gap: var(--spacing-2);
 }
 
+.btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinning { animation: spin 0.8s linear infinite; }
+
 .action-btn {
   display: flex;
   align-items: center;

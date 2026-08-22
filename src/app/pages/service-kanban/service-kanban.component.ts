@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
@@ -108,6 +108,7 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   private verificationService = inject(BikeServiceVerificationService);
   private calendarService = inject(ServiceCalendarService);
   private notificationService = inject(NotificationService);
+  private platformId = inject(PLATFORM_ID);
 
   currentSuffix = '';
   myServices: BikeServiceNameIdDto[] = [];
@@ -120,6 +121,12 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   searchFilter: OrderSearchFilter = { ...EMPTY_ORDER_SEARCH_FILTER };
 
   currentWeekStart: Date = getWeekStart(new Date());
+
+  // Mobile: jedna kolumna na raz, przełączana zakładkami; drag&drop wyłączony
+  isMobileView = false;
+  activeMobileColumnId: string | null = null;
+  private mobileMql: MediaQueryList | null = null;
+  private readonly onMobileMqlChange = (e: MediaQueryListEvent): void => { this.isMobileView = e.matches; };
 
   // Modal
   selectedOrder: CalendarOrder | null = null;
@@ -149,6 +156,12 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.currentSuffix = this.route.snapshot.paramMap.get('suffix') || '';
     this.loadServices();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.mobileMql = window.matchMedia('(max-width: 768px)');
+      this.isMobileView = this.mobileMql.matches;
+      this.mobileMql.addEventListener('change', this.onMobileMqlChange);
+    }
   }
 
   private loadServices(): void {
@@ -246,7 +259,14 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     }
     this.columns = cols;
     this.allOrders = cols.flatMap(c => c.orders);
+    if (!this.activeMobileColumnId) {
+      this.activeMobileColumnId = cols[0]?.id ?? null;
+    }
     this.updateScrollbarWidth();
+  }
+
+  selectMobileColumn(columnId: string): void {
+    this.activeMobileColumnId = columnId;
   }
 
   // ===== Drag & Drop =====
@@ -320,6 +340,7 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.pendingMove) this.commitMove();
+    this.mobileMql?.removeEventListener('change', this.onMobileMqlChange);
   }
 
   // ===== Quick actions =====

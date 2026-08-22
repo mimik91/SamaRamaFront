@@ -4,11 +4,12 @@ import { RouterModule, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml, Meta, Title } from '@angular/platform-browser';
 import { SeoService } from '../core/seo.service';
 import { SchemaOrgHelper } from '../core/schema-org.helper';
+import { BreadcrumbComponent } from '../shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-for-services',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, BreadcrumbComponent],
   templateUrl: './for-services.component.html',
   styleUrls: ['./for-services.component.css']
 })

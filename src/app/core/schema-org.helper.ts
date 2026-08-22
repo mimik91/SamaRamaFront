@@ -809,6 +809,37 @@ export class SchemaOrgHelper {
   }
 
   /**
+   * Generuje BlogPosting schema dla artykułu w sekcji "Poradnik rowerowy"
+   */
+  static generateBlogPosting(article: {
+    slug: string;
+    title: string;
+    excerpt: string;
+    coverImage: string;
+    publishedDate: string;
+  }): any {
+    if (!article || !article.slug || !article.title) {
+      console.warn('[SchemaOrgHelper] Brak wymaganych danych dla BlogPosting');
+      return null;
+    }
+
+    const url = `https://www.cyclopick.pl/poradnik/${article.slug}`;
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      '@id': `${url}#article`,
+      headline: article.title,
+      description: article.excerpt,
+      image: `https://www.cyclopick.pl/${article.coverImage}`,
+      datePublished: article.publishedDate,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+      author: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' },
+      publisher: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' }
+    };
+  }
+
+  /**
    * Zwraca domyślne FAQ dla CycloPick (do użycia na stronie głównej)
    */
   static getDefaultCycloPickFAQ(): Array<{ question: string; answer: string }> {

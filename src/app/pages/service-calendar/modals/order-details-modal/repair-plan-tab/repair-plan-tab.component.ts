@@ -35,6 +35,8 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   allPricelistItems: PricelistItemWithPrice[] = [];
 
   selectedPackage: ServicePackageDto | null = null;
+  /** Cena pakietu w tym konkretnym planie — domyślnie cena z cennika, ale serwis może ją nadpisać dla tego zlecenia */
+  packagePriceOverride: number | null = null;
   lineItems: RepairPlanLineItem[] = [];
   customTotalEnabled = false;
   customTotalValue: number | null = null;
@@ -53,8 +55,20 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   isSaving = false;
   isSending = false;
 
-  get packageCost(): number { return this.selectedPackage?.price ?? 0; }
-  get itemsCost(): number { return this.lineItems.reduce((s, i) => s + i.price, 0); }
+  /** Status ostatnio wczytanego planu — null dopóki nic nie wysłano (czysty szkic) */
+  planStatus: RepairPlanResponse['status'] | null = null;
+  planRequiresConfirmation = false;
+  /** Klient przy potwierdzaniu zrezygnował z całego pakietu — tylko do odczytu, ustawiane przez klienta */
+  planPackageExcluded = false;
+
+  readonly planStatusLabels: Record<string, string> = {
+    SENT_TO_CLIENT: 'Wysłany — czeka na klienta',
+    ACCEPTED: 'Zaakceptowany przez klienta',
+    REJECTED: 'Odrzucony przez klienta'
+  };
+
+  get packageCost(): number { return this.planPackageExcluded ? 0 : (this.packagePriceOverride ?? this.selectedPackage?.price ?? 0); }
+  get itemsCost(): number { return this.lineItems.filter(i => !i.excluded).reduce((s, i) => s + i.price, 0); }
   get calculatedTotal(): number { return this.packageCost + this.itemsCost; }
   get finalTotal(): number { return this.customTotalEnabled ? (this.customTotalValue ?? 0) : this.calculatedTotal; }
   get bikeTypeLabel(): string { return this.order.bicycleType || 'Nieokreślony'; }
@@ -101,11 +115,13 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   private applyPlanFromResponse(plan: RepairPlanResponse): void {
     if (plan.packageId !== null) {
       this.selectedPackage = this.packagesForBikeType.find(p => p.id === plan.packageId) ?? null;
+      this.packagePriceOverride = plan.packagePriceSnapshot;
     }
     this.lineItems = plan.items.map(item => ({
       pricelistItemId: null,
       name: item.name,
-      price: item.price
+      price: item.price,
+      excluded: item.excluded
     }));
     if (plan.customTotal !== null) {
       this.customTotalEnabled = true;
@@ -113,10 +129,19 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
     }
     this.notes = plan.notes ?? '';
     this.savedAt = new Date(plan.updatedAt);
+    this.planStatus = plan.status;
+    this.planRequiresConfirmation = plan.requiresConfirmation;
+    this.planPackageExcluded = plan.packageExcluded;
   }
 
   selectPackage(pkg: ServicePackageDto): void {
     this.selectedPackage = this.selectedPackage?.id === pkg.id ? null : pkg;
+    this.packagePriceOverride = this.selectedPackage?.price ?? null;
+    this.resetCustomTotal();
+  }
+
+  updatePackagePrice(value: number): void {
+    this.packagePriceOverride = value ?? 0;
     this.resetCustomTotal();
   }
 
@@ -233,7 +258,11 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (!this.isLoading && !this.loadError) {
+    // Po wysłaniu do klienta plan przestaje być swobodnym szkicem — ciche zamknięcie zakładki
+    // nie powinno nadpisywać decyzji klienta (przekreślone pozycje, wyczyszczona cena niestandardowa).
+    // Świadoma zmiana planu po tym momencie idzie przez jawny przycisk "Wyślij do klienta".
+    const isEditableDraft = this.planStatus === null || this.planStatus === 'DRAFT';
+    if (!this.isLoading && !this.loadError && isEditableDraft) {
       this.calendarService.saveRepairPlan(this.serviceId, this.order.id, this.buildRequest())
         .subscribe();
     }
@@ -242,7 +271,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   private buildRequest(): SaveRepairPlanRequest {
     return {
       packageId: this.selectedPackage?.id ?? null,
-      packagePriceSnapshot: this.selectedPackage?.price ?? null,
+      packagePriceSnapshot: this.selectedPackage ? (this.packagePriceOverride ?? this.selectedPackage.price) : null,
       items: this.lineItems.map(item => ({ name: item.name, price: item.price })),
       customTotal: this.customTotalEnabled ? (this.customTotalValue ?? null) : null,
       notes: this.notes || null
@@ -268,7 +297,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
 
   private buildPrintHtml(): string {
     const packageRows = this.selectedPackage
-      ? this.buildPackageRows(this.selectedPackage)
+      ? this.buildPackageRows(this.selectedPackage, this.packageCost)
       : '';
 
     const itemRows = this.lineItems.map(item => `
@@ -378,7 +407,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
 </html>`;
   }
 
-  private buildPackageRows(pkg: ServicePackageDto): string {
+  private buildPackageRows(pkg: ServicePackageDto, effectivePrice: number): string {
     const descItems = (pkg.description ?? '')
       .split('\n')
       .map(line => line.replace(/^[-–•]\s*/, '').trim())
@@ -388,7 +417,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
       <tr class="pkg-header">
         <td class="cb-cell"><span class="cb"></span></td>
         <td>${this.esc(pkg.displayName)}<span class="badge">pakiet</span></td>
-        <td class="price">${pkg.price.toFixed(2)} zł</td>
+        <td class="price">${effectivePrice.toFixed(2)} zł</td>
       </tr>`;
 
     const subRows = descItems.map(line => `

@@ -125,36 +125,6 @@
   text-align: center;
 }
 
-/* View switcher buttons */
-.view-switcher {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.view-btn {
-  padding: 10px 20px;
-  border: 2px solid #3498db;
-  background-color: white;
-  color: #3498db;
-  border-radius: 25px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-}
-
-.view-btn:hover {
-  background-color: #f0f9ff;
-  transform: translateY(-2px);
-}
-
-.view-btn.active {
-  background-color: #3498db;
-  color: white;
-}
-
 /* How it works actions */
 .how-it-works-actions {
   margin: 30px 0;
@@ -275,44 +245,6 @@
 }
 
 /* Service Area Information Styles */
-.service-area-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin: 25px auto 35px;
-  padding: 15px 25px;
-  background-color: #f8fafc;
-  border-left: 4px solid #3498db;
-  border-radius: 8px;
-  max-width: 800px;
-  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
-}
-
-.service-area-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background-color: #3498db;
-  border-radius: 50%;
-  color: white;
-  flex-shrink: 0;
-}
-
-.service-area-text {
-  color: #2c3e50;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  text-align: left;
-}
-
-.service-area-text strong {
-  color: #3498db;
-  font-weight: 600;
-}
-
 /* Sekcja kontaktowa */
 .contact-info-container {
   display: flex;
@@ -658,16 +590,6 @@
     margin-bottom: 15px;
   }
 
-  .view-switcher {
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .view-btn {
-    width: 200px;
-  }
-  
   /* SEKCJA KONTAKTOWA - STYLE MOBILNE */
   .contact-info-container {
     flex-direction: row;
@@ -704,29 +626,6 @@
     height: 22px;
   }
 
-  /* Service area responsive */
-  .service-area-info {
-    flex-direction: column;
-    text-align: center;
-    padding: 20px 15px;
-    margin: 20px 15px 30px;
-  }
-  
-  .service-area-icon {
-    margin-bottom: 10px;
-    width: 35px;
-    height: 35px;
-  }
-  
-  .service-area-icon svg {
-    width: 18px;
-    height: 18px;
-  }
-  
-  .service-area-text {
-    font-size: 0.9rem;
-    text-align: center;
-  }
 }
 
 @media screen and (max-width: 480px) {
@@ -778,14 +677,5 @@
   .contact-icon svg {
     width: 20px;
     height: 20px;
-  }
-
-  .service-area-info {
-    padding: 15px 10px;
-    margin: 15px 10px 25px;
-  }
-  
-  .service-area-text {
-    font-size: 0.85rem;
   }
 }

@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { Bicycle, BicycleForm } from '../../shared/models/bicycle.model';
+import { RepairPlanResponse } from '../../shared/models/repair-plan.models';
 import { environment } from '../../environments/environments';
 
 export interface BicycleImageUploadRequest {
@@ -297,6 +298,41 @@ export class BicycleService {
     ).pipe(
       catchError(error => {
         console.error('Error marking messages as read:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getRepairPlan(orderId: number): Observable<RepairPlanResponse> {
+    return this.http.get<RepairPlanResponse>(
+      `${environment.apiUrl}/user/service-orders/${orderId}/repair-plan`
+    ).pipe(
+      catchError(error => {
+        console.error('Error fetching repair plan:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  confirmRepairPlan(orderId: number, excludedItemIds: number[] = [], excludePackage = false): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${environment.apiUrl}/user/service-orders/${orderId}/repair-plan/confirm`,
+      { excludedItemIds, excludePackage }
+    ).pipe(
+      catchError(error => {
+        console.error('Error confirming repair plan:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  rejectRepairPlan(orderId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${environment.apiUrl}/user/service-orders/${orderId}/repair-plan/reject`,
+      {}
+    ).pipe(
+      catchError(error => {
+        console.error('Error rejecting repair plan:', error);
         return throwError(() => error);
       })
     );

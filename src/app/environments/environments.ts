@@ -23,6 +23,7 @@ export const environment = {
     password: '/password',
     verification: '/verification',
     map: '/map',
+    reviews: '/reviews',
 
     admin: {
       base: '/admin',
@@ -31,6 +32,7 @@ export const environment = {
       orderById: '/admin/orders/:id',
       orderTransportStatus: '/admin/orders/transport/:id/status',
       officeAddresses: '/admin/office-addresses',
+      coupons: '/admin/coupons',
       expressService: {
         config: '/admin/express-service/config',
         orders: '/admin/express-service/orders',
@@ -55,7 +57,9 @@ export const environment = {
       report: '/guest-orders/report',
       expressAvailability: '/guest-orders/express-reservation/availability',
       expressReservationQuote: '/guest-orders/express-reservation/quote',
-      expressPackages: '/guest-orders/express-packages'
+      expressPackages: '/guest-orders/express-packages',
+      access: '/guest-orders/access'
+
     },
 
     payment: {

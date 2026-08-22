@@ -55,6 +55,22 @@ export class OrderBarComponent {
     return getStatusColor(s);
   }
 
+  get repairPlanStatusTooltip(): string {
+    const status = this.order.repairPlanStatus;
+    if (status === 'SENT_TO_CLIENT') return 'Plan naprawy: czeka na potwierdzenie klienta';
+    if (status === 'ACCEPTED') return 'Plan naprawy: potwierdzony przez klienta';
+    if (status === 'REJECTED') return 'Plan naprawy: odrzucony przez klienta';
+    return '';
+  }
+
+  get repairPlanStatusShortLabel(): string {
+    const status = this.order.repairPlanStatus;
+    if (status === 'SENT_TO_CLIENT') return 'Plan: czeka';
+    if (status === 'ACCEPTED') return 'Plan: OK';
+    if (status === 'REJECTED') return 'Plan: odrzucony';
+    return '';
+  }
+
   get bikeBrand(): string {
     return (this.order?.bicycleBrand ?? '').toString().trim().toUpperCase();
   }

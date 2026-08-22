@@ -499,6 +499,9 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
   onOrderDetailsClose(): void {
     this.showOrderDetailsModal = false;
     this.selectedOrder = null;
+    // Otwarcie modala mogło oznaczyć wiadomości jako przeczytane / status planu naprawy mógł się zmienić
+    // w międzyczasie — odśwież, żeby odznaki na kafelkach (nieprzeczytane, status planu) były aktualne.
+    this.loadCalendarData();
   }
 
   onOrderUpdated(): void {

@@ -18,6 +18,63 @@
   padding: 8px 10px 8px 10px;
 }
 
+.order-unread-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--color-danger);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  z-index: 2;
+}
+
+/* Status planu naprawy: cały kafelek dostaje górną obramówkę + delikatne tło — widoczne od razu,
+   bez zasłaniania marki roweru. Kolor + styl obramówki (przerywana/ciągła) + ikona+tekst w treści
+   = trzy niezależne sygnały, nie tylko kolor. */
+.order-bar--plan-sent_to_client {
+  border-top: 3px dashed var(--color-warning-orange);
+  background: var(--color-warning-bg);
+}
+
+.order-bar--plan-accepted {
+  border-top: 3px solid var(--color-success-dark);
+  background: var(--color-success-bg);
+}
+
+.order-bar--plan-rejected {
+  border-top: 3px solid var(--color-danger-dark);
+  background: var(--color-danger-bg);
+}
+
+.order-plan-status-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.order-plan-status-line--sent_to_client {
+  color: var(--color-warning-orange);
+}
+
+.order-plan-status-line--accepted {
+  color: var(--color-success-dark);
+}
+
+.order-plan-status-line--rejected {
+  color: var(--color-danger-dark);
+}
+
 .order-bar:hover {
   background: var(--color-slate-50);
   box-shadow: var(--shadow-sm);

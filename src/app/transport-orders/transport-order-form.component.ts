@@ -1,16 +1,21 @@
 // src/app/transport-orders/transport-order-form.component.ts
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { NotificationService } from '../core/notification.service';
 import { TransportOrderService } from './transport-order.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { I18nService } from '../core/i18n.service';
+import { SessionSyncService } from '../core/session-sync.service';
 import { environment } from '../environments/environments';
 import { BicycleFormData, BicycleData } from '../shared/models/bicycle.model';
 import { OfficeAddressDto } from '../shared/models/office-address.model';
 import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constants';
+import { DiscountService } from '../shared/services/discount.service';
 
 type PickupType = 'ADDRESS' | 'OFFICE';
 
@@ -22,7 +27,7 @@ type PickupType = 'ADDRESS' | 'OFFICE';
   templateUrl: './transport-order-form.component.html',
   styleUrls: ['./transport-order-form.component.css']
 })
-export class TransportOrderFormComponent implements OnInit {
+export class TransportOrderFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -30,6 +35,12 @@ export class TransportOrderFormComponent implements OnInit {
   private transportOrderService = inject(TransportOrderService);
   private enumerationService = inject(EnumerationService);
   private i18n = inject(I18nService);
+  private sessionSyncService = inject(SessionSyncService);
+  private platformId = inject(PLATFORM_ID);
+  private discountService = inject(DiscountService);
+
+  private routerSub: Subscription | null = null;
+  private sessionSyncSent = false;
 
   // Multi-step form management
   currentStep = 1;
@@ -61,6 +72,9 @@ export class TransportOrderFormComponent implements OnInit {
   couponMessage: string | null = null;
   isCouponInvalid = false;
   finalTransportPrice: number | null = null;
+  // Cena JEDNEJ dodatkowej roweru po rabacie — ustawione tylko gdy kupon WHOLE_ORDER obniża też
+  // cenę dodatkowych rowerów; w przeciwnym razie dodatkowe rowery kosztują tyle co bez kuponu.
+  discountedAdditionalBikePrice: number | null = null;
 
   // Brand autocomplete
   activeBrandDropdown: number | null = null;
@@ -150,6 +164,13 @@ export class TransportOrderFormComponent implements OnInit {
     this.loadCities();
     this.loadOfficeAddresses();
     this.addBicycleToForm();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.routerSub = this.router.events.pipe(
+        filter(e => e instanceof NavigationStart)
+      ).subscribe(() => this.sendSessionSync());
+    }
+
   }
 
   private loadServiceInfo(): void {
@@ -539,22 +560,33 @@ export class TransportOrderFormComponent implements OnInit {
     return this.actualTransportCost ?? 0;
   }
 
+  // Darmowy transport skonfigurowany na serwisie (transportCost === 0) obejmuje wszystkie rowery —
+  // dodatkowe rowery nie generują dopłaty w tym przypadku (patrz też getFinalPriceToSend/applyDiscountCoupon).
   getAdditionalBikesCost(): number {
+    if (this.actualTransportCost !== null && this.actualTransportCost === 0) {
+      return 0;
+    }
     const selectedCount = this.getSelectedBicyclesCount();
     if (selectedCount <= 1) return 0;
     return (selectedCount - 1) * TRANSPORT_PRICING.additionalBikeCost;
   }
 
   getFinalPriceToSend(): number {
+    if (this.actualTransportCost !== null && this.actualTransportCost === 0) {
+      return 0;
+    }
     if (this.finalTransportPrice !== null) {
-      return this.finalTransportPrice + this.getAdditionalBikesCost();
+      const additionalBikes = Math.max(0, this.getSelectedBicyclesCount() - 1);
+      const additionalBikeUnitPrice = this.discountedAdditionalBikePrice ?? TRANSPORT_PRICING.additionalBikeCost;
+      return this.finalTransportPrice + additionalBikes * additionalBikeUnitPrice;
     }
     return this.getEstimatedTransportCost();
   }
 
   applyDiscountCoupon(): void {
     const couponCode = this.discountCouponControl.value?.trim();
-    if (!couponCode || this.isApplyingCoupon) return;
+    // Transport już darmowy dla wszystkich rowerów — kupon nie ma nic do obniżenia.
+    if (!couponCode || this.isApplyingCoupon || this.actualTransportCost === 0) return;
 
     this.isApplyingCoupon = true;
     this.couponMessage = null;
@@ -568,30 +600,27 @@ export class TransportOrderFormComponent implements OnInit {
     }
 
     const baseCost = this.getBaseTransportCost();
+    const remainderPrice = this.getAdditionalBikesCost();
 
-    const discountRequest = {
+    this.discountService.applyDiscount({
       coupon: couponCode,
-      currentTransportPrice: baseCost,
+      scope: 'TRANSPORT',
+      firstUnitPrice: baseCost,
+      remainderPrice,
       orderDate: orderDate
-    };
-
-    this.transportOrderService.checkDiscount(discountRequest).subscribe({
-      next: (response) => {
-        const newPrice = response.newPrice;
-        if (newPrice < baseCost) {
-          this.finalTransportPrice = newPrice;
-          this.couponMessage = this.i18n.instant('transport_order.discount.coupon_applied', { coupon: couponCode });
-          this.isCouponInvalid = false;
-        } else {
-          this.finalTransportPrice = null;
-          this.couponMessage = this.i18n.instant('transport_order.discount.coupon_invalid');
-          this.isCouponInvalid = true;
-        }
+    }).subscribe({
+      next: (res) => {
+        this.finalTransportPrice = res.firstUnitPrice;
+        const additionalBikes = Math.max(0, this.getSelectedBicyclesCount() - 1);
+        this.discountedAdditionalBikePrice = additionalBikes > 0 ? res.remainderPrice / additionalBikes : null;
+        this.couponMessage = this.i18n.instant('transport_order.discount.coupon_applied', { coupon: couponCode });
+        this.isCouponInvalid = false;
         this.isApplyingCoupon = false;
       },
       error: () => {
         this.finalTransportPrice = null;
-        this.couponMessage = this.i18n.instant('transport_order.discount.coupon_error');
+        this.discountedAdditionalBikePrice = null;
+        this.couponMessage = this.i18n.instant('transport_order.discount.coupon_invalid');
         this.isCouponInvalid = true;
         this.isApplyingCoupon = false;
       }
@@ -749,5 +778,28 @@ export class TransportOrderFormComponent implements OnInit {
   // Translation helper for template
   t(key: string, params?: any): string {
     return this.i18n.instant(key, params);
+  }
+
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    this.sendSessionSync();
+  }
+
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
+  }
+
+  private sendSessionSync(): void {
+    if (this.sessionSyncSent) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.sessionSyncSent = true;
+
+    const contact = this.contactAndTransportForm.value;
+    this.sessionSyncService.send({
+      firstName: contact.clientFirstName?.trim() || '',
+      lastName: contact.clientLastName?.trim() || '',
+      email: contact.clientEmail?.trim() || '',
+      phone: contact.clientPhone?.trim() || ''
+    });
   }
 }

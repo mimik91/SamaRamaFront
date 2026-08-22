@@ -1,10 +1,18 @@
 <article class="city-services-container" itemscope itemtype="https://schema.org/ItemList">
 
+  <app-breadcrumb
+    *ngIf="!cityNotFound"
+    [items]="currentCity
+      ? [{ label: 'Strona główna', url: '/' }, { label: 'Serwisy rowerowe', url: '/serwisy' }, { label: currentCity.name }]
+      : [{ label: 'Strona główna', url: '/' }, { label: 'Serwisy rowerowe' }]"
+  ></app-breadcrumb>
+
   <!-- Header -->
   <header class="city-header" *ngIf="!cityNotFound">
-    <h1 itemprop="name">Serwisy rowerowe {{ currentCity?.name }}</h1>
+    <h1 itemprop="name">{{ currentCity ? 'Serwisy rowerowe ' + currentCity.name : 'Serwisy rowerowe w Polsce' }}</h1>
     <p class="subtitle">
-      Lista warsztat&#243;w rowerowych w mie&#347;cie {{ currentCity?.name }} i okolicach
+      <ng-container *ngIf="currentCity; else nationwideSubtitle">Lista warsztat&#243;w rowerowych w mie&#347;cie {{ currentCity.name }} i okolicach</ng-container>
+      <ng-template #nationwideSubtitle>Pe&#322;na lista warsztat&#243;w rowerowych w ca&#322;ej Polsce</ng-template>
     </p>
   </header>
 
@@ -13,14 +21,8 @@
     <div class="express-promo-inner">
 
       <div class="express-promo-text">
-        <div class="express-promo-top">
-          <span class="express-promo-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>
-            Wybierzemy dla Ciebie
-          </span>
-        </div>
         <h2 id="express-promo-heading" class="express-promo-title">
-          Najprostszy sposób na sprawny rower
+          Dobierzemy najlepszy serwis do Twojego roweru
         </h2>
       </div>
 
@@ -31,7 +33,6 @@
             Zarezerwuj teraz
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
-          <p class="express-cta-note">Potwierdzenie na email · Bezpłatne anulowanie</p>
         </div>
       </div>
 
@@ -53,20 +54,20 @@
       <div class="express-promo-details" id="express-promo-details" [class.expanded]="expressPromoExpanded">
         <div class="express-promo-details-inner">
           <p class="express-promo-desc">
-            Odbierzemy Twój rower <strong>rano z biura lub spod domu</strong> i&nbsp;zwrócimy sprawny <strong>przed&nbsp;17:00&nbsp;tego&nbsp;samego&nbsp;dnia</strong>. Transport wliczony&nbsp;w&nbsp;usługę.
+            Wybierz dogodny wariant odbioru — <strong>resztą zajmiemy się my</strong>.
           </p>
           <ul class="express-promo-features" aria-label="Zalety serwisu ekspresowego">
             <li class="express-feature">
               <span class="express-feature-icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               </span>
-              <span>Serwis i zwrot <strong>tego samego dnia</strong></span>
+              <span>Odbiór <strong>rano z biura</strong> → zwrot <strong>przed 17:00</strong> tego samego dnia</span>
             </li>
             <li class="express-feature">
               <span class="express-feature-icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
               </span>
-              <span>Odbiór z biura lub spod domu</span>
+              <span>Odbiór <strong>wieczorem spod domu</strong> → zwrot pod dom <strong>następnego wieczoru</strong></span>
             </li>
             <li class="express-feature">
               <span class="express-feature-icon" aria-hidden="true">
@@ -80,6 +81,12 @@
               </span>
               <span>Bez zakładania konta</span>
             </li>
+            <li class="express-feature">
+              <span class="express-feature-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              </span>
+              <span>Potwierdzenie na email, bezpłatne anulowanie</span>
+            </li>
           </ul>
         </div>
       </div>
@@ -90,7 +97,6 @@
   <!-- Actions bar: city search + map -->
   <div class="actions-bar" *ngIf="!cityNotFound">
     <div class="city-autocomplete-wrapper">
-      <label class="city-label">Zmień miasto:</label>
       <div class="city-input-wrapper">
         <svg class="city-input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -99,7 +105,8 @@
         <input
           type="text"
           class="city-input"
-          [placeholder]="currentCity?.name || 'Wpisz miasto...'"
+          [placeholder]="currentCity ? 'Zmień miasto, np. Warszawa...' : 'Filtruj po mieście, np. Kraków...'"
+          [attr.aria-label]="currentCity ? 'Zmień miasto' : 'Filtruj po mieście'"
           [(ngModel)]="cityInputValue"
           (input)="onCityInput()"
           (focus)="onCityFocus()"
@@ -127,17 +134,58 @@
           </svg>
           {{ city.name }}
         </div>
+        <div
+          class="city-suggestion-item city-suggestion-item--dynamic"
+          *ngFor="let city of dynamicCitySuggestions; let i = index; trackBy: trackByCityName"
+          [class.active]="activeSuggestionIndex === filteredCities.length + i"
+          (click)="selectDynamicCity(city)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span>{{ city.cityLabel || city.cityName }}<small>Pokaż na mapie</small></span>
+        </div>
       </div>
     </div>
 
-    <button class="map-button" (click)="navigateToMap()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-        <circle cx="12" cy="10" r="3"></circle>
-      </svg>
-      Poka&#380; na mapie
-    </button>
+    <!-- Wyszukiwanie po nazwie serwisu -->
+    <div class="service-name-search-wrapper">
+      <div class="city-input-wrapper">
+        <svg class="city-input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          class="city-input"
+          placeholder="Szukaj po nazwie warsztatu..."
+          aria-label="Szukaj po nazwie serwisu"
+          [(ngModel)]="serviceNameQuery"
+          (input)="onServiceNameInput()"
+          autocomplete="off"
+        >
+        <button
+          *ngIf="serviceNameQuery"
+          class="city-input-clear"
+          (click)="clearServiceNameSearch()"
+          type="button"
+          title="Wyczyść"
+        ><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
+      </div>
+    </div>
   </div>
+
+  <!-- Wyszukiwanie po nazwie + filtrowanie po usługach -->
+  <app-service-search-filters *ngIf="!cityNotFound" (filtersChanged)="onFiltersChanged($event)"></app-service-search-filters>
+
+  <button *ngIf="!cityNotFound" class="map-button" (click)="navigateToMap()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+      <circle cx="12" cy="10" r="3"></circle>
+    </svg>
+    Poka&#380; na mapie
+  </button>
 
   <!-- Loading state -->
   <div *ngIf="loading" class="loading-state">
@@ -195,6 +243,18 @@
           </svg>
           {{ city.name }}
         </div>
+        <div
+          class="city-suggestion-item city-suggestion-item--dynamic"
+          *ngFor="let city of dynamicCitySuggestions; let i = index; trackBy: trackByCityName"
+          [class.active]="activeSuggestionIndex === filteredCities.length + i"
+          (click)="selectDynamicCity(city)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span>{{ city.cityLabel || city.cityName }}<small>Pokaż na mapie</small></span>
+        </div>
       </div>
     </div>
   </div>
@@ -206,7 +266,7 @@
         Znaleziono <strong>{{ totalServices }}</strong> serwis&#243;w rowerowych w Krakowie
       </ng-container>
       <ng-template #defaultCount>
-        Znaleziono <strong>{{ totalServices }}</strong> serwis&#243;w rowerowych
+        Znaleziono <strong>{{ totalServices }}</strong> serwis&#243;w rowerowych<ng-container *ngIf="!currentCity"> w Polsce</ng-container>
       </ng-template>
     </h2>
 
@@ -255,6 +315,20 @@
               </svg>
               {{ service.address }}
             </p>
+
+            <div class="service-stats-row">
+              <span class="stat-chip">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <ng-container *ngIf="service.reviewCount; else noRatingCity">{{ service.averageRating | number:'1.1-1' }} ({{ service.reviewCount }})</ng-container>
+                <ng-template #noRatingCity>N/A</ng-template>
+              </span>
+              <span class="stat-chip">
+                śr. czas realizacji: {{ formatDuration(service.medianServiceDurationHours) }}
+              </span>
+              <span class="stat-chip" *ngIf="service.completedOrdersTotalCount">
+                {{ formatCompletedOrders(service.completedOrdersTotalCount) }}
+              </span>
+            </div>
 
             <a
               *ngIf="service.phoneNumber"
@@ -379,7 +453,7 @@
 
     <div *ngIf="services.length === 0" class="no-services">
       <p>Nie znaleziono serwis&#243;w rowerowych w tym obszarze.</p>
-      <button class="no-services-cta" (click)="navigateToMap()" *ngIf="currentCity">
+      <button class="no-services-cta" (click)="navigateToMap()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
           <line x1="9" y1="3" x2="9" y2="18"></line>
@@ -387,6 +461,17 @@
         </svg>
         Sprawd&#378; na mapie
       </button>
+    </div>
+
+    <!-- Load more (tylko tryb "wszystkie miasta") -->
+    <div class="load-more-section" *ngIf="!currentCity && hasMore">
+      <button class="load-more-btn" (click)="loadMore()" [disabled]="loadingMore">
+        <span *ngIf="!loadingMore">Za&#322;aduj wi&#281;cej serwis&#243;w</span>
+        <span *ngIf="loadingMore">&#321;adowanie...</span>
+      </button>
+      <p class="load-more-info">
+        Wy&#347;wietlono {{ services.length }} z {{ totalServices }} serwis&#243;w
+      </p>
     </div>
   </main>
 
@@ -408,18 +493,18 @@
   </aside>
 
   <!-- SEO content - generic for other cities -->
-  <section class="seo-content" *ngIf="!isKrakow && !cityNotFound">
-    <h2>Serwisy rowerowe w mie&#347;cie {{ currentCity?.name }}</h2>
+  <section class="seo-content" *ngIf="!isKrakow && !cityNotFound && currentCity">
+    <h2>Serwisy rowerowe w mie&#347;cie {{ currentCity.name }}</h2>
     <p>
-      Szukasz <strong>serwisu rowerowego w mie&#347;cie {{ currentCity?.name }}</strong>? Na tej stronie znajdziesz list&#281;
-      <strong>warsztat&#243;w rowerowych</strong> dzia&#322;aj&#261;cych w {{ currentCity?.name }} i okolicach.
+      Szukasz <strong>serwisu rowerowego w mie&#347;cie {{ currentCity.name }}</strong>? Na tej stronie znajdziesz list&#281;
+      <strong>warsztat&#243;w rowerowych</strong> dzia&#322;aj&#261;cych w {{ currentCity.name }} i okolicach.
       Ka&#380;dy serwis posiada dane kontaktowe, dzi&#281;ki czemu mo&#380;esz szybko um&#243;wi&#263; si&#281; na <strong>napraw&#281; roweru</strong>.
     </p>
-    <h2>Znajd&#378; najlepszy warsztat rowerowy w mie&#347;cie {{ currentCity?.name }}</h2>
+    <h2>Znajd&#378; najlepszy warsztat rowerowy w mie&#347;cie {{ currentCity.name }}</h2>
     <p>
       CycloPick to platforma &#322;&#261;cz&#261;ca rowerzyst&#243;w z serwisami rowerowymi w ca&#322;ej Polsce.
       Dzi&#281;ki naszej interaktywnej <strong>mapie serwis&#243;w rowerowych</strong> mo&#380;esz &#322;atwo znale&#378;&#263; najbli&#380;szy
-      warsztat w {{ currentCity?.name }} i innych miastach Polski.
+      warsztat w {{ currentCity.name }} i innych miastach Polski.
     </p>
     <p>
       Przegl&#261;daj list&#281; serwis&#243;w, por&#243;wnuj oferty i wybierz najlepszy <strong>warsztat rowerowy</strong> dla siebie.

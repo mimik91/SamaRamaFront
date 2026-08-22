@@ -1,0 +1,206 @@
+<div class="coupons-container">
+  <div class="header">
+    <h1>Zarządzanie kuponami</h1>
+    <button class="back-btn" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Wróć do panelu
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Ładowanie kuponów...</p>
+  </div>
+
+  <div *ngIf="error" class="error-banner">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && !error">
+    <div class="content-container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2>Kupony</h2>
+          <button class="add-btn" (click)="startAddingNew()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Dodaj kupon
+          </button>
+        </div>
+
+        <!-- Aktywne -->
+        <div class="coupon-group">
+          <h3 class="group-title">Aktywne ({{ activeCoupons.length }})</h3>
+          <div *ngIf="activeCoupons.length === 0" class="empty-msg">Brak aktywnych kuponów.</div>
+          <div
+            *ngFor="let coupon of activeCoupons"
+            class="coupon-item"
+            [class.selected]="selectedCoupon?.id === coupon.id"
+            (click)="selectCoupon(coupon)"
+          >
+            <div class="coupon-code">{{ coupon.couponCode }}</div>
+            <div class="coupon-line">{{ coupon.scope }} · {{ coupon.discountType === 'PERCENTAGE' ? (coupon.percentageValue + '%') : (coupon.fixedAmountValue + ' zł') }}</div>
+          </div>
+        </div>
+
+        <!-- Nieaktywne -->
+        <div class="coupon-group" *ngIf="inactiveCoupons.length > 0">
+          <h3 class="group-title">Nieaktywne ({{ inactiveCoupons.length }})</h3>
+          <div
+            *ngFor="let coupon of inactiveCoupons"
+            class="coupon-item inactive"
+            [class.selected]="selectedCoupon?.id === coupon.id"
+            (click)="selectCoupon(coupon)"
+          >
+            <div class="coupon-code">{{ coupon.couponCode }}</div>
+            <div class="coupon-line">{{ coupon.scope }} · {{ coupon.discountType === 'PERCENTAGE' ? (coupon.percentageValue + '%') : (coupon.fixedAmountValue + ' zł') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel główny -->
+      <div class="main-panel">
+
+        <!-- Szczegóły -->
+        <div *ngIf="selectedCoupon && !isEditing && !isAddingNew" class="details">
+          <div class="details-header">
+            <h2>{{ selectedCoupon.couponCode }}</h2>
+            <div class="details-actions">
+              <button class="edit-btn" (click)="startEditing()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edytuj
+              </button>
+              <button class="delete-btn" (click)="deleteCoupon(selectedCoupon.id)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
+                Usuń
+              </button>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Zakres:</span>
+            <span class="detail-value">{{ selectedCoupon.scope }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Rabat:</span>
+            <span class="detail-value">
+              {{ selectedCoupon.discountType === 'PERCENTAGE' ? (selectedCoupon.percentageValue + '%') : (selectedCoupon.fixedAmountValue + ' zł') }}
+              ({{ selectedCoupon.discountTarget === 'FIRST_UNIT' ? 'tylko pierwsza jednostka' : 'całe zamówienie' }})
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Data ważności:</span>
+            <span class="detail-value">{{ selectedCoupon.expirationDate }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Wykorzystanie:</span>
+            <span class="detail-value">{{ selectedCoupon.usageCount }}<span *ngIf="selectedCoupon.usageLimit != null"> / {{ selectedCoupon.usageLimit }}</span></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value" [class.status-active]="selectedCoupon.active" [class.status-inactive]="!selectedCoupon.active">
+              {{ selectedCoupon.active ? 'Aktywny' : 'Nieaktywny' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Formularz dodawania / edycji -->
+        <div *ngIf="isEditing || isAddingNew" class="form-container">
+          <h2>{{ isAddingNew ? 'Dodaj nowy kupon' : 'Edytuj kupon' }}</h2>
+
+          <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="form-group">
+              <label for="couponCode">Kod kuponu *</label>
+              <input id="couponCode" type="text" formControlName="couponCode" [class.is-invalid]="isFieldInvalid('couponCode')">
+              <div *ngIf="isFieldInvalid('couponCode')" class="field-error">Kod kuponu jest wymagany.</div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="scope">Zakres *</label>
+                <select id="scope" formControlName="scope">
+                  <option value="TRANSPORT">Transport</option>
+                  <option value="SERWIS">Serwis</option>
+                  <option value="OBA">Oba</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="discountTarget">Cel rabatu *</label>
+                <select id="discountTarget" formControlName="discountTarget">
+                  <option value="FIRST_UNIT">Tylko pierwsza jednostka</option>
+                  <option value="WHOLE_ORDER">Całe zamówienie</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="discountType">Typ rabatu *</label>
+                <select id="discountType" formControlName="discountType">
+                  <option value="PERCENTAGE">Procentowy</option>
+                  <option value="FIXED_AMOUNT">Kwotowy</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="isPercentage">
+                <label for="percentageValue">Wartość (%) *</label>
+                <input id="percentageValue" type="number" step="any" formControlName="percentageValue" placeholder="np. 10">
+              </div>
+              <div class="form-group" *ngIf="!isPercentage">
+                <label for="fixedAmountValue">Wartość (zł) *</label>
+                <input id="fixedAmountValue" type="number" step="any" formControlName="fixedAmountValue" placeholder="np. 20">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="expirationDate">Data ważności *</label>
+                <input id="expirationDate" type="date" formControlName="expirationDate" [class.is-invalid]="isFieldInvalid('expirationDate')">
+                <div *ngIf="isFieldInvalid('expirationDate')" class="field-error">Data ważności jest wymagana.</div>
+              </div>
+              <div class="form-group">
+                <label for="usageLimit">Limit użyć</label>
+                <input id="usageLimit" type="number" formControlName="usageLimit" placeholder="bez limitu">
+              </div>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="active">
+                Kupon aktywny
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="cancel-btn" (click)="cancelEdit()">Anuluj</button>
+              <button type="submit" class="save-btn" [disabled]="form.invalid || saving">
+                {{ saving ? 'Zapisywanie...' : 'Zapisz' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Placeholder -->
+        <div *ngIf="!selectedCoupon && !isAddingNew" class="placeholder">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.17H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .66 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.52-4.52a2 2 0 0 0 0-2.83z"></path>
+            <circle cx="7.5" cy="7.5" r="1.5"></circle>
+          </svg>
+          <h3>Wybierz kupon z listy</h3>
+          <p>lub</p>
+          <button class="primary-btn" (click)="startAddingNew()">Dodaj nowy kupon</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

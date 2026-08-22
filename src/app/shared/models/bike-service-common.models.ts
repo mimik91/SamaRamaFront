@@ -65,6 +65,8 @@ export interface BikeServiceRegisteredDto {
   openingHoursNote?: string;
   pricelistInfo?: string;
   pricelistNote?: string;
+  /** Krótka nazwa serwisu używana jako prefiks w SMS-ach (max 12 znaków, bez polskich/specjalnych znaków) */
+  shortName?: string;
 }
 
 /**
@@ -91,6 +93,12 @@ export interface BikeServicePublicInfo {
   youtube: string | null;
   latitude: number | null;
   longitude: number | null;
+  // Statystyki z RegisteredServiceInfo — null/0 gdy serwis nie ma jeszcze danych
+  medianServiceDurationHours?: number | null;
+  completedOrdersSampleSize?: number;
+  completedOrdersTotalCount?: number;
+  averageRating?: number | null;
+  reviewCount?: number;
 }
 
 /**
@@ -100,6 +108,24 @@ export interface ServiceActiveStatus {
   openingHoursActive: boolean;
   pricelistActive: boolean;
   packagesActive: boolean;
+}
+
+/** Pojedyncza opinia — widok publiczny (profil serwisu) */
+export interface ServiceReviewDto {
+  overallScore: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+/** Średnie per parametr + pełna lista opinii danego serwisu */
+export interface ServiceReviewsOverviewDto {
+  avgCourtesyScore: number | null;
+  avgPriceTransparencyScore: number | null;
+  avgTurnaroundScore: number | null;
+  avgRepairQualityScore: number | null;
+  avgOverallScore: number | null;
+  reviewCount: number;
+  reviews: ServiceReviewDto[];
 }
 
 // ============================================

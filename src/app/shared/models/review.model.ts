@@ -8,6 +8,7 @@ export interface SubmitReviewRequest {
   priceWasKnownUpfront: boolean;
   turnaroundAcceptable: boolean;
   issueResolved: boolean;
+  communicationClear: boolean;
   overallRating: number;
   comment: string | null;
 }

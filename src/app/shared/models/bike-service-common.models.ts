@@ -95,8 +95,6 @@ export interface BikeServicePublicInfo {
   longitude: number | null;
   // Statystyki z RegisteredServiceInfo — null/0 gdy serwis nie ma jeszcze danych
   medianServiceDurationHours?: number | null;
-  completedOrdersSampleSize?: number;
-  completedOrdersTotalCount?: number;
   averageRating?: number | null;
   reviewCount?: number;
 }
@@ -123,6 +121,7 @@ export interface ServiceReviewsOverviewDto {
   avgPriceTransparencyScore: number | null;
   avgTurnaroundScore: number | null;
   avgRepairQualityScore: number | null;
+  avgCommunicationScore: number | null;
   avgOverallScore: number | null;
   reviewCount: number;
   reviews: ServiceReviewDto[];

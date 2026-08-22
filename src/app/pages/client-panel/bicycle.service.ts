@@ -64,6 +64,7 @@ export interface ActiveServiceOrderCard {
   createdAt: string | null;
   orderNotes: string | null;
   imagesCount: number;
+  bicycleId?: number;
   bicycleBrand?: string;
   bicycleModel?: string;
   serviceName?: string;

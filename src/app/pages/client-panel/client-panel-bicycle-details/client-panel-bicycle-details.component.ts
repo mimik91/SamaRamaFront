@@ -14,6 +14,8 @@ import { formatServiceDurationDays } from '../../../service-records/service-dura
 import { EnumerationService } from '../../../core/enumeration.service';
 import { BicycleSelectionService } from '../bicycle-selection.service';
 import { ImageUtilsService } from '../../../core/image-utils.service';
+import { CalendarOrderStatus, getStatusColor } from '../../../shared/models/service-calendar.models';
+import { getTransportStatusColor } from '../../../core/models/transport-order-status.util';
 
 @Component({
   selector: 'app-client-panel-bicycle-details',
@@ -161,6 +163,14 @@ export class ClientPanelDetailsComponent implements OnInit {
     );
   }
 
+  get serviceOrderStatusColor(): string {
+    return getStatusColor((this.activeServiceOrder?.status ?? '') as CalendarOrderStatus);
+  }
+
+  get transportOrderStatusColor(): string {
+    return getTransportStatusColor(this.activeTransport?.transport?.status);
+  }
+
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
@@ -217,9 +227,9 @@ export class ClientPanelDetailsComponent implements OnInit {
 
     this.bicycleService.getActiveServiceOrders().subscribe({
       next: (orders) => {
-        this.activeServiceOrder = orders.find(o =>
-          o.bicycleBrand === this.bicycle?.brand &&
-          o.bicycleModel === this.bicycle?.model
+        this.activeServiceOrder = orders.find(o => o.bicycleId != null
+          ? o.bicycleId === bicycleId
+          : o.bicycleBrand === this.bicycle?.brand && o.bicycleModel === this.bicycle?.model
         ) ?? null;
       },
       error: () => { this.activeServiceOrder = null; }

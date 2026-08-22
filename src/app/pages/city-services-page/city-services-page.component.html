@@ -21,6 +21,10 @@
     <div class="express-promo-inner">
 
       <div class="express-promo-text">
+        <span class="express-promo-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Serwis ekspresowy
+        </span>
         <h2 id="express-promo-heading" class="express-promo-title">
           Dobierzemy najlepszy serwis do Twojego roweru
         </h2>
@@ -36,22 +40,7 @@
         </div>
       </div>
 
-      <button
-        type="button"
-        class="express-promo-toggle"
-        (click)="toggleExpressPromo()"
-        [attr.aria-expanded]="expressPromoExpanded"
-        aria-controls="express-promo-details"
-      >
-        {{ expressPromoExpanded ? 'Zwiń szczegóły' : 'Zobacz szczegóły' }}
-        <svg
-          class="express-promo-toggle-icon"
-          [class.rotated]="expressPromoExpanded"
-          xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
-        ><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </button>
-
-      <div class="express-promo-details" id="express-promo-details" [class.expanded]="expressPromoExpanded">
+      <div class="express-promo-details">
         <div class="express-promo-details-inner">
           <p class="express-promo-desc">
             Wybierz dogodny wariant odbioru — <strong>resztą zajmiemy się my</strong>.
@@ -91,11 +80,18 @@
         </div>
       </div>
 
+      <div class="express-promo-skip-wrap">
+        <button type="button" class="express-promo-skip" (click)="scrollToServicesList()">
+          Chcę sam wybrać serwis
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+        </button>
+      </div>
+
     </div>
   </section>
 
   <!-- Actions bar: city search + map -->
-  <div class="actions-bar" *ngIf="!cityNotFound">
+  <div class="actions-bar" id="services-browse" *ngIf="!cityNotFound">
     <div class="city-autocomplete-wrapper">
       <div class="city-input-wrapper">
         <svg class="city-input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -324,9 +320,6 @@
               </span>
               <span class="stat-chip">
                 śr. czas realizacji: {{ formatDuration(service.medianServiceDurationHours) }}
-              </span>
-              <span class="stat-chip" *ngIf="service.completedOrdersTotalCount">
-                {{ formatCompletedOrders(service.completedOrdersTotalCount) }}
               </span>
             </div>
 

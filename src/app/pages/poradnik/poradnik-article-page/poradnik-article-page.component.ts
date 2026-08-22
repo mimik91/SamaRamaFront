@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -14,7 +14,10 @@ interface TocItem {
   text: string;
 }
 
-const TOC_HEADING_PATTERN = /<h2 id="([^"]+)">([^<]*)<\/h2>/g;
+// [\s\S]*? (nie [^<]*) — nagłówek może zawierać wewnętrzne tagi (np. link), więc dopasowujemy
+// do najbliższego </h2>, a tagi z przechwyconego tekstu usuwamy osobno w extractTocItems.
+const TOC_HEADING_PATTERN = /<h2 id="([^"]+)">([\s\S]*?)<\/h2>/g;
+const STRIP_TAGS_PATTERN = /<[^>]+>/g;
 
 @Component({
   selector: 'app-poradnik-article-page',
@@ -34,6 +37,10 @@ export class PoradnikArticlePageComponent implements OnInit, OnDestroy {
   safeContentHtml!: SafeHtml;
   relatedArticles: PoradnikArticle[] = [];
   tocItems: TocItem[] = [];
+
+  lightboxOpen = false;
+  lightboxSrc = '';
+  lightboxAlt = '';
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug') ?? '';
@@ -84,12 +91,38 @@ export class PoradnikArticlePageComponent implements OnInit, OnDestroy {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
 
+  // Treść artykułu trafia do DOM przez [innerHTML], więc obrazki w niej nie mają żadnych
+  // Angularowych bindowań — łapiemy kliknięcie przez delegację zdarzeń na kontenerze (natywny
+  // bubbling działa niezależnie od tego, jak węzły powstały w DOM).
+  onContentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'IMG') {
+      const img = target as HTMLImageElement;
+      this.openLightbox(img.src, img.alt);
+    }
+  }
+
+  openLightbox(src: string, alt: string): void {
+    this.lightboxSrc = src;
+    this.lightboxAlt = alt;
+    this.lightboxOpen = true;
+  }
+
+  closeLightbox(): void {
+    this.lightboxOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.lightboxOpen) this.closeLightbox();
+  }
+
   // Spis treści wyprowadzony wprost z treści (nie osobna, ręcznie utrzymywana tablica) —
   // działa identycznie na serwerze i kliencie, bez dotykania DOM (bezpieczne dla hydration)
   private extractTocItems(contentHtml: string): TocItem[] {
     return Array.from(contentHtml.matchAll(TOC_HEADING_PATTERN)).map(match => ({
       id: match[1],
-      text: match[2]
+      text: match[2].replace(STRIP_TAGS_PATTERN, '').trim()
     }));
   }
 }

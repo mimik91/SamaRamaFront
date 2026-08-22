@@ -7,6 +7,7 @@
     <header class="poradnik-article-header">
       <span class="poradnik-kicker">Poradnik rowerowy</span>
       <h1>{{ article.title }}</h1>
+      <p class="poradnik-article-subtitle" *ngIf="article.subtitle">{{ article.subtitle }}</p>
       <div class="poradnik-article-meta">
         <span>{{ article.publishedDate | date: 'd MMMM y' }}</span>
         <span class="poradnik-article-meta-dot">·</span>
@@ -21,6 +22,7 @@
         class="poradnik-article-cover"
         width="900"
         height="600"
+        (click)="openLightbox(article.coverImage, article.coverImageAlt)"
       />
     </div>
   </div>
@@ -34,7 +36,7 @@
     </ol>
   </nav>
 
-  <div class="poradnik-article-content" [innerHTML]="safeContentHtml"></div>
+  <div class="poradnik-article-content" [innerHTML]="safeContentHtml" (click)="onContentClick($event)"></div>
 
   <section class="poradnik-related-section" *ngIf="relatedArticles.length > 0">
     <h2>Powiązane porady</h2>
@@ -45,4 +47,9 @@
       ></app-poradnik-article-card>
     </div>
   </section>
+
+  <div class="poradnik-lightbox-overlay" *ngIf="lightboxOpen" (click)="closeLightbox()">
+    <button class="poradnik-lightbox-close" (click)="closeLightbox()" title="Zamknij">✕</button>
+    <img [src]="lightboxSrc" [alt]="lightboxAlt" class="poradnik-lightbox-img" (click)="$event.stopPropagation()" />
+  </div>
 </article>

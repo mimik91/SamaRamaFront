@@ -33,6 +33,7 @@ export class ReviewFormComponent implements OnInit {
     priceWasKnownUpfront: [null, Validators.required],
     turnaroundAcceptable: [null, Validators.required],
     issueResolved: [null, Validators.required],
+    communicationClear: [null, Validators.required],
     overallRating: [0, [Validators.required, Validators.min(1)]],
     comment: ['']
   });
@@ -79,6 +80,7 @@ export class ReviewFormComponent implements OnInit {
       priceWasKnownUpfront: value.priceWasKnownUpfront,
       turnaroundAcceptable: value.turnaroundAcceptable,
       issueResolved: value.issueResolved,
+      communicationClear: value.communicationClear,
       overallRating: value.overallRating,
       comment: value.comment?.trim() || null
     }).subscribe({

@@ -63,6 +63,14 @@
         </div>
       </div>
 
+      <div class="question-row">
+        <label class="question-label">Czy komunikacja z serwisem była jasna i pomocna?</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn" [class.active]="form.get('communicationClear')?.value === true" (click)="form.get('communicationClear')?.setValue(true)">Tak</button>
+          <button type="button" class="toggle-btn" [class.active]="form.get('communicationClear')?.value === false" (click)="form.get('communicationClear')?.setValue(false)">Nie</button>
+        </div>
+      </div>
+
       <div class="question-row question-row--rating">
         <label class="question-label">Ogólne wrażenie</label>
         <div class="stars-row">

@@ -28,22 +28,6 @@ export interface MapPin {
   averageRating?: number | null;
   reviewCount?: number | null;
   medianServiceDurationHours?: number | null;
-  completedOrdersTotalCount?: number | null;
-}
-
-/** Poprawna polska odmiana liczby napraw: 1 naprawa / 2-4 naprawy / 5+ napraw (z wyjątkiem 12-14) */
-export function formatCompletedOrdersLabel(count: number): string {
-  const lastDigit = count % 10;
-  const lastTwoDigits = count % 100;
-  let word: string;
-  if (count === 1) {
-    word = 'naprawa';
-  } else if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwoDigits >= 12 && lastTwoDigits <= 14)) {
-    word = 'naprawy';
-  } else {
-    word = 'napraw';
-  }
-  return `${count} ${word}`;
 }
 
 export interface ServiceDetails {

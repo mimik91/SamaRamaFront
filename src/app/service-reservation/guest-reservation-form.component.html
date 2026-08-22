@@ -39,8 +39,31 @@
         onerror="this.style.display='none'"
       />
       <div class="service-info-text">
-        <span class="service-name">{{ serviceInfo.name }}</span>
-        <span class="service-address">{{ serviceInfo.address }}</span>
+        <div class="service-info-header">
+          <span class="service-name">{{ serviceInfo.name }}</span>
+          <span class="service-rating-chip">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <ng-container *ngIf="serviceInfo.reviewCount; else noRating">{{ serviceInfo.averageRating | number:'1.1-1' }} ({{ serviceInfo.reviewCount }})</ng-container>
+            <ng-template #noRating>Brak ocen</ng-template>
+          </span>
+        </div>
+        <span class="service-address">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          {{ serviceInfo.address }}
+        </span>
+        <div class="service-stats-row">
+          <span
+            *ngIf="waitingTimeBucket"
+            class="waiting-time-chip"
+            [class.waiting-time-chip--short]="waitingTimeBucket === 'short'"
+            [class.waiting-time-chip--medium]="waitingTimeBucket === 'medium'"
+            [class.waiting-time-chip--long]="waitingTimeBucket === 'long'"
+            [class.waiting-time-chip--extended]="waitingTimeBucket === 'extended'"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            czas oczekiwania: {{ waitingTimeLabel }}
+          </span>
+        </div>
       </div>
     </div>
 

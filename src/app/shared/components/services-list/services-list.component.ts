@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { MapService } from '../../../pages/services-map-page/services/map.service';
-import { MapPin, formatCompletedOrdersLabel } from '../../models/map.models';
+import { MapPin } from '../../models/map.models';
 import { formatServiceDurationBucket } from '../../../service-records/service-duration.util';
 
 /**
@@ -127,9 +127,5 @@ export class ServicesListComponent implements OnDestroy {
 
   formatDuration(hours: number | null | undefined): string {
     return formatServiceDurationBucket(hours);
-  }
-
-  formatCompletedOrders(count: number): string {
-    return formatCompletedOrdersLabel(count);
   }
 }

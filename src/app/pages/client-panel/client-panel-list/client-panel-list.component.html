@@ -38,6 +38,9 @@
               </div>
               <div class="bicycle-details">
                 <h3>{{ bicycle.brand }} {{ bicycle.model || '' }}</h3>
+                <div class="bicycle-status-badge" *ngIf="getBikeStatusBadge(bicycle.id) as badge" [style.background]="badge.color">
+                  {{ badge.label }}
+                </div>
                 <p class="frame-number" *ngIf="bicycle.frameNumber">Numer ramy: {{ bicycle.frameNumber }}</p>
                 <p *ngIf="bicycle.type">Typ: {{ bicycle.type }}</p>
                 <p *ngIf="bicycle.frameMaterial">Materiał ramy: {{ bicycle.frameMaterial }}</p>

@@ -26,3 +26,18 @@ export function formatServiceDurationBucket(hours: number | null | undefined): s
   if (days <= 27) return '2-4 tygodnie';
   return 'miesiąc+';
 }
+
+export type ServiceDurationBucket = 'short' | 'medium' | 'long' | 'extended';
+
+/**
+ * Ten sam podział na przedziały co formatServiceDurationBucket, ale jako klucz do stylowania
+ * (np. kolor odznaki: krótszy czas oczekiwania = spokojniejszy kolor, dłuższy = bardziej alarmujący).
+ */
+export function getServiceDurationBucket(hours: number | null | undefined): ServiceDurationBucket | null {
+  if (hours == null) return null;
+  const days = hoursToDays(hours);
+  if (days <= 3) return 'short';
+  if (days <= 13) return 'medium';
+  if (days <= 27) return 'long';
+  return 'extended';
+}

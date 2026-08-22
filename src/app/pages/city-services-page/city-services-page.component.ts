@@ -6,7 +6,7 @@ import { Subject, takeUntil, debounceTime } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 
 import { MapService } from '../services-map-page/services/map.service';
-import { MapPin, MapServicesRequestDto, CitySuggestion, calculateCityBounds, formatCompletedOrdersLabel } from '../../shared/models/map.models';
+import { MapPin, MapServicesRequestDto, CitySuggestion, calculateCityBounds } from '../../shared/models/map.models';
 import { formatServiceDurationBucket } from '../../service-records/service-duration.util';
 import { I18nService } from '../../core/i18n.service';
 import { SeoService } from '../../core/seo.service';
@@ -81,12 +81,11 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
   readonly transportPricing = TRANSPORT_PRICING;
 
-  // Rozwijane szczegóły promo serwisu ekspresowego (kompaktowy widok na mobilce)
-  expressPromoExpanded = false;
-
-  toggleExpressPromo(): void {
-    this.expressPromoExpanded = !this.expressPromoExpanded;
-    this.cdr.markForCheck();
+  // "Chcę sam wybrać serwis" — pozwala pominąć baner ekspresowy i przejść od razu
+  // do wyszukiwarki + listy serwisów (kluczowe na mobile, gdzie baner zajmuje dużo miejsca)
+  scrollToServicesList(): void {
+    if (!this.isBrowser) return;
+    this.document.getElementById('services-browse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   isBrowser: boolean;
@@ -582,10 +581,6 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
   formatDuration(hours: number | null | undefined): string {
     return formatServiceDurationBucket(hours);
-  }
-
-  formatCompletedOrders(count: number): string {
-    return formatCompletedOrdersLabel(count);
   }
 
   // Nawiguj do strony serwisu (pobierz suffix z API)

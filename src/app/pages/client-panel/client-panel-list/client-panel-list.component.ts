@@ -1,10 +1,19 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { BicycleService } from '../bicycle.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { ActiveServiceOrderCard, ActiveTransportResponse, BicycleService } from '../bicycle.service';
 import { Bicycle } from '../../../shared/models/bicycle.model';
 import { NotificationService } from '../../../core/notification.service';
 import { BicycleSelectionService } from '../bicycle-selection.service';
+import { CalendarOrderStatus, getStatusColor } from '../../../shared/models/service-calendar.models';
+import { getTransportStatusColor } from '../../../core/models/transport-order-status.util';
+
+export interface BikeStatusBadge {
+  label: string;
+  color: string;
+}
 
 @Component({
   selector: 'app-client-panel-list',
@@ -36,6 +45,9 @@ export class ClientPanelListComponent implements OnInit {
   isMultiSelectMode = false;
   selectedBicycles: Set<number> = new Set();
 
+  private activeServiceOrdersByBikeId = new Map<number, ActiveServiceOrderCard>();
+  private activeTransportsByBikeId = new Map<number, ActiveTransportResponse>();
+
   ngOnInit(): void {
     this.loadBicycles();
   }
@@ -49,6 +61,7 @@ export class ClientPanelListComponent implements OnInit {
       next: (bicycles) => {
         this.bicycles = bicycles;
         this.loading = false;
+        this.loadStatusBadges(bicycles);
       },
       error: (err) => {
         this.error = 'Nie udało się załadować rowerów. Spróbuj ponownie później.';
@@ -59,6 +72,50 @@ export class ClientPanelListComponent implements OnInit {
         this.notificationService.error(this.error);
       }
     });
+  }
+
+  /** Odznaki statusu (zlecenie/transport) — dociągane osobno, nie blokują renderu listy. */
+  private loadStatusBadges(bicycles: Bicycle[]): void {
+    const activeBicycles = bicycles.filter(b => !b.stolen);
+    if (activeBicycles.length === 0) return;
+
+    forkJoin({
+      orders: this.bicycleService.getActiveServiceOrders().pipe(catchError(() => of([] as ActiveServiceOrderCard[]))),
+      transports: forkJoin(
+        activeBicycles.map(b => this.bicycleService.getActiveBicycleTransport(b.id).pipe(
+          map(resp => ({ bikeId: b.id, resp })),
+          catchError(() => of({ bikeId: b.id, resp: null as ActiveTransportResponse | null }))
+        ))
+      )
+    }).subscribe(({ orders, transports }) => {
+      this.activeServiceOrdersByBikeId = new Map(
+        orders.filter((o): o is ActiveServiceOrderCard & { bicycleId: number } => o.bicycleId != null)
+          .map(o => [o.bicycleId, o])
+      );
+      this.activeTransportsByBikeId = new Map(
+        transports
+          .filter(t => t.resp?.hasActiveTransport && t.resp.transport?.status !== 'DELIVERED')
+          .map(t => [t.bikeId, t.resp!])
+      );
+    });
+  }
+
+  /** Priorytet: status zlecenia serwisowego > status transportu, gdy oba są aktywne. */
+  getBikeStatusBadge(bicycleId: number): BikeStatusBadge | null {
+    const order = this.activeServiceOrdersByBikeId.get(bicycleId);
+    if (order) {
+      return { label: order.statusDisplayName, color: getStatusColor(order.status as CalendarOrderStatus) };
+    }
+
+    const transport = this.activeTransportsByBikeId.get(bicycleId)?.transport;
+    if (transport) {
+      return {
+        label: transport.statusDisplayName || transport.status || '',
+        color: getTransportStatusColor(transport.status)
+      };
+    }
+
+    return null;
   }
 
   getBicyclePhotoUrl(bicycleId: number): string {
@@ -160,4 +217,5 @@ export class ClientPanelListComponent implements OnInit {
   isBicycleSelected(bicycleId: number): boolean {
     return this.selectedBicycles.has(bicycleId);
   }
+
 }

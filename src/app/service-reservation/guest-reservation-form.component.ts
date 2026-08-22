@@ -34,6 +34,7 @@ import { environment } from '../environments/environments';
 import { OfficeAddressDto } from '../shared/models/office-address.model';
 import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constants';
 import { DiscountService } from '../shared/services/discount.service';
+import { formatServiceDurationBucket, getServiceDurationBucket, ServiceDurationBucket } from '../service-records/service-duration.util';
 
 interface ServiceInfo {
   id: number;
@@ -42,6 +43,9 @@ interface ServiceInfo {
   logoUrl: string | null;
   transportAvailable: boolean;
   transportCost: number | null;
+  averageRating: number | null;
+  reviewCount: number;
+  medianServiceDurationHours: number | null;
 }
 
 interface ReservationSettings {
@@ -604,7 +608,10 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
           address,
           logoUrl: d.logoUrl || null,
           transportAvailable: !!d.transportAvailable,
-          transportCost: d.transportCost ?? null
+          transportCost: d.transportCost ?? null,
+          averageRating: null,
+          reviewCount: 0,
+          medianServiceDurationHours: null
         };
 
         if (!d.transportAvailable) {
@@ -616,6 +623,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
         this.loadReservationSettings(d.id);
         this.loadPackages(d.id);
+        this.loadServiceStats(d.id);
         this.loading = false;
       },
       error: () => {
@@ -625,6 +633,30 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  private loadServiceStats(serviceId: number): void {
+    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.publicInfo.replace(':id', String(serviceId))}`;
+    this.http.get<{ averageRating: number | null; reviewCount: number; medianServiceDurationHours: number | null }>(url).subscribe({
+      next: (info) => {
+        if (!this.serviceInfo) return;
+        this.serviceInfo = {
+          ...this.serviceInfo,
+          averageRating: info.averageRating ?? null,
+          reviewCount: info.reviewCount ?? 0,
+          medianServiceDurationHours: info.medianServiceDurationHours ?? null
+        };
+      },
+      error: () => {}
+    });
+  }
+
+  get waitingTimeLabel(): string {
+    return formatServiceDurationBucket(this.serviceInfo?.medianServiceDurationHours);
+  }
+
+  get waitingTimeBucket(): ServiceDurationBucket | null {
+    return getServiceDurationBucket(this.serviceInfo?.medianServiceDurationHours);
   }
 
   private loadReservationSettings(serviceId: number): void {

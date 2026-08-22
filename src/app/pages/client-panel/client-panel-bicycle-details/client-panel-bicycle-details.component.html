@@ -7,618 +7,486 @@
   </div>
 
   <div class="content-container" *ngIf="bicycle">
-    <!-- ── Wersja mobilna ── -->
-    <div class="mobile-layout">
-      <div class="bicycle-title">
-        <div class="brand">{{ bicycle.brand }}</div>
-        <div class="model">{{ bicycle.model || '' }}</div>
-      </div>
-
-      <div class="bicycle-image-container">
-        <ng-container *ngIf="mainPhotoUrl; else mobileNoImage">
-          <img [src]="mainPhotoUrl" (error)="handleImageError()" alt="Zdjęcie roweru" class="bicycle-image">
-        </ng-container>
-        <ng-template #mobileNoImage>
-          <div class="no-image">
-            <div class="placeholder-content"><span>Brak zdjęcia</span></div>
-          </div>
-        </ng-template>
-      </div>
-
-      <div class="mobile-action-buttons">
-        <button class="mobile-action-btn mobile-edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
-        <button class="mobile-action-btn mobile-service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
-        <button class="mobile-action-btn mobile-report-btn" [class.mobile-found-btn]="bicycle.stolen" (click)="reportStolen()">
-          {{ bicycle.stolen ? 'Rower się znalazł' : 'Zgłoś kradzież' }}
-        </button>
-        <button class="mobile-action-btn mobile-delete-btn" (click)="confirmDelete()">Usuń rower</button>
-      </div>
-
-      <div class="bicycle-details">
-        <p *ngIf="bicycle.type"><strong>Typ roweru:</strong> {{ bicycle.type }}</p>
-        <p *ngIf="bicycle.frameMaterial"><strong>Materiał ramy:</strong> {{ bicycle.frameMaterial }}</p>
-        <p *ngIf="bicycle.frameNumber" class="frame-number"><strong>Numer ramy:</strong> {{ bicycle.frameNumber }}</p>
-        <p *ngIf="bicycle.productionDate"><strong>Rok produkcji:</strong> {{ bicycle.productionDate | date:'yyyy' }}</p>
-      </div>
-
-      <div class="service-records-section">
-        <h3>Historia serwisowa</h3>
-        <div *ngIf="loading" class="loading-message">Ładowanie historii serwisowej...</div>
-        <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-        <div *ngIf="!loading && !errorMessage">
-          <div *ngIf="serviceRecords.length > 0; else mobileNoRecords" class="service-records-list">
-            <div *ngFor="let record of serviceRecords" class="service-record-card" [class.expanded]="expandedRecordIds.has(record.id)">
-              <div class="service-record-header" (click)="toggleRecord(record.id)">
-                <div class="service-record-title">
-                  <h4>
-                    <a *ngIf="record.suffix" [routerLink]="['/', record.suffix]" class="service-name-link" (click)="$event.stopPropagation()">{{ record.serviceName }}</a>
-                    <ng-container *ngIf="!record.suffix">{{ record.serviceName }}</ng-container>
-                  </h4>
-                  <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
-                  <span class="service-duration" *ngIf="record.actualDurationHours != null">Czas realizacji: {{ formatDuration(record.actualDurationHours) }}</span>
-                </div>
-                <div class="service-record-summary">
-                  <span class="service-price-badge">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</span>
-                  <span class="expand-icon">{{ expandedRecordIds.has(record.id) ? '▲' : '▼' }}</span>
-                </div>
-              </div>
-              <div class="service-record-body" *ngIf="expandedRecordIds.has(record.id)">
-                <div *ngIf="record.items && record.items.length > 0" class="service-items">
-                  <h5>Wykonane usługi / części</h5>
-                  <table class="items-table">
-                    <thead><tr><th>Nazwa</th><th>Ilość</th><th>Cena</th></tr></thead>
-                    <tbody>
-                      <tr *ngFor="let item of record.items">
-                        <td>{{ item.name }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
-                      </tr>
-                    </tbody>
-                    <tfoot>
-                      <tr><td colspan="2"><strong>Łącznie</strong></td><td><strong>{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
-                    </tfoot>
-                  </table>
-                </div>
-                <div *ngIf="record.repairPlan" class="repair-plan-history">
-                  <h5>
-                    Plan naprawy
-                    <span class="repair-plan-status-badge" [class]="'repair-plan-status-badge--' + record.repairPlan.status.toLowerCase()">
-                      {{ historyRepairPlanStatusLabels[record.repairPlan.status] || record.repairPlan.status }}
-                    </span>
-                  </h5>
-                  <table class="items-table" *ngIf="record.repairPlan.items.length > 0 || record.repairPlan.packageName">
-                    <thead><tr><th>Pozycja</th><th>Cena</th></tr></thead>
-                    <tbody>
-                      <tr *ngIf="record.repairPlan.packageName">
-                        <td>{{ record.repairPlan.packageName }}</td>
-                        <td>&mdash;</td>
-                      </tr>
-                      <tr *ngFor="let item of record.repairPlan.items">
-                        <td>{{ item.name }}</td>
-                        <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
-                      </tr>
-                    </tbody>
-                    <tfoot>
-                      <tr><td><strong>Suma</strong></td><td><strong>{{ record.repairPlan.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
-                    </tfoot>
-                  </table>
-                </div>
-                <div *ngIf="record.review" class="record-review">
-                  <h5>Ocena klienta</h5>
-                  <div class="review-summary">
-                    <span class="review-score">{{ record.review.totalScore }} / 5</span>
-                    <p class="review-comment" *ngIf="record.review.comment">{{ record.review.comment }}</p>
-                  </div>
-                </div>
-                <div *ngIf="record.orderNotes" class="record-note">
-                  <h5>Uwagi do zlecenia</h5>
-                  <p>{{ record.orderNotes }}</p>
-                </div>
-                <div *ngIf="record.serviceNotes" class="record-note">
-                  <h5>Notatki serwisanta</h5>
-                  <p>{{ record.serviceNotes }}</p>
-                </div>
-                <div *ngIf="record.maintenanceAdvice" class="record-note record-note--advice">
-                  <h5>Zalecenia obsługi</h5>
-                  <p>{{ record.maintenanceAdvice }}</p>
-                </div>
-                <div *ngIf="record.recommendedRepairs" class="record-note record-note--repairs">
-                  <h5>Zalecane naprawy</h5>
-                  <p>{{ record.recommendedRepairs }}</p>
-                </div>
-              </div>
+    <div class="bicycle-info-container">
+      <!-- Zdjęcie -->
+      <div class="bicycle-image-wrapper">
+        <div class="bicycle-image-container">
+          <ng-container *ngIf="mainPhotoUrl; else noImage">
+            <img [src]="mainPhotoUrl" (error)="handleImageError()" alt="Zdjęcie roweru" class="bicycle-image">
+          </ng-container>
+          <ng-template #noImage>
+            <div class="no-image">
+              <button *ngIf="!isEditing" class="add-photo-inline-btn" (click)="openPhotoUpload()">
+                + Dodaj zdjęcie
+              </button>
+              <div *ngIf="isEditing" class="placeholder-content"><span>Brak zdjęcia</span></div>
             </div>
-          </div>
-          <ng-template #mobileNoRecords>
-            <div class="no-records-message">Brak historii serwisowej dla tego roweru.</div>
           </ng-template>
+        </div>
+        <button
+          *ngIf="mainPhotoUrl && !isEditing"
+          class="photo-delete-overlay-btn"
+          (click)="confirmDeletePhoto()"
+          [disabled]="isPhotoDeleting"
+          title="Usuń zdjęcie główne"
+        >
+          {{ isPhotoDeleting ? '…' : '✕' }}
+        </button>
+      </div>
+
+      <!-- Info + przyciski -->
+      <div class="bicycle-info">
+        <h2>{{ bicycle.brand }} {{ bicycle.model || '' }}</h2>
+
+        <div class="bicycle-details">
+          <p *ngIf="bicycle.type"><strong>Typ roweru:</strong> {{ bicycle.type }}</p>
+          <p *ngIf="bicycle.frameMaterial"><strong>Materiał ramy:</strong> {{ bicycle.frameMaterial }}</p>
+          <p *ngIf="bicycle.frameNumber" class="frame-number"><strong>Numer ramy:</strong> {{ bicycle.frameNumber }}</p>
+          <p *ngIf="bicycle.productionDate"><strong>Rok produkcji:</strong> {{ bicycle.productionDate | date:'yyyy' }}</p>
+        </div>
+
+        <div class="action-buttons">
+          <button class="action-btn edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
+          <button class="action-btn service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
+          <button class="action-btn report-btn" [class.found-btn]="bicycle.stolen" (click)="reportStolen()">
+            {{ bicycle.stolen ? 'Rower się znalazł' : 'Zgłoś kradzież' }}
+          </button>
+          <button class="action-btn delete-btn" (click)="confirmDelete()">Usuń rower</button>
         </div>
       </div>
     </div>
 
-    <!-- ── Wersja desktopowa ── -->
-    <div class="desktop-layout">
-      <div class="bicycle-info-container">
-        <!-- Lewa kolumna: zdjęcie -->
-        <div class="bicycle-image-wrapper">
-          <div class="bicycle-image-container">
-            <ng-container *ngIf="mainPhotoUrl; else desktopNoImage">
-              <img [src]="mainPhotoUrl" (error)="handleImageError()" alt="Zdjęcie roweru" class="bicycle-image">
-            </ng-container>
-            <ng-template #desktopNoImage>
-              <div class="no-image">
-                <button *ngIf="!isEditing" class="add-photo-inline-btn" (click)="openPhotoUpload()">
-                  + Dodaj zdjęcie
-                </button>
-                <div *ngIf="isEditing" class="placeholder-content"><span>Brak zdjęcia</span></div>
-              </div>
-            </ng-template>
-          </div>
-          <button
-            *ngIf="mainPhotoUrl && !isEditing"
-            class="photo-delete-overlay-btn"
-            (click)="confirmDeletePhoto()"
-            [disabled]="isPhotoDeleting"
-            title="Usuń zdjęcie główne"
-          >
-            {{ isPhotoDeleting ? '…' : '✕' }}
+    <input #photoInput type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)">
+
+    <!-- ── Status aktywny ── -->
+    <div class="bicycle-active-status" *ngIf="activeServiceOrder || (activeTransport?.hasActiveTransport && !isTransportDelivered)">
+
+      <!-- Karta serwisu -->
+      <div class="status-card status-card--service" *ngIf="activeServiceOrder">
+        <div class="status-card-top-row">
+          <div class="status-card-icon">🔧</div>
+          <span class="status-card-label">
+            Aktywne zlecenie –
+            <strong *ngIf="activeServiceOrder.serviceName"> {{ activeServiceOrder.serviceName }}</strong>
+          </span>
+          <span class="service-order-unread" *ngIf="serviceOrderUnreadCount > 0">{{ serviceOrderUnreadCount }}</span>
+          <span class="status-card-badge" [style.background]="serviceOrderStatusColor">{{ activeServiceOrder.statusDisplayName }}</span>
+          <button class="status-card-toggle" (click)="toggleServiceOrderDetails()" [title]="isServiceOrderExpanded ? 'Zwiń' : 'Rozwiń szczegóły'">
+            {{ isServiceOrderExpanded ? '▲' : '▼' }}
           </button>
         </div>
-
-        <!-- Prawa kolumna: info + przyciski -->
-        <div class="bicycle-info">
-          <h2>{{ bicycle.brand }} {{ bicycle.model || '' }}</h2>
-
-          <div class="bicycle-details">
-            <p *ngIf="bicycle.type"><strong>Typ roweru:</strong> {{ bicycle.type }}</p>
-            <p *ngIf="bicycle.frameMaterial"><strong>Materiał ramy:</strong> {{ bicycle.frameMaterial }}</p>
-            <p *ngIf="bicycle.frameNumber" class="frame-number"><strong>Numer ramy:</strong> {{ bicycle.frameNumber }}</p>
-            <p *ngIf="bicycle.productionDate"><strong>Rok produkcji:</strong> {{ bicycle.productionDate | date:'yyyy' }}</p>
-          </div>
-
-          <div class="desktop-action-buttons">
-            <button class="desktop-action-btn edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
-            <button class="desktop-action-btn service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
-            <button class="desktop-action-btn report-btn" [class.found-btn]="bicycle.stolen" (click)="reportStolen()">
-              {{ bicycle.stolen ? 'Rower się znalazł' : 'Zgłoś kradzież' }}
-            </button>
-            <button class="desktop-action-btn delete-btn" (click)="confirmDelete()">Usuń rower</button>
+        <div class="status-card-details" *ngIf="activeServiceOrder.plannedDate">
+          <div class="status-card-detail-row">
+            <span class="status-detail-label">Planowana data:</span>
+            <span>{{ activeServiceOrder.plannedDate | date:'dd.MM.yyyy' }}</span>
           </div>
         </div>
-      </div>
 
-      <input #photoInput type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)">
+        <!-- Rozwinięte szczegóły -->
+        <div class="service-order-expanded" *ngIf="isServiceOrderExpanded">
+          <div class="service-order-loading" *ngIf="isLoadingServiceOrderDetail">Ładowanie...</div>
 
-      <!-- ── Status aktywny ── -->
-      <div class="bicycle-active-status" *ngIf="activeServiceOrder || (activeTransport?.hasActiveTransport && !isTransportDelivered)">
+          <ng-container *ngIf="!isLoadingServiceOrderDetail">
 
-        <!-- Karta serwisu -->
-        <div class="status-card status-card--service" *ngIf="activeServiceOrder">
-          <div class="status-card-top-row">
-            <div class="status-card-icon">🔧</div>
-            <span class="status-card-label">
-              Aktywne zlecenie –
-              <strong *ngIf="activeServiceOrder.serviceName"> {{ activeServiceOrder.serviceName }}</strong>
-            </span>
-            <span class="service-order-unread" *ngIf="serviceOrderUnreadCount > 0">{{ serviceOrderUnreadCount }}</span>
-            <span class="status-card-badge">{{ activeServiceOrder.statusDisplayName }}</span>
-            <button class="status-card-toggle" (click)="toggleServiceOrderDetails()" [title]="isServiceOrderExpanded ? 'Zwiń' : 'Rozwiń szczegóły'">
-              {{ isServiceOrderExpanded ? '▲' : '▼' }}
-            </button>
-          </div>
-          <div class="status-card-details" *ngIf="activeServiceOrder.plannedDate">
-            <div class="status-card-detail-row">
-              <span class="status-detail-label">Planowana data:</span>
-              <span>{{ activeServiceOrder.plannedDate | date:'dd.MM.yyyy' }}</span>
+            <!-- Notatki serwisu -->
+            <div class="service-notes-box" *ngIf="serviceOrderDetail?.serviceNotes">
+              <span class="service-notes-label">Notatki serwisu:</span>
+              <p>{{ serviceOrderDetail?.serviceNotes }}</p>
             </div>
-          </div>
 
-          <!-- Rozwinięte szczegóły -->
-          <div class="service-order-expanded" *ngIf="isServiceOrderExpanded">
-            <div class="service-order-loading" *ngIf="isLoadingServiceOrderDetail">Ładowanie...</div>
-
-            <ng-container *ngIf="!isLoadingServiceOrderDetail">
-
-              <!-- Notatki serwisu -->
-              <div class="service-notes-box" *ngIf="serviceOrderDetail?.serviceNotes">
-                <span class="service-notes-label">Notatki serwisu:</span>
-                <p>{{ serviceOrderDetail?.serviceNotes }}</p>
+            <!-- Zdjęcia od serwisu -->
+            <div class="service-order-images-section" *ngIf="serviceOrderImages.length">
+              <span class="service-section-title">Zdjęcia od serwisu</span>
+              <div class="service-order-images-grid">
+                <img
+                  *ngFor="let img of serviceOrderImages; let i = index"
+                  [src]="img.url"
+                  alt="Zdjęcie zlecenia"
+                  loading="lazy"
+                  class="service-order-thumb"
+                  (click)="openSoLightbox(i)"
+                >
               </div>
+            </div>
 
-              <!-- Zdjęcia od serwisu -->
-              <div class="service-order-images-section" *ngIf="serviceOrderImages.length">
-                <span class="service-section-title">Zdjęcia od serwisu</span>
-                <div class="service-order-images-grid">
-                  <img
-                    *ngFor="let img of serviceOrderImages; let i = index"
-                    [src]="img.url"
-                    alt="Zdjęcie zlecenia"
-                    loading="lazy"
-                    class="service-order-thumb"
-                    (click)="openSoLightbox(i)"
-                  >
-                </div>
-              </div>
+            <!-- Plan naprawy -->
+            <div class="repair-plan-section" *ngIf="repairPlan">
+              <span class="service-section-title">Plan naprawy</span>
 
-              <!-- Plan naprawy -->
-              <div class="repair-plan-section" *ngIf="repairPlan">
-                <span class="service-section-title">Plan naprawy</span>
-
-                <div class="plan-items" *ngIf="repairPlan.items.length || repairPlan.packageName">
-                  <div class="plan-package-block" *ngIf="repairPlan.packageName">
-                    <div class="plan-item plan-item--package" [class.plan-item--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded">
-                      <span class="plan-item-name">{{ repairPlan.packageName }}</span>
-                      <span class="plan-item-price">{{ repairPlan.packagePriceSnapshot | number:'1.2-2' }} zł</span>
-                      <button
-                        *ngIf="repairPlanAwaitingDecision"
-                        type="button"
-                        class="plan-item-toggle"
-                        (click)="toggleRepairPlanPackageExclusion()"
-                        [title]="repairPlanPackageExcluded ? 'Przywróć pakiet' : 'Zrezygnuj z pakietu'"
-                        [attr.aria-label]="repairPlanPackageExcluded ? 'Przywróć pakiet ' + repairPlan.packageName : 'Zrezygnuj z pakietu ' + repairPlan.packageName"
-                      >
-                        <svg *ngIf="!repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                        <svg *ngIf="repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
-                      </button>
-                    </div>
-                    <ul class="plan-package-items" [class.plan-package-items--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded" *ngIf="parseRepairPlanPackageItems(repairPlan.packageDescription).length">
-                      <li *ngFor="let line of parseRepairPlanPackageItems(repairPlan.packageDescription)">{{ line }}</li>
-                    </ul>
-                  </div>
-                  <div
-                    class="plan-item"
-                    *ngFor="let item of repairPlan.items"
-                    [class.plan-item--excluded]="repairPlanAwaitingDecision ? isRepairPlanItemExcluded(item.id) : item.excluded"
-                  >
-                    <span class="plan-item-name">{{ item.name }}</span>
-                    <span class="plan-item-price">{{ item.price | number:'1.2-2' }} zł</span>
+              <div class="plan-items" *ngIf="repairPlan.items.length || repairPlan.packageName">
+                <div class="plan-package-block" *ngIf="repairPlan.packageName">
+                  <div class="plan-item plan-item--package" [class.plan-item--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded">
+                    <span class="plan-item-name">{{ repairPlan.packageName }}</span>
+                    <span class="plan-item-price">{{ repairPlan.packagePriceSnapshot | number:'1.2-2' }} zł</span>
                     <button
                       *ngIf="repairPlanAwaitingDecision"
                       type="button"
                       class="plan-item-toggle"
-                      (click)="toggleRepairPlanItemExclusion(item.id)"
-                      [title]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję' : 'Zrezygnuj z pozycji'"
-                      [attr.aria-label]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję ' + item.name : 'Zrezygnuj z pozycji ' + item.name"
+                      (click)="toggleRepairPlanPackageExclusion()"
+                      [title]="repairPlanPackageExcluded ? 'Przywróć pakiet' : 'Zrezygnuj z pakietu'"
+                      [attr.aria-label]="repairPlanPackageExcluded ? 'Przywróć pakiet ' + repairPlan.packageName : 'Zrezygnuj z pakietu ' + repairPlan.packageName"
                     >
-                      <svg *ngIf="!isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                      <svg *ngIf="isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
+                      <svg *ngIf="!repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                      <svg *ngIf="repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
                     </button>
                   </div>
+                  <ul class="plan-package-items" [class.plan-package-items--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded" *ngIf="parseRepairPlanPackageItems(repairPlan.packageDescription).length">
+                    <li *ngFor="let line of parseRepairPlanPackageItems(repairPlan.packageDescription)">{{ line }}</li>
+                  </ul>
                 </div>
-
-                <p class="plan-notes" *ngIf="repairPlan.notes">{{ repairPlan.notes }}</p>
-
-                <div class="plan-total">
-                  <ng-container *ngIf="repairPlanHasDiscount; else plainPlanTotal">
-                    <span class="plan-total-original">{{ repairPlan.calculatedTotal | number:'1.2-2' }} zł</span>
-                    Łącznie: <strong>{{ repairPlan.customTotal | number:'1.2-2' }} zł</strong>
-                    <span class="plan-discount-badge">Zniżka</span>
-                  </ng-container>
-                  <ng-template #plainPlanTotal>
-                    Łącznie: <strong>{{ repairPlanPreviewTotal | number:'1.2-2' }} zł</strong>
-                  </ng-template>
-                </div>
-
-                <p class="plan-edit-hint" *ngIf="isEditingRepairPlanItems && repairPlan.customTotal != null">
-                  Cena ustalona przez serwis dotyczyła pełnego zestawu — po potwierdzeniu zmian zapłacisz za wybrane pozycje.
-                </p>
-
-                <div class="plan-decision-row" *ngIf="repairPlanAwaitingDecision">
-                  <p class="plan-decision-hint">Możesz zrezygnować z wybranych pozycji (ikona obok), a potem potwierdzić lub odrzucić cały plan.</p>
-                  <div class="plan-decision-buttons">
-                    <button class="btn-reject" [disabled]="isDecidingRepairPlan" (click)="openRejectReasonModal()">Odrzucam</button>
-                    <button class="btn-confirm" [disabled]="isDecidingRepairPlan" (click)="confirmRepairPlan()">Potwierdzam</button>
-                  </div>
-                </div>
-
-                <div class="plan-decision-done" *ngIf="repairPlan.status === 'ACCEPTED'">Plan naprawy potwierdzony.</div>
-                <div class="plan-decision-done plan-decision-done--rejected" *ngIf="repairPlan.status === 'REJECTED'">Plan naprawy odrzucony.</div>
-              </div>
-
-              <!-- Powód odrzucenia planu naprawy -->
-              <div class="reject-reason-overlay" *ngIf="showRejectReasonModal" (click)="cancelRejectReasonModal()">
-                <div class="reject-reason-modal" (click)="$event.stopPropagation()">
-                  <h3 class="reject-reason-title">Powód odrzucenia (opcjonalnie)</h3>
-                  <p class="reject-reason-hint">Jeśli chcesz, napisz serwisowi dlaczego odrzucasz ten plan — trafi to do korespondencji.</p>
-                  <textarea
-                    class="reject-reason-textarea"
-                    [(ngModel)]="rejectReason"
-                    rows="4"
-                    placeholder="Np. cena jest za wysoka, chcę tylko część usług..."
-                  ></textarea>
-                  <div class="reject-reason-buttons">
-                    <button class="btn-cancel" (click)="cancelRejectReasonModal()">Anuluj</button>
-                    <button class="btn-reject" (click)="confirmRejectWithReason()">Odrzuć plan</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Korespondencja -->
-              <div class="messages-section">
-                <span class="service-section-title">Korespondencja z serwisem</span>
-
-                <div class="messages-thread">
-                  <div
-                    *ngFor="let msg of serviceOrderMessages"
-                    class="message-item"
-                    [class.message-service]="msg.senderType === 'SERVICE'"
-                    [class.message-client]="msg.senderType === 'CLIENT'"
-                  >
-                    <span class="message-meta">
-                      {{ msg.senderType === 'SERVICE' ? 'Serwis' : 'Ty' }} · {{ msg.createdAt | date:'dd.MM HH:mm' }}
-                    </span>
-                    <p class="message-content">{{ msg.content }}</p>
-                  </div>
-                  <div class="no-messages" *ngIf="serviceOrderMessages.length === 0">
-                    Brak wiadomości — napisz pierwszy!
-                  </div>
-                </div>
-
-                <div class="message-input-row">
-                  <input
-                    type="text"
-                    class="message-input"
-                    [(ngModel)]="newMessageContent"
-                    placeholder="Napisz wiadomość..."
-                    [disabled]="isSendingMessage"
-                    (keydown.enter)="sendServiceOrderMessage()"
-                  >
+                <div
+                  class="plan-item"
+                  *ngFor="let item of repairPlan.items"
+                  [class.plan-item--excluded]="repairPlanAwaitingDecision ? isRepairPlanItemExcluded(item.id) : item.excluded"
+                >
+                  <span class="plan-item-name">{{ item.name }}</span>
+                  <span class="plan-item-price">{{ item.price | number:'1.2-2' }} zł</span>
                   <button
-                    class="message-send-btn"
-                    (click)="sendServiceOrderMessage()"
-                    [disabled]="!newMessageContent.trim() || isSendingMessage"
+                    *ngIf="repairPlanAwaitingDecision"
+                    type="button"
+                    class="plan-item-toggle"
+                    (click)="toggleRepairPlanItemExclusion(item.id)"
+                    [title]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję' : 'Zrezygnuj z pozycji'"
+                    [attr.aria-label]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję ' + item.name : 'Zrezygnuj z pozycji ' + item.name"
                   >
-                    {{ isSendingMessage ? '...' : 'Wyślij' }}
+                    <svg *ngIf="!isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    <svg *ngIf="isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
                   </button>
                 </div>
               </div>
 
-            </ng-container>
-          </div>
-        </div>
+              <p class="plan-notes" *ngIf="repairPlan.notes">{{ repairPlan.notes }}</p>
 
-        <!-- Karta transportu (ukryta gdy DELIVERED) -->
-        <div class="status-card status-card--transport" *ngIf="activeTransport?.hasActiveTransport && !isTransportDelivered">
-          <div class="status-card-top-row">
-            <div class="status-card-icon">🚴</div>
-            <span class="status-card-label">
-              Zamówiony transport do serwisu:
-              <strong *ngIf="activeTransport?.transport?.targetServiceName"> {{ activeTransport?.transport?.targetServiceName }}</strong>
-            </span>
-            <span class="status-card-badge">
-              {{ activeTransport?.transport?.statusDisplayName || activeTransport?.transport?.status }}
-            </span>
-          </div>
-          <div class="status-card-details">
-            <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.pickupDate">
-              <span class="status-detail-label">Odbiór:</span>
-              <span>{{ activeTransport?.transport?.pickupDate | date:'dd.MM.yyyy' }}</span>
-            </div>
-            <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.pickupAddress">
-              <span class="status-detail-label">Skąd:</span>
-              <span>{{ activeTransport?.transport?.pickupAddress }}</span>
-            </div>
-            <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.deliveryAddress">
-              <span class="status-detail-label">Dokąd:</span>
-              <span>{{ activeTransport?.transport?.deliveryAddress }}</span>
-            </div>
-            <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.orderDate">
-              <span class="status-detail-label">Zamówiono:</span>
-              <span>{{ activeTransport?.transport?.orderDate | date:'dd.MM.yyyy' }}</span>
-            </div>
-          </div>
-        </div>
+              <div class="plan-total">
+                <ng-container *ngIf="repairPlanHasDiscount; else plainPlanTotal">
+                  <span class="plan-total-original">{{ repairPlan.calculatedTotal | number:'1.2-2' }} zł</span>
+                  Łącznie: <strong>{{ repairPlan.customTotal | number:'1.2-2' }} zł</strong>
+                  <span class="plan-discount-badge">Zniżka</span>
+                </ng-container>
+                <ng-template #plainPlanTotal>
+                  Łącznie: <strong>{{ repairPlanPreviewTotal | number:'1.2-2' }} zł</strong>
+                </ng-template>
+              </div>
 
+              <p class="plan-edit-hint" *ngIf="isEditingRepairPlanItems && repairPlan.customTotal != null">
+                Cena ustalona przez serwis dotyczyła pełnego zestawu — po potwierdzeniu zmian zapłacisz za wybrane pozycje.
+              </p>
+
+              <div class="plan-decision-row" *ngIf="repairPlanAwaitingDecision">
+                <p class="plan-decision-hint">Możesz zrezygnować z wybranych pozycji (ikona obok), a potem potwierdzić lub odrzucić cały plan.</p>
+                <div class="plan-decision-buttons">
+                  <button class="btn-reject" [disabled]="isDecidingRepairPlan" (click)="openRejectReasonModal()">Odrzucam</button>
+                  <button class="btn-confirm" [disabled]="isDecidingRepairPlan" (click)="confirmRepairPlan()">Potwierdzam</button>
+                </div>
+              </div>
+
+              <div class="plan-decision-done" *ngIf="repairPlan.status === 'ACCEPTED'">Plan naprawy potwierdzony.</div>
+              <div class="plan-decision-done plan-decision-done--rejected" *ngIf="repairPlan.status === 'REJECTED'">Plan naprawy odrzucony.</div>
+            </div>
+
+            <!-- Powód odrzucenia planu naprawy -->
+            <div class="reject-reason-overlay" *ngIf="showRejectReasonModal" (click)="cancelRejectReasonModal()">
+              <div class="reject-reason-modal" (click)="$event.stopPropagation()">
+                <h3 class="reject-reason-title">Powód odrzucenia (opcjonalnie)</h3>
+                <p class="reject-reason-hint">Jeśli chcesz, napisz serwisowi dlaczego odrzucasz ten plan — trafi to do korespondencji.</p>
+                <textarea
+                  class="reject-reason-textarea"
+                  [(ngModel)]="rejectReason"
+                  rows="4"
+                  placeholder="Np. cena jest za wysoka, chcę tylko część usług..."
+                ></textarea>
+                <div class="reject-reason-buttons">
+                  <button class="btn-cancel" (click)="cancelRejectReasonModal()">Anuluj</button>
+                  <button class="btn-reject" (click)="confirmRejectWithReason()">Odrzuć plan</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Korespondencja -->
+            <div class="messages-section">
+              <span class="service-section-title">Korespondencja z serwisem</span>
+
+              <div class="messages-thread">
+                <div
+                  *ngFor="let msg of serviceOrderMessages"
+                  class="message-item"
+                  [class.message-service]="msg.senderType === 'SERVICE'"
+                  [class.message-client]="msg.senderType === 'CLIENT'"
+                >
+                  <span class="message-meta">
+                    {{ msg.senderType === 'SERVICE' ? 'Serwis' : 'Ty' }} · {{ msg.createdAt | date:'dd.MM HH:mm' }}
+                  </span>
+                  <p class="message-content">{{ msg.content }}</p>
+                </div>
+                <div class="no-messages" *ngIf="serviceOrderMessages.length === 0">
+                  Brak wiadomości — napisz pierwszy!
+                </div>
+              </div>
+
+              <div class="message-input-row">
+                <input
+                  type="text"
+                  class="message-input"
+                  [(ngModel)]="newMessageContent"
+                  placeholder="Napisz wiadomość..."
+                  [disabled]="isSendingMessage"
+                  (keydown.enter)="sendServiceOrderMessage()"
+                >
+                <button
+                  class="message-send-btn"
+                  (click)="sendServiceOrderMessage()"
+                  [disabled]="!newMessageContent.trim() || isSendingMessage"
+                >
+                  {{ isSendingMessage ? '...' : 'Wyślij' }}
+                </button>
+              </div>
+            </div>
+
+          </ng-container>
+        </div>
       </div>
 
-      <!-- ── Galeria ── -->
-      <div class="gallery-section">
-        <div class="gallery-section-header">
-          <h3>Zdjęcia i dokumenty</h3>
-          <button
-            class="add-gallery-photo-btn"
-            (click)="galleryInput.click()"
-            [disabled]="isGalleryUploading"
-          >
-            {{ galleryUploadLabel }}
-          </button>
-          <input
-            #galleryInput
-            type="file"
-            accept="image/*"
-            multiple
-            style="display:none"
-            (change)="onGalleryPhotoSelected($event)"
-          >
+      <!-- Karta transportu (ukryta gdy DELIVERED) -->
+      <div class="status-card status-card--transport" *ngIf="activeTransport?.hasActiveTransport && !isTransportDelivered">
+        <div class="status-card-top-row">
+          <div class="status-card-icon">🚴</div>
+          <span class="status-card-label">
+            Zamówiony transport do serwisu:
+            <strong *ngIf="activeTransport?.transport?.targetServiceName"> {{ activeTransport?.transport?.targetServiceName }}</strong>
+          </span>
+          <span class="status-card-badge" [style.background]="transportOrderStatusColor">
+            {{ activeTransport?.transport?.statusDisplayName || activeTransport?.transport?.status }}
+          </span>
         </div>
-
-        <div class="gallery-tabs">
-          <button
-            class="gallery-tab"
-            [class.active]="activeGalleryTab === 'GALLERY'"
-            (click)="activeGalleryTab = 'GALLERY'"
-          >
-            Galeria
-          </button>
-          <button
-            class="gallery-tab"
-            [class.active]="activeGalleryTab === 'RECEIPT'"
-            (click)="activeGalleryTab = 'RECEIPT'"
-          >
-            Rachunki
-          </button>
-        </div>
-
-        <div class="gallery-grid" *ngIf="galleryImages.length > 0; else emptyGallery">
-          <div *ngFor="let image of galleryImages; let i = index" class="gallery-item" (click)="openLightbox(i)">
-            <img [src]="image.url" alt="Zdjęcie roweru" loading="lazy">
+        <div class="status-card-details">
+          <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.pickupDate">
+            <span class="status-detail-label">Odbiór:</span>
+            <span>{{ activeTransport?.transport?.pickupDate | date:'dd.MM.yyyy' }}</span>
+          </div>
+          <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.pickupAddress">
+            <span class="status-detail-label">Skąd:</span>
+            <span>{{ activeTransport?.transport?.pickupAddress }}</span>
+          </div>
+          <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.deliveryAddress">
+            <span class="status-detail-label">Dokąd:</span>
+            <span>{{ activeTransport?.transport?.deliveryAddress }}</span>
+          </div>
+          <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.orderDate">
+            <span class="status-detail-label">Zamówiono:</span>
+            <span>{{ activeTransport?.transport?.orderDate | date:'dd.MM.yyyy' }}</span>
           </div>
         </div>
-        <ng-template #emptyGallery>
-          <div class="no-records-message">Brak zdjęć w tej kategorii.</div>
+      </div>
+
+    </div>
+
+    <!-- ── Galeria ── -->
+    <div class="gallery-section">
+      <div class="gallery-section-header">
+        <h3>Zdjęcia i dokumenty</h3>
+        <button
+          class="add-gallery-photo-btn"
+          (click)="galleryInput.click()"
+          [disabled]="isGalleryUploading"
+        >
+          {{ galleryUploadLabel }}
+        </button>
+        <input
+          #galleryInput
+          type="file"
+          accept="image/*"
+          multiple
+          style="display:none"
+          (change)="onGalleryPhotoSelected($event)"
+        >
+      </div>
+
+      <div class="gallery-tabs">
+        <button
+          class="gallery-tab"
+          [class.active]="activeGalleryTab === 'GALLERY'"
+          (click)="activeGalleryTab = 'GALLERY'"
+        >
+          Galeria
+        </button>
+        <button
+          class="gallery-tab"
+          [class.active]="activeGalleryTab === 'RECEIPT'"
+          (click)="activeGalleryTab = 'RECEIPT'"
+        >
+          Rachunki
+        </button>
+      </div>
+
+      <div class="gallery-grid" *ngIf="galleryImages.length > 0; else emptyGallery">
+        <div *ngFor="let image of galleryImages; let i = index" class="gallery-item" (click)="openLightbox(i)">
+          <img [src]="image.url" alt="Zdjęcie roweru" loading="lazy">
+        </div>
+      </div>
+      <ng-template #emptyGallery>
+        <div class="no-records-message">Brak zdjęć w tej kategorii.</div>
+      </ng-template>
+    </div>
+
+    <!-- ── Lightbox ── -->
+    <div
+      class="lightbox-overlay"
+      *ngIf="lightboxOpen"
+      (click)="closeLightbox()"
+      (keydown)="onLightboxKey($event)"
+      tabindex="-1"
+    >
+      <button class="lightbox-close" (click)="closeLightbox()" title="Zamknij">✕</button>
+
+      <button
+        class="lightbox-arrow lightbox-arrow-left"
+        *ngIf="galleryImages.length > 1"
+        (click)="lightboxPrev($event)"
+        title="Poprzednie"
+      >&#8249;</button>
+
+      <div class="lightbox-content" (click)="$event.stopPropagation()">
+        <img [src]="galleryImages[lightboxIndex].url" alt="Zdjęcie roweru" class="lightbox-img">
+        <div class="lightbox-toolbar">
+          <button
+            class="lightbox-delete-btn"
+            (click)="confirmDeleteLightboxImage($event)"
+            [disabled]="isLightboxDeleting"
+            title="Usuń zdjęcie"
+          >
+            {{ isLightboxDeleting ? 'Usuwanie…' : 'Usuń zdjęcie' }}
+          </button>
+        </div>
+      </div>
+
+      <button
+        class="lightbox-arrow lightbox-arrow-right"
+        *ngIf="galleryImages.length > 1"
+        (click)="lightboxNext($event)"
+        title="Następne"
+      >&#8250;</button>
+    </div>
+
+    <!-- ── Lightbox zdjęć serwisu ── -->
+    <div
+      class="lightbox-overlay"
+      *ngIf="soLightboxOpen"
+      (click)="closeSoLightbox()"
+      tabindex="-1"
+    >
+      <button class="lightbox-close" (click)="closeSoLightbox()" title="Zamknij">✕</button>
+
+      <button
+        class="lightbox-arrow lightbox-arrow-left"
+        *ngIf="serviceOrderImages.length > 1"
+        (click)="soLightboxPrev($event)"
+        title="Poprzednie"
+      >&#8249;</button>
+
+      <div class="lightbox-content" (click)="$event.stopPropagation()">
+        <img [src]="serviceOrderImages[soLightboxIndex].url" alt="Zdjęcie zlecenia serwisowego" class="lightbox-img">
+      </div>
+
+      <button
+        class="lightbox-arrow lightbox-arrow-right"
+        *ngIf="serviceOrderImages.length > 1"
+        (click)="soLightboxNext($event)"
+        title="Następne"
+      >&#8250;</button>
+    </div>
+
+    <!-- Historia serwisowa -->
+    <div class="service-records-section">
+      <h3>Historia serwisowa</h3>
+      <div *ngIf="loading" class="loading-message">Ładowanie historii serwisowej...</div>
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <div *ngIf="!loading && !errorMessage">
+        <div *ngIf="serviceRecords.length > 0; else noRecords" class="service-records-list">
+          <div *ngFor="let record of serviceRecords" class="service-record-card" [class.expanded]="expandedRecordIds.has(record.id)">
+            <div class="service-record-header" (click)="toggleRecord(record.id)">
+              <div class="service-record-title">
+                <h4>
+                  <a *ngIf="record.suffix" [routerLink]="['/', record.suffix]" class="service-name-link" (click)="$event.stopPropagation()">{{ record.serviceName }}</a>
+                  <ng-container *ngIf="!record.suffix">{{ record.serviceName }}</ng-container>
+                </h4>
+                <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+                <span class="service-duration" *ngIf="record.actualDurationHours != null">Czas realizacji: {{ formatDuration(record.actualDurationHours) }}</span>
+              </div>
+              <div class="service-record-summary">
+                <span class="service-price-badge">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</span>
+                <span class="expand-icon">{{ expandedRecordIds.has(record.id) ? '▲' : '▼' }}</span>
+              </div>
+            </div>
+            <div class="service-record-body" *ngIf="expandedRecordIds.has(record.id)">
+              <div *ngIf="record.items && record.items.length > 0" class="service-items">
+                <h5>Wykonane usługi / części</h5>
+                <table class="items-table">
+                  <thead><tr><th>Nazwa</th><th>Ilość</th><th>Cena</th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let item of record.items">
+                      <td>{{ item.name }}</td>
+                      <td>{{ item.quantity }}</td>
+                      <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr><td colspan="2"><strong>Łącznie</strong></td><td><strong>{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
+                  </tfoot>
+                </table>
+              </div>
+              <div *ngIf="record.repairPlan" class="repair-plan-history">
+                <h5>
+                  Plan naprawy
+                  <span class="repair-plan-status-badge" [class]="'repair-plan-status-badge--' + record.repairPlan.status.toLowerCase()">
+                    {{ historyRepairPlanStatusLabels[record.repairPlan.status] || record.repairPlan.status }}
+                  </span>
+                </h5>
+                <table class="items-table" *ngIf="record.repairPlan.items.length > 0 || record.repairPlan.packageName">
+                  <thead><tr><th>Pozycja</th><th>Cena</th></tr></thead>
+                  <tbody>
+                    <tr *ngIf="record.repairPlan.packageName">
+                      <td>{{ record.repairPlan.packageName }}</td>
+                      <td>&mdash;</td>
+                    </tr>
+                    <tr *ngFor="let item of record.repairPlan.items">
+                      <td>{{ item.name }}</td>
+                      <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr><td><strong>Suma</strong></td><td><strong>{{ record.repairPlan.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
+                  </tfoot>
+                </table>
+              </div>
+              <div *ngIf="record.review" class="record-review">
+                <h5>Ocena klienta</h5>
+                <div class="review-summary">
+                  <span class="review-score">{{ record.review.totalScore }} / 5</span>
+                  <p class="review-comment" *ngIf="record.review.comment">{{ record.review.comment }}</p>
+                </div>
+              </div>
+              <div *ngIf="record.orderNotes" class="record-note">
+                <h5>Uwagi do zlecenia</h5>
+                <p>{{ record.orderNotes }}</p>
+              </div>
+              <div *ngIf="record.serviceNotes" class="record-note">
+                <h5>Notatki serwisanta</h5>
+                <p>{{ record.serviceNotes }}</p>
+              </div>
+              <div *ngIf="record.maintenanceAdvice" class="record-note record-note--advice">
+                <h5>Zalecenia obsługi</h5>
+                <p>{{ record.maintenanceAdvice }}</p>
+              </div>
+              <div *ngIf="record.recommendedRepairs" class="record-note record-note--repairs">
+                <h5>Zalecane naprawy</h5>
+                <p>{{ record.recommendedRepairs }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noRecords>
+          <div class="no-records-message">Brak historii serwisowej dla tego roweru.</div>
         </ng-template>
-      </div>
-
-      <!-- ── Lightbox ── -->
-      <div
-        class="lightbox-overlay"
-        *ngIf="lightboxOpen"
-        (click)="closeLightbox()"
-        (keydown)="onLightboxKey($event)"
-        tabindex="-1"
-      >
-        <button class="lightbox-close" (click)="closeLightbox()" title="Zamknij">✕</button>
-
-        <button
-          class="lightbox-arrow lightbox-arrow-left"
-          *ngIf="galleryImages.length > 1"
-          (click)="lightboxPrev($event)"
-          title="Poprzednie"
-        >&#8249;</button>
-
-        <div class="lightbox-content" (click)="$event.stopPropagation()">
-          <img [src]="galleryImages[lightboxIndex].url" alt="Zdjęcie roweru" class="lightbox-img">
-          <div class="lightbox-toolbar">
-            <button
-              class="lightbox-delete-btn"
-              (click)="confirmDeleteLightboxImage($event)"
-              [disabled]="isLightboxDeleting"
-              title="Usuń zdjęcie"
-            >
-              {{ isLightboxDeleting ? 'Usuwanie…' : 'Usuń zdjęcie' }}
-            </button>
-          </div>
-        </div>
-
-        <button
-          class="lightbox-arrow lightbox-arrow-right"
-          *ngIf="galleryImages.length > 1"
-          (click)="lightboxNext($event)"
-          title="Następne"
-        >&#8250;</button>
-      </div>
-
-      <!-- ── Lightbox zdjęć serwisu ── -->
-      <div
-        class="lightbox-overlay"
-        *ngIf="soLightboxOpen"
-        (click)="closeSoLightbox()"
-        tabindex="-1"
-      >
-        <button class="lightbox-close" (click)="closeSoLightbox()" title="Zamknij">✕</button>
-
-        <button
-          class="lightbox-arrow lightbox-arrow-left"
-          *ngIf="serviceOrderImages.length > 1"
-          (click)="soLightboxPrev($event)"
-          title="Poprzednie"
-        >&#8249;</button>
-
-        <div class="lightbox-content" (click)="$event.stopPropagation()">
-          <img [src]="serviceOrderImages[soLightboxIndex].url" alt="Zdjęcie zlecenia serwisowego" class="lightbox-img">
-        </div>
-
-        <button
-          class="lightbox-arrow lightbox-arrow-right"
-          *ngIf="serviceOrderImages.length > 1"
-          (click)="soLightboxNext($event)"
-          title="Następne"
-        >&#8250;</button>
-      </div>
-
-      <!-- Historia serwisowa -->
-      <div class="service-records-section">
-        <h3>Historia serwisowa</h3>
-        <div *ngIf="loading" class="loading-message">Ładowanie historii serwisowej...</div>
-        <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-        <div *ngIf="!loading && !errorMessage">
-          <div *ngIf="serviceRecords.length > 0; else desktopNoRecords" class="service-records-list">
-            <div *ngFor="let record of serviceRecords" class="service-record-card" [class.expanded]="expandedRecordIds.has(record.id)">
-              <div class="service-record-header" (click)="toggleRecord(record.id)">
-                <div class="service-record-title">
-                  <h4>
-                    <a *ngIf="record.suffix" [routerLink]="['/', record.suffix]" class="service-name-link" (click)="$event.stopPropagation()">{{ record.serviceName }}</a>
-                    <ng-container *ngIf="!record.suffix">{{ record.serviceName }}</ng-container>
-                  </h4>
-                  <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
-                  <span class="service-duration" *ngIf="record.actualDurationHours != null">Czas realizacji: {{ formatDuration(record.actualDurationHours) }}</span>
-                </div>
-                <div class="service-record-summary">
-                  <span class="service-price-badge">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</span>
-                  <span class="expand-icon">{{ expandedRecordIds.has(record.id) ? '▲' : '▼' }}</span>
-                </div>
-              </div>
-              <div class="service-record-body" *ngIf="expandedRecordIds.has(record.id)">
-                <div *ngIf="record.items && record.items.length > 0" class="service-items">
-                  <h5>Wykonane usługi / części</h5>
-                  <table class="items-table">
-                    <thead><tr><th>Nazwa</th><th>Ilość</th><th>Cena</th></tr></thead>
-                    <tbody>
-                      <tr *ngFor="let item of record.items">
-                        <td>{{ item.name }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
-                      </tr>
-                    </tbody>
-                    <tfoot>
-                      <tr><td colspan="2"><strong>Łącznie</strong></td><td><strong>{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
-                    </tfoot>
-                  </table>
-                </div>
-                <div *ngIf="record.repairPlan" class="repair-plan-history">
-                  <h5>
-                    Plan naprawy
-                    <span class="repair-plan-status-badge" [class]="'repair-plan-status-badge--' + record.repairPlan.status.toLowerCase()">
-                      {{ historyRepairPlanStatusLabels[record.repairPlan.status] || record.repairPlan.status }}
-                    </span>
-                  </h5>
-                  <table class="items-table" *ngIf="record.repairPlan.items.length > 0 || record.repairPlan.packageName">
-                    <thead><tr><th>Pozycja</th><th>Cena</th></tr></thead>
-                    <tbody>
-                      <tr *ngIf="record.repairPlan.packageName">
-                        <td>{{ record.repairPlan.packageName }}</td>
-                        <td>&mdash;</td>
-                      </tr>
-                      <tr *ngFor="let item of record.repairPlan.items">
-                        <td>{{ item.name }}</td>
-                        <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
-                      </tr>
-                    </tbody>
-                    <tfoot>
-                      <tr><td><strong>Suma</strong></td><td><strong>{{ record.repairPlan.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
-                    </tfoot>
-                  </table>
-                </div>
-                <div *ngIf="record.review" class="record-review">
-                  <h5>Ocena klienta</h5>
-                  <div class="review-summary">
-                    <span class="review-score">{{ record.review.totalScore }} / 5</span>
-                    <p class="review-comment" *ngIf="record.review.comment">{{ record.review.comment }}</p>
-                  </div>
-                </div>
-                <div *ngIf="record.orderNotes" class="record-note">
-                  <h5>Uwagi do zlecenia</h5>
-                  <p>{{ record.orderNotes }}</p>
-                </div>
-                <div *ngIf="record.serviceNotes" class="record-note">
-                  <h5>Notatki serwisanta</h5>
-                  <p>{{ record.serviceNotes }}</p>
-                </div>
-                <div *ngIf="record.maintenanceAdvice" class="record-note record-note--advice">
-                  <h5>Zalecenia obsługi</h5>
-                  <p>{{ record.maintenanceAdvice }}</p>
-                </div>
-                <div *ngIf="record.recommendedRepairs" class="record-note record-note--repairs">
-                  <h5>Zalecane naprawy</h5>
-                  <p>{{ record.recommendedRepairs }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <ng-template #desktopNoRecords>
-            <div class="no-records-message">Brak historii serwisowej dla tego roweru.</div>
-          </ng-template>
-        </div>
       </div>
     </div>
 

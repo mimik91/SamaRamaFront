@@ -61,6 +61,13 @@
   margin: 0 0 var(--spacing-3);
 }
 
+.poradnik-article-subtitle {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 var(--spacing-4);
+}
+
 .poradnik-article-meta {
   display: flex;
   align-items: center;
@@ -90,6 +97,7 @@
   object-fit: cover;
   object-position: center 30%;
   display: block;
+  cursor: zoom-in;
 }
 
 .poradnik-toc {
@@ -179,6 +187,127 @@
 
 ::ng-deep .poradnik-article-content a:hover {
   text-decoration-color: var(--color-primary);
+}
+
+/* TL;DR — skrócone podsumowanie na górze artykułu, tym samym wzorcem wizualnym co spis treści */
+::ng-deep .poradnik-article-content .poradnik-tldr {
+  background: var(--color-primary-alpha-08);
+  border: 1px solid var(--color-primary-alpha-15);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-5) var(--spacing-6);
+  margin: 0 0 var(--spacing-6);
+}
+
+::ng-deep .poradnik-article-content .poradnik-tldr h2 {
+  margin: 0 0 var(--spacing-3);
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+}
+
+::ng-deep .poradnik-article-content .poradnik-tldr ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+::ng-deep .poradnik-article-content .poradnik-tldr li {
+  margin-bottom: var(--spacing-2);
+}
+
+::ng-deep .poradnik-article-content .poradnik-tldr li:last-child {
+  margin-bottom: 0;
+}
+
+/* Lista uczestniczących serwisów — dziś zwykłe "chipy", docelowo miejsce pod karuzelę
+   zdjęć/plakatów serwisów (jedna pozycja = jeden przyszły slajd). */
+::ng-deep .poradnik-article-content ul.poradnik-service-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  list-style: none;
+  padding-left: 0;
+  margin: 0 0 var(--spacing-4);
+}
+
+::ng-deep .poradnik-article-content ul.poradnik-service-list li {
+  margin-bottom: 0;
+  padding: var(--spacing-2) var(--spacing-4);
+  background: var(--color-gray-50);
+  border: 1px solid var(--border-color-gray);
+  border-radius: var(--radius-full, 999px);
+  font-size: var(--font-size-sm);
+  color: var(--text-dark);
+}
+
+::ng-deep .poradnik-article-content ul.poradnik-service-list li a {
+  text-decoration: none;
+}
+
+::ng-deep .poradnik-article-content figure {
+  margin: var(--spacing-6) 0;
+}
+
+::ng-deep .poradnik-article-content figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-color-gray);
+  cursor: zoom-in;
+}
+
+::ng-deep .poradnik-article-content figcaption {
+  margin-top: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.poradnik-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-5);
+}
+
+.poradnik-lightbox-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  cursor: default;
+}
+
+.poradnik-lightbox-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  background: rgba(30, 30, 30, 0.85);
+  color: var(--color-white);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.poradnik-lightbox-close:hover {
+  background: rgba(60, 60, 60, 0.95);
+  border-color: var(--color-white);
 }
 
 .poradnik-related-section {

@@ -70,9 +70,6 @@
             <span class="stat-chip">
               śr. czas realizacji: {{ formatDuration(service.medianServiceDurationHours) }}
             </span>
-            <span class="stat-chip" *ngIf="service.completedOrdersTotalCount">
-              {{ formatCompletedOrders(service.completedOrdersTotalCount) }}
-            </span>
           </div>
 
           <a

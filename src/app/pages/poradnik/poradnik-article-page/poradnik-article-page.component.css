@@ -220,8 +220,47 @@
   margin-bottom: 0;
 }
 
-/* Lista uczestniczących serwisów — dziś zwykłe "chipy", docelowo miejsce pod karuzelę
-   zdjęć/plakatów serwisów (jedna pozycja = jeden przyszły slajd). */
+/* Karuzela zdjęć serwisów promujących projekt — jeden slajd na serwis, który przysłał zdjęcie.
+   Poziomy scroll ze snapem zamiast JS-owego slidera — mniej kodu, działa też bez JS/hydration. */
+::ng-deep .poradnik-article-content .poradnik-service-gallery {
+  display: flex;
+  gap: var(--spacing-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  margin: var(--spacing-6) 0;
+  padding-bottom: var(--spacing-2);
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-gallery figure {
+  flex: 0 0 auto;
+  width: 200px;
+  margin: 0;
+  scroll-snap-align: start;
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-gallery img {
+  width: 100%;
+  aspect-ratio: 768 / 1024;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-color-gray);
+  cursor: zoom-in;
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-gallery figcaption {
+  margin-top: var(--spacing-2);
+  text-align: center;
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-gallery figcaption a {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+/* Lista wszystkich uczestniczących serwisów — chipy pod karuzelą, w tym serwisy bez
+   nadesłanego jeszcze zdjęcia (dopiero po zdjęciu awansują do karuzeli powyżej). */
 ::ng-deep .poradnik-article-content ul.poradnik-service-list {
   display: flex;
   flex-wrap: wrap;

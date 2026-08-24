@@ -23,6 +23,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <li><strong>Kiedy głosować:</strong> 11–28 września.</li>
           <li><strong>Jak zagłosować:</strong> przez stronę budżetu obywatelskiego lub aplikację mKraków.</li>
           <li><strong>Co powstanie:</strong> Etap I — ok. 2,5 km pętli dla początkujących.</li>
+          <li><strong>Karta projektu:</strong> <a href="https://budzet.krakow.pl/projekty2026/10112-petla-pychowicka---rowerowy-flow-dla-kazdego.html" target="_blank" rel="noopener">zobacz i zagłosuj na oficjalnej stronie budżetu obywatelskiego</a>.</li>
         </ul>
       </div>
 
@@ -59,6 +60,18 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
 
       <h2 id="serwisy-ktore-sie-wlaczaja"><a href="/serwisy/krakow">Serwisy rowerowe w Krakowie</a>, które już się włączają</h2>
       <p>Do promocji projektu dołączają kolejne krakowskie serwisy rowerowe — widać, że temat porusza nie tylko rowerzystów rekreacyjnych, ale i lokalny biznes rowerowy, dla którego rozwój infrastruktury MTB w mieście to też więcej klientów z odpowiednim sprzętem do serwisowania. Wśród nich m.in.:</p>
+
+      <div class="poradnik-service-gallery">
+        <figure>
+          <img src="assets/images/poradnik/projekt-50-petla-pychowicka/gorka-pychowicka-serwis-mobil-bike.webp" alt="Serwis Mobil Bike promuje głosowanie na Pętlę Pychowicką" loading="lazy">
+          <figcaption><a href="/mobil-bike">Mobil Bike</a></figcaption>
+        </figure>
+        <figure>
+          <img src="assets/images/poradnik/projekt-50-petla-pychowicka/gorka-pychowicka-serwis-volik.webp" alt="Serwis Volik promuje głosowanie na Pętlę Pychowicką" loading="lazy">
+          <figcaption><a href="/volik">Volik</a></figcaption>
+        </figure>
+      </div>
+
       <ul class="poradnik-service-list">
         <li><a href="/mobil-bike">Mobil Bike</a></li>
         <li><a href="/volik">Volik</a></li>

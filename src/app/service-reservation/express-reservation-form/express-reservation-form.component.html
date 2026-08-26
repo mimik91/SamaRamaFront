@@ -64,7 +64,7 @@
   <div *ngIf="currentStep === 1">
 
     <!-- Personal data section -->
-    <div class="form-section">
+    <div class="form-section" *ngIf="!clientMode">
       <h2 class="section-title">Twoje dane</h2>
       <div [formGroup]="reservationForm">
         <div class="form-row">
@@ -113,19 +113,35 @@
                   (click)="removeBike(i)" aria-label="Usuń rower">✕</button>
         </div>
 
+        <div class="form-group" *ngIf="clientMode">
+          <label [for]="'select-bike-' + i">Wybierz rower</label>
+          <select
+            [id]="'select-bike-' + i"
+            class="form-input"
+            [value]="bikeCtrl.get('selectedBicycleId')?.value ?? 'OTHER'"
+            (change)="onBicycleSelectChange($event, i)"
+          >
+            <option value="OTHER">Inny</option>
+            <option *ngFor="let bike of availableBicyclesFor(i)" [value]="bike.id">
+              {{ bike.brand }}{{ bike.model ? ' ' + bike.model : '' }}
+            </option>
+          </select>
+        </div>
+
         <div class="form-row">
           <div class="form-group brand-group">
             <label [for]="'brand-' + i">Marka *</label>
             <div class="autocomplete-wrapper">
               <input [id]="'brand-' + i" type="text" class="form-input"
                      [value]="bikeCtrl.get('brand')?.value"
+                     [disabled]="!!bikeCtrl.get('selectedBicycleId')?.value"
                      (input)="onBrandInput($event, i)"
                      (focus)="onBrandFocus(i)"
                      (blur)="onBrandBlur(i)"
                      placeholder="np. Trek, Giant"
                      [class.invalid]="isBikeFieldInvalid(i, 'brand')">
               <button type="button" class="expand-brands-btn" (click)="expandAllBrands(i)"
-                      *ngIf="brands.length > 0" aria-label="Pokaż wszystkie marki">▾</button>
+                      *ngIf="brands.length > 0 && !bikeCtrl.get('selectedBicycleId')?.value" aria-label="Pokaż wszystkie marki">▾</button>
               <div *ngIf="bikeBrandStates[i]?.showDropdown" class="brand-dropdown">
                 <div *ngFor="let brand of bikeBrandStates[i].filtered"
                      class="dropdown-option" (mousedown)="selectBrand(brand, i)">{{ brand }}</div>
@@ -296,15 +312,15 @@
         <span class="summary-label">Usługa</span>
         <span class="summary-value">Serwis rowerowy CycloPick – Kraków</span>
       </div>
-      <div class="summary-row">
+      <div class="summary-row" *ngIf="!clientMode">
         <span class="summary-label">Klient</span>
         <span class="summary-value">{{ reservationForm.get('firstName')?.value }} {{ reservationForm.get('lastName')?.value }}</span>
       </div>
-      <div class="summary-row">
+      <div class="summary-row" *ngIf="!clientMode">
         <span class="summary-label">Email</span>
         <span class="summary-value">{{ reservationForm.get('email')?.value }}</span>
       </div>
-      <div class="summary-row">
+      <div class="summary-row" *ngIf="!clientMode">
         <span class="summary-label">Telefon</span>
         <span class="summary-value">{{ reservationForm.get('phone')?.value }}</span>
       </div>

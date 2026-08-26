@@ -220,47 +220,8 @@
   margin-bottom: 0;
 }
 
-/* Karuzela zdjęć serwisów promujących projekt — jeden slajd na serwis, który przysłał zdjęcie.
-   Poziomy scroll ze snapem zamiast JS-owego slidera — mniej kodu, działa też bez JS/hydration. */
-::ng-deep .poradnik-article-content .poradnik-service-gallery {
-  display: flex;
-  gap: var(--spacing-4);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  margin: var(--spacing-6) 0;
-  padding-bottom: var(--spacing-2);
-}
-
-::ng-deep .poradnik-article-content .poradnik-service-gallery figure {
-  flex: 0 0 auto;
-  width: 200px;
-  margin: 0;
-  scroll-snap-align: start;
-}
-
-::ng-deep .poradnik-article-content .poradnik-service-gallery img {
-  width: 100%;
-  aspect-ratio: 768 / 1024;
-  object-fit: cover;
-  display: block;
-  border-radius: var(--radius-card);
-  border: 1px solid var(--border-color-gray);
-  cursor: zoom-in;
-}
-
-::ng-deep .poradnik-article-content .poradnik-service-gallery figcaption {
-  margin-top: var(--spacing-2);
-  text-align: center;
-}
-
-::ng-deep .poradnik-article-content .poradnik-service-gallery figcaption a {
-  color: var(--color-primary);
-  font-weight: var(--font-weight-bold);
-  text-decoration: none;
-}
-
-/* Lista wszystkich uczestniczących serwisów — chipy pod karuzelą, w tym serwisy bez
-   nadesłanego jeszcze zdjęcia (dopiero po zdjęciu awansują do karuzeli powyżej). */
+/* Lista uczestniczących serwisów — dziś zwykłe "chipy", docelowo miejsce pod karuzelę
+   zdjęć/plakatów serwisów (jedna pozycja = jeden przyszły slajd). */
 ::ng-deep .poradnik-article-content ul.poradnik-service-list {
   display: flex;
   flex-wrap: wrap;
@@ -282,6 +243,99 @@
 
 ::ng-deep .poradnik-article-content ul.poradnik-service-list li a {
   text-decoration: none;
+}
+
+/* Lista polecanych serwisów — wiersze jeden pod drugim (nie karuzela): łatwiej o czytelnie
+   duże logo i lepiej działa na mobile niż poziomy scroll. */
+::ng-deep .poradnik-article-content .poradnik-service-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  margin: 0 0 var(--spacing-6);
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-5);
+  background: var(--color-white);
+  border: 1px solid var(--border-color-gray);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-4) var(--spacing-5);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-row:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-logo {
+  flex-shrink: 0;
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-gray-50);
+  padding: var(--spacing-2);
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-logo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  background: var(--color-primary-alpha-08);
+  border-radius: 50%;
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-info {
+  flex: 1;
+  min-width: 0;
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-name {
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
+  margin: 0 0 var(--spacing-1);
+}
+
+::ng-deep .poradnik-article-content .poradnik-service-desc {
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+::ng-deep .poradnik-article-content a.poradnik-service-btn {
+  flex-shrink: 0;
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  border-radius: var(--radius-btn);
+  white-space: nowrap;
+}
+
+::ng-deep .poradnik-article-content a.poradnik-service-btn:hover {
+  box-shadow: 0 4px 12px var(--color-primary-alpha-30);
+}
+
+@media (max-width: 560px) {
+  ::ng-deep .poradnik-article-content .poradnik-service-row {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  ::ng-deep .poradnik-article-content a.poradnik-service-btn {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 ::ng-deep .poradnik-article-content figure {

@@ -67,7 +67,10 @@
             *ngIf="logoUrl"
             [src]="logoUrl"
             [alt]="publicInfo.name"
-            class="service-logo fade-in">
+            class="service-logo"
+            width="150"
+            height="150"
+            fetchpriority="high">
         </div>
         <p *ngIf="publicInfo.description" class="service-description">{{ publicInfo.description }}</p>
 

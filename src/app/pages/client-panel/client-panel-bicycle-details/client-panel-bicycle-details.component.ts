@@ -16,11 +16,12 @@ import { BicycleSelectionService } from '../bicycle-selection.service';
 import { ImageUtilsService } from '../../../core/image-utils.service';
 import { CalendarOrderStatus, getStatusColor } from '../../../shared/models/service-calendar.models';
 import { getTransportStatusColor } from '../../../core/models/transport-order-status.util';
+import { BookServiceModalComponent } from '../modals/book-service-modal/book-service-modal.component';
 
 @Component({
   selector: 'app-client-panel-bicycle-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, BookServiceModalComponent],
   templateUrl: './client-panel-bicycle-details.component.html',
   styleUrls: ['./client-panel-bicycle-details.component.css']
 })
@@ -114,6 +115,8 @@ export class ClientPanelDetailsComponent implements OnInit {
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   photoError: string | null = null;
+
+  showBookServiceModal = false;
 
   constructor() {
     this.bicycleForm = this.fb.group({
@@ -881,6 +884,10 @@ export class ClientPanelDetailsComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/bicycles']);
+  }
+
+  openBookServiceModal(): void {
+    this.showBookServiceModal = true;
   }
 
   reportStolen(): void {

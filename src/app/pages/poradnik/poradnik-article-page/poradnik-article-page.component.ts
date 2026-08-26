@@ -91,7 +91,7 @@ export class PoradnikArticlePageComponent implements OnInit, OnDestroy {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // Treść artykułu trafia do DOM przez [innerHTML], więc obrazki w niej nie mają żadnych
+  // Treść artykułu trafia do DOM przez [innerHTML], więc obrazki i linki w niej nie mają żadnych
   // Angularowych bindowań — łapiemy kliknięcie przez delegację zdarzeń na kontenerze (natywny
   // bubbling działa niezależnie od tego, jak węzły powstały w DOM).
   onContentClick(event: Event): void {
@@ -99,6 +99,17 @@ export class PoradnikArticlePageComponent implements OnInit, OnDestroy {
     if (target.tagName === 'IMG') {
       const img = target as HTMLImageElement;
       this.openLightbox(img.src, img.alt);
+      return;
+    }
+
+    // Linki wewnątrz treści (np. w TL;DR) wskazujące na kotwicę ("#sekcja") — bez tego Angular
+    // rozstrzygnąłby bare fragment względem <base href="/">, czyli przeniósłby na "/" zamiast
+    // przewinąć w obrębie bieżącego artykułu (patrz onTocLinkClick).
+    const anchor = target.closest('a');
+    const href = anchor?.getAttribute('href');
+    if (href?.startsWith('#') && isPlatformBrowser(this.platformId)) {
+      event.preventDefault();
+      document.getElementById(href.slice(1))?.scrollIntoView({ behavior: 'smooth' });
     }
   }
 

@@ -21,32 +21,50 @@
           class="tab-btn"
           [class.active]="activeTab === 'details'"
           (click)="activeTab = 'details'"
+          title="Szczegóły zlecenia"
         >
-          Szczegóły zlecenia
+          <span class="tab-icon" aria-hidden="true">📋</span>
+          <span class="tab-label">Szczegóły zlecenia</span>
         </button>
         <button
           class="tab-btn"
           [class.active]="activeTab === 'messages'"
           (click)="activeTab = 'messages'"
+          title="Korespondencja"
         >
-          Korespondencja
-          <span class="unread-badge" *ngIf="messagesUnreadCount > 0">{{ messagesUnreadCount }}</span>
+          <span class="tab-icon" aria-hidden="true">
+            💬
+            <span class="unread-dot" *ngIf="messagesUnreadCount > 0"></span>
+          </span>
+          <span class="tab-label">
+            Korespondencja
+            <span class="unread-badge" *ngIf="messagesUnreadCount > 0">{{ messagesUnreadCount }}</span>
+          </span>
         </button>
         <button
           *ngIf="showReturnTab"
           class="tab-btn"
           [class.active]="activeTab === 'return'"
           (click)="onReturnTabClick()"
+          title="Sposób zwrotu"
         >
-          Sposób zwrotu
-          <span class="return-badge" *ngIf="hasReturnTransport">&#10003;</span>
+          <span class="tab-icon" aria-hidden="true">
+            🚚
+            <span class="return-dot" *ngIf="hasReturnTransport"></span>
+          </span>
+          <span class="tab-label">
+            Sposób zwrotu
+            <span class="return-badge" *ngIf="hasReturnTransport">&#10003;</span>
+          </span>
         </button>
         <button
           class="tab-btn"
           [class.active]="activeTab === 'repair-plan'"
           (click)="activeTab = 'repair-plan'"
+          title="Plan naprawy"
         >
-          Plan naprawy
+          <span class="tab-icon" aria-hidden="true">🔧</span>
+          <span class="tab-label">Plan naprawy</span>
         </button>
       </div>
 

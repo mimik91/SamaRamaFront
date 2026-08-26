@@ -285,7 +285,8 @@
               [src]="service.logoUrl"
               [alt]="service.name + ' logo'"
               class="service-logo"
-              loading="lazy"
+              [attr.loading]="i < 2 ? null : 'lazy'"
+              [attr.fetchpriority]="i === 0 ? 'high' : null"
               width="104"
               height="104"
             >
@@ -294,7 +295,8 @@
               src="assets/images/logo-cyclopick.webp"
               alt=""
               class="service-logo service-logo--default"
-              loading="lazy"
+              [attr.loading]="i < 2 ? null : 'lazy'"
+              [attr.fetchpriority]="i === 0 ? 'high' : null"
               width="104"
               height="104"
             >

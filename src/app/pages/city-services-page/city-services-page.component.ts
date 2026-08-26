@@ -16,6 +16,7 @@ import { CityServicesResolvedData } from './city-services-page.resolver';
 import { TRANSPORT_PRICING } from '../../shared/constants/transport-pricing.constants';
 import { ServiceSearchFiltersComponent, ServiceListFiltersChange } from '../../shared/components/service-search-filters/service-search-filters.component';
 import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
+import { isKrakowCity } from '../../shared/utils/city.util';
 
 export interface CityConfig {
   slug: string;
@@ -110,10 +111,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
   // Flaga czy to Kraków (dla transportu)
   get isKrakow(): boolean {
-    const slug = this.currentCity?.slug?.trim().toLowerCase();
-    const name = this.currentCity?.name?.trim().toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return slug === 'krakow' || name === 'krakow';
+    return isKrakowCity(this.currentCity?.slug) || isKrakowCity(this.currentCity?.name);
   }
 
   constructor(

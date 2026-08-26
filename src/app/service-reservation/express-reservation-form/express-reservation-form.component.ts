@@ -30,6 +30,9 @@ import { EnumerationService } from '../../core/enumeration.service';
 import { environment } from '../../environments/environments';
 import { DiscountService } from '../../shared/services/discount.service';
 import { OfficeAddressDto } from '../../shared/models/office-address.model';
+import { AuthService } from '../../auth/auth.service';
+import { BicycleService } from '../../pages/client-panel/bicycle.service';
+import { Bicycle } from '../../shared/models/bicycle.model';
 
 interface ReservationSettings {
   acceptedDays: string[];
@@ -66,6 +69,8 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   private seoService = inject(SeoService);
   private platformId = inject(PLATFORM_ID);
   private discountService = inject(DiscountService);
+  private authService = inject(AuthService);
+  private bicycleService = inject(BicycleService);
 
   private routerSub: Subscription | null = null;
   private sessionSyncSent = false;
@@ -131,7 +136,15 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   transportForm!: FormGroup;
   termsControl = new FormControl(false, [Validators.requiredTrue]);
 
+  // Tryb klienta: zalogowany klient nie wypełnia danych kontaktowych (biorą się z konta) i wybiera
+  // rower z listy swoich rowerów zamiast wpisywać markę/model ręcznie.
+  clientMode = false;
+  myBicycles: Bicycle[] = [];
+  loadingMyBicycles = false;
+
   constructor() {
+    this.clientMode = this.authService.isClient();
+
     const minD = new Date();
     minD.setDate(minD.getDate() + 2);
     this.minDateObj = minD;
@@ -146,10 +159,10 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     this.bikeBrandStates = [{ filtered: [], showDropdown: false }];
 
     this.reservationForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
+      firstName: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.minLength(2)]],
+      lastName: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.minLength(2)]],
+      email: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.email]],
+      phone: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.pattern(/^\d{9}$/)]],
       plannedDate: ['', [Validators.required, this.acceptedDayValidator.bind(this)]],
       deliveryType: ['OFFICE' as DeliveryType]
     });
@@ -161,12 +174,80 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
       pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]],
       transportNotes: ['']
     });
+
+    if (this.clientMode) {
+      this.loadMyBicycles();
+    }
+  }
+
+  // ===== Tryb klienta: wybór własnego roweru =====
+
+  private loadMyBicycles(): void {
+    this.loadingMyBicycles = true;
+    this.bicycleService.getUserBicycles().subscribe({
+      next: (bikes) => {
+        this.myBicycles = bikes;
+        this.loadingMyBicycles = false;
+        this.applyOriginatingBicycleDefault();
+      },
+      error: () => {
+        this.myBicycles = [];
+        this.loadingMyBicycles = false;
+      }
+    });
+  }
+
+  // Ustawiane tylko gdy przyszliśmy z modala "Umów serwis" w szczegółach roweru (patrz
+  // BookServiceModalComponent) — router state z bicycleId. Wejście z listy serwisów/mapy nie
+  // ustawia tego state, więc żaden rower nie jest wtedy domyślnie wybrany.
+  private applyOriginatingBicycleDefault(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const bicycleId = window.history.state?.bicycleId as number | undefined;
+    if (!bicycleId) return;
+    const bike = this.myBicycles.find(b => b.id === bicycleId);
+    if (!bike) return;
+    this.onBicycleSelected(0, bicycleId);
+  }
+
+  availableBicyclesFor(index: number): Bicycle[] {
+    const chosenElsewhere = new Set(
+      this.bikesArray.controls
+        .filter((_, i) => i !== index)
+        .map(c => c.get('selectedBicycleId')?.value)
+        .filter((id): id is number => id != null)
+    );
+    return this.myBicycles.filter(b => !chosenElsewhere.has(b.id));
+  }
+
+  onBicycleSelectChange(event: Event, index: number): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.onBicycleSelected(index, value === 'OTHER' ? 'OTHER' : +value);
+  }
+
+  onBicycleSelected(index: number, bicycleId: number | 'OTHER'): void {
+    const group = this.bikesArray.at(index) as FormGroup;
+    if (bicycleId === 'OTHER') {
+      group.get('selectedBicycleId')?.setValue(null);
+      group.get('brand')?.enable();
+      group.get('model')?.enable();
+      group.get('brand')?.setValue('');
+      group.get('model')?.setValue('');
+      return;
+    }
+    const bike = this.myBicycles.find(b => b.id === bicycleId);
+    if (!bike) return;
+    group.get('selectedBicycleId')?.setValue(bicycleId);
+    group.get('brand')?.setValue(bike.brand);
+    group.get('model')?.setValue(bike.model ?? '');
+    group.get('brand')?.disable();
+    group.get('model')?.disable();
   }
 
   // ===== Bike FormArray =====
 
   createBikeGroup(): FormGroup {
     return this.fb.group({
+      selectedBicycleId: [null as number | null],
       brand: ['', Validators.required],
       model: [''],
       additionalInfo: ['']
@@ -575,10 +656,11 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     const plannedDateVal = rv.plannedDate;
     const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
 
-    const bikesPayload = this.bikesArray.value.map((b: { brand: string; model: string; additionalInfo: string }) => ({
+    const bikesPayload = this.bikesArray.getRawValue().map((b: { brand: string; model: string; additionalInfo: string; selectedBicycleId: number | null }) => ({
       brand: b.brand.trim(),
       model: b.model?.trim() || null,
-      additionalInfo: b.additionalInfo?.trim() || null
+      additionalInfo: b.additionalInfo?.trim() || null,
+      bicycleId: b.selectedBicycleId ?? undefined
     }));
 
     const officeLabel = this.isOfficePick ? this.officeNameControl.value?.trim() : null;
@@ -587,10 +669,10 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     const transportNotes = [officePrefix, userNotes].filter(Boolean).join('\n');
 
     return {
-      firstName: rv.firstName.trim(),
-      lastName: rv.lastName.trim(),
-      email: rv.email.trim(),
-      phone: rv.phone?.trim() || null,
+      firstName: (rv.firstName ?? '').trim() || null,
+      lastName: (rv.lastName ?? '').trim() || null,
+      email: (rv.email ?? '').trim() || null,
+      phone: (rv.phone ?? '').trim() || null,
       bicycles: bikesPayload,
       plannedDate: plannedDateStr,
       description: bikesPayload[0]?.additionalInfo || null,
@@ -690,6 +772,7 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   private sendSessionSync(): void {
     if (this.sessionSyncSent) return;
     if (!isPlatformBrowser(this.platformId)) return;
+    if (this.clientMode) return; // zalogowany klient nie ma sensu "odzyskiwać" mailem — ma konto
     this.sessionSyncSent = true;
     const rv = this.reservationForm.value;
     this.sessionSyncService.send({

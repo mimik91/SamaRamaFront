@@ -26,6 +26,9 @@ export interface ServiceRecord {
   serviceDate: string;
   serviceName: string;
   suffix?: string | null;
+  city?: string | null;
+  bikeServiceId?: number | null;
+  wasExpress?: boolean | null;
   items: ItemDto[];
   totalPrice: number;
   orderNotes?: string;

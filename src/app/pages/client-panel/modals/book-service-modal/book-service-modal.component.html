@@ -1,0 +1,57 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Umów serwis</h2>
+      <button class="close-btn" (click)="onClose()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-loading" *ngIf="loading">
+        <div class="spinner"></div>
+      </div>
+
+      <ng-container *ngIf="!loading">
+
+        <p class="modal-hint" *ngIf="!hasNoHistory">Jak chcesz umówić serwis dla tego roweru?</p>
+
+        <div class="options">
+          <button
+            *ngIf="showExpressOption"
+            class="option option-primary"
+            (click)="chooseExpress()"
+          >
+            <span class="option-icon">⚡</span>
+            <span class="option-text">
+              <span class="option-title">Serwis ekspresowy</span>
+              <span class="option-subtitle">Odbiór i zwrot tego samego dnia</span>
+            </span>
+          </button>
+
+          <button
+            *ngIf="showLastServiceOption"
+            class="option option-secondary"
+            (click)="chooseLastService()"
+          >
+            <span class="option-icon">🔧</span>
+            <span class="option-text">
+              <span class="option-title">{{ lastRecord?.serviceName }}</span>
+              <span class="option-subtitle">Ostatni serwis tego roweru</span>
+            </span>
+          </button>
+
+          <button
+            class="option"
+            [class.option-muted]="!hasNoHistory"
+            (click)="chooseOwnPick()"
+          >
+            <span class="option-icon">🔍</span>
+            <span class="option-text">
+              <span class="option-title">Sam wybiorę serwis</span>
+            </span>
+          </button>
+        </div>
+
+      </ng-container>
+    </div>
+  </div>
+</div>

@@ -47,7 +47,7 @@
 
         <div class="action-buttons">
           <button class="action-btn edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
-          <button class="action-btn service-btn" disabled title="Funkcja w przygotowaniu">Umów serwis</button>
+          <button class="action-btn service-btn" (click)="openBookServiceModal()">Umów serwis</button>
           <button class="action-btn report-btn" [class.found-btn]="bicycle.stolen" (click)="reportStolen()">
             {{ bicycle.stolen ? 'Rower się znalazł' : 'Zgłoś kradzież' }}
           </button>
@@ -565,3 +565,9 @@
     Ładowanie danych roweru...
   </div>
 </div>
+
+<app-book-service-modal
+  *ngIf="showBookServiceModal && bicycle"
+  [bicycleId]="bicycle.id"
+  (close)="showBookServiceModal = false"
+></app-book-service-modal>

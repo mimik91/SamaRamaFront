@@ -645,8 +645,8 @@
   "city_services": {
     "page_title": "Serwisy rowerowe {city}",
     "subtitle": "Lista serwisów rowerowych w mieście {city} i okolicach",
-    "meta_title": "Serwisy rowerowe {city} – warsztaty rowerowe i naprawa | CycloPick",
-    "meta_description": "Serwis rowerowy {city} – znajdź warsztat rowerowy z adresem i telefonem. Lista sprawdzonych serwisów i napraw rowerów w {city}. Umów wizytę online.",
+    "meta_title": "Serwis rowerowy {city} – cennik i opinie | CycloPick",
+    "meta_description": "Szukasz serwisu rowerowego w mieście {city}? Sprawdź adresy, godziny otwarcia, opinie i cennik warsztatów w okolicy. Umów wizytę online bez telefonu.",
     "select_city": "Wybierz miasto:",
     "show_on_map": "Pokaż na mapie",
     "loading": "Ładowanie serwisów...",
@@ -656,8 +656,8 @@
     "no_services": "Nie znaleziono serwisów rowerowych w tym obszarze.",
     "verified": "Zweryfikowany",
     "seo_title": "Serwisy rowerowe w mieście {city}",
-    "seo_text_1": "Szukasz serwisu rowerowego w mieście {city}? Na tej stronie znajdziesz listę warsztatów rowerowych działających w {city} i okolicach. Każdy serwis posiada dane kontaktowe, dzięki czemu możesz szybko umówić się na naprawę roweru.",
-    "seo_text_2": "CycloPick to platforma łącząca rowerzystów z serwisami rowerowymi. Dzięki naszej interaktywnej mapie serwisów rowerowych możesz łatwo znaleźć najbliższy warsztat w {city} i innych miastach Polski.",
+    "seo_text_1": "Szukasz serwisu rowerowego w mieście {city}? Na tej stronie znajdziesz listę warsztatów rowerowych działających w mieście {city} i okolicach. Każdy serwis posiada dane kontaktowe, dzięki czemu możesz szybko umówić się na naprawę roweru.",
+    "seo_text_2": "CycloPick to platforma łącząca rowerzystów z serwisami rowerowymi. Dzięki naszej interaktywnej mapie serwisów rowerowych możesz łatwo znaleźć najbliższy warsztat w mieście {city} oraz w innych miastach Polski.",
     "other_cities": "Serwisy rowerowe w innych miastach"
   },
   "seo_footer": {

@@ -225,12 +225,6 @@ export class NavigationComponent implements OnInit {
     this.closeMobileMenu();
   }
   
-  navigateToHome(event: Event): void {
-    event.preventDefault();
-    this.router.navigate(['/']);
-    this.closeMobileMenu();
-  }
-
   isMapPage(): boolean {
     return this.currentUrl.startsWith('/mapa-serwisow');
   }

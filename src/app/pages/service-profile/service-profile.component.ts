@@ -495,14 +495,14 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     // 4. Dodaj zakres cenowy (uwzględnia cennik i pakiety)
     bikeShopData.priceRange = this.estimatePriceRange();
 
-    // 5. Dodaj ocenę (jeśli dostępna)
-    // TODO: Dodaj ratings z API gdy będą dostępne
-    // if (this.publicInfo.rating && this.publicInfo.reviewCount) {
-    //   bikeShopData.aggregateRating = {
-    //     ratingValue: this.publicInfo.rating,
-    //     reviewCount: this.publicInfo.reviewCount
-    //   };
-    // }
+    // 5. Dodaj ocenę (jeśli dostępna) — te same dane co w widocznej sekcji opinii na stronie
+    const overallScore = this.reviews?.avgOverallScore;
+    if (overallScore != null && this.reviews && this.reviews.reviewCount > 0) {
+      bikeShopData.aggregateRating = {
+        ratingValue: this.scoreToStars(overallScore)!,
+        reviewCount: this.reviews.reviewCount
+      };
+    }
 
     // 6. Dodaj linki do social media jako sameAs
     const sameAs: string[] = [];

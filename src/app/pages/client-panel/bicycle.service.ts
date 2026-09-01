@@ -61,6 +61,7 @@ export interface ActiveServiceOrderCard {
   status: string;
   statusDisplayName: string;
   plannedDate: string | null;
+  proposedDate: string | null;
   createdAt: string | null;
   orderNotes: string | null;
   imagesCount: number;
@@ -85,6 +86,7 @@ export interface ServiceOrderDetail {
   orderNotes: string | null;
   serviceNotes: string | null;
   plannedDate: string | null;
+  proposedDate: string | null;
   estimatedDurationHours: number | null;
   serviceCompletionDate: string | null;
   images: { url: string; [key: string]: any }[];
@@ -334,6 +336,30 @@ export class BicycleService {
     ).pipe(
       catchError(error => {
         console.error('Error rejecting repair plan:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  acceptProposedDate(orderId: number): Observable<ServiceOrderDetail> {
+    return this.http.post<ServiceOrderDetail>(
+      `${environment.apiUrl}/user/service-orders/${orderId}/propose-date/accept`,
+      {}
+    ).pipe(
+      catchError(error => {
+        console.error('Error accepting proposed date:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  rejectProposedDate(orderId: number): Observable<ServiceOrderDetail> {
+    return this.http.post<ServiceOrderDetail>(
+      `${environment.apiUrl}/user/service-orders/${orderId}/propose-date/reject`,
+      {}
+    ).pipe(
+      catchError(error => {
+        console.error('Error rejecting proposed date:', error);
         return throwError(() => error);
       })
     );

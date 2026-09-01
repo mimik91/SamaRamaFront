@@ -82,6 +82,27 @@
           </div>
         </div>
 
+        <!-- Propozycja nowej daty od serwisu -->
+        <div class="status-card-date-proposal" *ngIf="activeServiceOrder.status === 'AWAITING_CLIENT_DATE_CONFIRMATION' && activeServiceOrder.proposedDate">
+          <p>Serwis zaproponował nowy termin — potwierdź lub odrzuć:</p>
+          <div class="status-card-detail-row">
+            <span class="status-detail-label">Nowa data serwisu:</span>
+            <span>{{ activeServiceOrder.proposedDate | date:'dd.MM.yyyy' }}</span>
+          </div>
+          <div class="status-card-detail-row" *ngIf="previewShiftedPickupDate">
+            <span class="status-detail-label">Nowa data odbioru roweru:</span>
+            <span>{{ previewShiftedPickupDate | date:'dd.MM.yyyy' }}</span>
+          </div>
+          <div class="plan-decision-buttons">
+            <button class="btn-reject" type="button" [disabled]="isAcceptingProposedDate || isRejectingProposedDate" (click)="rejectProposedDate()">
+              {{ isRejectingProposedDate ? 'Odrzucanie…' : 'Odrzuć' }}
+            </button>
+            <button class="btn-confirm" type="button" [disabled]="isAcceptingProposedDate || isRejectingProposedDate" (click)="acceptProposedDate()">
+              {{ isAcceptingProposedDate ? 'Potwierdzanie…' : 'Akceptuj nową datę' }}
+            </button>
+          </div>
+        </div>
+
         <!-- Rozwinięte szczegóły -->
         <div class="service-order-expanded" *ngIf="isServiceOrderExpanded">
           <div class="service-order-loading" *ngIf="isLoadingServiceOrderDetail">Ładowanie...</div>

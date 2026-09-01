@@ -134,7 +134,7 @@
     <!-- CENNIK + PAKIETY -->
 <section class="pricelist-section" id="cennik" *ngIf="activeStatus?.pricelistActive || activeStatus?.packagesActive">
   <div class="pricelist-tab">
-    <h1 class="pricelist-main-heading">{{ publicInfo.name }} – cennik serwisu rowerowego</h1>
+    <h2 class="pricelist-main-heading">{{ publicInfo.name }} – cennik serwisu rowerowego</h2>
 
     <!-- ============================================ -->
     <!-- PAKIETY SERWISOWE - NA GÓRZE CENNIKA -->
@@ -237,7 +237,7 @@
     <!-- GODZINY OTWARCIA -->
     <section class="main-content" id="godziny-otwarcia" *ngIf="activeStatus?.openingHoursActive">
       <div class="content-left">
-        <h1>Godziny otwarcia – {{ publicInfo.name }}</h1>
+        <h2 class="opening-hours-heading">Godziny otwarcia – {{ publicInfo.name }}</h2>
         <div *ngIf="openingHours?.openingHoursInfo" class="info-banner">
           <p>{{ openingHours?.openingHoursInfo }}</p>
         </div>

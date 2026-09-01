@@ -1,5 +1,5 @@
 export const TRANSPORT_PRICING = {
-  partnerCost: 10,
+  partnerCost: 20,
   standardCost: 60,
-  additionalBikeCost: 5,
+  additionalBikeCost: 10,
 } as const;

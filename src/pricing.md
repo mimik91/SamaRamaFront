@@ -13,7 +13,7 @@ Konto klienta, rezerwacje online i historia serwisowa są bezpłatne.
 
 | Usługa | Serwisy Partnerskie — PROMOCJA (do odwołania) | Serwisy Partnerskie — cena standardowa | Pozostałe serwisy w Krakowie |
 |--------|-----------------------------------------------|----------------------------------------|------------------------------|
-| Odbiór i zwrot roweru (transport w obie strony) | 10 zł | 30 zł | 60 zł |
+| Odbiór i zwrot roweru (transport w obie strony) | 20 zł | 30 zł | 60 zł |
 | Tylko zwrot roweru (gdy rower już w serwisie) | 10 zł | 20 zł | Niedostępne |
 | Konto klienta, rezerwacje, historia serwisowa | 0 zł | 0 zł | 0 zł |
 

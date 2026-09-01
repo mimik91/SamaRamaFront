@@ -97,6 +97,10 @@ export class ClientPanelDetailsComponent implements OnInit {
   showRejectReasonModal = false;
   rejectReason = '';
 
+  // Propozycja nowej daty serwisu (status AWAITING_CLIENT_DATE_CONFIRMATION)
+  isAcceptingProposedDate = false;
+  isRejectingProposedDate = false;
+
   // Service order image lightbox
   soLightboxOpen = false;
   soLightboxIndex = 0;
@@ -172,6 +176,25 @@ export class ClientPanelDetailsComponent implements OnInit {
 
   get transportOrderStatusColor(): string {
     return getTransportStatusColor(this.activeTransport?.transport?.status);
+  }
+
+  /**
+   * Podgląd nowej daty odbioru roweru przez kuriera, gdyby klient zaakceptował
+   * proponowaną datę serwisu — przesunięcie liczone tym samym deltą dni co data serwisu.
+   * Wyłącznie orientacyjny podgląd; faktyczne przesunięcie liczy backend przy akceptacji.
+   */
+  get previewShiftedPickupDate(): string | null {
+    const proposed = this.activeServiceOrder?.proposedDate;
+    const planned = this.activeServiceOrder?.plannedDate;
+    const pickup = this.activeTransport?.transport?.pickupDate;
+    if (!proposed || !planned || !pickup) return null;
+
+    const deltaDays = Math.round((new Date(proposed).getTime() - new Date(planned).getTime()) / 86400000);
+    if (deltaDays === 0) return null;
+
+    const shifted = new Date(pickup);
+    shifted.setDate(shifted.getDate() + deltaDays);
+    return shifted.toISOString().split('T')[0];
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -407,6 +430,41 @@ export class ClientPanelDetailsComponent implements OnInit {
       error: (err) => {
         this.isDecidingRepairPlan = false;
         this.notificationService.error(err.error?.message || 'Nie udało się odrzucić planu naprawy.');
+      }
+    });
+  }
+
+  acceptProposedDate(): void {
+    if (!this.activeServiceOrder || this.isAcceptingProposedDate || this.isRejectingProposedDate) return;
+
+    this.isAcceptingProposedDate = true;
+    this.bicycleService.acceptProposedDate(this.activeServiceOrder.id).subscribe({
+      next: () => {
+        this.isAcceptingProposedDate = false;
+        this.notificationService.success('Nowa data wizyty została potwierdzona.');
+        if (this.bicycle) this.loadBicycleStatus(this.bicycle.id);
+      },
+      error: (err) => {
+        this.isAcceptingProposedDate = false;
+        this.notificationService.error(err.error?.message || 'Nie udało się potwierdzić nowej daty.');
+      }
+    });
+  }
+
+  rejectProposedDate(): void {
+    if (!this.activeServiceOrder || this.isAcceptingProposedDate || this.isRejectingProposedDate) return;
+    if (!confirm('Czy na pewno chcesz odrzucić nowy termin? Rezerwacja zostanie anulowana.')) return;
+
+    this.isRejectingProposedDate = true;
+    this.bicycleService.rejectProposedDate(this.activeServiceOrder.id).subscribe({
+      next: () => {
+        this.isRejectingProposedDate = false;
+        this.notificationService.success('Rezerwacja została anulowana.');
+        if (this.bicycle) this.loadBicycleStatus(this.bicycle.id);
+      },
+      error: (err) => {
+        this.isRejectingProposedDate = false;
+        this.notificationService.error(err.error?.message || 'Nie udało się odrzucić nowej daty.');
       }
     });
   }

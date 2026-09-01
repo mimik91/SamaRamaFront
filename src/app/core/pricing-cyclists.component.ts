@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constants';
 
 @Component({
   selector: 'app-pricing-cyclists',
@@ -49,11 +50,11 @@ import { CommonModule } from '@angular/common';
                     <span class="service-desc">Transport w obie strony</span>
                   </td>
                   <td class="price promo-price" data-label="Promocja (partnerskie)">
-                    <span class="price-value">0 z&#322;</span>
+                    <span class="price-value">${TRANSPORT_PRICING.partnerCost} z&#322;</span>
                     <span class="fire-icon emoji">🔥</span>
                   </td>
                   <td class="price" data-label="Standard (partnerskie)">30 z&#322;</td>
-                  <td class="price" data-label="Standard (inne)">60 z&#322;</td>
+                  <td class="price" data-label="Standard (inne)">${TRANSPORT_PRICING.standardCost} z&#322;</td>
                 </tr>
                 <tr>
                   <td class="service-name">

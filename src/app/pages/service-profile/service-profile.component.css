@@ -148,7 +148,8 @@
   object-fit: contain;
 }
 
-.content-left h1 {
+.content-left h1,
+.opening-hours-heading {
   font-size: var(--font-size-3xl);
   color: var(--text-primary);
   line-height: var(--line-height-tight);
@@ -1014,7 +1015,8 @@
 }
 
 @media (max-width: 768px) {
-  .content-left h1 {
+  .content-left h1,
+  .opening-hours-heading {
     font-size: var(--font-size-2xl);
   }
 

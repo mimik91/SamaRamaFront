@@ -1,4 +1,5 @@
 import { PoradnikArticle } from '../../shared/models/poradnik-article.model';
+import { TRANSPORT_PRICING } from '../../shared/constants/transport-pricing.constants';
 
 // Reszta artykułów wycofana z publikacji (2026-08-22) — pełna treść (7 artykułów) zachowana w
 // plany-marketingowe/poradnik-do-dopracowania.md do czasu dopracowania od A do Z.
@@ -74,8 +75,8 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
   {
     slug: 'jak-wybrac-serwis-rowerowy-krakow',
     title: 'Serwisy rowerowe Kraków — jak wybrać dobry warsztat, gdy oceny w Google mylą',
-    subtitle: 'Zweryfikowane opinie i transport door-to-door od 10 zł',
-    excerpt: 'W Krakowie działają dziesiątki serwisów rowerowych, a ocena w Google nie zawsze mówi prawdę o jakości. Sprawdź, jak wybrać dobry warsztat i jak zamówić transport door-to-door za 10 zł.',
+    subtitle: `Zweryfikowane opinie i transport door-to-door od ${TRANSPORT_PRICING.partnerCost} zł`,
+    excerpt: `W Krakowie działają dziesiątki serwisów rowerowych, a ocena w Google nie zawsze mówi prawdę o jakości. Sprawdź, jak wybrać dobry warsztat i jak zamówić transport door-to-door za ${TRANSPORT_PRICING.partnerCost} zł.`,
     coverImage: 'assets/images/pictures/vertical/serwis-rowerowy-krakow.webp',
     coverImageAlt: 'Rower podczas przeglądu w warsztacie rowerowym w Krakowie',
     publishedDate: '2026-08-26',
@@ -89,7 +90,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <li><a href="#polecane-serwisy">Możesz wybrać serwis z najwyższą oceną na Google Maps</a> — odbierzemy Twój rower z dowolnego miejsca w Krakowie i zawieziemy go tam, nawet jeśli żaden nie działa akurat blisko Ciebie.</li>
           <li><a href="#oceny-do-sprostowania">Ocenę w Google Maps może wystawić każdy</a> z kontem Google, niezależnie od tego, czy faktycznie oddał tam rower — kilka solidnych warsztatów ma przez to zaniżony wynik.</li>
           <li><a href="#zweryfikowane-opinie">Uruchamiamy system zweryfikowanych opinii</a> — ocenę u nas wystawi tylko klient z faktycznie zrealizowanym zleceniem.</li>
-          <li><a href="#jak-zarezerwowac">Transport door-to-door</a> do partnerskich warsztatów w Krakowie kosztuje od 10 zł w obie strony.</li>
+          <li><a href="#jak-zarezerwowac">Transport door-to-door</a> do partnerskich warsztatów w Krakowie kosztuje od ${TRANSPORT_PRICING.partnerCost} zł w obie strony.</li>
           <li>Pełną listę znajdziesz w <a href="/serwisy/krakow">katalogu serwisów rowerowych w Krakowie</a>.</li>
         </ul>
       </div>
@@ -203,11 +204,55 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
       <h2 id="jak-zarezerwowac">Jak zarezerwować serwis w Krakowie w 3 krokach</h2>
       <p>Zamiast obdzwaniać kolejne warsztaty i zgadywać, która opinia w internecie jest prawdziwa:</p>
       <ol>
-        <li>Wejdź do katalogu serwisów rowerowych w Krakowie i porównaj serwisy oraz cenniki.</li>
+        <li>Wejdź do <a href="/serwisy/krakow">katalogu serwisów rowerowych w Krakowie</a> i porównaj serwisy oraz cenniki.</li>
         <li>Wybierz warsztat i zarezerwuj termin online, bez telefonowania.</li>
-        <li>Aby jak najbardziej Cię odciążyć, możemy zaproponować też <a href="/transport-rowerow-krakow">transport door-to-door w Krakowie od 10 zł w obie strony</a> — dzięki temu nie musisz się zastanawiać, jak dostarczyć rower do serwisu i z powrotem.</li>
+        <li>Aby jak najbardziej Cię odciążyć, możemy zaproponować też <a href="/transport-rowerow-krakow">transport door-to-door w Krakowie od ${TRANSPORT_PRICING.partnerCost} zł w obie strony</a> — dzięki temu nie musisz się zastanawiać, jak dostarczyć rower do serwisu i z powrotem.</li>
       </ol>
       <p>Rower wraca do Ciebie naprawiony, bez konieczności planowania dwóch dojazdów przez miasto.</p>
+    `
+  },
+  {
+    slug: 'rowerem-do-pracy-krakow',
+    title: 'Rowerem do pracy w Krakowie — CycloPick partnerem kampanii 2026',
+    subtitle: 'Dołączamy do miejskiej akcji promującej dojazdy rowerem do pracy',
+    excerpt: 'CycloPick zostaje partnerem kampanii Rowerem do Pracy w Krakowie — miejskiej inicjatywy, w której firmy i instytucje rywalizują o to, kto najczęściej dojeżdża do pracy na rowerze. Sprawdź, na czym polega akcja i jak śledzić wyniki.',
+    coverImage: 'assets/images/poradnik/rdp/Rowerem do pracy plakat .webp',
+    coverImageAlt: 'Plakat kampanii Rowerem do Pracy w Krakowie',
+    publishedDate: '2026-08-31',
+    readingTimeMinutes: 4,
+    contentHtml: `
+      <p>CycloPick dołącza jako partner do kampanii Rowerem do Pracy, inicjatywy Urzędu Miasta Krakowa, która od lat zachęca mieszkańców do zamiany samochodu na rower w codziennych dojazdach do pracy. Poniżej wyjaśniamy, na czym polega akcja i gdzie na bieżąco sprawdzić wyniki.</p>
+
+      <div class="poradnik-tldr">
+        <h2 id="w-skrocie">W skrócie</h2>
+        <ul>
+          <li><strong>Co to:</strong> miejska kampania promująca dojazdy rowerem do pracy, organizowana przez Urząd Miasta Krakowa.</li>
+          <li><strong>Kto uczestniczy:</strong> firmy, instytucje i wydziały urzędu rejestrują zespoły, a pracownicy logują przejechane trasy.</li>
+          <li><strong>Skala akcji:</strong> ponad 170 firm i instytucji, ponad 2600 aktywnych uczestników, ponad 980 000 km przejechanych w tej edycji.</li>
+          <li><strong>CycloPick:</strong> partner kampanii 2026.</li>
+          <li>Aktualne <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5" target="_blank" rel="noopener">liczniki</a> i <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5#rankings" target="_blank" rel="noopener">ranking</a> na stronie kampanii.</li>
+        </ul>
+      </div>
+
+      <h2 id="czym-jest-akcja">Czym jest akcja Rowerem do Pracy</h2>
+      <p>Rowerem do Pracy to cykliczna kampania Urzędu Miasta Krakowa promująca dojazdy do pracy na rowerze zamiast samochodem. Firmy, instytucje i wydziały urzędu rejestrują własne zespoły, a pracownicy logują w systemie przejechane trasy. Zespoły rywalizują w rankingu według frekwencji rowerowej, czyli odsetka dni roboczych, w które dana osoba dojechała do pracy na rowerze.</p>
+      <p>Poza samą rywalizacją miasto organizuje przy okazji kampanii edukacyjne wycieczki rowerowe i miejskie kontrole rowerowe.</p>
+
+      <figure>
+        <img src="assets/images/poradnik/rdp/Rowerem do pracy plakat .webp" alt="Plakat kampanii Rowerem do Pracy w Krakowie" loading="lazy">
+        <figcaption>Plakat tegorocznej edycji kampanii Rowerem do Pracy.</figcaption>
+      </figure>
+
+      <h2 id="skala-akcji">Ile osób już jeździ do pracy na rowerze w Krakowie</h2>
+      <p>W obecnej edycji (Kampania 2026) bierze udział ponad 170 firm, instytucji i wydziałów urzędu, a liczba aktywnych uczestników przekroczyła 2600. Razem zalogowali już ponad 140 000 tras i ponad 980 000 km. Liczniki na stronie kampanii aktualizują się kilka razy w miesiącu, więc te liczby rosną z tygodnia na tydzień. <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5" target="_blank" rel="noopener">Aktualny stan sprawdzisz tutaj</a>, a <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5#rankings" target="_blank" rel="noopener">pełny ranking firm i instytucji tutaj</a>.</p>
+
+      <h2 id="dlaczego-cyclopick-dolacza">Dlaczego CycloPick dołącza do akcji</h2>
+      <p>Pisaliśmy już o <a href="/poradnik/budzet-obywatelski-krakow-projekt-50-petla-pychowicka">głosowaniu na nową trasę MTB na Górce Pychowickiej</a>, a teraz z podobnego powodu wspieramy Rowerem do Pracy. Im więcej osób w Krakowie dojeżdża do pracy na rowerze, tym więcej osób potrzebuje miejsca, które solidnie ten rower zserwisuje. Tym zajmuje się CycloPick.</p>
+
+      <h2 id="jak-dolaczyc">Jak dołączyć i gdzie sprawdzić partnerów</h2>
+      <p>Firmy zainteresowane rejestracją zespołu oraz pełną listę partnerów i sponsorów tegorocznej edycji znajdziesz na <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5#sponsors" target="_blank" rel="noopener">stronie kampanii</a>.</p>
+
+      <p>Jeździsz już do pracy na rowerze? Sprawdź <a href="/serwisy/krakow">katalog serwisów rowerowych w Krakowie</a> i zadbaj o to, żeby był gotowy na codzienne dojazdy.</p>
     `
   }
 ];

@@ -716,9 +716,43 @@
 
 .site-links-content {
   display: grid;
-  grid-template-columns: repeat(2, minmax(160px, 260px));
+  grid-template-columns: repeat(3, minmax(160px, 260px));
   justify-content: center;
   gap: var(--spacing-10);
+}
+
+.partner-badge-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-color-light);
+  padding: var(--spacing-3);
+  background: var(--color-white);
+  text-decoration: none;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.partner-badge-footer:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.partner-badge-footer img {
+  display: block;
+  width: 72px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.partner-badge-footer span {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.partner-badge-footer span strong {
+  color: var(--color-primary);
 }
 
 .site-links-section h3 {

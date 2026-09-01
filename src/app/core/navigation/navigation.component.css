@@ -49,6 +49,38 @@
   text-decoration: none;
 }
 
+/* Odznaka partnera akcji "Rowerem do pracy" — biały chip z logo + napisem, obok brandu */
+.partner-badge-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  background-color: var(--color-white);
+  border-radius: var(--radius-button, 20px);
+  padding: 6px 14px 6px 8px;
+  text-decoration: none;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.partner-badge-nav:hover {
+  box-shadow: 0 2px 10px var(--color-black-alpha-10);
+  transform: translateY(-1px);
+}
+
+.partner-badge-nav img {
+  display: block;
+  height: 26px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.partner-badge-nav span {
+  font-size: 0.8rem;
+  line-height: 1.15;
+  color: var(--color-primary-dark, var(--color-primary));
+  white-space: nowrap;
+}
+
 /* Style dla standardowego menu */
 .navbar-menu {
   display: flex;
@@ -178,8 +210,26 @@
   z-index: 9998; /* Pod menu, ale nad mapą */
 }
 
+/* Pasek partnera "Rowerem do pracy" pod navbarem — widoczny tylko na mobile (patrz media query
+   poniżej); na desktopie odznaka jest już w .partner-badge-nav obok logo, więc tu jest ukryty. */
+.mobile-partner-strip {
+  display: none;
+}
+
 .menu-overlay.active {
   display: block;
+}
+
+/* Poniżej ok. 1100px pełny napis + reszta linków menu (Mapa/Login/Poradnik) już się nie mieszczą
+   obok siebie w jednej linii navbara — zostaje samo logo, żeby nic się nie nakładało. */
+@media screen and (max-width: 1100px) {
+  .partner-badge-nav span {
+    display: none;
+  }
+
+  .partner-badge-nav {
+    padding: 4px 8px;
+  }
 }
 
 /* Media queries for responsive design */
@@ -191,10 +241,54 @@
   .mobile-menu-btn {
     display: block;
   }
-  
-  .navbar-menu {
+
+  .menu-overlay {
+    top: 96px;
+  }
+
+  .partner-badge-nav {
+    display: none;
+  }
+
+  .mobile-partner-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     position: fixed;
     top: 60px;
+    left: 0;
+    right: 0;
+    padding: 7px 12px;
+    background-color: var(--color-white);
+    border-top: 1px solid var(--color-black-alpha-10);
+    text-decoration: none;
+    z-index: 9999; /* nad overlayem/mapą, pod dropdownem menu (10001) */
+  }
+
+  .mobile-partner-strip img {
+    display: block;
+    height: 20px;
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .mobile-partner-strip span {
+    font-size: 0.72rem;
+    line-height: 1.2;
+    color: var(--color-primary-dark, var(--color-primary));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-partner-strip .strip-text-short {
+    display: none;
+  }
+
+  .navbar-menu {
+    position: fixed;
+    top: 96px;
     left: 0;
     right: 0;
     flex-direction: column;
@@ -232,7 +326,7 @@
   .auth-links {
     flex-direction: column;
     position: fixed;
-    top: 60px;
+    top: 96px;
     left: 0;
     right: 0;
     background-color: var(--color-primary-light);
@@ -257,5 +351,17 @@
     padding: 10px;
     text-align: center;
     display: block;
+  }
+}
+
+/* Na bardzo wąskich ekranach (np. iPhone SE, 320px) pełny napis paska partnera się nie mieści —
+   przełącz na krótszy wariant zamiast przycinać tekst wielokropkiem. */
+@media screen and (max-width: 360px) {
+  .mobile-partner-strip .strip-text-full {
+    display: none;
+  }
+
+  .mobile-partner-strip .strip-text-short {
+    display: inline;
   }
 }

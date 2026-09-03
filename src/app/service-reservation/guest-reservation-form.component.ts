@@ -607,9 +607,14 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     const suffix = this.route.snapshot.paramMap.get('suffix');
 
     if (suffix) {
-      // Jeśli jesteśmy na starym URL /reserve-service/:suffix → przekieruj na /:suffix/zarezerwuj
+      // Jeśli jesteśmy na starym URL /reserve-service/:suffix → przekieruj na /:suffix/zarezerwuj.
+      // Prawdziwe zapytania HTTP (w tym crawlery) dostają teraz 301 bezpośrednio z Express
+      // (server.ts, przed renderowaniem Angulara) - ten navigate() obsługuje już tylko
+      // wewnętrzną nawigację SPA, więc jest bezpieczny nawet bez isPlatformBrowser.
       if (this.route.snapshot.routeConfig?.path === 'reserve-service/:suffix') {
-        this.router.navigate(['/', suffix, 'zarezerwuj'], { replaceUrl: true });
+        if (isPlatformBrowser(this.platformId)) {
+          this.router.navigate(['/', suffix, 'zarezerwuj'], { replaceUrl: true });
+        }
         return;
       }
       this.serviceSuffix = suffix;
@@ -624,22 +629,26 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
             if (res.id) {
               this.loadServiceDetails(res.id);
             } else {
+              // UWAGA: nigdy nie wywołuj router.navigate()/setTimeout(...navigate) tutaj bez
+              // isPlatformBrowser - podczas SSR blokuje renderowanie na kilka sekund. send404()
+              // już ustawia prawdziwy status 404, żadna nawigacja nie jest potrzebna.
               this.send404();
               this.notificationService.error('Nie znaleziono serwisu.');
-              this.router.navigate([environment.links.servicesMap]);
               this.loading = false;
             }
           },
           error: () => {
             this.send404();
             this.notificationService.error('Nie znaleziono serwisu.');
-            this.router.navigate([environment.links.servicesMap]);
             this.loading = false;
           }
         });
       }
-    } else {
-      // Fallback dla starych URL-i: /reserve-service?serviceId=X
+    } else if (isPlatformBrowser(this.platformId)) {
+      // Fallback dla starych URL-i: /reserve-service?serviceId=X. Wymaga zapytania do
+      // backendu (serviceId -> suffix), więc nie da się tego bezpiecznie przekierować
+      // podczas SSR bez większej przebudowy - ograniczone do przeglądarki (te URL-e
+      // z query-param praktycznie nie mają wartości SEO/backlinków).
       this.route.queryParams.subscribe(params => {
         const serviceId = params['serviceId'];
         if (serviceId) {

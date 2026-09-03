@@ -37,11 +37,9 @@ import { TransportRowerowKrakowComponent } from './pages/transport-rowerow-krako
 import { PoradnikListPageComponent } from './pages/poradnik/poradnik-list-page/poradnik-list-page.component';
 import { PoradnikArticlePageComponent } from './pages/poradnik/poradnik-article-page/poradnik-article-page.component';
 import { FlyerRedirectComponent } from './pages/flyer-redirect/flyer-redirect.component';
-import { OrderSuccessComponent } from './pages/order-success/order-success.component';
 import { PaymentReturnComponent } from './pages/payments/payment-return/payment-return.component';
 import { PaymentSummaryComponent } from './pages/payments/payment-summary/payment-summary.component';
-import { TransportPaymentSuccessComponent } from './pages/payments/transport-payment-success/transport-payment-success.component';
-import { ExpressServiceSuccessComponent } from './pages/payments/express-service-success/express-service-success.component';
+import { TransactionSuccessComponent } from './pages/transaction-success/transaction-success.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
@@ -463,8 +461,13 @@ export const routes: Routes = [
     // Strona sukcesu po złożeniu rezerwacji lub zamówienia transportu
     {
       path: 'sukces',
-      component: OrderSuccessComponent,
-      title: 'Dziękujemy! | CycloPick'
+      component: TransactionSuccessComponent,
+      title: 'Dziękujemy! | CycloPick',
+      data: {
+        heading: 'Rezerwacja złożona!',
+        message: 'Twoja rezerwacja została przyjęta. Serwis skontaktuje się z Tobą wkrótce.',
+        eventLabel: 'rezerwacja'
+      }
     },
 
     // Podsumowanie zamówienia przed płatnością — wybór "opłać" lub "opłacę później"
@@ -484,13 +487,23 @@ export const routes: Routes = [
     // Strony sukcesu po opłaceniu zamówienia przez PayU
     {
       path: 'platnosc/sukces/transport',
-      component: TransportPaymentSuccessComponent,
-      title: 'Transport opłacony! | CycloPick'
+      component: TransactionSuccessComponent,
+      title: 'Transport opłacony! | CycloPick',
+      data: {
+        heading: 'Zamówienie transportu opłacone!',
+        message: 'Twoja płatność została potwierdzona. Kurier skontaktuje się z Tobą w celu ustalenia szczegółów odbioru roweru.',
+        eventLabel: 'transport'
+      }
     },
     {
       path: 'platnosc/sukces/serwis-ekspresowy',
-      component: ExpressServiceSuccessComponent,
-      title: 'Wizyta opłacona! | CycloPick'
+      component: TransactionSuccessComponent,
+      title: 'Wizyta opłacona! | CycloPick',
+      data: {
+        heading: 'Wizyta serwisowa opłacona!',
+        message: 'Twoja płatność została potwierdzona. Wizyta w serwisie ekspresowym CycloPick została zarezerwowana — potwierdzenie otrzymasz na e-mail.',
+        eventLabel: 'serwis-ekspresowy'
+      }
     },
 
     // Service profile - base route (default - "O nas" section)

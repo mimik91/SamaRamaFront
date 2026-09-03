@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot, Router } from '@angular/router';
+import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable, of, forkJoin } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
 import { ServiceProfileService } from './service-profile.service';
@@ -37,7 +37,6 @@ export interface ServiceProfileResolvedData {
 @Injectable({ providedIn: 'root' })
 export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedData | null> {
   private profileService = inject(ServiceProfileService);
-  private router = inject(Router);
 
   resolve(route: ActivatedRouteSnapshot): Observable<ServiceProfileResolvedData | null> {
     const suffix = route.paramMap.get('suffix');
@@ -131,8 +130,9 @@ export class ServiceProfileResolver implements Resolve<ServiceProfileResolvedDat
       }),
       catchError(err => {
         console.error('[ServiceProfileResolver] Błąd pobierania danych:', err);
-        // Przekieruj na stronę główną przy błędzie
-        this.router.navigate(['/']);
+        // UWAGA: nigdy nie wywołuj router.navigate()/setTimeout(...navigate) tutaj bez isPlatformBrowser —
+        // podczas SSR blokuje renderowanie na kilka sekund. Komponent renderuje stan "nie znaleziono"
+        // w miejscu (błąd 404 przez SSR_RESPONSE, patrz send404() w guest-reservation-form.component.ts).
         return of(null);
       })
     );

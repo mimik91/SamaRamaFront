@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
-import { environment } from '../../../environments/environments';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
+import { environment } from '../../environments/environments';
 
 declare function gtag(...args: unknown[]): void;
 declare global {
@@ -10,29 +11,48 @@ declare global {
 
 const REDIRECT_SECONDS = 30; // TYMCZASOWO wydłużone do testów Tag Assistant - przywrócić do 5 po teście
 
+/**
+ * Wspólny komponent dla stron sukcesu potransakcyjnego (rezerwacja, płatność za transport,
+ * płatność za serwis ekspresowy) - wcześniej 3 niemal identyczne kopie (order-success,
+ * express-service-success, transport-payment-success). Treść (heading/message/eventLabel)
+ * przychodzi z route.data, patrz app.routes.ts.
+ *
+ * UWAGA: nigdy nie wywołuj router.navigate()/setTimeout(...navigate) tutaj bez isPlatformBrowser
+ * - podczas SSR blokuje renderowanie na kilka sekund. To prywatna, jednorazowa strona wynikowa
+ * zamówienia - nie potrzebuje żadnej nawigacji podczas SSR, wystarczy że się wyrenderuje
+ * (statyczna treść) z noindex.
+ */
 @Component({
-  selector: 'app-transport-payment-success',
+  selector: 'app-transaction-success',
   standalone: true,
   imports: [],
-  templateUrl: './transport-payment-success.component.html',
-  styleUrls: ['./transport-payment-success.component.css']
+  templateUrl: './transaction-success.component.html',
+  styleUrls: ['./transaction-success.component.css']
 })
-export class TransportPaymentSuccessComponent implements OnInit, OnDestroy {
+export class TransactionSuccessComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private meta = inject(Meta);
 
   countdown = REDIRECT_SECONDS;
-  readonly heading = 'Zamówienie transportu opłacone!';
-  readonly message = 'Twoja płatność została potwierdzona. Kurier skontaktuje się z Tobą w celu ustalenia szczegółów odbioru roweru.';
+  heading = '';
+  message = '';
+  private eventLabel = '';
 
   private timer: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
+    const data = this.route.snapshot.data;
+    this.heading = data['heading'] ?? 'Dziękujemy!';
+    this.message = data['message'] ?? '';
+    this.eventLabel = data['eventLabel'] ?? '';
+
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+
     if (isPlatformBrowser(this.platformId)) {
       this.fireGa4Event();
       this.startCountdown();
-    } else {
-      this.router.navigate([environment.links.homepage], { replaceUrl: true });
     }
   }
 
@@ -40,7 +60,7 @@ export class TransportPaymentSuccessComponent implements OnInit, OnDestroy {
     try {
       gtag('event', 'konwersja_sukces', {
         event_category: 'konwersja',
-        event_label: 'transport'
+        event_label: this.eventLabel
       });
       // Push jawnego obiektu {event: ...} - gtag() wysyła do dataLayer surowy
       // obiekt arguments, którego trigger Custom Event w GTM nie rozpoznaje.
@@ -48,7 +68,7 @@ export class TransportPaymentSuccessComponent implements OnInit, OnDestroy {
       window.dataLayer.push({
         event: 'konwersja_sukces',
         event_category: 'konwersja',
-        event_label: 'transport'
+        event_label: this.eventLabel
       });
     } catch {
       // gtag niedostępny

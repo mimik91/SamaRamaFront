@@ -50,15 +50,22 @@ export class FlyerRedirectComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      try {
-        gtag('event', 'qr_ulotka', {
-          event_category: 'marketing',
-          event_label: 'ulotka_qr_kod'
-        });
-      } catch {
-        // gtag niedostępny — ignoruj
-      }
+    // UWAGA: router.navigate() musi zostać ograniczony do przeglądarki - podczas SSR
+    // blokuje renderowanie na kilka sekund (patrz historia tego pliku / innych stron
+    // z tym samym problemem). Ten URL jest rozdawany na papierowej ulotce (QR), nie jest
+    // linkowany ani w sitemapie, więc SSR/crawler praktycznie nigdy tu nie trafia -
+    // wystarczy przekierowanie tylko po stronie klienta.
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    try {
+      gtag('event', 'qr_ulotka', {
+        event_category: 'marketing',
+        event_label: 'ulotka_qr_kod'
+      });
+    } catch {
+      // gtag niedostępny — ignoruj
     }
 
     this.router.navigate(['/'], {

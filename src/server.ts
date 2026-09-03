@@ -43,6 +43,17 @@ app.use((req, res, next) => {
 });
 
 /**
+ * Legacy URL redirect (301) - /reserve-service/:suffix -> /:suffix/zarezerwuj.
+ * Czysta transformacja ścieżki (suffix już jest w URL, nie trzeba pytać backendu),
+ * więc robimy to tutaj, przed renderowaniem Angulara - szybciej i z prawdziwym
+ * sygnałem przekierowania dla crawlerów, zamiast renderować całą aplikację po to,
+ * żeby ta sama kazała przeglądarce nawigować gdzie indziej.
+ */
+app.get('/reserve-service/:suffix', (req, res) => {
+  res.redirect(301, `/${req.params['suffix']}/zarezerwuj`);
+});
+
+/**
  * Proxy /sitemap.xml do backendu (dynamicznie generowany z bazy)
  * Musi być PRZED express.static, żeby statyczny plik nie wygrał
  */

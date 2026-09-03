@@ -1,3 +1,9 @@
+<div class="poradnik-article-container" *ngIf="notFound" style="text-align:center; padding: 60px 20px;">
+  <h1>Nie znaleziono artykułu</h1>
+  <p>Artykuł, którego szukasz, nie istnieje lub został przeniesiony.</p>
+  <a href="/poradnik">Wróć do poradnika</a>
+</div>
+
 <article class="poradnik-article-container" *ngIf="article">
   <div class="poradnik-layout-top">
     <app-breadcrumb

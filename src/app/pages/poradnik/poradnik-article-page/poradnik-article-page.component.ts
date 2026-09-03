@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
+import { DomSanitizer, SafeHtml, Meta } from '@angular/platform-browser';
 import { SeoService } from '../../../core/seo.service';
+import { SSR_RESPONSE } from '../../../core/ssr-tokens';
 import { SchemaOrgHelper } from '../../../core/schema-org.helper';
 import { PoradnikArticleCardComponent } from '../poradnik-article-card/poradnik-article-card.component';
 import { BreadcrumbComponent } from '../../../shared/components/breadcrumb/breadcrumb.component';
@@ -28,11 +29,13 @@ const STRIP_TAGS_PATTERN = /<[^>]+>/g;
 })
 export class PoradnikArticlePageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private seoService = inject(SeoService);
   private platformId = inject(PLATFORM_ID);
   private sanitizer = inject(DomSanitizer);
+  private meta = inject(Meta);
+  private serverResponse = inject(SSR_RESPONSE, { optional: true });
 
+  notFound = false;
   article!: PoradnikArticle;
   safeContentHtml!: SafeHtml;
   relatedArticles: PoradnikArticle[] = [];
@@ -47,7 +50,13 @@ export class PoradnikArticlePageComponent implements OnInit, OnDestroy {
     const found = getPoradnikArticleBySlug(slug);
 
     if (!found) {
-      this.router.navigate(['/poradnik']);
+      // UWAGA: nigdy nie wywołuj router.navigate()/setTimeout(...navigate) tutaj bez
+      // isPlatformBrowser - podczas SSR blokuje renderowanie na kilka sekund. Zamiast tego:
+      // stan "nie znaleziono" w miejscu + prawdziwy 404 (wzorem send404() w
+      // guest-reservation-form.component.ts) + noindex (wzorem city-services-page.component.ts).
+      this.notFound = true;
+      this.serverResponse?.status(404);
+      this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
       return;
     }
 

@@ -4,9 +4,11 @@ import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { NotificationService } from '../core/notification.service';
+import { SSR_RESPONSE } from '../core/ssr-tokens';
 import { TransportOrderService } from './transport-order.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { I18nService } from '../core/i18n.service';
@@ -38,6 +40,17 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
   private sessionSyncService = inject(SessionSyncService);
   private platformId = inject(PLATFORM_ID);
   private discountService = inject(DiscountService);
+  private meta = inject(Meta);
+  private serverResponse = inject(SSR_RESPONSE, { optional: true });
+
+  /** UWAGA: nigdy nie wywołuj router.navigate()/setTimeout(...navigate) w ścieżce
+   * ładowania danych bez isPlatformBrowser - podczas SSR blokuje renderowanie na kilka
+   * sekund. Przy "nie znaleziono" ustaw this.error (szablon ma już *ngIf="error && !loading")
+   * i wywołaj notFound404() poniżej, zamiast nawigować. */
+  private notFound404(): void {
+    this.serverResponse?.status(404);
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+  }
 
   private routerSub: Subscription | null = null;
   private sessionSyncSent = false;
@@ -179,8 +192,11 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
     if (suffix) {
       this.serviceSuffix = suffix;
       this.loadServiceBySuffix(suffix);
-    } else {
-      // Fallback dla starych URL-i: /order-transport?serviceId=X
+    } else if (isPlatformBrowser(this.platformId)) {
+      // Fallback dla starych URL-i: /order-transport?serviceId=X. Wymaga zapytania do
+      // backendu (serviceId -> suffix), więc nie da się tego bezpiecznie przekierować
+      // podczas SSR bez większej przebudowy - ograniczone do przeglądarki (te URL-e
+      // z query-param praktycznie nie mają wartości SEO/backlinków).
       this.route.queryParams.subscribe(params => {
         const serviceId = params['serviceId'];
         if (serviceId) {
@@ -212,15 +228,19 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
         if (response.id) {
           this.loadServiceDetails(response.id.toString());
         } else {
-          this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
-          this.router.navigate([environment.links.homepage]);
+          const message = this.i18n.instant('transport_order.service_info.error_service_not_found');
+          this.error = message;
+          this.notificationService.error(message);
+          this.notFound404();
           this.loading = false;
         }
       },
       error: (error) => {
         console.error('Error loading service by suffix:', error);
-        this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
-        this.router.navigate([environment.links.homepage]);
+        const message = this.i18n.instant('transport_order.service_info.error_service_not_found');
+        this.error = message;
+        this.notificationService.error(message);
+        this.notFound404();
         this.loading = false;
       }
     });
@@ -273,15 +293,19 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
           console.log('Service details loaded:', this.selectedServiceInfo);
           console.log('Transport cost:', this.actualTransportCost);
         } else {
-          this.notificationService.error(this.i18n.instant('transport_order.service_info.error_service_not_found'));
-          this.router.navigate([environment.links.homepage]);
+          const message = this.i18n.instant('transport_order.service_info.error_service_not_found');
+          this.error = message;
+          this.notificationService.error(message);
+          this.notFound404();
         }
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading service details:', error);
-        this.notificationService.error(this.i18n.instant('transport_order.service_info.error_loading'));
-        this.router.navigate([environment.links.homepage]);
+        const message = this.i18n.instant('transport_order.service_info.error_loading');
+        this.error = message;
+        this.notificationService.error(message);
+        this.notFound404();
         this.loading = false;
       }
     });

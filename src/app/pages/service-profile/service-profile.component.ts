@@ -2,11 +2,13 @@ import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { ServiceProfileResolvedData } from './service-profile.resolver';
 import { I18nService } from '../../core/i18n.service';
 import { ServiceProfileService } from './service-profile.service';
 import { SeoService } from '../../core/seo.service';
+import { SSR_RESPONSE } from '../../core/ssr-tokens';
 import {
   SchemaOrgHelper,
   BikeRepairShopData,
@@ -45,6 +47,8 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
   private i18n = inject(I18nService);
   private seoService = inject(SeoService);
   private platformId = inject(PLATFORM_ID);
+  private meta = inject(Meta);
+  private serverResponse = inject(SSR_RESPONSE, { optional: true });
 
   // Subject do unsubscribe przy destroy
   private destroy$ = new Subject<void>();
@@ -136,10 +140,14 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
       if (profileData) {
         this.initializeFromResolvedData(profileData);
       } else {
-        // Fallback - jeśli resolver nie zwrócił danych, przekieruj
+        // Serwis nie istnieje pod tym adresem - renderujemy stan błędu w miejscu (żadnej
+        // nawigacji: podczas SSR router.navigate()/setTimeout(...navigate) blokuje
+        // renderowanie na kilka sekund, patrz historia tego pliku). Zamiast tego: prawdziwy
+        // status 404 (jak send404() w guest-reservation-form.component.ts) + noindex.
         this.error = this.i18n.instant('service_profile.errors.service_not_found');
         this.isLoading = false;
-        setTimeout(() => this.router.navigate(['/']), 3000);
+        this.serverResponse?.status(404);
+        this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
       }
     });
   }

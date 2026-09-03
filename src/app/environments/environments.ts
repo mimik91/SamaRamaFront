@@ -24,6 +24,9 @@ export const environment = {
     verification: '/verification',
     map: '/map',
     reviews: '/reviews',
+    analytics: {
+      cityPageView: '/analytics/city-page-view'
+    },
 
     admin: {
       base: '/admin',

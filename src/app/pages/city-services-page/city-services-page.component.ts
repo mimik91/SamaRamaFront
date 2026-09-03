@@ -13,6 +13,7 @@ import { SeoService } from '../../core/seo.service';
 import { SchemaOrgHelper } from '../../core/schema-org.helper';
 import { environment } from '../../environments/environments';
 import { CityServicesResolvedData } from './city-services-page.resolver';
+import { CityPageAnalyticsService } from './city-page-analytics.service';
 import { TRANSPORT_PRICING } from '../../shared/constants/transport-pricing.constants';
 import { ServiceSearchFiltersComponent, ServiceListFiltersChange } from '../../shared/components/service-search-filters/service-search-filters.component';
 import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
@@ -39,6 +40,7 @@ const NATIONWIDE_PER_PAGE = 20;
 export class CityServicesPageComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private seoService = inject(SeoService);
+  private cityPageAnalytics = inject(CityPageAnalyticsService);
   private cdr = inject(ChangeDetectorRef);
 
   // Wszystkie miasta z environment (dla dropdowna) - posortowane alfabetycznie
@@ -172,6 +174,23 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
         this.updateMetaTags();
         this.updateStructuredData();
+
+        // Telemetria diagnostyczna (skala rozbieżności w liczbie wyników per miasto) -
+        // tylko w przeglądarce, żeby nie liczyć podwójnie (SSR + hydratacja) i nie ryzykować
+        // wpływu na już naprawioną, wcześniej blokującą się ścieżkę renderowania SSR.
+        if (this.isBrowser) {
+          const bounds = cityData.city
+            ? calculateCityBounds(cityData.city.latitude, cityData.city.longitude)
+            : undefined;
+          this.cityPageAnalytics.reportView({
+            citySlug: cityData.city?.slug ?? null,
+            resultCount: cityData.total,
+            bounds: bounds ? `${bounds.south},${bounds.west},${bounds.north},${bounds.east}` : undefined,
+            searchQuery: this.route.snapshot.queryParamMap.get('search') ?? undefined,
+            coverageIds: this.route.snapshot.queryParamMap.get('coverageIds') ?? undefined,
+            fullQueryString: window.location.search
+          });
+        }
       } else {
         // Resolver zwrócił null - miasto nie znalezione
         const citySlug = this.route.snapshot.paramMap.get('city') || '';

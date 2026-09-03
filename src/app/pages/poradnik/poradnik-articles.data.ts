@@ -210,50 +210,6 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
       </ol>
       <p>Rower wraca do Ciebie naprawiony, bez konieczności planowania dwóch dojazdów przez miasto.</p>
     `
-  },
-  {
-    slug: 'rowerem-do-pracy-krakow',
-    title: 'Rowerem do pracy w Krakowie — CycloPick partnerem kampanii 2026',
-    subtitle: 'Dołączamy do miejskiej akcji promującej dojazdy rowerem do pracy',
-    excerpt: 'CycloPick zostaje partnerem kampanii Rowerem do Pracy w Krakowie — miejskiej inicjatywy, w której firmy i instytucje rywalizują o to, kto najczęściej dojeżdża do pracy na rowerze. Sprawdź, na czym polega akcja i jak śledzić wyniki.',
-    coverImage: 'assets/images/poradnik/rdp/Rowerem do pracy plakat .webp',
-    coverImageAlt: 'Plakat kampanii Rowerem do Pracy w Krakowie',
-    publishedDate: '2026-08-31',
-    readingTimeMinutes: 4,
-    contentHtml: `
-      <p>CycloPick dołącza jako partner do kampanii Rowerem do Pracy, inicjatywy Urzędu Miasta Krakowa, która od lat zachęca mieszkańców do zamiany samochodu na rower w codziennych dojazdach do pracy. Poniżej wyjaśniamy, na czym polega akcja i gdzie na bieżąco sprawdzić wyniki.</p>
-
-      <div class="poradnik-tldr">
-        <h2 id="w-skrocie">W skrócie</h2>
-        <ul>
-          <li><strong>Co to:</strong> miejska kampania promująca dojazdy rowerem do pracy, organizowana przez Urząd Miasta Krakowa.</li>
-          <li><strong>Kto uczestniczy:</strong> firmy, instytucje i wydziały urzędu rejestrują zespoły, a pracownicy logują przejechane trasy.</li>
-          <li><strong>Skala akcji:</strong> ponad 170 firm i instytucji, ponad 2600 aktywnych uczestników, ponad 980 000 km przejechanych w tej edycji.</li>
-          <li><strong>CycloPick:</strong> partner kampanii 2026.</li>
-          <li>Aktualne <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5" target="_blank" rel="noopener">liczniki</a> i <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5#rankings" target="_blank" rel="noopener">ranking</a> na stronie kampanii.</li>
-        </ul>
-      </div>
-
-      <h2 id="czym-jest-akcja">Czym jest akcja Rowerem do Pracy</h2>
-      <p>Rowerem do Pracy to cykliczna kampania Urzędu Miasta Krakowa promująca dojazdy do pracy na rowerze zamiast samochodem. Firmy, instytucje i wydziały urzędu rejestrują własne zespoły, a pracownicy logują w systemie przejechane trasy. Zespoły rywalizują w rankingu według frekwencji rowerowej, czyli odsetka dni roboczych, w które dana osoba dojechała do pracy na rowerze.</p>
-      <p>Poza samą rywalizacją miasto organizuje przy okazji kampanii edukacyjne wycieczki rowerowe i miejskie kontrole rowerowe.</p>
-
-      <figure>
-        <img src="assets/images/poradnik/rdp/Rowerem do pracy plakat .webp" alt="Plakat kampanii Rowerem do Pracy w Krakowie" loading="lazy">
-        <figcaption>Plakat tegorocznej edycji kampanii Rowerem do Pracy.</figcaption>
-      </figure>
-
-      <h2 id="skala-akcji">Ile osób już jeździ do pracy na rowerze w Krakowie</h2>
-      <p>W obecnej edycji (Kampania 2026) bierze udział ponad 170 firm, instytucji i wydziałów urzędu, a liczba aktywnych uczestników przekroczyła 2600. Razem zalogowali już ponad 140 000 tras i ponad 980 000 km. Liczniki na stronie kampanii aktualizują się kilka razy w miesiącu, więc te liczby rosną z tygodnia na tydzień. <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5" target="_blank" rel="noopener">Aktualny stan sprawdzisz tutaj</a>, a <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5#rankings" target="_blank" rel="noopener">pełny ranking firm i instytucji tutaj</a>.</p>
-
-      <h2 id="dlaczego-cyclopick-dolacza">Dlaczego CycloPick dołącza do akcji</h2>
-      <p>Pisaliśmy już o <a href="/poradnik/budzet-obywatelski-krakow-projekt-50-petla-pychowicka">głosowaniu na nową trasę MTB na Górce Pychowickiej</a>, a teraz z podobnego powodu wspieramy Rowerem do Pracy. Im więcej osób w Krakowie dojeżdża do pracy na rowerze, tym więcej osób potrzebuje miejsca, które solidnie ten rower zserwisuje. Tym zajmuje się CycloPick.</p>
-
-      <h2 id="jak-dolaczyc">Jak dołączyć i gdzie sprawdzić partnerów</h2>
-      <p>Firmy zainteresowane rejestracją zespołu oraz pełną listę partnerów i sponsorów tegorocznej edycji znajdziesz na <a href="https://roweremdopracy.um.krakow.pl/campaign-editions/5#sponsors" target="_blank" rel="noopener">stronie kampanii</a>.</p>
-
-      <p>Jeździsz już do pracy na rowerze? Sprawdź <a href="/serwisy/krakow">katalog serwisów rowerowych w Krakowie</a> i zadbaj o to, żeby był gotowy na codzienne dojazdy.</p>
-    `
   }
 ];
 

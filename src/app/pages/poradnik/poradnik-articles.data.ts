@@ -9,7 +9,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
     title: 'Pętla MTB na Górce Pychowickiej',
     subtitle: 'Budżet obywatelski Kraków, projekt nr 50 — głosuj 11–28 września',
     excerpt: 'Krakowscy rowerzyści mogą zdecydować o nowej, bezpłatnej trasie MTB na Górce Pychowickiej — głosuj w budżecie obywatelskim 11–28 września. Sprawdź szczegóły.',
-    coverImage: 'assets/images/poradnik/projekt-50-petla-pychowicka/single-track-mtb.webp',
+    coverImage: '/assets/images/poradnik/projekt-50-petla-pychowicka/single-track-mtb.webp',
     coverImageAlt: 'Poglądowe zdjęcie singletracka MTB w lesie',
     publishedDate: '2026-08-23',
     readingTimeMinutes: 4,
@@ -37,7 +37,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
       <p>Cała trasa ma być bezpłatna i ogólnodostępna — pomyślana jako "flow trail" dla wielu poziomów: od dzieci i rowerzystów rekreacyjnych, po amatorów MTB.</p>
 
       <figure>
-        <img src="assets/images/poradnik/projekt-50-petla-pychowicka/single-track-mtb.webp" alt="Poglądowe zdjęcie singletracka MTB w lesie" loading="lazy">
+        <img src="/assets/images/poradnik/projekt-50-petla-pychowicka/single-track-mtb.webp" alt="Poglądowe zdjęcie singletracka MTB w lesie" loading="lazy">
         <figcaption>Zdjęcie poglądowe — tak orientacyjnie może wyglądać charakter trasy (nie jest to zdjęcie z Górki Pychowickiej).</figcaption>
       </figure>
 
@@ -45,12 +45,12 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
       <p>Górka Pychowicka leży między Ruczajem a południową częścią trasy rowerowej prowadzącej od Krakowa w stronę Tyńca — czyli praktycznie przy bulwarach wiślanych, ok. 5 minut rowerem od ścieżki nadwiślańskiej. To lokalizacja dobrze znana rowerzystom jeżdżącym w tamtą stronę, tyle że dziś bez wyznaczonej, legalnej trasy MTB.</p>
 
       <figure>
-        <img src="assets/images/poradnik/projekt-50-petla-pychowicka/gorka-pychowicka.webp" alt="Mapa lokalizacji Górki Pychowickiej w Krakowie" loading="lazy">
+        <img src="/assets/images/poradnik/projekt-50-petla-pychowicka/gorka-pychowicka.webp" alt="Mapa lokalizacji Górki Pychowickiej w Krakowie" loading="lazy">
         <figcaption>Lokalizacja Górki Pychowickiej — między Ruczajem a trasą w stronę Tyńca.</figcaption>
       </figure>
 
       <figure>
-        <img src="assets/images/poradnik/projekt-50-petla-pychowicka/mapa-trasy-pychowickiej.webp" alt="Mapa planowanego przebiegu pętli rowerowej wraz z opcjami rozbudowy" loading="lazy">
+        <img src="/assets/images/poradnik/projekt-50-petla-pychowicka/mapa-trasy-pychowickiej.webp" alt="Mapa planowanego przebiegu pętli rowerowej wraz z opcjami rozbudowy" loading="lazy">
         <figcaption>Planowany przebieg pętli wraz z opcjami rozbudowy (Etap I i Etap II).</figcaption>
       </figure>
 
@@ -77,7 +77,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
     title: 'Serwisy rowerowe Kraków — jak wybrać dobry warsztat, gdy oceny w Google mylą',
     subtitle: `Zweryfikowane opinie i transport door-to-door od ${TRANSPORT_PRICING.partnerCost} zł`,
     excerpt: `W Krakowie działają dziesiątki serwisów rowerowych, a ocena w Google nie zawsze mówi prawdę o jakości. Sprawdź, jak wybrać dobry warsztat i jak zamówić transport door-to-door za ${TRANSPORT_PRICING.partnerCost} zł.`,
-    coverImage: 'assets/images/pictures/vertical/serwis-rowerowy-krakow.webp',
+    coverImage: '/assets/images/pictures/vertical/serwis-rowerowy-krakow.webp',
     coverImageAlt: 'Rower podczas przeglądu w warsztacie rowerowym w Krakowie',
     publishedDate: '2026-08-26',
     readingTimeMinutes: 5,
@@ -100,7 +100,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
 
       <div class="poradnik-service-rows">
         <div class="poradnik-service-row">
-          <img src="assets/images/poradnik/serwisy-krakow-logos/pitstop.png" alt="Logo Pitstop" class="poradnik-service-logo" loading="lazy">
+          <img src="/assets/images/poradnik/serwisy-krakow-logos/pitstop.png" alt="Logo Pitstop" class="poradnik-service-logo" loading="lazy">
           <div class="poradnik-service-info">
             <h3 class="poradnik-service-name">Pitstop</h3>
             <p class="poradnik-service-desc">Fiołkowa — przeglądy z ręcznym odtłuszczaniem napędu, dokręcaniem śrub kluczem dynamometrycznym zgodnie ze specyfikacją producenta.</p>
@@ -108,7 +108,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <a href="/pitstop-serwis" class="poradnik-service-btn">Zobacz serwis</a>
         </div>
         <div class="poradnik-service-row">
-          <img src="assets/images/poradnik/serwisy-krakow-logos/bismobike.png" alt="Logo Bismo Bike" class="poradnik-service-logo" loading="lazy">
+          <img src="/assets/images/poradnik/serwisy-krakow-logos/bismobike.png" alt="Logo Bismo Bike" class="poradnik-service-logo" loading="lazy">
           <div class="poradnik-service-info">
             <h3 class="poradnik-service-name">Bismo Bike</h3>
             <p class="poradnik-service-desc">Płd.-zach. Kraków — warsztat otwarty po ponad 10 latach pracy właściciela z rowerami, obsługa MTB, szosówek, gravelowców i miejskich.</p>
@@ -116,7 +116,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <a href="/bismobike" class="poradnik-service-btn">Zobacz serwis</a>
         </div>
         <div class="poradnik-service-row">
-          <img src="assets/images/poradnik/serwisy-krakow-logos/retrower.png" alt="Logo retRower" class="poradnik-service-logo" loading="lazy">
+          <img src="/assets/images/poradnik/serwisy-krakow-logos/retrower.png" alt="Logo retRower" class="poradnik-service-logo" loading="lazy">
           <div class="poradnik-service-info">
             <h3 class="poradnik-service-name">retRower</h3>
             <p class="poradnik-service-desc">Prokocim — właściciel serwisuje i buduje rowery od ponad 25 lat, pracuje na biodegradowalnych środkach czyszczących.</p>
@@ -124,7 +124,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <a href="/retrower-serwis-krakow" class="poradnik-service-btn">Zobacz serwis</a>
         </div>
         <div class="poradnik-service-row">
-          <img src="assets/images/poradnik/serwisy-krakow-logos/nartyrowery.png" alt="Logo Narty Rowery Kraków" class="poradnik-service-logo" loading="lazy">
+          <img src="/assets/images/poradnik/serwisy-krakow-logos/nartyrowery.png" alt="Logo Narty Rowery Kraków" class="poradnik-service-logo" loading="lazy">
           <div class="poradnik-service-info">
             <h3 class="poradnik-service-name">Narty Rowery Kraków</h3>
             <p class="poradnik-service-desc">Obok serwisu prowadzi też wypożyczalnię rowerów, z naprawami "od ręki".</p>
@@ -132,7 +132,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <a href="/nartyrowerykrakow" class="poradnik-service-btn">Zobacz serwis</a>
         </div>
         <div class="poradnik-service-row">
-          <img src="assets/images/poradnik/serwisy-krakow-logos/biketrip.png" alt="Logo BikeTrip" class="poradnik-service-logo" loading="lazy">
+          <img src="/assets/images/poradnik/serwisy-krakow-logos/biketrip.png" alt="Logo BikeTrip" class="poradnik-service-logo" loading="lazy">
           <div class="poradnik-service-info">
             <h3 class="poradnik-service-name">BikeTrip</h3>
             <p class="poradnik-service-desc">Stare Miasto, Zwierzyniecka — obsługuje też rowery elektryczne z silnikami Bosch i zawieszenia Fox, RockShox, Marzocchi, Manitou, Ohlins, Suntour.</p>
@@ -140,7 +140,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <a href="/biketrip" class="poradnik-service-btn">Zobacz serwis</a>
         </div>
         <div class="poradnik-service-row">
-          <img src="assets/images/poradnik/serwisy-krakow-logos/lelevelo.png" alt="Logo LeleVelo" class="poradnik-service-logo" loading="lazy">
+          <img src="/assets/images/poradnik/serwisy-krakow-logos/lelevelo.png" alt="Logo LeleVelo" class="poradnik-service-logo" loading="lazy">
           <div class="poradnik-service-info">
             <h3 class="poradnik-service-name">LeleVelo</h3>
             <p class="poradnik-service-desc">Salwator — na wyposażeniu klucz dynamometryczny i tensometr, po naprawie dostajesz zdjęcia stanu łożysk przed i po.</p>
@@ -148,7 +148,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <a href="/lelevelo" class="poradnik-service-btn">Zobacz serwis</a>
         </div>
         <div class="poradnik-service-row">
-          <img src="assets/images/poradnik/serwisy-krakow-logos/falarowerow.png" alt="Logo Fala Rowerów" class="poradnik-service-logo" loading="lazy">
+          <img src="/assets/images/poradnik/serwisy-krakow-logos/falarowerow.png" alt="Logo Fala Rowerów" class="poradnik-service-logo" loading="lazy">
           <div class="poradnik-service-info">
             <h3 class="poradnik-service-name">Fala Rowerów</h3>
             <p class="poradnik-service-desc">Podgórze — poza naprawami buduje rowery custom (gravel, szosa, single-speed) i renowuje rowery zabytkowe.</p>
@@ -156,7 +156,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <a href="/falarowerow" class="poradnik-service-btn">Zobacz serwis</a>
         </div>
         <div class="poradnik-service-row">
-          <img src="assets/images/poradnik/serwisy-krakow-logos/maksski.png" alt="Logo Maks-Ski & Bike" class="poradnik-service-logo" loading="lazy">
+          <img src="/assets/images/poradnik/serwisy-krakow-logos/maksski.png" alt="Logo Maks-Ski & Bike" class="poradnik-service-logo" loading="lazy">
           <div class="poradnik-service-info">
             <h3 class="poradnik-service-name">Maks-Ski & Bike</h3>
             <p class="poradnik-service-desc">Piastów — serwisuje też e-bike'i z napędem Bosch, wieloletnia marka łącząca sprzedaż nart i rowerów.</p>

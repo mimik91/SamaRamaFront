@@ -72,13 +72,25 @@ export class CityServicesResolver implements Resolve<CityServicesResolvedData | 
     };
 
     return this.mapService.getServices(request).pipe(
-      map(response => ({
-        city,
-        services: response?.data || [],
-        total: response?.total || 0
-      })),
+      map(response => {
+        const result = {
+          city,
+          services: response?.data || [],
+          total: response?.total || 0
+        };
+        // Loguje się do stdout procesu SSR (Heroku), niezależnie od tego, czy backend
+        // (Render) w ogóle odpowiada — w przeciwieństwie do telemetrii wysyłanej do
+        // backendu (CityPageAnalyticsService), to działa nawet gdy Render jest niedostępny.
+        console.log('[CityServicesResolver] view', {
+          citySlug: city.slug, resultCount: result.total, bounds: request.bounds,
+          search, coverageIds
+        });
+        return result;
+      }),
       catchError(err => {
-        console.error('[CityServicesResolver] Błąd pobierania serwisów:', err);
+        console.error('[CityServicesResolver] Błąd pobierania serwisów:', {
+          citySlug: city.slug, bounds: request.bounds, search, coverageIds, err
+        });
         return of({ city, services: [], total: 0 });
       })
     );
@@ -95,13 +107,22 @@ export class CityServicesResolver implements Resolve<CityServicesResolvedData | 
     };
 
     return this.mapService.getServices(request).pipe(
-      map((response: MapServicesResponseDto) => ({
-        city: null,
-        services: response?.data || [],
-        total: response?.total || 0
-      })),
+      map((response: MapServicesResponseDto) => {
+        const result = {
+          city: null,
+          services: response?.data || [],
+          total: response?.total || 0
+        };
+        console.log('[CityServicesResolver] view', {
+          citySlug: null, resultCount: result.total, bounds: request.bounds,
+          search, coverageIds
+        });
+        return result;
+      }),
       catchError(err => {
-        console.error('[CityServicesResolver] Błąd pobierania wszystkich serwisów:', err);
+        console.error('[CityServicesResolver] Błąd pobierania wszystkich serwisów:', {
+          bounds: request.bounds, search, coverageIds, err
+        });
         return of({ city: null, services: [], total: 0 });
       })
     );

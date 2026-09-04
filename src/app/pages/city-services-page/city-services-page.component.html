@@ -9,7 +9,7 @@
 
   <!-- Header -->
   <header class="city-header" *ngIf="!cityNotFound">
-    <h1 itemprop="name">{{ currentCity ? 'Serwisy rowerowe ' + currentCity.name : 'Serwisy rowerowe w Polsce' }}</h1>
+    <h1 itemprop="name">{{ currentCity ? 'Serwis rowerowy ' + currentCity.name : 'Serwisy rowerowe w Polsce' }}</h1>
     <p class="subtitle">
       <ng-container *ngIf="currentCity; else nationwideSubtitle">Lista warsztat&#243;w rowerowych w mie&#347;cie {{ currentCity.name }} i okolicach</ng-container>
       <ng-template #nationwideSubtitle>Pe&#322;na lista warsztat&#243;w rowerowych w ca&#322;ej Polsce</ng-template>

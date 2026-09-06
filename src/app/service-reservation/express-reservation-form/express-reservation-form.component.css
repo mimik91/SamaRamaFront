@@ -49,6 +49,55 @@
   line-height: 1.5;
 }
 
+/* Warianty odbioru — pomarańczowy (biuro) i granatowo-niebieski (dom), uzupełniają
+   zielony akcent banera, tak jak w banerze promo na /serwisy/krakow */
+.express-banner-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+}
+
+.express-banner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.express-banner-chip--office {
+  background: var(--color-accent-orange-bg);
+  border-color: var(--color-accent-orange-border);
+  color: var(--color-accent-orange-dark);
+}
+
+.express-banner-chip--home {
+  background: var(--color-navy-bg);
+  border-color: var(--color-navy-border);
+  color: var(--color-navy);
+}
+
+/* Link do strony "jak to działa" — przed wyborem pakietu */
+.express-how-it-works-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--spacing-6);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.express-how-it-works-link:hover {
+  text-decoration: underline;
+}
+
 /* ===== Packages panel ===== */
 .packages-loading,
 .packages-unavailable {

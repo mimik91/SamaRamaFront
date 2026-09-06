@@ -12,8 +12,17 @@
         Odbierzemy Twój rower rano z biura lub spod domu i zwrócimy <strong>tego samego dnia przed 17:00</strong>.
         Serwis zostanie wybrany przez CycloPick spośród najlepszych warsztatów w Krakowie.
       </p>
+      <div class="express-banner-variants">
+        <span class="express-banner-chip express-banner-chip--office">🏢 Odbiór z biura — zwrot przed 17:00</span>
+        <span class="express-banner-chip express-banner-chip--home">🏠 Odbiór z domu — zwrot następnego wieczoru</span>
+      </div>
     </div>
   </div>
+
+  <a routerLink="/krakow/jak-dziala-serwis-ekspresowy" class="express-how-it-works-link">
+    Dowiedz się dokładnie, jak działa serwis ekspresowy
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </a>
 
   <!-- Loading state while checking package availability -->
   <div *ngIf="!packagesLoaded" class="packages-loading">

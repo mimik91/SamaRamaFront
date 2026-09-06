@@ -1,0 +1,245 @@
+<article class="express-how-wrapper">
+
+  <!-- ===== HERO ===== -->
+  <section class="express-hero" aria-label="Jak działa serwis ekspresowy CycloPick w Krakowie">
+    <div class="express-hero-bg" style="background-image: url('assets/images/pictures/serwisanci rowerowi w pracy.webp')" aria-hidden="true"></div>
+    <div class="express-hero-overlay" aria-hidden="true"></div>
+
+    <div class="express-hero-content">
+      <app-breadcrumb
+        variant="light"
+        [items]="[
+          { label: 'Strona główna', url: '/' },
+          { label: 'Serwisy rowerowe Kraków', url: '/serwisy/krakow' },
+          { label: 'Jak działa serwis ekspresowy' }
+        ]">
+      </app-breadcrumb>
+
+      <span class="express-hero-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Serwis ekspresowy · Kraków
+      </span>
+
+      <h1>Jak działa serwis ekspresowy CycloPick w&nbsp;Krakowie?</h1>
+      <p class="express-hero-subtitle">
+        Rezerwujesz online, kurier odbiera rower spod biura lub domu, a warsztat wykonuje naprawę.
+        Status sprawdzisz na bieżąco przez link z maila, bez zakładania konta.
+      </p>
+
+      <div class="express-hero-actions">
+        <a routerLink="/krakow/zarezerwuj" class="btn-express-cta btn-express-cta--hero">
+          Zarezerwuj serwis ekspresowy
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <button type="button" class="btn-express-secondary" (click)="scrollToSteps()">
+          Zobacz jak to działa ↓
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TRUST BAR ===== -->
+  <div class="express-trust-bar" aria-label="Najważniejsze informacje o serwisie ekspresowym">
+    <div class="express-trust-bar-inner">
+      <div class="express-trust-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Zwrot roweru <strong>tego samego dnia</strong> (wariant biurowy)</span>
+      </div>
+      <div class="express-trust-divider" aria-hidden="true"></div>
+      <div class="express-trust-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Transport <strong>wliczony</strong> w cenę pakietu</span>
+      </div>
+      <div class="express-trust-divider" aria-hidden="true"></div>
+      <div class="express-trust-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Ubezpieczenie roweru do <strong>20&nbsp;000&nbsp;zł</strong></span>
+      </div>
+      <div class="express-trust-divider" aria-hidden="true"></div>
+      <div class="express-trust-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Dostępny <strong>pon&nbsp;–&nbsp;pt</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="express-how-container">
+
+    <!-- ===== KROKI ===== -->
+    <section id="jak-to-dziala" class="steps-section" aria-labelledby="steps-heading">
+      <div class="section-eyebrow">Krok po kroku</div>
+      <h2 id="steps-heading">4 kroki do naprawionego roweru</h2>
+      <p class="section-subtitle">Cały proces zaczyna się i kończy w formularzu rezerwacji. Transport i wybór warsztatu bierze na siebie CycloPick.</p>
+
+      <ol class="steps-list">
+
+        <!-- KROK 1 -->
+        <li class="step-card">
+          <div class="step-card-media">
+            <img src="assets/images/for-services/panel-rezerwacji.webp" alt="Ekran wyboru pakietu serwisowego i terminu w formularzu rezerwacji CycloPick" loading="lazy">
+          </div>
+          <div class="step-card-body">
+            <span class="step-number">1</span>
+            <h3>Wybierz pakiet i termin</h3>
+            <p>Na stronie rezerwacji wybierz pakiet serwisowy dopasowany do Twojego roweru oraz dostępny termin. Serwis ekspresowy działa w dni robocze, od poniedziałku do piątku.</p>
+          </div>
+        </li>
+
+        <!-- KROK 2 — WARIANTY ODBIORU (pomarańczowy / niebieski) -->
+        <li class="step-card step-card--variants">
+          <div class="step-card-body step-card-body--full">
+            <span class="step-number">2</span>
+            <h3>Wybierz sposób odbioru roweru</h3>
+            <p>Zdecyduj, które rozwiązanie pasuje do Twojego dnia. Obie opcje mają transport wliczony w cenę.</p>
+
+            <div class="variants-grid">
+
+              <div class="variant-card variant-card--office">
+                <div class="variant-card-media variant-card-media--icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="9" height="18"/><rect x="12" y="8" width="9" height="13"/><line x1="6" y1="7" x2="9" y2="7"/><line x1="6" y1="11" x2="9" y2="11"/><line x1="6" y1="15" x2="9" y2="15"/><line x1="15" y1="12" x2="18" y2="12"/><line x1="15" y1="16" x2="18" y2="16"/></svg>
+                  <span class="variant-tag variant-tag--office">🏢 Wariant biurowy</span>
+                </div>
+                <div class="variant-card-body">
+                  <p class="variant-time"><strong>Odbiór rano</strong> → zwrot <strong>przed 17:00</strong> tego samego dnia</p>
+                  <p class="variant-desc">Kurier odbiera rower rano spod biura lub kompleksu biurowego, a po naprawie odwozi go w to samo miejsce jeszcze tego samego dnia.</p>
+                </div>
+              </div>
+
+              <div class="variant-card variant-card--home">
+                <div class="variant-card-media variant-card-media--icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><line x1="10" y1="20" x2="10" y2="14"/><line x1="14" y1="20" x2="14" y2="14"/></svg>
+                  <span class="variant-tag variant-tag--home">🏠 Wariant domowy</span>
+                </div>
+                <div class="variant-card-body">
+                  <p class="variant-time"><strong>Odbiór wieczorem</strong> → zwrot pod dom <strong>następnego wieczoru</strong></p>
+                  <p class="variant-desc">Kurier odbiera rower wieczorem, gdy jesteś już w domu, a naprawiony sprzęt wraca pod Twoje drzwi następnego dnia wieczorem.</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </li>
+
+        <!-- KROK 3 -->
+        <li class="step-card">
+          <div class="step-card-media">
+            <img src="assets/images/pictures/naprawa-przerzutki.webp" alt="Mechanik naprawia przerzutkę roweru w warsztacie CycloPick" loading="lazy">
+          </div>
+          <div class="step-card-body">
+            <span class="step-number">3</span>
+            <h3>Kurier odbiera rower i trafia on do serwisu</h3>
+            <p>Kurier CycloPick odbiera rower we wskazanym miejscu i dowozi go do sprawdzonego warsztatu w Krakowie, wybranego przez nas spośród najlepszych partnerów. Mechanicy wykonują zakres prac z wybranego pakietu.</p>
+          </div>
+        </li>
+
+        <!-- KROK 4 -->
+        <li class="step-card">
+          <div class="step-card-media">
+            <img src="assets/images/pictures/artystyczny-rower.webp" alt="Naprawiony rower gotowy do odbioru po serwisie CycloPick" loading="lazy">
+          </div>
+          <div class="step-card-body">
+            <span class="step-number">4</span>
+            <h3>Odbierz gotowy rower</h3>
+            <p>Gdy naprawa jest gotowa, kurier zwraca rower pod wskazany adres. Otrzymujesz potwierdzenie mailem, a wykonana usługa trafia do cyfrowej historii serwisowej Twojego roweru.</p>
+          </div>
+        </li>
+
+      </ol>
+
+      <div class="steps-cta">
+        <a routerLink="/krakow/zarezerwuj" class="btn-express-cta">
+          Zarezerwuj serwis ekspresowy
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== DLACZEGO WARTO ===== -->
+    <section class="why-section" aria-labelledby="why-heading">
+      <div class="why-inner">
+        <div class="why-text">
+          <div class="section-eyebrow">Bez niespodzianek</div>
+          <h2 id="why-heading">Wiesz dokładnie, co dzieje się z Twoim rowerem</h2>
+          <ul class="why-list">
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Status zlecenia sprawdzisz w każdej chwili przez link z maila, bez zakładania konta i logowania.</span>
+            </li>
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Jeśli mechanik znajdzie dodatkową usterkę, dostaniesz wiadomość z wyceną i sam zdecydujesz, czy ją zlecić.</span>
+            </li>
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Powiadomienie mailem na każdym etapie: przyjęcie rezerwacji, oddanie roweru do warsztatu, rower gotowy do odbioru.</span>
+            </li>
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Naprawa trafia do cyfrowej historii serwisowej roweru. Udokumentowany rower jest wart nawet o 20% więcej przy odsprzedaży.</span>
+            </li>
+          </ul>
+          <a routerLink="/krakow/zarezerwuj" class="btn-express-cta">
+            Zarezerwuj teraz
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+        <div class="why-media" aria-hidden="true">
+          <img src="assets/images/pictures/smok-wawelski-na-rowerze.webp" alt="" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEKCJA: OPINIE GOOGLE ===== -->
+    <section class="reviews-section" aria-labelledby="reviews-heading">
+      <div class="section-eyebrow">Opinie klientów</div>
+      <h2 id="reviews-heading">Co mówią nasi klienci?</h2>
+      <div class="reviews-google-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        <span>Opinie z Google</span>
+      </div>
+      <div
+        class="reviews-marquee-wrapper"
+        [class.is-dragging]="isReviewsDragging"
+        (mousedown)="onReviewsMouseDown($event)"
+        (touchstart)="onReviewsTouchStart($event)"
+      >
+        <div class="reviews-marquee-track" #reviewsTrack>
+          <figure class="review-screenshot" *ngFor="let img of reviewImages">
+            <img [src]="img" alt="Opinia klienta CycloPick w Google" loading="lazy" />
+          </figure>
+          <figure class="review-screenshot" *ngFor="let img of reviewImages" aria-hidden="true">
+            <img [src]="img" alt="" loading="lazy" />
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="faq-section" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Częste pytania o serwis ekspresowy CycloPick</h2>
+      <div class="faq-container">
+        <details *ngFor="let item of faqData" class="faq-item">
+          <summary class="faq-question">{{ item.question }}</summary>
+          <p class="faq-answer">{{ item.answer }}</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===== CTA KOŃCOWE ===== -->
+    <section class="final-cta-section" aria-labelledby="final-cta-heading">
+      <h2 id="final-cta-heading">Gotowy na naprawę bez wychodzenia z domu?</h2>
+      <p>Ty wybierasz pakiet i termin. Odbiór, naprawę i zwrot roweru załatwia CycloPick.</p>
+      <a routerLink="/krakow/zarezerwuj" class="btn-express-cta btn-express-cta--large">
+        Zarezerwuj serwis ekspresowy
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <p class="final-cta-note">Płatność online przez PayU · status naprawy śledzisz przez link z maila</p>
+    </section>
+
+  </div><!-- /express-how-container -->
+</article>

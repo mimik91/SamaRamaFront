@@ -216,6 +216,23 @@
   flex-shrink: 0;
 }
 
+/* Link do strony wyjaśniającej serwis ekspresowy — dyskretny, nie konkuruje z CTA */
+.express-how-link {
+  display: block;
+  text-align: center;
+  margin-top: var(--spacing-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  opacity: 0.85;
+}
+
+.express-how-link:hover {
+  opacity: 1;
+}
+
 /* "Chcę sam wybrać serwis" — pozwala od razu pominąć baner i przejść do wyszukiwarki
    + listy; szczególnie ważne na mobile, gdzie baner potrafi zająć cały ekran */
 .express-promo-skip-wrap {

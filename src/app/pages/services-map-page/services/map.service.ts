@@ -2,7 +2,7 @@
 
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, of, tap, shareReplay, throwError, map } from 'rxjs';
+import { Observable, catchError, of, shareReplay, throwError, map } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import {
   MapPin,
@@ -34,8 +34,6 @@ export class MapService {
   private statsSummaryCache$: Observable<StatsSummaryDto | null> | null = null;
 
   getServices(request: MapServicesRequestDto): Observable<MapServicesResponseDto> {
-    console.log('MapService: Fetching services from:', `${this.apiUrl}/services`);
-
     const finalRequestBody: any = {
       type: request.type || 'event',
       payload: request.payload || this.getDefaultPayload(),
@@ -101,7 +99,7 @@ export class MapService {
       }),
       catchError(error => {
         console.error('MapService: Error fetching map services:', error);
-        return of({ data: [], total: 0 });
+        return of({ data: [], total: 0, requestFailed: true });
       })
     );
   }
@@ -115,8 +113,6 @@ export class MapService {
 
     // Check if we already have this request cached
     if (!this.serviceDetailsCache.has(id)) {
-      console.log('MapService: Fetching service details for ID:', id);
-
       // Create the HTTP request with caching
       const request$ = this.http.get<ServiceDetails>(`${environment.apiUrl}${environment.endpoints.bikeServices.base}/${id}`).pipe(
         map(details => {
@@ -157,18 +153,13 @@ export class MapService {
       return of({ data: [], total: 0 });
     }
 
-    console.log('MapService: Autocomplete search for:', query);
-    
     const params: any = {
       q: query.trim(),
       limit: limit.toString(),
       registeredFirst: registeredFirst.toString()
     };
-    
+
     return this.http.get<MapServicesResponseDto>(`${this.apiUrl}/services/autocomplete`, { params }).pipe(
-      tap(response => {
-        console.log('MapService: Autocomplete results:', response);
-      }),
       catchError(error => {
         console.error('MapService: Error in autocomplete:', error);
         return of({ data: [], total: 0 });
@@ -185,8 +176,6 @@ export class MapService {
 
     // Check cache
     if (!this.citySearchCache.has(normalizedQuery)) {
-      console.log('MapService: Searching cities with query:', query);
-
       const params = { city: query.trim() };
 
       const request$ = this.http.get<CitySuggestion[]>(`${this.apiUrl}/cities/coords`, { params }).pipe(
@@ -232,12 +221,7 @@ export class MapService {
   }
 
   getCityBounds(cityName: string): Observable<CityBounds | null> {
-    console.log('MapService: Fetching bounds for city:', cityName);
-    
     return this.http.get<CityBounds>(`${this.apiUrl}/cities/${encodeURIComponent(cityName)}/bounds`).pipe(
-      tap(bounds => {
-        console.log('MapService: City bounds:', bounds);
-      }),
       catchError(error => {
         console.error('MapService: Error fetching city bounds:', error);
         return of(null);
@@ -246,17 +230,12 @@ export class MapService {
   }
 
   getClusteredPins(zoom: number, bounds?: string, city?: string, coverageIds?: number[]): Observable<any> {
-    console.log('MapService: Fetching clustered pins with zoom:', zoom);
-    
     const params: any = { zoom: zoom.toString() };
     if (bounds) params.bounds = bounds;
     if (city) params.city = city;
-    if (coverageIds && coverageIds.length > 0) params.coveragesIds = coverageIds; 
-    
+    if (coverageIds && coverageIds.length > 0) params.coveragesIds = coverageIds;
+
     return this.http.get<any>(`${this.apiUrl}/pins/clustered`, { params }).pipe(
-      tap(response => {
-        console.log('MapService: Received clustered pins:', response);
-      }),
       catchError(error => {
         console.error('MapService: Error fetching clustered pins:', error);
         return of({ data: [], total: 0 });
@@ -266,12 +245,7 @@ export class MapService {
 
   getAllRepairCoverages(): Observable<BikeRepairCoverageMapDto | null> {
     if (!this.repairCoveragesCache$) {
-      console.log('MapService: Fetching repair coverages');
-
       this.repairCoveragesCache$ = this.http.get<BikeRepairCoverageMapDto>(`${environment.apiUrl}/bike-services/repair-coverage/all`).pipe(
-        tap(coverages => {
-          console.log('MapService: Received repair coverages:', coverages);
-        }),
         shareReplay({ bufferSize: 1, refCount: false }),
         catchError(error => {
           console.error('MapService: Error fetching repair coverages:', error);
@@ -300,15 +274,10 @@ export class MapService {
   }
 
     filterByCoverages(coverageIds: number[]): Observable<MapServicesResponseDto> {
-    console.log('MapService: Filtering by coverage IDs:', coverageIds);
-    
     return this.http.post<MapServicesResponseDto>(
       `${environment.apiUrl}/bike-services/filter-coverage`,
       { coverageIds }
     ).pipe(
-      tap(response => {
-        console.log('MapService: Filtered services response:', response);
-      }),
       catchError(error => {
         console.error('MapService: Error filtering by coverages:', error);
         return of({ data: [], total: 0 });
@@ -322,8 +291,6 @@ export class MapService {
       console.error('MapService: Invalid service ID for suffix request:', serviceId);
       return of(null);
     }
-
-    console.log('MapService: Fetching suffix for service ID:', serviceId);
 
     // Używamy endpointu zadeklarowanego w backendzie: /get-suffix
     return this.http.get<{ suffix: string }>(`${environment.apiUrl}/bike-services/get-suffix`, {

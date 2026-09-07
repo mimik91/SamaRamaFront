@@ -10,6 +10,10 @@ export interface CityPageViewReport {
   searchQuery?: string;
   coverageIds?: string;
   fullQueryString?: string;
+  /** false = fetch do /map/services faktycznie się nie wykonał - resultCount=0 nie jest
+   * prawdziwym pustym wynikiem. Brak pola = traktowane jako sukces (patrz backend DTO). */
+  success?: boolean;
+  errorMessage?: string;
 }
 
 /**

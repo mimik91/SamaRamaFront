@@ -188,7 +188,9 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
             bounds: bounds ? `${bounds.south},${bounds.west},${bounds.north},${bounds.east}` : undefined,
             searchQuery: this.route.snapshot.queryParamMap.get('search') ?? undefined,
             coverageIds: this.route.snapshot.queryParamMap.get('coverageIds') ?? undefined,
-            fullQueryString: window.location.search
+            fullQueryString: window.location.search,
+            success: !cityData.fetchFailed,
+            errorMessage: cityData.fetchFailed ? 'Request do /map/services zakończył się błędem (sieć/CORS/5xx)' : undefined
           });
         }
       } else {

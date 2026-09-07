@@ -3,9 +3,11 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { environment } from '../environments/environments';
+import { NotificationService } from './notification.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
+  const notificationService = inject(NotificationService);
 
   // Lista endpointów, które nie powinny wymuszać przekierowania do logowania przy 401
   // (np. zamówienia gościa, rejestracja, cennik)
@@ -29,6 +31,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           console.warn('Unauthorized on public endpoint - likely validation or session issue, not redirecting.');
         } else {
           console.error('Unauthorized access attempt - redirecting to login', error);
+          // Bez tego komunikatu wygasła sesja wyglądała jak niewyjaśniona awaria (np. moderator
+          // widział "zlecenia się nie ładują", a w rzeczywistości ciche przekierowanie na /login).
+          notificationService.warning('Twoja sesja wygasła — zaloguj się ponownie');
           router.navigate(['/login']);
         }
       } 
@@ -46,6 +51,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       
       else if (error.status >= 500) {
         console.error('Server error occurred');
+      }
+
+      else if (error.status === 0) {
+        // Request się nie wykonał w ogóle - sieć, CORS, timeout. Bez tej gałęzi ginęło
+        // bez śladu (żaden z powyższych warunków go nie łapał).
+        console.error('Network or CORS failure (status 0) for', req.url, error);
       }
 
       return throwError(() => error);

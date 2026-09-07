@@ -18,6 +18,9 @@ export interface CityServicesResolvedData {
   city: CityConfig | null;
   services: MapPin[];
   total: number;
+  /** true = fetch do /map/services się nie wykonał (sieć/CORS/5xx) - total=0 jest wtedy
+   * zafałszowany, NIE oznacza realnie pustego wyniku. Patrz MapServicesResponseDto.requestFailed. */
+  fetchFailed: boolean;
 }
 
 /**
@@ -76,14 +79,15 @@ export class CityServicesResolver implements Resolve<CityServicesResolvedData | 
         const result = {
           city,
           services: response?.data || [],
-          total: response?.total || 0
+          total: response?.total || 0,
+          fetchFailed: !!response?.requestFailed
         };
         // Loguje się do stdout procesu SSR (Heroku), niezależnie od tego, czy backend
         // (Render) w ogóle odpowiada — w przeciwieństwie do telemetrii wysyłanej do
         // backendu (CityPageAnalyticsService), to działa nawet gdy Render jest niedostępny.
         console.log('[CityServicesResolver] view', {
-          citySlug: city.slug, resultCount: result.total, bounds: request.bounds,
-          search, coverageIds
+          citySlug: city.slug, resultCount: result.total, fetchFailed: result.fetchFailed,
+          bounds: request.bounds, search, coverageIds
         });
         return result;
       }),
@@ -91,7 +95,7 @@ export class CityServicesResolver implements Resolve<CityServicesResolvedData | 
         console.error('[CityServicesResolver] Błąd pobierania serwisów:', {
           citySlug: city.slug, bounds: request.bounds, search, coverageIds, err
         });
-        return of({ city, services: [], total: 0 });
+        return of({ city, services: [], total: 0, fetchFailed: true });
       })
     );
   }
@@ -111,11 +115,12 @@ export class CityServicesResolver implements Resolve<CityServicesResolvedData | 
         const result = {
           city: null,
           services: response?.data || [],
-          total: response?.total || 0
+          total: response?.total || 0,
+          fetchFailed: !!response?.requestFailed
         };
         console.log('[CityServicesResolver] view', {
-          citySlug: null, resultCount: result.total, bounds: request.bounds,
-          search, coverageIds
+          citySlug: null, resultCount: result.total, fetchFailed: result.fetchFailed,
+          bounds: request.bounds, search, coverageIds
         });
         return result;
       }),
@@ -123,7 +128,7 @@ export class CityServicesResolver implements Resolve<CityServicesResolvedData | 
         console.error('[CityServicesResolver] Błąd pobierania wszystkich serwisów:', {
           bounds: request.bounds, search, coverageIds, err
         });
-        return of({ city: null, services: [], total: 0 });
+        return of({ city: null, services: [], total: 0, fetchFailed: true });
       })
     );
   }

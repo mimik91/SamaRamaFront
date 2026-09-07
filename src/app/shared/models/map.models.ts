@@ -127,6 +127,9 @@ export interface MapServicesResponseDto {
   perPage?: number;
   bounds?: any;
   cache?: string;
+  /** true = request faktycznie się nie wykonał (sieć/CORS/5xx) - data/total to tylko bezpieczny
+   * fallback, NIE prawdziwy pusty wynik. Ustawiane w map.service.ts::getServices() catchError. */
+  requestFailed?: boolean;
 }
 
 export interface MapBounds {

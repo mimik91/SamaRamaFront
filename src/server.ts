@@ -1,13 +1,16 @@
 import { CommonEngine } from '@angular/ssr/node';
+import { RenderMode } from '@angular/ssr';
 import express from 'express';
 import compression from 'compression';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { existsSync } from 'node:fs';
 import * as http from 'node:http';
 import * as https from 'node:https';
 import bootstrap from './main.server';
 import { environment } from './app/environments/environments';
 import { SSR_RESPONSE } from './app/core/ssr-tokens';
+import { serverRoutes } from './app/app.routes.server';
 
 const env = environment;
 const backendBase = process.env['BACKEND_ORIGIN'] || new URL(env.apiUrl).origin;
@@ -15,6 +18,11 @@ const backendBase = process.env['BACKEND_ORIGIN'] || new URL(env.apiUrl).origin;
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 const indexHtml = join(browserDistFolder, 'index.html');
+// Czysty CSR shell. Po `heroku-postbuild` index.html == index.csr.html, ale przy lokalnym buildzie
+// index.html może być prerenderowaną stroną główną — dlatego preferujemy jawnie index.csr.html.
+const csrIndexHtml = existsSync(join(browserDistFolder, 'index.csr.html'))
+  ? join(browserDistFolder, 'index.csr.html')
+  : indexHtml;
 
 const app = express();
 const commonEngine = new CommonEngine();
@@ -133,10 +141,68 @@ const ROUTE_JSONLD: Record<string, object> = {
 };
 
 /**
+ * CommonEngine (legacy API) renderuje serwerowo KAŻDĄ trasę i ignoruje provideServerRoutesConfig(),
+ * więc RenderMode.Client z app.routes.server.ts nie miał żadnego efektu: strony zalogowanych
+ * (panel serwisu, admin, login) były renderowane bez tokenu, dostawały 401 i czekały ~5 s na
+ * timer powiadomienia (logi Heroku 2026-09-08). Tu czytamy tę samą konfigurację i dla tras
+ * Client oddajemy CSR shell bez SSR. Dopasowanie: literal > :param > ** (jak w routerze Angulara).
+ */
+interface RoutePattern {
+  segments: string[];
+  renderMode: RenderMode | undefined;
+}
+
+const ROUTE_PATTERNS: RoutePattern[] = serverRoutes.map(route => ({
+  segments: route.path.split('/').filter(Boolean),
+  renderMode: route.renderMode,
+}));
+
+function matchScore(pattern: string[], segments: string[]): number | null {
+  let score = 0;
+  for (let i = 0; i < pattern.length; i++) {
+    const part = pattern[i];
+    if (part === '**') {
+      return score;
+    }
+    if (i >= segments.length) {
+      return null;
+    }
+    if (part.startsWith(':')) {
+      score += 1;
+    } else if (part === segments[i]) {
+      score += 10;
+    } else {
+      return null;
+    }
+  }
+  return pattern.length === segments.length ? score : null;
+}
+
+function isClientOnlyRoute(path: string): boolean {
+  const segments = path.split('/').filter(Boolean);
+  let best: RoutePattern | null = null;
+  let bestScore = -1;
+  for (const route of ROUTE_PATTERNS) {
+    const score = matchScore(route.segments, segments);
+    if (score !== null && score > bestScore) {
+      best = route;
+      bestScore = score;
+    }
+  }
+  return best?.renderMode === RenderMode.Client;
+}
+
+/**
  * Handle all other requests by rendering the Angular application.
  */
 app.use('/**', (req, res, next) => {
   const { protocol, originalUrl, headers } = req;
+  const path = originalUrl.split('?')[0];
+
+  if (isClientOnlyRoute(path)) {
+    res.sendFile(csrIndexHtml);
+    return;
+  }
 
   commonEngine
     .render({
@@ -150,7 +216,6 @@ app.use('/**', (req, res, next) => {
       ],
     })
     .then((html) => {
-      const path = originalUrl.split('?')[0];
       const schema = ROUTE_JSONLD[path];
       if (schema) {
         html = html.replace('</head>', `<script type="application/ld+json">${JSON.stringify(schema)}</script>\n</head>`);

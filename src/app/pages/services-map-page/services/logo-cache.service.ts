@@ -1,4 +1,5 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface LogoCacheEntry {
   url: string;
@@ -36,7 +37,15 @@ export class LogoCacheService implements OnDestroy {
   // Store interval ID for cleanup
   private cleanupIntervalId?: number;
 
+  // Serwis jest providedIn 'root' i wstrzykiwany przez stronę mapy, więc konstruktor wykonuje się
+  // też podczas SSR — Heroku logował "ReferenceError: window is not defined" (2026-09-08).
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   constructor() {
+    if (!this.isBrowser) {
+      return;
+    }
+
     // Periodyczne czyszczenie co godzinę - zachowaj ID do późniejszego wyczyszczenia
     this.cleanupIntervalId = window.setInterval(() => this.cleanupExpiredEntries(), 60 * 60 * 1000);
 
@@ -108,6 +117,11 @@ export class LogoCacheService implements OnDestroy {
    * Pre-loading obrazu w tle z error handling
    */
   private preloadImage(serviceId: number, url: string, retryCount = 0): void {
+    // Na serwerze nie ma Image() — cache zwraca oryginalny URL bez pre-loadu
+    if (!this.isBrowser) {
+      return;
+    }
+
     // Walidacja URL
     if (!url || url.trim() === '') {
       console.warn(`LogoCacheService: Invalid URL for service ${serviceId}`);

@@ -1,5 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { environment } from '../environments/environments';
@@ -8,6 +9,7 @@ import { NotificationService } from './notification.service';
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const notificationService = inject(NotificationService);
+  const isServer = isPlatformServer(inject(PLATFORM_ID));
 
   // Lista endpointów, które nie powinny wymuszać przekierowania do logowania przy 401
   // (np. zamówienia gościa, rejestracja, cennik)
@@ -29,6 +31,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         if (isPublicEndpoint) {
           console.warn('Unauthorized on public endpoint - likely validation or session issue, not redirecting.');
+        } else if (isServer) {
+          // SSR nie ma tokenu, więc chronione endpointy zawsze zwracają 401. Powiadomienie
+          // (auto-hide 5 s) + router.navigate() na serwerze trzymały render ~5 s, bo Angular
+          // czeka na stabilność aplikacji zanim odda HTML (logi Heroku 2026-09-08).
+          console.warn('Unauthorized during SSR (no token) for', req.url, '- skipping redirect');
         } else {
           console.error('Unauthorized access attempt - redirecting to login', error);
           // Bez tego komunikatu wygasła sesja wyglądała jak niewyjaśniona awaria (np. moderator

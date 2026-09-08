@@ -3,7 +3,7 @@ export const environment = {
   
   // API Configuration
   siteUrl: 'https://www.cyclopick.pl',
-  apiUrl: 'https://samarama.onrender.com/api',
+  apiUrl: 'https://api.cyclopick.pl/api',
   
   // External Links
   links: {

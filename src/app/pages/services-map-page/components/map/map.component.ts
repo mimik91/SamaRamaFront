@@ -128,7 +128,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
       }, 50); 
     }
     
-    if (changes['visible'] && changes['visible'].currentValue && !this.isMapInitialized) {
+    if (this.isBrowser && changes['visible'] && changes['visible'].currentValue && !this.isMapInitialized) {
       setTimeout(() => {
         this.initializeMapAsync();
       }, 100);
@@ -178,6 +178,13 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
   // ============ MAP INITIALIZATION ============
 
   private async initializeMapAsync(): Promise<void> {
+    // SSR: Leaflet potrzebuje document/window. Bez tej bramki zmiana @Input visible podczas renderu
+    // serwerowego odpalała inicjalizację, catch() emitował mapError, a rodzic pokazywał
+    // notificationService.error() z 5-sekundowym timerem, na który Angular czekał przed oddaniem HTML.
+    if (!this.isBrowser) {
+      return;
+    }
+
     if (this.initializationPromise) {
       return this.initializationPromise;
     }

@@ -1,8 +1,8 @@
 <a class="article-card" [routerLink]="['/poradnik', article.slug]">
   <div class="article-card-image-wrap">
     <img
-      [src]="article.coverImage"
-      [alt]="article.coverImageAlt"
+      [src]="article.thumbnailImage || article.coverImage"
+      [alt]="article.thumbnailImageAlt || article.coverImageAlt"
       class="article-card-image"
       [loading]="lazyImage ? 'lazy' : 'eager'"
       width="400"

@@ -136,19 +136,57 @@ export class ServiceCalendarService {
 
   /**
    * Tworzy nowego serwisanta
+   * Backend (CreateTechnicianRequest) oczekuje pola "name", nie "nickname" — mapujemy tutaj,
+   * żeby reszta frontu mogła spójnie posługiwać się nazwą "nickname" (jak w Technician/UpdateTechnicianDto).
+   * Odpowiedź backendu jest opakowana ({message, technician}), więc wyciągamy samo "technician".
    */
   createTechnician(serviceId: number, data: CreateTechnicianDto): Observable<Technician> {
     const params = new HttpParams().set('serviceId', serviceId.toString());
-    return this.http.post<Technician>(`${this.apiUrl}${this.endpoints.technicians}`, data, { params })
-      .pipe(catchError(this.handleError('createTechnician')));
+    return this.http.post<{ technician: Technician }>(`${this.apiUrl}${this.endpoints.technicians}`, { name: data.nickname }, { params })
+      .pipe(
+        map(res => res.technician),
+        catchError(this.handleError('createTechnician'))
+      );
   }
 
   /**
    * Aktualizuje serwisanta
+   * Odpowiedź backendu jest opakowana ({message, technician}), więc wyciągamy samo "technician".
    */
-  updateTechnician(technicianId: number, data: UpdateTechnicianDto): Observable<Technician> {
-    return this.http.put<Technician>(`${this.apiUrl}${this.endpoints.technicians}/${technicianId}`, data)
-      .pipe(catchError(this.handleError('updateTechnician')));
+  updateTechnician(serviceId: number, technicianId: number, data: UpdateTechnicianDto): Observable<Technician> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.put<{ technician: Technician }>(`${this.apiUrl}${this.endpoints.technicians}/${technicianId}`, data, { params })
+      .pipe(
+        map(res => res.technician),
+        catchError(this.handleError('updateTechnician'))
+      );
+  }
+
+  /**
+   * Dezaktywuje serwisanta (soft-delete — historia zleceń bez zmian)
+   */
+  deactivateTechnician(serviceId: number, technicianId: number): Observable<unknown> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.delete<unknown>(`${this.apiUrl}${this.endpoints.technicians}/${technicianId}`, { params })
+      .pipe(catchError(this.handleError('deactivateTechnician')));
+  }
+
+  /**
+   * Reaktywuje wcześniej zdezaktywowanego serwisanta
+   */
+  activateTechnician(serviceId: number, technicianId: number): Observable<unknown> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.post<unknown>(`${this.apiUrl}${this.endpoints.technicians}/${technicianId}/activate`, {}, { params })
+      .pipe(catchError(this.handleError('activateTechnician')));
+  }
+
+  /**
+   * Zmienia kolejność wyświetlania serwisantów
+   */
+  reorderTechnicians(serviceId: number, technicianIds: number[]): Observable<unknown> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.put<unknown>(`${this.apiUrl}${this.endpoints.technicians}/reorder`, { technicianIds }, { params })
+      .pipe(catchError(this.handleError('reorderTechnicians')));
   }
 
   // ============================================
@@ -274,6 +312,17 @@ export class ServiceCalendarService {
     const params = new HttpParams().set('serviceId', serviceId.toString());
     return this.http.get<TransportAddressResponse>(`${this.apiUrl}${url}`, { params })
       .pipe(catchError(this.handleError('getTransportAddress')));
+  }
+
+  /**
+   * Usuwa przypisanie serwisanta do zlecenia.
+   * Osobny endpoint od updateOrder — generyczny update ignoruje assignedTechnicianId=null
+   * (traktuje "brak wartości" jako "bez zmian"), więc jawne odpięcie wymaga dedykowanego wywołania.
+   */
+  unassignOrder(serviceId: number, orderId: number): Observable<unknown> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.delete<unknown>(`${this.apiUrl}${this.endpoints.orders}/${orderId}/assign`, { params })
+      .pipe(catchError(this.handleError('unassignOrder')));
   }
 
   /**

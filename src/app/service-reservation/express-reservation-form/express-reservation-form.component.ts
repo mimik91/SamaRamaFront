@@ -11,7 +11,7 @@ import {
   AbstractControl,
   ValidationErrors
 } from '@angular/forms';
-import { Router, NavigationStart, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, NavigationStart, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { filter, distinctUntilChanged, catchError } from 'rxjs/operators';
@@ -62,6 +62,7 @@ const DAY_LABELS: { [key: string]: string } = {
 export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
   private enumerationService = inject(EnumerationService);
@@ -145,8 +146,7 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   constructor() {
     this.clientMode = this.authService.isClient();
 
-    const minD = new Date();
-    minD.setDate(minD.getDate() + 2);
+    const minD = this.computeDefaultMinDate();
     this.minDateObj = minD;
     this.minDate = this.dateToStr(minD);
 
@@ -463,6 +463,11 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     if (!this.isOfficePick) {
       d.setDate(d.getDate() - 1);
     }
+    // Wariant domowy liczy odbiór jako dzień przed terminem serwisu — przy rezerwacji
+    // na dziś wyszłaby data z przeszłości. Dzień odbioru nie może cofnąć się przed dziś.
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (d < today) return this.dateToStr(today);
     return this.dateToStr(d);
   }
 
@@ -474,10 +479,10 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
 
     this.seoService.updateFullSeoTags(
       {
-        title: 'Serwis rowerowy Kraków – odbiór z biura i zwrot tego samego dnia | CycloPick',
-        description: 'Zarezerwuj serwis roweru w Krakowie. Odbierzemy rower rano z Twojego biura i zwrócimy przed 17:00 tego samego dnia.',
+        title: 'Serwis rowerowy Kraków – rezerwacja z odbiorem nawet dziś | CycloPick',
+        description: 'Zarezerwuj serwis roweru w Krakowie, nawet na dziś. Wymiana dętki? Zwrot roweru zwykle w mniej niż godzinę. Przegląd ogólny? Gotowe do 48h. Odbiór i zwrot kurierem, spod biura lub domu.',
         type: 'website',
-        keywords: ['serwis rowerowy Kraków', 'serwis rowerowy odbiór z biura', 'cyclopick serwis']
+        keywords: ['serwis rowerowy Kraków', 'wymiana dętki Kraków', 'serwis rowerowy na dziś', 'cyclopick serwis']
       },
       '/krakow/zarezerwuj'
     );
@@ -546,17 +551,29 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   }
 
   private updateMinDate(): void {
-    const dayAfterTomorrow = new Date();
-    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+    const defaultMin = this.computeDefaultMinDate();
     const estimated = this.reservationSettings?.estimatedReservationDay;
     const estimatedStr = estimated ?? '';
-    if (estimatedStr && estimatedStr > this.dateToStr(dayAfterTomorrow)) {
+    if (estimatedStr && estimatedStr > this.dateToStr(defaultMin)) {
       this.minDate = estimatedStr;
       this.minDateObj = new Date(estimatedStr + 'T00:00:00');
     } else {
-      this.minDate = this.dateToStr(dayAfterTomorrow);
-      this.minDateObj = dayAfterTomorrow;
+      this.minDate = this.dateToStr(defaultMin);
+      this.minDateObj = defaultMin;
     }
+  }
+
+  /**
+   * Najwcześniejszy dzień do wyboru: dziś, dopóki jest jeszcze wystarczająco dnia na zorganizowanie
+   * odbioru (przed 20:00) — po tej godzinie kurier odbiera rower dopiero następnego ranka, więc "dziś"
+   * przestaje mieć sens jako wybór i najwcześniejszym dniem staje się jutro.
+   */
+  private computeDefaultMinDate(): Date {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (now.getHours() < 20) return today;
+    today.setDate(today.getDate() + 1);
+    return today;
   }
 
   // ===== Navigation =====
@@ -743,12 +760,26 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
       next: (config) => {
         this.packages = (config?.active && config.packages) ? config.packages.filter(p => p.active) : [];
         this.packagesLoaded = true;
-        // Domyślnie zaznaczamy najtańszy pakiet — klient może zmienić wybór ręcznie
-        if (this.packages.length > 0) {
-          this.selectedPackage = this.packages.reduce((cheapest, pkg) => pkg.price < cheapest.price ? pkg : cheapest);
-        }
+        if (this.packages.length === 0) return;
+
+        // Preselekcja pakietu przez ?pakiet=... (np. link z dedykowanej strony o wymianie dętki).
+        // Bez dopasowania — domyślnie najtańszy pakiet, klient może zmienić wybór ręcznie.
+        const preselect = this.route.snapshot.queryParamMap.get('pakiet');
+        const matched = preselect ? this.findPackageByHint(preselect) : null;
+        this.selectedPackage = matched
+          ?? this.packages.reduce((cheapest, pkg) => pkg.price < cheapest.price ? pkg : cheapest);
       }
     });
+  }
+
+  /** Dopasowanie po znormalizowanym (bez polskich znaków, małe litery) fragmencie nazwy pakietu. */
+  private findPackageByHint(hint: string): ServicePackageDto | null {
+    const normalize = (s: string) => s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
+    const needle = normalize(hint);
+    return this.packages.find(p => normalize(p.displayName).includes(needle)) ?? null;
   }
 
   formatDatePL(val: string | Date): string {

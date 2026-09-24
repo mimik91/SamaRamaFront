@@ -132,6 +132,7 @@
   [order]="selectedOrder"
   [serviceId]="selectedServiceId!"
   [technicians]="technicians"
+  [hasAnyTechnician]="hasAnyTechnician"
   [calendarMode]="calendarMode"
   [reservationAvailable]="reservationAvailable"
   [transportAvailable]="transportAvailable"
@@ -146,6 +147,8 @@
   [serviceId]="selectedServiceId!"
   [waitingOrders]="waitingForBikeOrders"
   [preselectedOrder]="preselectedOrderForAccept"
+  [technicians]="technicians"
+  [hasAnyTechnician]="hasAnyTechnician"
   (close)="onAcceptBikeModalClose()"
   (bikeAccepted)="onBikeAccepted()"
 ></app-accept-bike-modal>

@@ -13,7 +13,8 @@ import {
   UpdateCalendarOrderDto,
   formatCalendarDate,
   ClientLookupResult,
-  ClientBike
+  ClientBike,
+  Technician
 } from '../../../../shared/models/service-calendar.models';
 
 type ModalMode = 'select' | 'new';
@@ -35,6 +36,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   @Input() serviceId!: number;
   @Input() waitingOrders: CalendarOrder[] = [];
   @Input() preselectedOrder: CalendarOrder | null = null;
+  @Input() technicians: Technician[] = [];
+  @Input() hasAnyTechnician = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() bikeAccepted = new EventEmitter<void>();
@@ -68,6 +71,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   clientBikes: ClientBike[] = [];
   isLookingUpClient: boolean = false;
   selectedBikeId: number | null = null;
+
+  selectedTechnicianId: number | null = null;
 
   pickupMethod: 'self' | 'delivery' = 'self';
   deliveryStreet: string = '';
@@ -289,6 +294,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.bikeModel = order.bicycle?.model || order.bicycleModel || '';
     this.bikeType = order.bicycle?.type || order.bicycleType || '';
     this.frameNumber = order.bicycle?.frameNumber || order.bicycleFrameNumber || '';
+    this.selectedTechnicianId = order.assignedTechnicianId ?? null;
 
     if (order.client) {
       const firstName = order.client.firstName || '';
@@ -322,6 +328,20 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     return this.waitingOrders.find(o => o.id === this.selectedOrderId);
   }
 
+  selectWaitingOrder(orderId: number): void {
+    this.selectedOrderId = orderId;
+    this.selectedTechnicianId = this.selectedOrder?.assignedTechnicianId ?? null;
+  }
+
+  /**
+   * Widoczność selektora serwisanta: widoczny zawsze, gdy serwis ma wprowadzonego chociaż
+   * jednego serwisanta (aktywnego lub nie) — niezależnie od trybu modala czy bieżącego
+   * przypisania zlecenia.
+   */
+  get showTechnicianSelector(): boolean {
+    return this.hasAnyTechnician;
+  }
+
   get isDeliveryAddressValid(): boolean {
     if (this.pickupMethod !== 'delivery') return true;
     return !!(this.deliveryStreet.trim() && this.deliveryBuilding.trim() && this.deliveryCity.trim());
@@ -344,7 +364,7 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
 
     if (this.mode === 'select' && this.selectedOrderId) {
-      this.changeStatusToInQueue(this.selectedOrderId);
+      this.assignTechnicianThenChangeStatus(this.selectedOrderId);
     } else if (this.mode === 'new' && this.preselectedOrder) {
       this.acceptPreselectedOrder(this.preselectedOrder.id);
     } else {
@@ -376,7 +396,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
             frameNumber: this.frameNumber.trim() || undefined
           }
       ),
-      description: this.description.trim() || undefined
+      description: this.description.trim() || undefined,
+      assignedTechnicianId: this.selectedTechnicianId ?? undefined
     };
 
     this.calendarService.updateOrder(this.serviceId, orderId, updateData).subscribe({
@@ -387,6 +408,19 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
         console.error('Error updating order data:', err);
       }
     });
+  }
+
+  private assignTechnicianThenChangeStatus(orderId: number): void {
+    const currentTechnicianId = this.selectedOrder?.assignedTechnicianId ?? null;
+    if (this.selectedTechnicianId != null && this.selectedTechnicianId !== currentTechnicianId) {
+      this.calendarService.updateOrder(this.serviceId, orderId, { assignedTechnicianId: this.selectedTechnicianId }).subscribe({
+        next: () => { this.changeStatusToInQueue(orderId); },
+        // Nie blokujemy przyjęcia roweru z powodu nieudanego przypisania serwisanta.
+        error: () => { this.changeStatusToInQueue(orderId); }
+      });
+    } else {
+      this.changeStatusToInQueue(orderId);
+    }
   }
 
   private changeStatusToInQueue(orderId: number): void {
@@ -451,7 +485,8 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
             }
       ],
       plannedDate: formatCalendarDate(new Date()),
-      description: this.description.trim() || undefined
+      description: this.description.trim() || undefined,
+      assignedTechnicianId: this.selectedTechnicianId ?? undefined
     };
 
     this.calendarService.createOrder(this.serviceId, orderData).subscribe({

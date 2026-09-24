@@ -211,7 +211,7 @@
         </div>
 
         <!-- Data i serwisant -->
-        <div class="detail-section" *ngIf="(!canShowImages || calendarMode === 'ADVANCED') && !isPendingConfirmation">
+        <div class="detail-section" *ngIf="(!canShowImages || showTechnicianSelector) && !isPendingConfirmation">
           <h3 class="section-title">{{ t('service_calendar.order_details.order_info') }}</h3>
           <div class="detail-grid detail-grid--cols">
             <div class="detail-item" *ngIf="!canShowImages">
@@ -235,7 +235,7 @@
                 </select>
               </div>
             </div>
-            <div class="detail-item" *ngIf="calendarMode === 'ADVANCED'">
+            <div class="detail-item" *ngIf="showTechnicianSelector">
               <span class="detail-label">{{ t('service_calendar.order_details.technician') }}</span>
               <select
                 [(ngModel)]="selectedTechnicianId"

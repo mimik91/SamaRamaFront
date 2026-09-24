@@ -6,9 +6,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { BicycleService, GroupedImagesResponse, BicycleImage, ActiveTransportResponse, ActiveServiceOrderCard, ServiceOrderMessage, ServiceOrderDetail } from '../bicycle.service';
 import { Bicycle } from '../../../shared/models/bicycle.model';
-import { RepairPlanResponse } from '../../../shared/models/repair-plan.models';
+import { RepairPlanResponse, RepairPlanItemResponse } from '../../../shared/models/repair-plan.models';
 import { NotificationService } from '../../../core/notification.service';
-import { ServiceRecord } from '../../../service-records/service-record.model';
+import { ServiceRecord, RepairPlanItemDto } from '../../../service-records/service-record.model';
 import { ServiceRecordService } from '../../../service-records/service-record.service';
 import { formatServiceDurationDays } from '../../../service-records/service-duration.util';
 import { EnumerationService } from '../../../core/enumeration.service';
@@ -313,6 +313,18 @@ export class ClientPanelDetailsComponent implements OnInit {
 
   get isEditingRepairPlanItems(): boolean {
     return this.excludedRepairPlanItemIds.size > 0 || this.repairPlanPackageExcluded;
+  }
+
+  get repairPlanPartItems(): RepairPlanItemResponse[] {
+    return this.repairPlan?.items.filter(i => i.type === 'PART') ?? [];
+  }
+
+  get repairPlanServiceItems(): RepairPlanItemResponse[] {
+    return this.repairPlan?.items.filter(i => i.type === 'SERVICE') ?? [];
+  }
+
+  filterHistoryItemsByType(items: RepairPlanItemDto[], type: 'PART' | 'SERVICE'): RepairPlanItemDto[] {
+    return items.filter(i => i.type === type);
   }
 
   get repairPlanHasDiscount(): boolean {

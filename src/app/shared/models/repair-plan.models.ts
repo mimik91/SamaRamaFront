@@ -1,7 +1,10 @@
+export type RepairPlanItemType = 'PART' | 'SERVICE';
+
 export interface RepairPlanLineItem {
   pricelistItemId: number | null;
   name: string;
   price: number;
+  type: RepairPlanItemType;
   excluded?: boolean;
 }
 
@@ -22,6 +25,7 @@ export interface SaveRepairPlanRequest {
 export interface SaveRepairPlanItemRequest {
   name: string;
   price: number;
+  type: RepairPlanItemType;
 }
 
 // ===== RESPONSE =====
@@ -47,6 +51,7 @@ export interface RepairPlanItemResponse {
   id: number;
   name: string;
   price: number;
+  type: RepairPlanItemType;
   excluded: boolean;
 }
 

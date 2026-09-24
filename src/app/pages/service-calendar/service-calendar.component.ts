@@ -103,6 +103,9 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
 
   // Serwisanci
   technicians: Technician[] = [];
+  /** Czy serwis ma wprowadzonego CHOCIAŻ JEDNEGO serwisanta (aktywnego lub nie) — decyduje o widoczności
+   * całego obszaru "Serwisant" w szczegółach zlecenia, niezależnie od bieżącej liczby aktywnych. */
+  hasAnyTechnician = false;
 
   // Stan ladowania
   loadingState: CalendarLoadingState = { ...DEFAULT_CALENDAR_LOADING_STATE };
@@ -277,10 +280,12 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
     this.calendarService.getTechnicians(this.selectedServiceId).subscribe({
       next: (technicians: Technician[]) => {
         this.technicians = technicians.filter(t => t.isActive);
+        this.hasAnyTechnician = technicians.length > 0;
         this.loadingState.isLoadingTechnicians = false;
       },
       error: (err: any) => {
         this.technicians = [];
+        this.hasAnyTechnician = false;
         this.loadingState.isLoadingTechnicians = false;
         console.error('Error loading technicians:', err);
       }

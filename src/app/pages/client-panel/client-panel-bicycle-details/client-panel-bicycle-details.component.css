@@ -569,6 +569,18 @@
   border-bottom: none;
 }
 
+.items-table-group-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: transparent !important;
+  border-bottom: none !important;
+  padding-top: var(--spacing-3) !important;
+  padding-bottom: 2px !important;
+}
+
 .record-note {
   background: var(--color-gray-100, #f3f4f6);
   border-radius: var(--radius-sm);
@@ -898,6 +910,16 @@
 
 .plan-item-name {
   flex: 1;
+}
+
+.plan-group-title {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: var(--spacing-1);
 }
 
 .plan-item--excluded .plan-item-name,

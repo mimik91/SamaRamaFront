@@ -35,6 +35,7 @@ import { CityServicesPageComponent } from './pages/city-services-page/city-servi
 import { LandingPageComponent } from './pages/landing-page/landing-page.component';
 import { TransportRowerowKrakowComponent } from './pages/transport-rowerow-krakow/transport-rowerow-krakow.component';
 import { JakDzialaSerwisEkspresowyComponent } from './pages/jak-dziala-serwis-ekspresowy/jak-dziala-serwis-ekspresowy.component';
+import { JakDzialaEkspresowaWymianaDetkiComponent } from './pages/jak-dziala-ekspresowa-wymiana-detki/jak-dziala-ekspresowa-wymiana-detki.component';
 import { PoradnikListPageComponent } from './pages/poradnik/poradnik-list-page/poradnik-list-page.component';
 import { PoradnikArticlePageComponent } from './pages/poradnik/poradnik-article-page/poradnik-article-page.component';
 import { FlyerRedirectComponent } from './pages/flyer-redirect/flyer-redirect.component';
@@ -446,6 +447,13 @@ export const routes: Routes = [
       path: 'krakow/jak-dziala-serwis-ekspresowy',
       component: JakDzialaSerwisEkspresowyComponent,
       title: 'Jak działa serwis ekspresowy CycloPick w Krakowie? | CycloPick'
+    },
+
+    // Dedykowana strona ekspresowej wymiany dętki (SEO, statyczna treść)
+    {
+      path: 'krakow/jak-dziala-ekspresowa-wymiana-detki',
+      component: JakDzialaEkspresowaWymianaDetkiComponent,
+      title: 'Ekspresowa wymiana dętki Kraków — zwrot w mniej niż godzinę | CycloPick'
     },
 
     // Zarezerwuj serwis (must be before base :suffix route)

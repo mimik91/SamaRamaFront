@@ -382,6 +382,71 @@
   max-width: 120px;
 }
 
+/* Serwisanci */
+.add-technician-row {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.add-technician-row .field-input {
+  flex: 1;
+}
+
+.technicians-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.technicians-group-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.technician-entry .template-name-row {
+  align-items: center;
+}
+
+.technician-entry--inactive {
+  background: var(--color-gray-100);
+  opacity: 0.85;
+}
+
+.technician-inactive-name {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+.btn-reorder {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-white);
+  border: 1px solid var(--border-color-gray);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-reorder:hover:not(:disabled) {
+  background: var(--color-primary-alpha-08);
+  color: var(--color-primary);
+}
+
+.btn-reorder:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Coming soon banner */
 .coming-soon-banner {
   display: flex;

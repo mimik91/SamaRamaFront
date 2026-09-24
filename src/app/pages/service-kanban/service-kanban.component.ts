@@ -118,6 +118,7 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   columns: KanbanColumn[] = COLUMN_DEFS.map(d => ({ ...d, orders: [] }));
   allOrders: CalendarOrder[] = [];
   technicians: Technician[] = [];
+  hasAnyTechnician = false;
   searchFilter: OrderSearchFilter = { ...EMPTY_ORDER_SEARCH_FILTER };
 
   currentWeekStart: Date = getWeekStart(new Date());
@@ -184,7 +185,10 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
 
   private loadTechnicians(serviceId: number): void {
     this.calendarService.getTechnicians(serviceId).subscribe({
-      next: (t) => { this.technicians = t.filter(x => x.isActive); },
+      next: (t) => {
+        this.technicians = t.filter(x => x.isActive);
+        this.hasAnyTechnician = t.length > 0;
+      },
       error: () => {}
     });
   }

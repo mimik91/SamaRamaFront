@@ -42,6 +42,9 @@ export class OrderDetailsModalComponent implements OnDestroy {
   @Input() order!: CalendarOrder;
   @Input() serviceId!: number;
   @Input() technicians: Technician[] = [];
+  /** Czy serwis ma wprowadzonego chociaż jednego serwisanta (aktywnego lub nie) — jeśli nie,
+   * cały obszar "Serwisant" jest ukryty, niezależnie od stanu przypisania tego zlecenia. */
+  @Input() hasAnyTechnician = false;
   @Input() calendarMode: CalendarMode = 'SIMPLE';
   @Input() reservationAvailable: boolean = false;
   @Input() transportAvailable: boolean = false;
@@ -184,6 +187,16 @@ export class OrderDetailsModalComponent implements OnDestroy {
   // Available statuses (computed based on current status)
   get statuses(): OrderStatusConfig[] {
     return getAvailableStatusTransitions(this.fullOrder?.status || this.order.status);
+  }
+
+  /**
+   * Widoczność selektora serwisanta — niezależna od trybu kalendarza (SIMPLE/ADVANCED) i od
+   * liczby aktywnych serwisantów: ukryty tylko gdy serwis nigdy nie wprowadził żadnego serwisanta
+   * (hasAnyTechnician). W każdym innym przypadku widoczny zawsze, żeby dało się sprawdzić i
+   * zmienić przypisanie niezależnie od tego, czy jest już poprawnie ustawione.
+   */
+  get showTechnicianSelector(): boolean {
+    return this.hasAnyTechnician;
   }
 
   t(key: string, params?: Record<string, any>): string {
@@ -436,7 +449,15 @@ export class OrderDetailsModalComponent implements OnDestroy {
     if (this.selectedTime !== this.originalTime) {
       orderPayload['plannedTime'] = this.selectedTime && this.selectedTime !== '00:00' ? this.selectedTime : null;
     }
-    if (this.selectedTechnicianId !== this.originalTechnicianId) orderPayload['assignedTechnicianId'] = this.selectedTechnicianId;
+    if (this.selectedTechnicianId !== this.originalTechnicianId) {
+      if (this.selectedTechnicianId == null) {
+        // updateOrder ignoruje assignedTechnicianId=null (patrz komentarz w unassignOrder) —
+        // jawne odpięcie wymaga osobnego wywołania dedykowanego endpointu.
+        saves.push(firstValueFrom(this.calendarService.unassignOrder(this.serviceId, this.fullOrder.id)));
+      } else {
+        orderPayload['assignedTechnicianId'] = this.selectedTechnicianId;
+      }
+    }
 
     if (Object.keys(orderPayload).length > 0) {
       saves.push(firstValueFrom(this.calendarService.updateOrder(this.serviceId, this.fullOrder.id, orderPayload)));

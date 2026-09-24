@@ -31,6 +31,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender
   },
   {
+    path: 'krakow/jak-dziala-ekspresowa-wymiana-detki',
+    renderMode: RenderMode.Prerender
+  },
+  {
     path: 'poradnik',
     renderMode: RenderMode.Prerender
   },

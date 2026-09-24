@@ -7,7 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { NotificationService } from '../../../../core/notification.service';
 import { I18nService } from '../../../../core/i18n.service';
 import { ServiceCalendarService, ServiceNotificationConfig } from '../../services/service-calendar.service';
-import { CalendarConfig } from '../../../../shared/models/service-calendar.models';
+import { CalendarConfig, Technician } from '../../../../shared/models/service-calendar.models';
 
 interface TemplateEntry {
   name: string;
@@ -63,6 +63,13 @@ export class CalendarSettingsModalComponent implements OnInit, OnDestroy {
   isDirty = false;
   showUnsavedDialog = false;
 
+  technicians: Technician[] = [];
+  loadingTechnicians = false;
+  technicianError: string | null = null;
+  newTechnicianName = '';
+  savingTechnician = false;
+  technicianActionId: number | null = null;
+
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
@@ -78,6 +85,7 @@ export class CalendarSettingsModalComponent implements OnInit, OnDestroy {
     });
 
     this.loadNotificationConfig();
+    this.loadTechnicians();
   }
 
   ngOnDestroy(): void {
@@ -258,6 +266,124 @@ export class CalendarSettingsModalComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       textarea.selectionStart = textarea.selectionEnd = start + tag.length;
       textarea.focus();
+    });
+  }
+
+  // ============================================
+  // SERWISANCI
+  // ============================================
+
+  get activeTechnicians(): Technician[] {
+    return this.technicians.filter(t => t.isActive);
+  }
+
+  get inactiveTechnicians(): Technician[] {
+    return this.technicians.filter(t => !t.isActive);
+  }
+
+  private loadTechnicians(): void {
+    this.loadingTechnicians = true;
+    this.calendarService.getTechnicians(this.serviceId).subscribe({
+      next: (technicians) => {
+        this.loadingTechnicians = false;
+        this.technicians = technicians;
+      },
+      error: () => {
+        this.loadingTechnicians = false;
+        this.technicianError = this.i18nService.translate('service_calendar.errors.load_technicians_failed');
+      }
+    });
+  }
+
+  addTechnician(): void {
+    const name = this.newTechnicianName.trim();
+    if (!name || this.savingTechnician) return;
+
+    this.savingTechnician = true;
+    this.technicianError = null;
+    this.calendarService.createTechnician(this.serviceId, { nickname: name }).subscribe({
+      next: (technician) => {
+        this.savingTechnician = false;
+        this.technicians = [...this.technicians, technician];
+        this.newTechnicianName = '';
+        this.notificationService.success(this.i18nService.translate('service_calendar.messages.technician_added'));
+      },
+      error: () => {
+        this.savingTechnician = false;
+        this.technicianError = this.i18nService.translate('service_calendar.errors.add_technician_failed');
+      }
+    });
+  }
+
+  renameTechnician(technician: Technician, newNickname: string): void {
+    const nickname = newNickname.trim();
+    if (!nickname || nickname === technician.nickname) return;
+
+    this.technicianActionId = technician.id;
+    this.calendarService.updateTechnician(this.serviceId, technician.id, { nickname }).subscribe({
+      next: (updated) => {
+        this.technicianActionId = null;
+        technician.nickname = updated.nickname;
+        this.notificationService.success(this.i18nService.translate('service_calendar.messages.technician_updated'));
+      },
+      error: () => {
+        this.technicianActionId = null;
+        this.technicianError = this.i18nService.translate('service_calendar.errors.update_technician_failed');
+      }
+    });
+  }
+
+  deactivateTechnician(technician: Technician): void {
+    this.technicianActionId = technician.id;
+    this.calendarService.deactivateTechnician(this.serviceId, technician.id).subscribe({
+      next: () => {
+        this.technicianActionId = null;
+        technician.isActive = false;
+        this.notificationService.success(this.i18nService.translate('service_calendar.messages.technician_deactivated'));
+      },
+      error: () => {
+        this.technicianActionId = null;
+        this.technicianError = this.i18nService.translate('service_calendar.errors.update_technician_failed');
+      }
+    });
+  }
+
+  activateTechnician(technician: Technician): void {
+    this.technicianActionId = technician.id;
+    this.calendarService.activateTechnician(this.serviceId, technician.id).subscribe({
+      next: () => {
+        this.technicianActionId = null;
+        technician.isActive = true;
+        this.notificationService.success(this.i18nService.translate('service_calendar.messages.technician_activated'));
+      },
+      error: () => {
+        this.technicianActionId = null;
+        this.technicianError = this.i18nService.translate('service_calendar.errors.update_technician_failed');
+      }
+    });
+  }
+
+  moveTechnician(technician: Technician, direction: -1 | 1): void {
+    const active = this.activeTechnicians;
+    const index = active.findIndex(t => t.id === technician.id);
+    const targetIndex = index + direction;
+    if (index === -1 || targetIndex < 0 || targetIndex >= active.length) return;
+
+    const reordered = [...active];
+    [reordered[index], reordered[targetIndex]] = [reordered[targetIndex], reordered[index]];
+    const orderedIds = reordered.map(t => t.id);
+
+    this.calendarService.reorderTechnicians(this.serviceId, orderedIds).subscribe({
+      next: () => {
+        orderedIds.forEach((id, i) => {
+          const t = this.technicians.find(tech => tech.id === id);
+          if (t) t.displayOrder = i;
+        });
+        this.technicians = [...this.technicians].sort((a, b) => a.displayOrder - b.displayOrder);
+      },
+      error: () => {
+        this.technicianError = this.i18nService.translate('service_calendar.errors.update_technician_failed');
+      }
     });
   }
 }

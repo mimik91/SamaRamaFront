@@ -21,7 +21,6 @@ export class CalendarHeaderComponent {
   @Input() calendarMode: CalendarMode = 'SIMPLE';
   @Input() selectedDate: Date = new Date();
   @Input() maxBikesPerDay: number = 10;
-  @Input() showTechnicianButton: boolean = false;
   @Input() loading: boolean = false;
 
   @Output() viewChange = new EventEmitter<CalendarViewMode>();

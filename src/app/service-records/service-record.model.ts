@@ -7,6 +7,7 @@ export interface ItemDto {
 export interface RepairPlanItemDto {
   name: string;
   price: number;
+  type: 'PART' | 'SERVICE';
 }
 
 export interface RepairPlanSummaryDto {

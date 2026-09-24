@@ -31,7 +31,7 @@
             class="order-item"
             *ngFor="let order of waitingOrders"
             [class.selected]="selectedOrderId === order.id"
-            (click)="selectedOrderId = order.id"
+            (click)="selectWaitingOrder(order.id)"
           >
             <div class="order-radio">
               <input
@@ -39,7 +39,8 @@
                 [id]="'order-' + order.id"
                 name="selectedOrder"
                 [value]="order.id"
-                [(ngModel)]="selectedOrderId"
+                [ngModel]="selectedOrderId"
+                (ngModelChange)="selectWaitingOrder($event)"
               />
             </div>
             <div class="order-info">
@@ -52,6 +53,15 @@
 
         <div class="empty-state" *ngIf="waitingOrders.length === 0">
           <p>{{ t('service_calendar.accept_bike_modal.no_waiting_orders') }}</p>
+        </div>
+
+        <!-- Serwisant (select mode) -->
+        <div class="form-group" *ngIf="selectedOrderId && showTechnicianSelector">
+          <label for="technicianSelect">Serwisant</label>
+          <select id="technicianSelect" [(ngModel)]="selectedTechnicianId" name="technicianSelect">
+            <option [ngValue]="null">Brak przypisania</option>
+            <option *ngFor="let tech of technicians" [ngValue]="tech.id">{{ tech.nickname }}</option>
+          </select>
         </div>
 
         <!-- Pickup method for select mode -->
@@ -297,6 +307,15 @@
                   </ol>
                 </div>
               </div>
+          </div>
+
+          <!-- Serwisant -->
+          <div class="form-group" *ngIf="showTechnicianSelector">
+            <label for="technicianSelectNew">Serwisant</label>
+            <select id="technicianSelectNew" [(ngModel)]="selectedTechnicianId" name="technicianSelectNew">
+              <option [ngValue]="null">Brak przypisania</option>
+              <option *ngFor="let tech of technicians" [ngValue]="tech.id">{{ tech.nickname }}</option>
+            </select>
           </div>
 
           <!-- Notes -->

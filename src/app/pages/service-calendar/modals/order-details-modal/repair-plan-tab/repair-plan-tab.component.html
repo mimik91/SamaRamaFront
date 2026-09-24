@@ -50,9 +50,9 @@
     </div>
   </div>
 
-  <!-- Pozycje naprawy -->
+  <!-- Usługi -->
   <div class="rp-section">
-    <h4>Pozycje naprawy</h4>
+    <h4>Usługi</h4>
 
     <div class="rp-add-item">
       <div class="rp-autocomplete-wrapper">
@@ -63,7 +63,7 @@
           (input)="onNewItemNameInput()"
           (blur)="onAutocompleteBlur()"
           (keydown)="onNewItemNameKeydown($event)"
-          placeholder="Wyszukaj lub wpisz własną pozycję i naciśnij Enter..."
+          placeholder="Wyszukaj lub wpisz własną usługę i naciśnij Enter..."
         />
         <div class="rp-autocomplete-dropdown" *ngIf="showAutocomplete">
           <button
@@ -78,26 +78,62 @@
           </button>
         </div>
       </div>
+      <button class="btn-rp-add no-print" (click)="addLineItem()" [disabled]="!newItemName.trim()">+ Dodaj usługę</button>
     </div>
 
-    <div class="rp-items-list" *ngIf="lineItems.length > 0">
-      <div class="rp-item-row" *ngFor="let item of lineItems; let i = index" [class.rp-item-row--excluded]="item.excluded">
+    <div class="rp-items-list" *ngIf="serviceItems.length > 0">
+      <div class="rp-item-row" *ngFor="let item of serviceItems; let i = index" [class.rp-item-row--excluded]="item.excluded">
         <span class="rp-item-name">{{ item.name }}</span>
         <span class="rp-item-excluded-tag" *ngIf="item.excluded">klient zrezygnował</span>
         <input
           type="number"
           class="rp-item-price-edit"
           [ngModel]="item.price"
-          (ngModelChange)="updateLineItemPrice(i, $event)"
+          (ngModelChange)="updateServiceItemPrice(i, $event)"
           min="0"
           step="0.01"
         />
         <span class="rp-currency">zł</span>
-        <button class="rp-btn-remove no-print" (click)="removeLineItem(i)">&times;</button>
+        <button class="rp-btn-remove no-print" (click)="removeServiceItem(i)">&times;</button>
       </div>
     </div>
 
-    <p class="rp-empty-hint" *ngIf="lineItems.length === 0">Brak pozycji. Dodaj usługi powyżej.</p>
+    <p class="rp-empty-hint" *ngIf="serviceItems.length === 0">Brak usług. Dodaj powyżej.</p>
+  </div>
+
+  <!-- Części -->
+  <div class="rp-section">
+    <h4>Części</h4>
+
+    <div class="rp-add-item">
+      <input
+        type="text"
+        class="rp-item-name-input"
+        [(ngModel)]="newPartName"
+        (keydown.enter)="addPartItem()"
+        placeholder="Nazwa części..."
+      />
+      <button class="btn-rp-add no-print" (click)="addPartItem()" [disabled]="!newPartName.trim()">+ Dodaj część</button>
+    </div>
+
+    <div class="rp-items-list" *ngIf="partItems.length > 0">
+      <div class="rp-item-row" *ngFor="let item of partItems; let i = index" [class.rp-item-row--excluded]="item.excluded">
+        <span class="rp-item-name">{{ item.name }}</span>
+        <span class="rp-item-excluded-tag" *ngIf="item.excluded">klient zrezygnował</span>
+        <input
+          type="number"
+          class="rp-item-price-edit"
+          [ngModel]="item.price"
+          (ngModelChange)="updatePartItemPrice(i, $event)"
+          min="0"
+          step="0.01"
+        />
+        <span class="rp-currency">zł</span>
+        <button class="rp-btn-remove no-print" (click)="removePartItem(i)">&times;</button>
+      </div>
+    </div>
+
+    <p class="rp-empty-hint" *ngIf="partItems.length === 0">Brak części. Dodaj powyżej.</p>
   </div>
 
   <!-- Podsumowanie -->
@@ -125,8 +161,8 @@
         </span>
         <span *ngIf="planPackageExcluded">{{ selectedPackage.price | number:'1.2-2' }} zł</span>
       </div>
-      <div class="rp-summary-row" *ngIf="lineItems.length > 0">
-        <span>Pozycje ({{ lineItems.length }})</span>
+      <div class="rp-summary-row" *ngIf="lineItemsCount > 0">
+        <span>Pozycje ({{ lineItemsCount }})</span>
         <span>{{ itemsCost | number:'1.2-2' }} zł</span>
       </div>
       <div class="rp-summary-divider"></div>

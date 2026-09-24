@@ -37,10 +37,15 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   selectedPackage: ServicePackageDto | null = null;
   /** Cena pakietu w tym konkretnym planie — domyślnie cena z cennika, ale serwis może ją nadpisać dla tego zlecenia */
   packagePriceOverride: number | null = null;
-  lineItems: RepairPlanLineItem[] = [];
+  /** Zużyte części — zawsze wolny tekst + ręczna cena, bez katalogu */
+  partItems: RepairPlanLineItem[] = [];
+  /** Wykonane usługi — jak dotychczas, autocomplete z cennika serwisu lub wolny tekst */
+  serviceItems: RepairPlanLineItem[] = [];
   customTotalEnabled = false;
   customTotalValue: number | null = null;
   notes = '';
+
+  newPartName = '';
 
   newItemName = '';
   newItemPrice: number | null = null;
@@ -68,7 +73,9 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   };
 
   get packageCost(): number { return this.planPackageExcluded ? 0 : (this.packagePriceOverride ?? this.selectedPackage?.price ?? 0); }
-  get itemsCost(): number { return this.lineItems.filter(i => !i.excluded).reduce((s, i) => s + i.price, 0); }
+  get itemsCost(): number { return this.allLineItems.filter(i => !i.excluded).reduce((s, i) => s + i.price, 0); }
+  get allLineItems(): RepairPlanLineItem[] { return [...this.partItems, ...this.serviceItems]; }
+  get lineItemsCount(): number { return this.partItems.length + this.serviceItems.length; }
   get calculatedTotal(): number { return this.packageCost + this.itemsCost; }
   get finalTotal(): number { return this.customTotalEnabled ? (this.customTotalValue ?? 0) : this.calculatedTotal; }
   get bikeTypeLabel(): string { return this.order.bicycleType || 'Nieokreślony'; }
@@ -117,12 +124,15 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
       this.selectedPackage = this.packagesForBikeType.find(p => p.id === plan.packageId) ?? null;
       this.packagePriceOverride = plan.packagePriceSnapshot;
     }
-    this.lineItems = plan.items.map(item => ({
+    const mapped: RepairPlanLineItem[] = plan.items.map(item => ({
       pricelistItemId: null,
       name: item.name,
       price: item.price,
+      type: item.type,
       excluded: item.excluded
     }));
+    this.partItems = mapped.filter(i => i.type === 'PART');
+    this.serviceItems = mapped.filter(i => i.type === 'SERVICE');
     if (plan.customTotal !== null) {
       this.customTotalEnabled = true;
       this.customTotalValue = plan.customTotal;
@@ -161,10 +171,11 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   }
 
   selectAutocompleteItem(item: PricelistItemWithPrice): void {
-    this.lineItems.push({
+    this.serviceItems.push({
       pricelistItemId: item.id,
       name: item.name,
-      price: item.price ?? 0
+      price: item.price ?? 0,
+      type: 'SERVICE'
     });
     this.newItemName = '';
     this.selectedAutocompleteItem = null;
@@ -209,10 +220,11 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
       }
       const name = this.newItemName.trim();
       if (!name) return;
-      this.lineItems.push({
+      this.serviceItems.push({
         pricelistItemId: null,
         name,
-        price: 0
+        price: 0,
+        type: 'SERVICE'
       });
       this.newItemName = '';
       this.selectedAutocompleteItem = null;
@@ -225,22 +237,48 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   addLineItem(): void {
     const name = this.newItemName.trim();
     if (!name) return;
-    this.lineItems.push({
+    this.serviceItems.push({
       pricelistItemId: this.selectedAutocompleteItem?.id ?? null,
       name,
-      price: 0
+      price: 0,
+      type: 'SERVICE'
     });
     this.newItemName = '';
     this.selectedAutocompleteItem = null;
     this.autocompleteResults = [];
+    this.showAutocomplete = false;
+    this.focusedAutocompleteIndex = -1;
   }
 
-  removeLineItem(index: number): void {
-    this.lineItems.splice(index, 1);
+  addPartItem(): void {
+    const name = this.newPartName.trim();
+    if (!name) return;
+    this.partItems.push({
+      pricelistItemId: null,
+      name,
+      // Cena uzupełniana później, bezpośrednio w wierszu listy (updatePartItemPrice) —
+      // przy dodawaniu części zwykle jeszcze jej nie znamy.
+      price: 0,
+      type: 'PART'
+    });
+    this.newPartName = '';
   }
 
-  updateLineItemPrice(index: number, value: number): void {
-    this.lineItems[index].price = value ?? 0;
+  removePartItem(index: number): void {
+    this.partItems.splice(index, 1);
+  }
+
+  updatePartItemPrice(index: number, value: number): void {
+    this.partItems[index].price = value ?? 0;
+    this.resetCustomTotal();
+  }
+
+  removeServiceItem(index: number): void {
+    this.serviceItems.splice(index, 1);
+  }
+
+  updateServiceItemPrice(index: number, value: number): void {
+    this.serviceItems[index].price = value ?? 0;
     this.resetCustomTotal();
   }
 
@@ -272,7 +310,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
     return {
       packageId: this.selectedPackage?.id ?? null,
       packagePriceSnapshot: this.selectedPackage ? (this.packagePriceOverride ?? this.selectedPackage.price) : null,
-      items: this.lineItems.map(item => ({ name: item.name, price: item.price })),
+      items: this.allLineItems.map(item => ({ name: item.name, price: item.price, type: item.type })),
       customTotal: this.customTotalEnabled ? (this.customTotalValue ?? null) : null,
       notes: this.notes || null
     };
@@ -300,12 +338,8 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
       ? this.buildPackageRows(this.selectedPackage, this.packageCost)
       : '';
 
-    const itemRows = this.lineItems.map(item => `
-      <tr>
-        <td class="cb-cell"><span class="cb"></span></td>
-        <td>${this.esc(item.name)}</td>
-        <td class="price">${item.price.toFixed(2)} zł</td>
-      </tr>`).join('');
+    const itemRows = this.buildItemGroupRows('Usługi', this.serviceItems)
+      + this.buildItemGroupRows('Części', this.partItems);
 
     const totalCell = this.customTotalEnabled
       ? `<del>${this.calculatedTotal.toFixed(2)} zł</del>&ensp;<strong>${(this.customTotalValue ?? 0).toFixed(2)} zł</strong>`
@@ -357,6 +391,10 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
     .pkg-item td { padding: 5px 8px 5px 28px; color: #333; font-size: 11px; }
     .pkg-item .cb-cell { padding-left: 18px; }
 
+    .item-group-header td { padding: 8px 8px 3px; font-size: 10px; font-weight: 700;
+                             text-transform: uppercase; letter-spacing: 0.05em; color: #888;
+                             border-bottom: none; }
+
     .badge { display: inline-block; font-size: 9px; background: #e8f5e9; color: #2e7d32;
              border-radius: 3px; padding: 1px 5px; margin-left: 6px; font-weight: 700;
              vertical-align: middle; }
@@ -387,7 +425,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   <table>
     ${packageRows}
     ${itemRows}
-    ${(this.selectedPackage || this.lineItems.length > 0) ? `
+    ${(this.selectedPackage || this.lineItemsCount > 0) ? `
     <tr class="total-row">
       <td></td>
       <td>Łączny koszt</td>
@@ -405,6 +443,23 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   <script>window.onafterprint = function() { window.close(); };<\/script>
 </body>
 </html>`;
+  }
+
+  private buildItemGroupRows(groupLabel: string, items: RepairPlanLineItem[]): string {
+    if (items.length === 0) return '';
+    const headerRow = `
+      <tr class="item-group-header">
+        <td></td>
+        <td>${this.esc(groupLabel)}</td>
+        <td class="price-empty"></td>
+      </tr>`;
+    const rows = items.map(item => `
+      <tr>
+        <td class="cb-cell"><span class="cb"></span></td>
+        <td>${this.esc(item.name)}</td>
+        <td class="price">${item.price.toFixed(2)} zł</td>
+      </tr>`).join('');
+    return headerRow + rows;
   }
 
   private buildPackageRows(pkg: ServicePackageDto, effectivePrice: number): string {

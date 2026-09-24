@@ -312,6 +312,80 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
 
       <p>Niezależnie od tego, czy jeździsz MTB, czy tylko dojeżdżasz rowerem po mieście — to głosowanie to jedna z niewielu okazji, żeby realnie wpłynąć na to, jak wygląda rowerowy Kraków. Nie kosztuje nic poza kilkoma minutami między 11 a 28 września.</p>
     `
+  },
+  {
+    slug: 'serwis-rowerowy-krakow-dzielnice',
+    title: 'Serwis rowerowy w Krakowie — najbliższy warsztat w Twojej dzielnicy',
+    subtitle: 'Zarejestrowani partnerzy CycloPick we wszystkich 18 dzielnicach',
+    excerpt: 'Szukasz serwisu rowerowego blisko domu w Krakowie? Sprawdź, który zweryfikowany warsztat CycloPick działa w Twojej dzielnicy — od Starego Miasta po Nową Hutę.',
+    coverImage: '/assets/images/pictures/vertical/serwis-rowerowy-krakow.webp',
+    coverImageAlt: 'Mapa Krakowa z zaznaczonymi dzielnicami',
+    publishedDate: '2026-09-18',
+    readingTimeMinutes: 7,
+    contentHtml: `
+      <p>Kraków ma 18 dzielnic, a najbliższy dobry warsztat rzadko stoi tam, gdzie akurat mieszkasz. Poniżej sprawdzisz, który zweryfikowany serwis CycloPick działa w Twojej okolicy — a tam, gdzie żaden partner jeszcze nie działa, pokazujemy, jak i tak załatwić naprawę bez szukania warsztatu po drugiej stronie miasta.</p>
+
+      <div class="poradnik-tldr">
+        <h2 id="w-skrocie">Szybki wybór dzielnicy</h2>
+        <ul>
+          <li><a href="#stare-miasto">Stare Miasto</a></li>
+          <li><a href="#grzegorzki">Grzegórzki</a></li>
+          <li><a href="#pradnik-czerwony">Prądnik Czerwony (Dobrego Pasterza)</a></li>
+          <li><a href="#pradnik-bialy">Prądnik Biały</a></li>
+          <li><a href="#krowodrza">Krowodrza</a></li>
+          <li><a href="#bronowice">Bronowice</a></li>
+          <li><a href="#zwierzyniec">Zwierzyniec</a></li>
+          <li><a href="#debniki">Dębniki (Ruczaj)</a></li>
+          <li><a href="#lagiewniki-borek-falecki">Łagiewniki-Borek Fałęcki</a></li>
+          <li><a href="#swoszowice">Swoszowice</a></li>
+          <li><a href="#podgorze-duchackie">Podgórze Duchackie (Kurdwanów)</a></li>
+          <li><a href="#biezanow-prokocim">Bieżanów-Prokocim</a></li>
+          <li><a href="#podgorze">Podgórze</a></li>
+          <li><a href="#czyzyny">Czyżyny</a></li>
+          <li><a href="#mistrzejowice">Mistrzejowice</a></li>
+          <li><a href="#bienczyce">Bieńczyce</a></li>
+          <li><a href="#wzgorza-krzeslawickie">Wzgórza Krzesławickie</a></li>
+          <li><a href="#nowa-huta">Nowa Huta</a></li>
+        </ul>
+      </div>
+
+      <h2 id="stare-miasto">Stare Miasto</h2>
+      <p>Trzech zweryfikowanych partnerów w samym centrum: <a href="/dobre-rowery">Dobre Rowery</a> przy Marszałka Józefa Piłsudskiego 30, naprzeciwko Sokoła i niedaleko Muzeum Narodowego oraz Błoń; <a href="/biketrip">BikeTrip</a> na Zwierzynieckiej, obok Bulwaru Czerwińskiego i Sheratona (obsługuje też e-bike'i z silnikami Bosch); oraz <a href="/dr-albin-radziwillowska">dr Albin</a> przy Radziwiłłowskiej, po drugiej stronie Rynku, tuż obok nowo otwartego parku kolejowego. Poza stałym serwisem mobilnym organizuje też jednorazowe "dni naprawy rowerów" pod biurowcami — mechanik przyjeżdża na miejsce i robi doraźne naprawy dla pracowników całej firmy naraz.</p>
+
+      <h2 id="grzegorzki">Grzegórzki</h2>
+      <p><a href="/avsrent">AVS Rent&Service</a> na Dąbiu, niedaleko Stopnia Wodnego Dąbie, oraz <a href="/miaubike">Miau Bike</a> przy ul. Beliny-Prażmowskiego, w sąsiedztwie Unity Centre i Uniwersytetu Ekonomicznego w Krakowie.</p>
+
+      <h2 id="pradnik-czerwony">Prądnik Czerwony (w tym Dobrego Pasterza)</h2>
+      <p><a href="/pitstop-serwis">Pitstop</a> przy ul. Fiołkowej, niedaleko stadionu Wieczystej i wieżowca Alma Tower przy Rondzie Młyńskim. <a href="/buzzit">Buzzit</a> przy Alei 29 Listopada, w okolicy Żabińca, Placu Imbramowskiego i biurowca O3 Business Campus. Najbliżej samej ulicy Dobrego Pasterza nie mamy zarejestrowanego serwisu, ale rower i tak dowieziemy do dowolnego partnera w Krakowie.</p>
+
+      <h2 id="pradnik-bialy">Prądnik Biały</h2>
+      <p>Speed Bike przy Rusznikarskiej 12b, naprzeciwko przychodni. Fl@sh Bike przy Władysława Łokietka 48, tuż za przejazdem kolejowym, przy skrzyżowaniu z Wybickiego. Druga lokalizacja <a href="/dr-albin-narutowicza">dr Albina</a> przy Narutowicza, niedaleko basenu Clepardia i Parku Białoprądnickiego.</p>
+
+      <h2 id="zwierzyniec">Zwierzyniec</h2>
+      <p><a href="/lelevelo">LeleVelo</a> na Salwatorze przy ul. Lelewela, niedaleko Placu na Stawach i stadionu Cracovii, oraz <a href="/bikesense">Bikesense — Rowery na Salwatorze</a>, tuż przy klasztorze Sióstr Norbertanek i prywatnej szkole podstawowej Salwator.</p>
+
+      <h2 id="debniki">Dębniki (w tym Ruczaj)</h2>
+      <p><a href="/nartyrowerykrakow">Narty Rowery Kraków</a>, zaraz za mostem Dębnickim, w kierunku Rynku Dębnickiego — obok naprawy prowadzi też wypożyczalnię rowerów, z naprawami "od ręki". Dzielnica obejmuje też Ruczaj, gdzie działa Bismo Bike, naprzeciwko UJ i Motoroli.</p>
+
+      <h2 id="podgorze-duchackie">Podgórze Duchackie (w tym Kurdwanów)</h2>
+      <p><a href="/crossbike">Crossbike</a> przy Beskidzkiej 30, na Kurdwanowie, tuż przy targowisku Beskidy.</p>
+
+      <h2 id="biezanow-prokocim">Bieżanów-Prokocim</h2>
+      <p>Trzy zweryfikowane serwisy: <a href="/retrower-serwis-krakow">retRower</a> przy stacji PKP Kraków Płaszów, <a href="/rowpol">FHU ROW-POL Adam Flinta</a> przy ks. Popiełuszki, niedaleko Bieżanowianki, oraz <a href="/ebikemotorcenter">E-Bike Motor Center</a> przy Wielickiej 91, naprzeciwko zakładów Tele-Foniki, przy estakadzie tramwajowej — specjalizuje się w napędach elektrycznych.</p>
+
+      <h2 id="podgorze">Podgórze</h2>
+      <p>Najwięcej partnerów w jednej dzielnicy: nowo otwarty <a href="/volik">Volik</a> niedaleko Placu Bohaterów Getta, <a href="/mycycle">MyCycle</a> przy Kalwaryjskiej 29, <a href="/falarowerow">Fala Rowerów</a> przy Gromadzkiej (poza naprawami buduje rowery custom i renowuje zabytkowe) oraz <a href="/mobil-bike">Mobil Bike</a>, skupiony na odbiorze i dowozie roweru spod drzwi klienta.</p>
+
+      <h2 id="czyzyny">Czyżyny</h2>
+      <p><a href="/nika-team-serwis">Nika Team Serwis</a> przy Orlińskiego.</p>
+
+      <h2 id="nowa-huta">Nowa Huta</h2>
+      <p>Trzy serwisy: <a href="/elmar-rowery">Elmar Rowery</a>, który działa na rynku od lat i ma stałych, wracających klientów, <a href="/maks-ski">Maks-Ski & Bike</a> na Osiedlu Piastów (serwisuje też e-bike'i z napędem Bosch) oraz <a href="/silnerowery">Silnerowery</a> na Osiedlu Bohaterów Września.</p>
+
+      <h2 id="dzielnice-bez-partnera">Dzielnice bez zarejestrowanego partnera (na razie)</h2>
+      <p>W tych dzielnicach nie mamy jeszcze zarejestrowanego serwisu: <span id="krowodrza">Krowodrza</span>, <span id="bronowice">Bronowice</span>, <span id="lagiewniki-borek-falecki">Łagiewniki-Borek Fałęcki</span>, <span id="swoszowice">Swoszowice</span>, <span id="mistrzejowice">Mistrzejowice</span>, <span id="bienczyce">Bieńczyce</span> i <span id="wzgorza-krzeslawickie">Wzgórza Krzesławickie</span>.</p>
+      <p>To nie problem — nie musisz szukać niczego "na miejscu". Wybierz dowolny serwis z listy powyżej, nawet po drugiej stronie miasta, i zamów <a href="/transport-rowerow-krakow">transport door-to-door</a>: odbierzemy rower spod domu i przywieziemy z powrotem po naprawie. Pełny katalog wszystkich partnerów znajdziesz też w <a href="/serwisy/krakow">katalogu serwisów rowerowych w Krakowie</a>.</p>
+    `
   }
 ];
 

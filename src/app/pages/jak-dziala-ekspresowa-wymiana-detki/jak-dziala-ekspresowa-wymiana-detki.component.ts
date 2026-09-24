@@ -7,19 +7,19 @@ import { SchemaOrgHelper } from '../../core/schema-org.helper';
 import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
-  selector: 'app-jak-dziala-serwis-ekspresowy',
+  selector: 'app-jak-dziala-ekspresowa-wymiana-detki',
   standalone: true,
   imports: [CommonModule, RouterModule, BreadcrumbComponent],
-  templateUrl: './jak-dziala-serwis-ekspresowy.component.html',
-  styleUrls: ['./jak-dziala-serwis-ekspresowy.component.css']
+  templateUrl: './jak-dziala-ekspresowa-wymiana-detki.component.html',
+  styleUrls: ['./jak-dziala-ekspresowa-wymiana-detki.component.css']
 })
-export class JakDzialaSerwisEkspresowyComponent implements OnInit, AfterViewInit, OnDestroy {
+export class JakDzialaEkspresowaWymianaDetkiComponent implements OnInit, AfterViewInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private ngZone = inject(NgZone);
 
   @ViewChild('reviewsTrack') reviewsTrackRef!: ElementRef<HTMLElement>;
 
-  // Marquee state — opinie (ten sam mechanizm co na /transport-rowerow-krakow)
+  // Marquee state — opinie (ten sam mechanizm co na /krakow/jak-dziala-serwis-ekspresowy)
   private reviewsRafId: number | null = null;
   private reviewsPos = 0;
   private reviewsHalfWidth = 0;
@@ -49,63 +49,55 @@ export class JakDzialaSerwisEkspresowyComponent implements OnInit, AfterViewInit
 
   readonly howToSteps = [
     {
-      name: 'Wybierz pakiet i termin (nawet dzisiejszy)',
-      text: 'Na stronie rezerwacji wybierz pakiet serwisowy dopasowany do Twojego roweru. Serwis ekspresowy działa w dni robocze, od poniedziałku do piątku, a termin możesz wybrać nawet na dziś. Jeśli zamówisz przed 20:00, kurier przyjedzie jeszcze tego samego dnia.'
+      name: 'Zamów wymianę dętki (nawet dzisiaj)',
+      text: 'Na stronie rezerwacji wybierz pakiet "Wymiana dętki". Działamy w dni robocze, od poniedziałku do piątku, a termin wybierzesz nawet na dziś. Zamów przed 20:00, a kurier przyjedzie jeszcze tego samego dnia.'
     },
     {
       name: 'Wybierz miejsce odbioru roweru',
-      text: 'Zdecyduj, czy kurier ma odebrać i zwrócić rower pod biuro, czy pod adres domowy. To wybór miejsca. Czas zwrotu roweru zależy od wybranego pakietu serwisowego.'
+      text: 'Zdecyduj, czy kurier ma odebrać i zwrócić rower pod biuro, czy pod adres domowy. To tylko wybór lokalizacji, w granicach IV obwodnicy Krakowa.'
     },
     {
-      name: 'Kurier odbiera rower i wiezie go do serwisu',
-      text: 'Kurier CycloPick odbiera rower we wskazanym miejscu i dowozi go do sprawdzonego warsztatu w Krakowie, wybranego przez nas spośród najlepszych partnerów. Mechanicy wykonują zakres prac z wybranego pakietu.'
+      name: 'Kurier odbiera rower i jedzie do warsztatu',
+      text: 'Kurier CycloPick odbiera rower we wskazanym miejscu i dowozi go do sprawdzonego partnera w Krakowie. Wymiana dętki to najprostsza naprawa, jaką robimy, więc traktujemy ją priorytetowo.'
     },
     {
-      name: 'Odbierz gotowy rower',
-      text: 'Gdy naprawa jest gotowa, kurier zwraca rower pod wskazany adres. Otrzymujesz potwierdzenie mailem, a wykonana usługa trafia do cyfrowej historii serwisowej Twojego roweru.'
+      name: 'Odbierz gotowy rower (zwykle w mniej niż godzinę)',
+      text: 'W ponad 90% przypadków rower wraca do Ciebie w mniej niż godzinę od odbioru przez kuriera. Gwarantowany maksymalny czas to 24h. Otrzymujesz potwierdzenie mailem.'
     }
   ];
 
   readonly faqData = [
     {
-      question: 'Czym jest serwis ekspresowy CycloPick w Krakowie?',
-      answer: 'Serwis ekspresowy to usługa serwisowa z transportem „od drzwi do drzwi" w Krakowie. Rezerwujesz pakiet serwisowy online, a CycloPick organizuje odbiór roweru kurierem, wybiera warsztat i dowozi gotowy rower z powrotem. Nie dzwonisz do serwisu ani nie wozisz roweru sam.'
+      question: 'Jak szybko wymienicie dętkę w moim rowerze?',
+      answer: 'Wymiana dętki to nasza najszybsza usługa ekspresowa. W ponad 90% przypadków zwracamy rower w mniej niż godzinę od odbioru przez kuriera. Gwarantowany maksymalny czas to 24h, czyli margines bezpieczeństwa na wyjątkowe sytuacje.'
     },
     {
-      question: 'Ile trwa serwis ekspresowy i czym różnią się warianty odbioru?',
-      answer: 'Wariant biurowy i domowy różnią się wyłącznie miejscem odbioru i zwrotu roweru. Czas naprawy zależy od wybranego pakietu. Przy przeglądzie ogólnym rower jest gotowy najpóźniej w 48h. Jeśli chodzi tylko o przebitą dętkę, sprawdź ekspresową wymianę dętki, osobną i szybszą ścieżkę.'
+      question: 'Czy mogę zamówić wymianę dętki na dziś?',
+      answer: 'Tak. Jeśli złożysz zamówienie przed 20:00, kurier odbierze rower jeszcze tego samego dnia. Po 20:00 odbiór przechodzi na następny poranek.'
     },
     {
-      question: 'Ile kosztuje serwis ekspresowy? Czy transport jest płatny osobno?',
-      answer: 'Płacisz cenę wybranego pakietu serwisowego, transport w obie strony jest już w niej wliczony. Jeśli mechanik podczas przeglądu zauważy dodatkowe usterki wymagające wymiany części, skontaktuje się z Tobą z wyceną, a dodatkowe naprawy zrobi dopiero po Twojej akceptacji.'
+      question: 'Ile kosztuje wymiana dętki?',
+      answer: 'Cenę zobaczysz przy wyborze pakietu "Wymiana dętki" w formularzu rezerwacji. Transport w obie strony jest już w niej wliczony.'
     },
     {
-      question: 'Czy mogę wybrać konkretny warsztat rowerowy?',
-      answer: 'Nie. W serwisie ekspresowym warsztat wybiera CycloPick spośród sprawdzonych partnerów w Krakowie, tak aby dotrzymać terminu tego samego dnia lub następnego wieczoru. Jeśli chcesz samodzielnie wybrać serwis, skorzystaj z mapy serwisów i standardowej rezerwacji.'
+      question: 'Co jeśli okaże się, że to nie tylko dętka, tylko też opona?',
+      answer: 'Pakiet obejmuje wyłącznie wymianę dętki. Jeśli mechanik stwierdzi, że trzeba wymienić też oponę, zadzwoni i zapyta, czy się na to zgadzasz. Po Twojej zgodzie wymieni ją od razu w tej samej wizycie. Robocizna jest już w cenie pakietu, dopłacasz tylko za samą oponę.'
+    },
+    {
+      question: 'Czy usługa działa w całym Krakowie?',
+      answer: 'Odbiór i zwrot działają w granicach IV obwodnicy Krakowa, czyli m.in. Stare Miasto, Krowodrza, Zwierzyniec, Dębniki (w tym Ruczaj), Podgórze, Grzegórzki i Nowa Huta. Adres poza tym obszarem też możemy obsłużyć, ale napisz lub zadzwoń do nas przed rezerwacją, żeby to uzgodnić.'
     },
     {
       question: 'Czy mój rower jest ubezpieczony podczas transportu?',
       answer: 'Tak, każdy rower przewożony przez CycloPick objęty jest ubezpieczeniem do 20 000 zł na czas transportu.'
     },
     {
-      question: 'Jak zapłacić za serwis ekspresowy?',
+      question: 'Jak zapłacić?',
       answer: 'Płatność odbywa się online przez PayU: kartą, BLIK-iem lub przelewem. Jest wymagana od razu po złożeniu rezerwacji, aby potwierdzić termin.'
     },
     {
-      question: 'Czy mogę sprawdzić status mojej naprawy?',
-      answer: 'Tak, po założeniu konta zobaczysz tam aktualny status naprawy i wiadomości od mechanika. Jeśli zaproponuje dodatkowy zakres prac, zaakceptujesz go lub odrzucisz bezpośrednio w swoim panelu.'
-    },
-    {
-      question: 'Na jakie dni mogę zarezerwować serwis ekspresowy?',
-      answer: 'Serwis ekspresowy działa w dni robocze, od poniedziałku do piątku, i możesz zarezerwować nawet na dziś. Jeśli złożysz zamówienie przed 20:00, kurier odbierze rower jeszcze tego samego dnia. Po 20:00 odbiór przechodzi na następny poranek.'
-    },
-    {
-      question: 'Czy serwis ekspresowy jest dostępny tylko w Krakowie?',
-      answer: 'Tak, serwis ekspresowy działa na razie tylko w Krakowie, w granicach IV obwodnicy. W pozostałych miastach możesz zarezerwować standardową wizytę u wybranego warsztatu z mapy CycloPick.'
-    },
-    {
-      question: 'Czy serwis ekspresowy odbiera rower z każdej części Krakowa?',
-      answer: 'Odbiór i zwrot działają w granicach IV obwodnicy Krakowa. Adres poza tym obszarem też możemy obsłużyć, ale napisz lub zadzwoń do nas przed rezerwacją, żeby to uzgodnić.'
+      question: 'A jeśli mój rower potrzebuje czegoś więcej niż wymiana dętki?',
+      answer: 'Wybierz pakiet "Przegląd ogólny" zamiast "Wymiana dętki" w formularzu rezerwacji. Mechanik zajmie się szerszym zakresem prac. Sprawdź, jak działa cały serwis ekspresowy CycloPick.'
     }
   ];
 
@@ -221,18 +213,18 @@ export class JakDzialaSerwisEkspresowyComponent implements OnInit, AfterViewInit
   }
 
   private setMetaTags(): void {
-    const pageTitle = 'Jak działa serwis ekspresowy CycloPick w Krakowie? | CycloPick';
-    const pageDescription = 'Sprawdź krok po kroku, jak zamówić serwis ekspresowy roweru w Krakowie, nawet na dziś: wybierz pakiet, odbiór z biura lub z domu, a CycloPick zorganizuje transport i naprawę u sprawdzonego partnera.';
+    const pageTitle = 'Ekspresowa wymiana dętki Kraków — zwrot w mniej niż godzinę | CycloPick';
+    const pageDescription = 'Złapałeś gumę w Krakowie? Wymieniamy dętkę zwykle w mniej niż godzinę od odbioru (ponad 90% przypadków), z odbiorem nawet dziś, spod biura lub domu. Sprawdź, jak działa ekspresowa wymiana dętki CycloPick.';
 
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });
-    this.meta.updateTag({ name: 'keywords', content: 'serwis ekspresowy Kraków, serwis rowerowy na dziś, naprawa roweru z odbiorem, CycloPick Kraków' });
+    this.meta.updateTag({ name: 'keywords', content: 'wymiana dętki Kraków, przebita dętka Kraków, pogotowie rowerowe Kraków, naprawa dętki z dojazdem, guma w rowerze Kraków, serwis ekspresowy Kraków, CycloPick' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large' });
 
     this.meta.updateTag({ property: 'og:title', content: pageTitle });
     this.meta.updateTag({ property: 'og:description', content: pageDescription });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
-    this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/krakow/jak-dziala-serwis-ekspresowy' });
+    this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/krakow/jak-dziala-ekspresowa-wymiana-detki' });
     this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/og-image-cyclopick.jpg' });
     this.meta.updateTag({ property: 'og:locale', content: 'pl_PL' });
     this.meta.updateTag({ property: 'og:site_name', content: 'CycloPick' });
@@ -244,7 +236,7 @@ export class JakDzialaSerwisEkspresowyComponent implements OnInit, AfterViewInit
   }
 
   private setCanonicalUrl(): void {
-    const canonicalUrl = 'https://www.cyclopick.pl/krakow/jak-dziala-serwis-ekspresowy';
+    const canonicalUrl = 'https://www.cyclopick.pl/krakow/jak-dziala-ekspresowa-wymiana-detki';
     const existingLink = this.document.querySelector('link[rel="canonical"]');
     if (existingLink) existingLink.remove();
     const link = this.document.createElement('link');
@@ -254,30 +246,31 @@ export class JakDzialaSerwisEkspresowyComponent implements OnInit, AfterViewInit
   }
 
   private generateSchemaMarkup(): void {
-    const expressService = {
+    const tubeReplacementService = {
       '@context': 'https://schema.org',
       '@type': 'Service',
-      '@id': 'https://www.cyclopick.pl/krakow/jak-dziala-serwis-ekspresowy#express-service',
-      name: 'Serwis ekspresowy roweru Kraków',
-      serviceType: 'Serwis rowerowy z odbiorem kurierem, dostępny nawet tego samego dnia',
-      description: 'Serwis ekspresowy CycloPick w Krakowie. Rezerwacja pakietu serwisowego online, odbiór roweru kurierem z biura lub z domu nawet tego samego dnia (zamówienia do 20:00), naprawa u sprawdzonego partnera i zwrot gotowego roweru w czasie zależnym od wybranego pakietu.',
+      '@id': 'https://www.cyclopick.pl/krakow/jak-dziala-ekspresowa-wymiana-detki#wymiana-detki-service',
+      name: 'Ekspresowa wymiana dętki roweru — Kraków',
+      serviceType: 'Ekspresowa wymiana dętki roweru z odbiorem kurierem',
+      description: 'Ekspresowa wymiana dętki w Krakowie z odbiorem i zwrotem roweru kurierem CycloPick. W ponad 90% przypadków rower wraca w mniej niż godzinę od odbioru, maksymalnie w 24h. Odbiór nawet tego samego dnia (zamówienia do 20:00), w granicach IV obwodnicy Krakowa.',
       areaServed: { '@type': 'City', name: 'Kraków', addressCountry: 'PL' },
       provider: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' },
+      isPartOf: { '@id': 'https://www.cyclopick.pl/krakow/jak-dziala-serwis-ekspresowy#express-service' },
       potentialAction: {
         '@type': 'ReserveAction',
-        target: 'https://www.cyclopick.pl/krakow/zarezerwuj'
+        target: 'https://www.cyclopick.pl/krakow/zarezerwuj?pakiet=detka'
       }
     };
 
     const breadcrumb = SchemaOrgHelper.generateBreadcrumb([
       { name: 'Strona główna', url: 'https://www.cyclopick.pl/' },
-      { name: 'Serwisy rowerowe Kraków', url: 'https://www.cyclopick.pl/serwisy/krakow' },
-      { name: 'Jak działa serwis ekspresowy', url: 'https://www.cyclopick.pl/krakow/jak-dziala-serwis-ekspresowy' }
+      { name: 'Jak działa serwis ekspresowy', url: 'https://www.cyclopick.pl/krakow/jak-dziala-serwis-ekspresowy' },
+      { name: 'Ekspresowa wymiana dętki', url: 'https://www.cyclopick.pl/krakow/jak-dziala-ekspresowa-wymiana-detki' }
     ]);
 
     const howTo = SchemaOrgHelper.generateHowTo(
-      'Jak zamówić serwis ekspresowy roweru w Krakowie',
-      'Cztery kroki do naprawy roweru tego samego dnia z odbiorem i zwrotem kurierem CycloPick w Krakowie.',
+      'Jak zamówić ekspresową wymianę dętki w Krakowie',
+      'Cztery kroki do wymiany dętki z odbiorem i zwrotem kurierem CycloPick w Krakowie, zwykle w mniej niż godzinę.',
       this.howToSteps.map(s => ({ name: s.name, text: s.text }))
     );
 
@@ -285,7 +278,7 @@ export class JakDzialaSerwisEkspresowyComponent implements OnInit, AfterViewInit
 
     this.seoService.addMultipleStructuredData([
       SchemaOrgHelper.generateOrganization(),
-      expressService,
+      tubeReplacementService,
       breadcrumb,
       howTo,
       faqPage

@@ -51,6 +51,75 @@
         </div>
       </div>
 
+      <!-- Serwisanci -->
+      <div class="form-section">
+        <h3 class="section-title">Serwisanci</h3>
+
+        <div class="section-loading" *ngIf="loadingTechnicians">
+          <div class="spinner-sm-dark"></div>
+          <span>Ładowanie…</span>
+        </div>
+
+        <ng-container *ngIf="!loadingTechnicians">
+          <div class="add-technician-row">
+            <input
+              type="text"
+              class="field-input"
+              [(ngModel)]="newTechnicianName"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="Imię i nazwisko serwisanta"
+              maxlength="50"
+              (keydown.enter)="addTechnician()"
+            />
+            <button
+              type="button"
+              class="btn-add-template"
+              [disabled]="!newTechnicianName.trim() || savingTechnician"
+              (click)="addTechnician()"
+            >+ Dodaj serwisanta</button>
+          </div>
+
+          <span class="field-error" *ngIf="technicianError">{{ technicianError }}</span>
+
+          <div class="technicians-group" *ngIf="activeTechnicians.length > 0">
+            <span class="technicians-group-title">Aktywni serwisanci</span>
+            <div class="templates-list">
+              <div class="template-entry technician-entry" *ngFor="let tech of activeTechnicians; let i = index">
+                <div class="template-name-row">
+                  <input
+                    type="text"
+                    class="field-input template-name-input"
+                    [ngModel]="tech.nickname"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="renameTechnician(tech, $any($event.target).value)"
+                    maxlength="50"
+                  />
+                  <button type="button" class="btn-reorder" [disabled]="i === 0" title="Przenieś wyżej" (click)="moveTechnician(tech, -1)">↑</button>
+                  <button type="button" class="btn-reorder" [disabled]="i === activeTechnicians.length - 1" title="Przenieś niżej" (click)="moveTechnician(tech, 1)">↓</button>
+                  <button type="button" class="btn-remove-template" [disabled]="technicianActionId === tech.id" title="Dezaktywuj" (click)="deactivateTechnician(tech)">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="technicians-group" *ngIf="inactiveTechnicians.length > 0">
+            <span class="technicians-group-title">Nieaktywni serwisanci</span>
+            <div class="templates-list">
+              <div class="template-entry technician-entry technician-entry--inactive" *ngFor="let tech of inactiveTechnicians">
+                <div class="template-name-row">
+                  <span class="technician-inactive-name">{{ tech.nickname }}</span>
+                  <button type="button" class="btn-add-template" [disabled]="technicianActionId === tech.id" (click)="activateTechnician(tech)">Aktywuj</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="templates-empty" *ngIf="technicians.length === 0">
+            Brak serwisantów. Dodaj pierwszego powyżej.
+          </div>
+        </ng-container>
+      </div>
+
       <!-- Powiadomienia -->
       <div class="form-section">
 

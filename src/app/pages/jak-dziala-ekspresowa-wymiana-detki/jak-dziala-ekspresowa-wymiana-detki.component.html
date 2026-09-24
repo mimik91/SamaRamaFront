@@ -1,8 +1,8 @@
 <article class="express-how-wrapper">
 
   <!-- ===== HERO ===== -->
-  <section class="express-hero" aria-label="Jak działa serwis ekspresowy CycloPick w Krakowie">
-    <div class="express-hero-bg" style="background-image: url('assets/images/pictures/serwisanci rowerowi w pracy.webp')" aria-hidden="true"></div>
+  <section class="express-hero" aria-label="Jak działa ekspresowa wymiana dętki CycloPick w Krakowie">
+    <div class="express-hero-bg" style="background-image: url('assets/images/pictures/wymiana detki.webp')" aria-hidden="true"></div>
     <div class="express-hero-overlay" aria-hidden="true"></div>
 
     <div class="express-hero-content">
@@ -10,26 +10,26 @@
         variant="light"
         [items]="[
           { label: 'Strona główna', url: '/' },
-          { label: 'Serwisy rowerowe Kraków', url: '/serwisy/krakow' },
-          { label: 'Jak działa serwis ekspresowy' }
+          { label: 'Jak działa serwis ekspresowy', url: '/krakow/jak-dziala-serwis-ekspresowy' },
+          { label: 'Ekspresowa wymiana dętki' }
         ]">
       </app-breadcrumb>
 
       <span class="express-hero-badge">
         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        Serwis ekspresowy · Kraków
+        Wymiana dętki · Kraków
       </span>
 
-      <h1>Jak działa serwis ekspresowy CycloPick w&nbsp;Krakowie?</h1>
+      <h1>Złapałeś gumę w&nbsp;Krakowie? Ekspresowa wymiana dętki</h1>
       <p class="express-hero-subtitle">
-        Rezerwujesz online, nawet na dziś, kurier odbiera rower spod biura lub domu, a warsztat wykonuje naprawę.
-        Status naprawy sprawdzisz na bieżąco po założeniu konta. Masz tylko przebitą dętkę?
-        Sprawdź <a routerLink="/krakow/jak-dziala-ekspresowa-wymiana-detki" class="express-hero-subtitle-link">ekspresową wymianę dętki</a>. Zwrot zwykle w mniej niż godzinę.
+        Jedziesz rano do pracy i łapiesz gumę. Albo wracasz wieczorem do domu i łapiesz drugą, tego samego dnia.
+        Zamawiasz u nas z telefonu, kurier odbiera rower spod biura lub domu, a w ponad 90% przypadków wraca do Ciebie
+        w mniej niż godzinę. Nawet na dziś, jeśli zamówisz przed 20:00.
       </p>
 
       <div class="express-hero-actions">
-        <a routerLink="/krakow/zarezerwuj" class="btn-express-cta btn-express-cta--hero">
-          Zarezerwuj serwis ekspresowy
+        <a routerLink="/krakow/zarezerwuj" [queryParams]="{ pakiet: 'detk' }" class="btn-express-cta btn-express-cta--hero">
+          Zarezerwuj wymianę dętki
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
         <button type="button" class="btn-express-secondary" (click)="scrollToSteps()">
@@ -40,8 +40,18 @@
   </section>
 
   <!-- ===== TRUST BAR ===== -->
-  <div class="express-trust-bar" aria-label="Najważniejsze informacje o serwisie ekspresowym">
+  <div class="express-trust-bar" aria-label="Najważniejsze informacje o ekspresowej wymianie dętki">
     <div class="express-trust-bar-inner">
+      <div class="express-trust-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Zwrot zwykle <strong>w &lt; 1h</strong> (90%+ zleceń)</span>
+      </div>
+      <div class="express-trust-divider" aria-hidden="true"></div>
+      <div class="express-trust-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Maksymalnie <strong>24h</strong> gwarancji</span>
+      </div>
+      <div class="express-trust-divider" aria-hidden="true"></div>
       <div class="express-trust-item">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
         <span>Rezerwacja nawet <strong>na dziś</strong></span>
@@ -49,17 +59,7 @@
       <div class="express-trust-divider" aria-hidden="true"></div>
       <div class="express-trust-item">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span>Transport <strong>wliczony</strong> w cenę pakietu</span>
-      </div>
-      <div class="express-trust-divider" aria-hidden="true"></div>
-      <div class="express-trust-item">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span>Ubezpieczenie roweru do <strong>20&nbsp;000&nbsp;zł</strong></span>
-      </div>
-      <div class="express-trust-divider" aria-hidden="true"></div>
-      <div class="express-trust-item">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span>Dostępny <strong>pon&nbsp;–&nbsp;pt</strong></span>
+        <span>Transport <strong>wliczony</strong> w cenę</span>
       </div>
     </div>
   </div>
@@ -69,30 +69,30 @@
     <!-- ===== KROKI ===== -->
     <section id="jak-to-dziala" class="steps-section" aria-labelledby="steps-heading">
       <div class="section-eyebrow">Krok po kroku</div>
-      <h2 id="steps-heading">4 kroki do naprawionego roweru</h2>
-      <p class="section-subtitle">Cały proces zaczyna się i kończy w formularzu rezerwacji. Transport i wybór warsztatu bierze na siebie CycloPick.</p>
+      <h2 id="steps-heading">4 kroki do sprawnego roweru</h2>
+      <p class="section-subtitle">Cały proces zaczyna się i kończy w formularzu rezerwacji. Transport i naprawę bierze na siebie CycloPick.</p>
 
       <ol class="steps-list">
 
         <!-- KROK 1 -->
         <li class="step-card">
           <div class="step-card-media">
-            <img src="assets/images/for-services/panel-rezerwacji.webp" alt="Ekran wyboru pakietu serwisowego i terminu w formularzu rezerwacji CycloPick" loading="lazy">
+            <img src="assets/images/for-services/panel-rezerwacji.webp" alt="Ekran wyboru pakietu Wymiana dętki i terminu w formularzu rezerwacji CycloPick" loading="lazy">
           </div>
           <div class="step-card-body">
             <span class="step-number">1</span>
-            <h3>Wybierz pakiet i termin (nawet dzisiejszy)</h3>
-            <p>Na stronie rezerwacji wybierz pakiet serwisowy dopasowany do Twojego roweru. Serwis ekspresowy działa w dni robocze, od poniedziałku do piątku, a termin wybierzesz nawet na dziś. Zamów przed 20:00, a kurier przyjedzie jeszcze tego samego dnia.</p>
+            <h3>Zamów wymianę dętki (nawet dzisiaj)</h3>
+            <p>Na stronie rezerwacji wybierz pakiet "Wymiana dętki". Działamy w dni robocze, od poniedziałku do piątku, a termin wybierzesz nawet na dziś. Zamów przed 20:00, a kurier przyjedzie jeszcze tego samego dnia.</p>
           </div>
         </li>
 
-        <!-- KROK 2 — WARIANTY ODBIORU (pomarańczowy / niebieski) -->
+        <!-- KROK 2 — MIEJSCE ODBIORU -->
         <li class="step-card step-card--variants">
           <div class="step-card-body step-card-body--full">
             <span class="step-number">2</span>
             <h3>Wybierz miejsce odbioru roweru</h3>
-            <p>Kurier odbiera i zwraca rower tam, gdzie wygodniej. To jedyna różnica między wariantami, oba mają transport wliczony w cenę. <strong>To, jak szybko wraca rower</strong>, zależy od wybranego pakietu.</p>
-            <p>Serwis ekspresowy działa w granicach IV obwodnicy Krakowa. Adres poza tym obszarem też można obsłużyć, ale wymaga wcześniejszego uzgodnienia z nami.</p>
+            <p>Zdecyduj, czy kurier ma odebrać i zwrócić rower pod biuro, czy pod adres domowy. To tylko wybór lokalizacji.</p>
+            <p>Działamy w granicach IV obwodnicy Krakowa. Adres poza tym obszarem też można obsłużyć, ale wymaga wcześniejszego uzgodnienia z nami.</p>
 
             <div class="variants-grid">
 
@@ -103,7 +103,7 @@
                 </div>
                 <div class="variant-card-body">
                   <p class="variant-time">Odbiór i zwrot pod <strong>biuro lub kompleks biurowy</strong></p>
-                  <p class="variant-desc">Kurier odbiera rower spod biura, a po naprawie odwozi go w to samo miejsce. Zamów przed 20:00, a odbiór jest jeszcze tego samego dnia.</p>
+                  <p class="variant-desc">Łapiesz gumę w drodze do pracy? Zamawiasz z telefonu, kurier odbiera rower spod biura, a Ty masz sprawny rower na powrót do domu.</p>
                 </div>
               </div>
 
@@ -114,7 +114,7 @@
                 </div>
                 <div class="variant-card-body">
                   <p class="variant-time">Odbiór i zwrot pod <strong>adres domowy</strong></p>
-                  <p class="variant-desc">Kurier odbiera rower spod domu, a naprawiony sprzęt wraca pod te same drzwi. Zamów przed 20:00, a odbiór jest jeszcze tego samego dnia.</p>
+                  <p class="variant-desc">Złapałeś gumę wracając wieczorem do domu? Kurier odbiera rower spod Twoich drzwi i przywozi go z powrotem naprawiony.</p>
                 </div>
               </div>
 
@@ -125,83 +125,83 @@
         <!-- KROK 3 -->
         <li class="step-card">
           <div class="step-card-media">
-            <img src="assets/images/pictures/naprawa-przerzutki.webp" alt="Mechanik naprawia przerzutkę roweru w warsztacie CycloPick" loading="lazy">
+            <img src="assets/images/pictures/naprawa-przerzutki.webp" alt="Mechanik pracujący w warsztacie rowerowym CycloPick" loading="lazy">
           </div>
           <div class="step-card-body">
             <span class="step-number">3</span>
-            <h3>Kurier odbiera rower i wiezie go do serwisu</h3>
-            <p>Kurier CycloPick odbiera rower we wskazanym miejscu i dowozi go do sprawdzonego warsztatu w Krakowie, wybranego przez nas spośród najlepszych partnerów. Mechanicy wykonują zakres prac z wybranego pakietu.</p>
+            <h3>Kurier odbiera rower i jedzie do warsztatu</h3>
+            <p>Kurier CycloPick odbiera rower we wskazanym miejscu i dowozi go do sprawdzonego partnera w Krakowie. Wymiana dętki to najprostsza naprawa, jaką robimy, więc traktujemy ją priorytetowo w kolejce warsztatu.</p>
           </div>
         </li>
 
         <!-- KROK 4 -->
         <li class="step-card">
           <div class="step-card-media">
-            <img src="assets/images/pictures/artystyczny-rower.webp" alt="Naprawiony rower gotowy do odbioru po serwisie CycloPick" loading="lazy">
+            <img src="assets/images/pictures/artystyczny-rower.webp" alt="Naprawiony rower gotowy do odbioru po ekspresowej wymianie dętki" loading="lazy">
           </div>
           <div class="step-card-body">
             <span class="step-number">4</span>
-            <h3>Odbierz gotowy rower</h3>
-            <p>Gdy naprawa jest gotowa, kurier zwraca rower pod wskazany adres. Otrzymujesz potwierdzenie mailem, a wykonana usługa trafia do cyfrowej historii serwisowej Twojego roweru.</p>
+            <h3>Odbierz gotowy rower (zwykle w mniej niż godzinę)</h3>
+            <p>W ponad 90% przypadków rower wraca do Ciebie w mniej niż godzinę od odbioru przez kuriera. Gwarantowany maksymalny czas to 24h, czyli margines bezpieczeństwa na wyjątkowe sytuacje. W praktyce czekasz krócej. Otrzymujesz potwierdzenie mailem.</p>
           </div>
         </li>
 
       </ol>
 
       <div class="steps-cta">
-        <a routerLink="/krakow/zarezerwuj" class="btn-express-cta">
-          Zarezerwuj serwis ekspresowy
+        <a routerLink="/krakow/zarezerwuj" [queryParams]="{ pakiet: 'detk' }" class="btn-express-cta btn-express-cta--hero">
+          Zarezerwuj wymianę dętki
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
       </div>
     </section>
 
-    <!-- ===== TYLKO DĘTKA? (teaser do dedykowanej strony) ===== -->
-    <section class="detka-teaser" aria-labelledby="detka-teaser-heading">
-      <div class="detka-teaser-inner">
-        <div class="detka-teaser-text">
-          <h2 id="detka-teaser-heading">Tylko przebita dętka?</h2>
-          <p>Wymiana dętki to nasza najszybsza usługa. W ponad 90% przypadków zwracamy rower w mniej niż godzinę od odbioru przez kuriera, z tym samym transportem wliczonym w cenę.</p>
-        </div>
-        <a routerLink="/krakow/jak-dziala-ekspresowa-wymiana-detki" class="btn-express-cta">
-          Zobacz ekspresową wymianę dętki
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
-      </div>
-    </section>
-
-    <!-- ===== DLACZEGO WARTO ===== -->
+    <!-- ===== POGOTOWIE ROWEROWE ===== -->
     <section class="why-section" aria-labelledby="why-heading">
       <div class="why-inner">
         <div class="why-text">
-          <div class="section-eyebrow">Bez niespodzianek</div>
-          <h2 id="why-heading">Wiesz dokładnie, co dzieje się z Twoim rowerem</h2>
+          <div class="section-eyebrow">Jak to działa naprawdę</div>
+          <h2 id="why-heading">Pogotowie rowerowe w Krakowie: kurier zabiera rower, nie Ty</h2>
           <ul class="why-list">
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>To pogotowie rowerowe inaczej, niż myślisz: nie wysyłamy mechanika, żeby naprawił rower na miejscu. Kurier odbiera go i wiezie do warsztatu, a Ty w tym czasie robisz, co masz do zrobienia.</span>
+            </li>
             <li>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
               <span>Status zlecenia sprawdzisz w każdej chwili po założeniu konta.</span>
             </li>
             <li>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Jeśli mechanik znajdzie dodatkową usterkę, dostaniesz wiadomość z wyceną i sam zdecydujesz, czy ją zlecić.</span>
+              <span>Jeśli mechanik zauważy, że trzeba wymienić też oponę, zadzwoni i zapyta. Wymieni ją w tej samej wizycie tylko za Twoją zgodą.</span>
             </li>
             <li>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Powiadomienie mailem na każdym etapie: przyjęcie rezerwacji, oddanie roweru do warsztatu, rower gotowy do odbioru.</span>
-            </li>
-            <li>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Naprawa trafia do cyfrowej historii serwisowej roweru. Udokumentowany rower jest wart nawet o 20% więcej przy odsprzedaży.</span>
+              <span>Rower wraca pod Twoje drzwi zwykle w mniej niż godzinę od odbioru.</span>
             </li>
           </ul>
-          <a routerLink="/krakow/zarezerwuj" class="btn-express-cta">
-            Zarezerwuj teraz
+          <a routerLink="/krakow/zarezerwuj" [queryParams]="{ pakiet: 'detk' }" class="btn-express-cta btn-express-cta--hero">
+            Zarezerwuj wymianę dętki
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
         </div>
         <div class="why-media" aria-hidden="true">
           <img src="assets/images/pictures/smok-wawelski-na-rowerze.webp" alt="" loading="lazy">
         </div>
+      </div>
+    </section>
+
+    <!-- ===== TYLKO TO? (teaser do ogólnego serwisu ekspresowego) ===== -->
+    <section class="detka-teaser" aria-labelledby="detka-teaser-heading">
+      <div class="detka-teaser-inner">
+        <div class="detka-teaser-text">
+          <h2 id="detka-teaser-heading">Rower potrzebuje czegoś więcej niż dętki?</h2>
+          <p>Sprawdź nasz ogólny serwis ekspresowy: przegląd i inne naprawy, z tym samym odbiorem i zwrotem kurierem.</p>
+        </div>
+        <a routerLink="/krakow/jak-dziala-serwis-ekspresowy" class="btn-express-cta btn-express-cta--outline">
+          Zobacz serwis ekspresowy
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
       </div>
     </section>
 
@@ -237,7 +237,7 @@
 
     <!-- ===== FAQ ===== -->
     <section class="faq-section" aria-labelledby="faq-heading">
-      <h2 id="faq-heading">Częste pytania o serwis ekspresowy CycloPick</h2>
+      <h2 id="faq-heading">Częste pytania o ekspresową wymianę dętki</h2>
       <div class="faq-container">
         <details *ngFor="let item of faqData" class="faq-item">
           <summary class="faq-question">{{ item.question }}</summary>
@@ -248,14 +248,21 @@
 
     <!-- ===== CTA KOŃCOWE ===== -->
     <section class="final-cta-section" aria-labelledby="final-cta-heading">
-      <h2 id="final-cta-heading">Gotowy na naprawę bez wychodzenia z domu?</h2>
-      <p>Ty wybierasz pakiet i termin. Odbiór, naprawę i zwrot roweru załatwia CycloPick.</p>
-      <a routerLink="/krakow/zarezerwuj" class="btn-express-cta btn-express-cta--large btn-express-cta--hero">
-        Zarezerwuj serwis ekspresowy
+      <h2 id="final-cta-heading">Złapałeś gumę? Nie czekaj.</h2>
+      <p>Zamów wymianę dętki, a kurier odbierze rower jeszcze dziś.</p>
+      <a routerLink="/krakow/zarezerwuj" [queryParams]="{ pakiet: 'detk' }" class="btn-express-cta btn-express-cta--large btn-express-cta--hero">
+        Zarezerwuj wymianę dętki
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
       <p class="final-cta-note">Płatność online przez PayU · status naprawy śledzisz po założeniu konta</p>
     </section>
 
   </div><!-- /express-how-container -->
+
+  <!-- ===== STICKY CTA (tylko mobile) ===== -->
+  <div class="sticky-mobile-cta">
+    <a routerLink="/krakow/zarezerwuj" [queryParams]="{ pakiet: 'detk' }" class="btn-express-cta btn-express-cta--hero sticky-mobile-cta-btn">
+      ⚡ Zamów wymianę dętki
+    </a>
+  </div>
 </article>

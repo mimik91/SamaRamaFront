@@ -30,12 +30,15 @@
   background-size: cover;
   background-position: center 35%;
   background-repeat: no-repeat;
+  filter: grayscale(1) contrast(1.05);
 }
 
 .express-hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(27, 94, 32, 0.92) 0%, rgba(27, 58, 94, 0.90) 100%);
+  /* Zdjęcie (rowerzysta przy wymianie koła) ma być faktycznie widoczne — słabszy,
+     kierunkowy gradient zamiast prawie pełnego zamalowania jak na stronie ogólnej */
+  background: linear-gradient(100deg, rgba(15, 40, 20, 0.82) 0%, rgba(15, 40, 20, 0.55) 45%, rgba(15, 40, 20, 0.25) 100%);
 }
 
 .express-hero-content {
@@ -81,13 +84,6 @@
   max-width: 640px;
   margin: 0 0 32px;
   line-height: 1.6;
-}
-
-.express-hero-subtitle-link {
-  color: var(--color-white);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  font-weight: 600;
 }
 
 .express-hero-actions {
@@ -160,6 +156,20 @@
 .btn-express-cta--large {
   padding: 16px 36px;
   font-size: 1.05rem;
+}
+
+/* Mniej wyrazisty wariant — dla CTA, które prowadzi gdzie indziej niż do
+   rezerwacji (np. teaser do innej strony), żeby nie konkurował z prawdziwym CTA */
+.btn-express-cta--outline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  box-shadow: none;
+}
+
+.btn-express-cta--outline:hover {
+  background: var(--color-primary-alpha-08);
+  box-shadow: none;
 }
 
 /* =========================================
@@ -242,16 +252,16 @@
   list-style: none;
   margin: 0 0 32px;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
   text-align: left;
 }
 
 .step-card {
   display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 28px;
+  grid-template-columns: 1fr 180px;
+  gap: 20px;
   align-items: center;
   background: var(--color-white);
   border: 1px solid var(--border-color-gray);
@@ -262,6 +272,12 @@
 
 .step-card-media {
   order: 2;
+}
+
+/* Krok 1 dzieli wiersz siatki z wyższym krokiem 2 — tekst na górze,
+   zdjęcie pod nim, zamiast wąskiej kolumny obok tekstu z pustą przestrzenią. */
+.steps-list > li:nth-of-type(1) {
+  grid-template-columns: 1fr;
 }
 
 .step-card-media img {
@@ -312,11 +328,14 @@
   justify-content: center;
 }
 
-/* ----- Warianty odbioru (pomarańczowy / granatowo-niebieski) ----- */
+/* ----- Warianty odbioru (pomarańczowy / granatowo-niebieski) -----
+   Krok 2 stoi teraz w siatce 2x2 obok innych kroków, więc karty biuro/dom
+   układają się jedna pod drugą — przy dwóch kolumnach na wąskiej połowie
+   byłyby za ciasne, żeby dało się je normalnie przeczytać. */
 .variants-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
   margin-top: 20px;
 }
 
@@ -406,7 +425,7 @@
 }
 
 /* =========================================
-   TYLKO DĘTKA? (teaser)
+   TYLKO TO? (teaser)
    ========================================= */
 .detka-teaser {
   margin: 40px 0;
@@ -669,9 +688,39 @@
 }
 
 /* =========================================
+   STICKY CTA (tylko mobile)
+   ========================================= */
+.sticky-mobile-cta {
+  display: none;
+}
+
+/* =========================================
    RESPONSYWNOŚĆ
    ========================================= */
 @media (max-width: 768px) {
+  /* Miejsce na sticky CTA na dole, żeby nie zasłaniał ostatniej sekcji */
+  .express-how-wrapper {
+    padding-bottom: 76px;
+  }
+
+  .sticky-mobile-cta {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--color-white);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .sticky-mobile-cta-btn {
+    width: 100%;
+    justify-content: center;
+    box-shadow: none;
+  }
+
   .express-hero-content h1 {
     font-size: 1.7rem;
   }
@@ -691,6 +740,10 @@
 
   .express-trust-divider {
     display: none;
+  }
+
+  .steps-list {
+    grid-template-columns: 1fr;
   }
 
   .step-card {

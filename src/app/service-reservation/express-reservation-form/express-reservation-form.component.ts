@@ -564,14 +564,13 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Najwcześniejszy dzień do wyboru: dziś, dopóki jest jeszcze wystarczająco dnia na zorganizowanie
-   * odbioru (przed 20:00) — po tej godzinie kurier odbiera rower dopiero następnego ranka, więc "dziś"
-   * przestaje mieć sens jako wybór i najwcześniejszym dniem staje się jutro.
+   * Najwcześniejszy dzień do wyboru: dziś, dopóki kurierzy jeszcze jeżdżą (do 22:00) — po tej
+   * godzinie "dziś" przestaje mieć sens jako wybór i najwcześniejszym dniem staje się jutro.
    */
   private computeDefaultMinDate(): Date {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    if (now.getHours() < 20) return today;
+    if (now.getHours() < 22) return today;
     today.setDate(today.getDate() + 1);
     return today;
   }

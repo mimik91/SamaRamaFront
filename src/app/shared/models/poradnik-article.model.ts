@@ -1,6 +1,10 @@
 export interface PoradnikArticle {
   slug: string;
   title: string;
+  /** Opcjonalny krótszy tytuł do <title>/og:title (limit ~60 znaków, po doliczeniu " | CycloPick"
+   * ok. 48 znaków), gdy `title` jest dłuższy niż to pozwala SERP. H1 na stronie zawsze pokazuje
+   * pełne `title` — to pole go nie zastępuje, tylko dotyczy samego znacznika strony. */
+  seoTitle?: string;
   /** Opcjonalny podtytuł pod H1 na stronie artykułu — dla kontekstu, który nie musi wchodzić
    * w krótki, SEO-owy H1/title tag (np. szczegóły, daty). Nieużywany na karcie listy. */
   subtitle?: string;

@@ -7,6 +7,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
   {
     slug: 'mobilny-serwis-rowerowy-krakow',
     title: 'Mobilny serwis rowerowy Kraków: kiedy warto wezwać mechanika z dojazdem?',
+    seoTitle: 'Mobilny serwis rowerowy w Krakowie',
     subtitle: 'Co da się naprawić pod domem, ile to kosztuje i które krakowskie serwisy naprawdę jeżdżą do klienta',
     excerpt: 'Mobilny serwis rowerowy w Krakowie: kiedy się opłaca, co mechanik naprawi pod domem, czego nie zrobi w terenie i ile to kosztuje.',
     coverImage: '/assets/images/poradnik/serwis-mobilny/serwis mobilny w mieście.webp',
@@ -109,8 +110,9 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
   {
     slug: 'jak-wybrac-serwis-rowerowy-krakow',
     title: 'Serwisy rowerowe Kraków — jak wybrać dobry warsztat, gdy oceny w Google mylą',
+    seoTitle: 'Jak wybrać dobry serwis rowerowy w Krakowie',
     subtitle: `Zweryfikowane opinie i transport door-to-door od ${TRANSPORT_PRICING.partnerCost} zł`,
-    excerpt: `W Krakowie działają dziesiątki serwisów rowerowych, a ocena w Google nie zawsze mówi prawdę o jakości. Sprawdź, jak wybrać dobry warsztat i jak zamówić transport door-to-door za ${TRANSPORT_PRICING.partnerCost} zł.`,
+    excerpt: `W Krakowie działa mnóstwo serwisów, a ocena w Google nie zawsze mówi prawdę o jakości. Sprawdź, jak wybrać dobry warsztat i zamówić transport za ${TRANSPORT_PRICING.partnerCost} zł.`,
     coverImage: '/assets/images/pictures/vertical/serwis-rowerowy-krakow.webp',
     coverImageAlt: 'Rower podczas przeglądu w warsztacie rowerowym w Krakowie',
     publishedDate: '2026-08-26',

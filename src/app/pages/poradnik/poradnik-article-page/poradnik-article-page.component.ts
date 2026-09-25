@@ -70,7 +70,7 @@ export class PoradnikArticlePageComponent implements OnInit, OnDestroy {
 
     this.seoService.updateFullSeoTags(
       {
-        title: `${found.title} | CycloPick`,
+        title: `${found.seoTitle ?? found.title} | CycloPick`,
         description: found.excerpt,
         image: `https://www.cyclopick.pl/${found.coverImage}`,
         type: 'article'

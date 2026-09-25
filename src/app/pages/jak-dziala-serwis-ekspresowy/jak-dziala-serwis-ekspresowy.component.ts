@@ -221,8 +221,8 @@ export class JakDzialaSerwisEkspresowyComponent implements OnInit, AfterViewInit
   }
 
   private setMetaTags(): void {
-    const pageTitle = 'Jak działa serwis ekspresowy CycloPick w Krakowie? | CycloPick';
-    const pageDescription = 'Sprawdź krok po kroku, jak zamówić serwis ekspresowy roweru w Krakowie, nawet na dziś: wybierz pakiet, odbiór z biura lub z domu, a CycloPick zorganizuje transport i naprawę u sprawdzonego partnera.';
+    const pageTitle = 'Jak działa serwis ekspresowy w Krakowie? | CycloPick';
+    const pageDescription = 'Zamów serwis ekspresowy roweru w Krakowie nawet na dziś: wybierz pakiet, a CycloPick zorganizuje odbiór, transport i naprawę u sprawdzonego partnera.';
 
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });

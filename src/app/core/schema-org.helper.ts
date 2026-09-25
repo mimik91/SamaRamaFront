@@ -834,7 +834,7 @@ export class SchemaOrgHelper {
       image: `https://www.cyclopick.pl/${article.coverImage}`,
       datePublished: article.publishedDate,
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-      author: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' },
+      author: { '@type': 'Person', name: 'Dominik Lach', worksFor: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' } },
       publisher: { '@type': 'Organization', name: 'CycloPick', url: 'https://www.cyclopick.pl' }
     };
   }

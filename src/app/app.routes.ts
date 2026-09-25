@@ -446,14 +446,14 @@ export const routes: Routes = [
     {
       path: 'krakow/jak-dziala-serwis-ekspresowy',
       component: JakDzialaSerwisEkspresowyComponent,
-      title: 'Jak działa serwis ekspresowy CycloPick w Krakowie? | CycloPick'
+      title: 'Jak działa serwis ekspresowy w Krakowie? | CycloPick'
     },
 
     // Dedykowana strona ekspresowej wymiany dętki (SEO, statyczna treść)
     {
       path: 'krakow/jak-dziala-ekspresowa-wymiana-detki',
       component: JakDzialaEkspresowaWymianaDetkiComponent,
-      title: 'Ekspresowa wymiana dętki Kraków — zwrot w mniej niż godzinę | CycloPick'
+      title: 'Ekspresowa wymiana dętki Kraków | CycloPick'
     },
 
     // Zarezerwuj serwis (must be before base :suffix route)

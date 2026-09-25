@@ -213,8 +213,8 @@ export class JakDzialaEkspresowaWymianaDetkiComponent implements OnInit, AfterVi
   }
 
   private setMetaTags(): void {
-    const pageTitle = 'Ekspresowa wymiana dętki Kraków — zwrot w mniej niż godzinę | CycloPick';
-    const pageDescription = 'Złapałeś gumę w Krakowie? Wymieniamy dętkę zwykle w mniej niż godzinę od odbioru (ponad 90% przypadków), z odbiorem nawet dziś, spod biura lub domu. Sprawdź, jak działa ekspresowa wymiana dętki CycloPick.';
+    const pageTitle = 'Ekspresowa wymiana dętki Kraków | CycloPick';
+    const pageDescription = 'Złapałeś gumę w Krakowie? Wymieniamy dętkę zwykle w mniej niż godzinę od odbioru, z odbiorem nawet dziś spod biura lub domu. Sprawdź, jak to działa.';
 
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });

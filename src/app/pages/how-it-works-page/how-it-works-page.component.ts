@@ -1,13 +1,15 @@
 import { Component, OnInit, OnDestroy, inject, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { EnumerationService } from '../../core/enumeration.service';
 import { BikeFormService, BikeFormData } from '../../home/bike-form.service';
 import { ServiceSlotService } from '../../service-slots/service-slot.service';
 import { NotificationService } from '../../core/notification.service';
 import { I18nService } from '../../core/i18n.service';
+import { SeoService } from '../../core/seo.service';
+import { SchemaOrgHelper } from '../../core/schema-org.helper';
 
 @Component({
   selector: 'app-how-it-works-page',
@@ -15,6 +17,7 @@ import { I18nService } from '../../core/i18n.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    RouterLink,
   ],
   templateUrl: './how-it-works-page.component.html',
   styleUrls: ['./how-it-works-page.component.css']
@@ -30,6 +33,7 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
   private meta = inject(Meta);
   private title = inject(Title);
   private i18n = inject(I18nService);
+  private seoService = inject(SeoService);
   private isBrowser: boolean;
 
   formSubmitted = false;
@@ -65,6 +69,7 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setMetaTags();
     this.setCanonicalUrl();
+    this.generateSchemaMarkup();
     this.loadBrands();
     this.loadMaxBikesConfiguration();
     
@@ -250,7 +255,7 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Cleanup if needed
+    this.seoService.removeStructuredData();
   }
 
   private setMetaTags(): void {
@@ -282,5 +287,28 @@ export class HowItWorksPageComponent implements OnInit, OnDestroy {
       link.setAttribute('href', canonicalUrl);
       this.document.head.appendChild(link);
     }
+  }
+
+  private generateSchemaMarkup(): void {
+    // Te same kroki, co w sekcji "Jak działamy" (pl.json: how_it_works_page.reservation_steps) —
+    // schema musi odzwierciedlać widoczną na stronie treść.
+    const steps = this.i18n.instant('how_it_works_page.reservation_steps') as { title: string; description: string }[];
+
+    const breadcrumb = SchemaOrgHelper.generateBreadcrumb([
+      { name: 'Strona główna', url: 'https://www.cyclopick.pl/' },
+      { name: 'Jak działamy', url: 'https://www.cyclopick.pl/jak-dzialamy' }
+    ]);
+
+    const howTo = SchemaOrgHelper.generateHowTo(
+      'Jak zarezerwować serwis rowerowy online w CycloPick',
+      'Pięć kroków od znalezienia serwisu do odbioru naprawionego roweru.',
+      steps.map(s => ({ name: s.title, text: s.description }))
+    );
+
+    this.seoService.addMultipleStructuredData([
+      SchemaOrgHelper.generateOrganization(),
+      breadcrumb,
+      howTo
+    ].filter(Boolean));
   }
 }

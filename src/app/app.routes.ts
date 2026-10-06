@@ -28,6 +28,7 @@ import { ServicesMapResolver } from './pages/services-map-page/services-map-page
 
 // REFACTORED COMPONENTS - NEW STRUCTURE
 import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
+import { StolenBikesSearchPageComponent } from './pages/stolen-bikes-search-page/stolen-bikes-search-page.component';
 import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-page.component';
 import { CooperationComponent } from './cooperation/cooperation.component';
 import { ServiceProfilePageComponent } from './pages/service-profile/service-profile.component';
@@ -51,6 +52,13 @@ export const routes: Routes = [
       path: '',
       component: LandingPageComponent,
       title: 'Znajdź i zarezerwuj serwis rowerowy w Polsce | CycloPick'
+    },
+
+    // Publiczna baza skradzionych rowerów — wyszukiwarka + kontakt + rejestracja klucza API
+    {
+      path: 'skradzione-rowery',
+      component: StolenBikesSearchPageComponent,
+      title: 'Baza skradzionych rowerów | CycloPick'
     },
 
     // Map page - interaktywna mapa serwisów
@@ -262,6 +270,14 @@ export const routes: Routes = [
       title: 'Historia Zleceń'
     },
 
+    // Statystyki serwisu
+    {
+      path: ':suffix/statystyki',
+      loadComponent: () => import('./pages/service-stats-page/service-stats-page.component').then(m => m.ServiceStatsPageComponent),
+      canActivate: [serviceGuard, suffixValidationGuard],
+      title: 'Statystyki'
+    },
+
     // === DASHBOARD ROUTES (dla przekierowań po logowaniu) ===
 
     // Dashboard dla klientów
@@ -381,6 +397,24 @@ export const routes: Routes = [
       loadComponent: () => import('./admin/admin-office-addresses/admin-office-addresses.component').then(m => m.AdminOfficeAddressesComponent),
       canActivate: [adminGuard],
       title: 'Kompleksy biurowe - Admin'
+    },
+    {
+      path: 'admin-part-catalog',
+      loadComponent: () => import('./admin/admin-part-catalog/admin-part-catalog.component').then(m => m.AdminPartCatalogComponent),
+      canActivate: [adminGuard],
+      title: 'Katalog części - Admin'
+    },
+    {
+      path: 'admin-pricelist',
+      loadComponent: () => import('./admin/admin-pricelist/admin-pricelist.component').then(m => m.AdminPricelistComponent),
+      canActivate: [adminGuard],
+      title: 'Cennik usług - Admin'
+    },
+    {
+      path: 'admin-pricelist-suggestions',
+      loadComponent: () => import('./admin/admin-pricelist-suggestions/admin-pricelist-suggestions.component').then(m => m.AdminPricelistSuggestionsComponent),
+      canActivate: [adminGuard],
+      title: 'Sugestie cennikowe - Admin'
     },
     {
       path: 'admin-coupons',

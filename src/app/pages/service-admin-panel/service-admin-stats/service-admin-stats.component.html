@@ -1,0 +1,55 @@
+<div class="stats-wrapper">
+  <div class="stats-header">
+    <h3>Statystyki serwisu</h3>
+    <p class="stats-hint">
+      Liczba zleceń w ostatnich 12 miesiącach oraz wykonane zlecenia i przychód per serwisant.
+      Dane przeliczane raz na dobę.
+    </p>
+  </div>
+
+  <div class="stats-loading" *ngIf="loading">Ładowanie...</div>
+  <div class="stats-error" *ngIf="loadError">Nie udało się załadować statystyk.</div>
+
+  <div [hidden]="loading || loadError">
+    <div class="stats-section">
+      <h4>Zlecenia w ostatnich 12 miesiącach</h4>
+      <div class="chart-container">
+        <canvas #chartCanvas></canvas>
+      </div>
+      <p class="no-data-hint" *ngIf="!loading && monthlyStats.length === 0">
+        Brak jeszcze danych — statystyki pojawią się po najbliższym nocnym przeliczeniu.
+      </p>
+    </div>
+
+    <div class="stats-section">
+      <div class="section-header-row">
+        <h4>Statystyki per serwisant</h4>
+        <div class="stats-summary">
+          <span>{{ totalCompletedOrders }} zleceń</span>
+          <span>{{ totalRevenue | currency:'PLN':'symbol':'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <table class="technician-table" *ngIf="technicianStats.length > 0">
+        <thead>
+          <tr>
+            <th>Serwisant</th>
+            <th>Wykonane zlecenia</th>
+            <th>Przychód</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of technicianStats" [class.unassigned-row]="t.technicianId === null">
+            <td>{{ t.technicianNickname }}</td>
+            <td>{{ t.completedOrdersCount }}</td>
+            <td>{{ t.totalRevenue | currency:'PLN':'symbol':'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="no-data-hint" *ngIf="!loading && technicianStats.length === 0">
+        Brak jeszcze danych — statystyki pojawią się po najbliższym nocnym przeliczeniu.
+      </p>
+    </div>
+  </div>
+</div>

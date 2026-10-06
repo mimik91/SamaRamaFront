@@ -388,8 +388,8 @@ export class BicycleService {
       );
   }
 
-  updateStolenStatus(id: number, stolen: boolean): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/${id}/stolen`, { stolen })
+  updateStolenStatus(id: number, stolen: boolean, acknowledgedNoPolice: boolean = false): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${id}/stolen`, { stolen, acknowledgedNoPolice })
       .pipe(
         catchError(error => {
           console.error(`Error updating stolen status for bicycle ${id}:`, error);

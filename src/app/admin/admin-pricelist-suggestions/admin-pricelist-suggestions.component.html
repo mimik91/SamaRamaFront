@@ -1,0 +1,65 @@
+<div class="aps-container">
+  <div class="aps-header">
+    <button class="aps-back-btn" (click)="goBack()">&larr; Cennik usług</button>
+    <h1>Sugestie cennikowe</h1>
+    <p class="aps-hint">
+      Serwisy zgłaszają tu nazwy usług spoza cennika, wpisując je w planie naprawy. Zatwierdzenie
+      tworzy nową pozycję cennika i wycenia ją u zgłaszających serwisów (cena &gt; 0 zł). Odrzucenie
+      po prostu usuwa wpis — bez pamięci, ta sama nazwa może wrócić przy kolejnym zgłoszeniu.
+    </p>
+  </div>
+
+  <div *ngIf="loading" class="aps-loading">Ładowanie...</div>
+
+  <ng-container *ngIf="!loading">
+    <p class="aps-empty-hint" *ngIf="suggestions.length === 0">Brak oczekujących sugestii.</p>
+
+    <div class="aps-card" *ngFor="let suggestion of suggestions">
+      <div class="aps-card-header">
+        <span class="aps-original-name">{{ suggestion.originalName }}</span>
+        <span class="aps-submission-count">{{ suggestion.submissions.length }} zgłoszeń ({{ totalProposals(suggestion) }} z ceną)</span>
+      </div>
+
+      <div class="aps-submissions">
+        <div class="aps-submission-row" *ngFor="let submission of suggestion.submissions">
+          <span class="aps-service-name">{{ submission.bikeServiceName }}</span>
+          <span class="aps-price" [class.aps-price--zero]="submission.proposedPrice === 0">
+            {{ submission.proposedPrice > 0 ? (submission.proposedPrice.toFixed(2) + ' zł') : 'bez ceny' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="aps-similar" *ngIf="suggestion.similarItems.length > 0">
+        <span class="aps-similar-label">Podobne pozycje w cenniku:</span>
+        <span class="aps-similar-item" *ngFor="let item of suggestion.similarItems">{{ item.name }} ({{ item.categoryName }})</span>
+      </div>
+
+      <div class="aps-approve-row">
+        <input
+          type="text"
+          class="aps-input"
+          [(ngModel)]="finalNames[suggestion.id]"
+          placeholder="Finalna nazwa..."
+        />
+        <select class="aps-select" [(ngModel)]="selectedCategoryIds[suggestion.id]">
+          <option [ngValue]="null">Wybierz kategorię...</option>
+          <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
+        </select>
+        <button
+          class="aps-btn aps-btn--primary"
+          [disabled]="!finalNames[suggestion.id].trim() || !selectedCategoryIds[suggestion.id] || approvingId === suggestion.id"
+          (click)="approve(suggestion)"
+        >
+          {{ approvingId === suggestion.id ? 'Zatwierdzanie...' : 'Zatwierdź' }}
+        </button>
+        <button
+          class="aps-btn aps-btn--danger"
+          [disabled]="rejectingId === suggestion.id"
+          (click)="reject(suggestion)"
+        >
+          {{ rejectingId === suggestion.id ? 'Odrzucanie...' : 'Odrzuć' }}
+        </button>
+      </div>
+    </div>
+  </ng-container>
+</div>

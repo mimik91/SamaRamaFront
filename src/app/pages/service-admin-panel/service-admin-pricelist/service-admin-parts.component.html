@@ -1,0 +1,56 @@
+<div class="parts-wrapper">
+  <div class="parts-header">
+    <h3>Katalog części</h3>
+    <p class="parts-hint">
+      Nazwy części są wspólne dla wszystkich serwisów, ale każdy ustawia własną cenę. Cena zmienia
+      się też automatycznie, gdy wpiszesz inną przy dodawaniu części do planu naprawy zlecenia.
+    </p>
+  </div>
+
+  <div *ngIf="isLoading" class="parts-loading">Ładowanie katalogu części...</div>
+
+  <div *ngIf="loadError" class="parts-error">
+    Nie udało się załadować katalogu części. Odśwież stronę i spróbuj ponownie.
+  </div>
+
+  <ng-container *ngIf="!isLoading && !loadError">
+    <input
+      type="text"
+      class="parts-search"
+      [(ngModel)]="searchQuery"
+      placeholder="Szukaj części po nazwie..."
+    />
+
+    <div class="parts-list" *ngIf="filteredItems.length > 0">
+      <div class="parts-row" *ngFor="let item of filteredItems">
+        <span class="parts-row-name">{{ item.name }}</span>
+        <span class="parts-row-no-price" *ngIf="item.price === null">brak ustawionej ceny</span>
+        <input
+          type="number"
+          class="parts-row-price-input"
+          [ngModel]="draftPrices[item.partCatalogItemId]"
+          (ngModelChange)="onPriceInput(item.partCatalogItemId, $event)"
+          min="0.01"
+          step="0.01"
+          placeholder="0.00"
+        />
+        <span class="parts-currency">zł</span>
+        <button
+          class="parts-save-btn"
+          [disabled]="savingId === item.partCatalogItemId || !hasUnsavedChange(item)"
+          (click)="savePrice(item)"
+        >
+          {{ savingId === item.partCatalogItemId ? 'Zapisywanie...' : 'Zapisz' }}
+        </button>
+      </div>
+    </div>
+
+    <p class="parts-empty-hint" *ngIf="filteredItems.length === 0 && items.length > 0">
+      Brak części pasujących do wyszukiwania.
+    </p>
+    <p class="parts-empty-hint" *ngIf="items.length === 0">
+      Katalog jest jeszcze pusty. Nowe nazwy pojawią się tu automatycznie, gdy dodasz część do planu
+      naprawy w dowolnym zleceniu.
+    </p>
+  </ng-container>
+</div>

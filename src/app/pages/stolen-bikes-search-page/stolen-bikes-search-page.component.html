@@ -1,0 +1,348 @@
+<article class="sbs-wrapper">
+
+  <!-- ===== HERO ===== -->
+  <section class="sbs-hero" aria-label="Baza skradzionych rowerów CycloPick">
+    <div class="sbs-hero-bg" style="background-image: url('assets/images/skradzione-tlo.jpg')" aria-hidden="true"></div>
+    <div class="sbs-hero-overlay" aria-hidden="true"></div>
+
+    <div class="sbs-hero-content">
+      <app-breadcrumb variant="light" [items]="[{ label: 'Strona główna', url: '/' }, { label: 'Baza skradzionych rowerów' }]"></app-breadcrumb>
+
+      <span class="sbs-hero-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Baza skradzionych rowerów
+      </span>
+
+      <h1>Baza skradzionych rowerów - sprawdź numer ramy</h1>
+      <p class="sbs-hero-subtitle">
+        Kupujesz używany rower? Wpisz numer ramy i sprawdź, czy znajduje się w ogólnopolskiej bazie
+        zgłoszonych kradzieży.
+      </p>
+      <div class="sbs-hero-checks">
+        <span>✓ 100% bezpłatne</span>
+        <span>✓ Bez konta</span>
+        <span>✓ Baza ogólnopolska</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="sbs-container">
+
+    <!-- ===== WYSZUKIWARKA ===== -->
+    <section class="sbs-search-section" id="wyszukiwarka" aria-label="Wyszukiwarka skradzionych rowerów">
+      <div class="sbs-search-card">
+        <p class="sbs-search-card-label">Szukaj po numerze ramy albo po marce i modelu</p>
+        <div class="sbs-search-bar">
+          <input
+            #frameNumberInput
+            type="text"
+            class="sbs-input"
+            [(ngModel)]="frameNumber"
+            (keydown.enter)="search()"
+            placeholder="Numer ramy..."
+          />
+          <input
+            type="text"
+            class="sbs-input"
+            [(ngModel)]="brand"
+            (keydown.enter)="search()"
+            placeholder="Marka..."
+          />
+          <input
+            type="text"
+            class="sbs-input"
+            [(ngModel)]="model"
+            (keydown.enter)="search()"
+            placeholder="Model..."
+          />
+          <button class="sbs-btn sbs-btn--primary" [disabled]="!canSearch || searching" (click)="search()">
+            {{ searching ? 'Szukanie...' : 'Sprawdź' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Wyniki -->
+      <div class="sbs-results" *ngIf="hasSearched">
+        <div class="sbs-result-banner sbs-result-banner--empty" *ngIf="!searching && results.length === 0">
+          <p class="sbs-result-banner-title">Nie znaleziono zgłoszenia dla podanych danych.</p>
+          <p>
+            Brak zgłoszenia w bazie nie oznacza, że rower ma legalne pochodzenie. CycloPick sprawdza
+            zgłoszenia od użytkowników oraz dostępne zewnętrzne źródła informacji o skradzionych
+            rowerach, ale żadna baza nie obejmuje wszystkich przypadków.
+          </p>
+        </div>
+
+        <div class="sbs-result-banner sbs-result-banner--found" *ngIf="results.length > 0 && lastSearchByFrame">
+          <p class="sbs-result-banner-title">Ten numer ramy został zgłoszony jako skradziony.</p>
+          <p>
+            Numery ram nie są unikalne między producentami, dlatego musisz porównać zdjęcie albo markę
+            i model z rowerem, zanim uznasz dopasowanie za pewne. Nie finalizuj transakcji. Skontaktuj
+            się ze sprzedającym, zapytaj o pochodzenie roweru, i jeśli masz podejrzenia, zgłoś sytuację
+            Policji. Możesz też skontaktować się z właścicielem przez przycisk "Znalazłem ten rower" poniżej.
+          </p>
+        </div>
+
+        <div class="sbs-result-banner sbs-result-banner--found" *ngIf="results.length > 0 && !lastSearchByFrame">
+          <p class="sbs-result-banner-title">Znaleziono zgłoszone rowery: {{ results.length }}.</p>
+          <p>
+            Wyświetlamy wszystkie rowery o tej marce i modelu. Numery ram nie są unikalne między
+            producentami, więc przed uznaniem dopasowania za pewne porównaj numer ramy fizycznie na
+            rowerze. Nie finalizuj transakcji bez tego sprawdzenia.
+          </p>
+        </div>
+
+        <div class="sbs-results-grid" *ngIf="results.length > 0">
+          <div class="sbs-result-card" *ngFor="let bicycle of results">
+            <div class="sbs-result-photo" *ngIf="bicycle.source === 'INTERNAL'" (click)="allPhotos(bicycle).length > 0 && openLightbox(bicycle, 0)">
+              <img *ngIf="bicycle.mainPhotoUrl" [src]="bicycle.mainPhotoUrl" alt="Zdjęcie roweru" />
+              <div *ngIf="!bicycle.mainPhotoUrl" class="sbs-no-photo">Brak zdjęcia</div>
+            </div>
+            <div class="sbs-result-info">
+              <h3 *ngIf="bicycle.source === 'INTERNAL'">{{ bicycle.brand }} {{ bicycle.model }}</h3>
+              <h3 *ngIf="bicycle.source === 'EXTERNAL'">{{ bicycle.bikeName || 'Zgłoszony rower' }}</h3>
+              <p class="sbs-frame-number">Nr ramy: {{ bicycle.frameNumber }}</p>
+              <p class="sbs-external-hint" *ngIf="bicycle.source === 'EXTERNAL'">
+                Zgłoszenie z zewnętrznego źródła. Bez zdjęć, bez możliwości kontaktu przez CycloPick.
+              </p>
+              <div class="sbs-gallery-thumbs" *ngIf="bicycle.source === 'INTERNAL' && bicycle.galleryUrls && bicycle.galleryUrls.length > 0">
+                <img
+                  *ngFor="let url of bicycle.galleryUrls; let i = index"
+                  [src]="url"
+                  alt="Zdjęcie roweru"
+                  (click)="openLightbox(bicycle, i + 1)"
+                />
+              </div>
+              <button class="sbs-btn sbs-btn--danger" *ngIf="bicycle.source === 'INTERNAL'" (click)="openContactModal(bicycle)">
+                Znalazłem ten rower
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CO OZNACZA WYNIK ===== -->
+    <section class="sbs-info-section" aria-labelledby="result-meaning-heading">
+      <h2 id="result-meaning-heading">Co oznacza wynik sprawdzenia?</h2>
+      <p>
+        Wynik mówi tylko o tym, czy ten konkretny numer ramy trafił do naszej bazy, nie o tym, czy
+        rower jest legalny.
+      </p>
+      <p>
+        <strong>Znaleziono zgłoszenie</strong> — numer ramy został zgłoszony jako skradziony przez
+        osobę z kontem CycloPick. To sygnał ostrzegawczy, nie wyrok.
+      </p>
+      <p>
+        <strong>Nie znaleziono zgłoszenia</strong> — nikt nie zgłosił tego numeru w naszej bazie ani
+        w dostępnych zewnętrznych źródłach. To nie potwierdza, że rower ma legalne pochodzenie.
+        Kradzież mogła nie zostać jeszcze zgłoszona, albo zgłoszona gdzie indziej.
+      </p>
+    </section>
+
+    <!-- ===== KUPUJESZ UŻYWANY ROWER ===== -->
+    <section class="sbs-info-section" aria-labelledby="buyer-heading">
+      <h2 id="buyer-heading">Kupujesz używany rower?</h2>
+      <ol class="sbs-steps-list">
+        <li>Poproś sprzedającego o numer ramy przed wpłatą zaliczki.</li>
+        <li>Sprawdź numer w wyszukiwarce na tej stronie.</li>
+        <li>Jeśli numer jest w bazie, nie finalizuj transakcji i postępuj zgodnie ze wskazówkami przy wyniku.</li>
+        <li>Jeśli coś wzbudza Twoje podejrzenia, nawet bez trafienia w bazie, zgłoś to Policji.</li>
+      </ol>
+      <p class="sbs-hint">Pamiętaj: brak wyniku w bazie nie jest dowodem legalnego pochodzenia roweru.</p>
+      <button class="sbs-btn sbs-btn--primary" (click)="scrollToSearch()">Sprawdź numer ramy</button>
+    </section>
+
+    <!-- ===== UKRADZIONO CI ROWER ===== -->
+    <section class="sbs-info-section" aria-labelledby="victim-heading">
+      <h2 id="victim-heading">Ukradziono Ci rower?</h2>
+      <p>
+        Zgłoszenie kradzieży w bazie CycloPick jest całkowicie bezpłatne. Wymaga konta, ale nie
+        musisz go mieć wcześniej. Możesz założyć je dopiero teraz, po kradzieży.
+      </p>
+      <p>
+        Po zalogowaniu dodaj rower w swoim panelu (marka, model, numer ramy, zdjęcie) i oznacz go
+        jako skradziony. Zgłoszenie w CycloPick nie zastępuje zgłoszenia na Policję. Zrób oba.
+      </p>
+      <a routerLink="/register" class="sbs-btn sbs-btn--primary">Zgłoś skradziony rower</a>
+    </section>
+
+    <!-- ===== PRYWATNOŚĆ ===== -->
+    <section class="sbs-info-section" aria-labelledby="privacy-heading">
+      <h2 id="privacy-heading">Twoje dane pozostają prywatne</h2>
+      <p>
+        Jeśli ktoś znajdzie Twój rower, nie dostaje Twojego numeru telefonu ani adresu. Kontakt idzie
+        przez CycloPick mailem. Ty decydujesz, czy i jak odpowiedzieć.
+      </p>
+    </section>
+
+    <!-- ===== CZYM RÓŻNIMY SIĘ OD INNYCH BAZ ===== -->
+    <section class="sbs-diff-section" aria-labelledby="diff-heading">
+      <div class="section-eyebrow">Dlaczego ta baza</div>
+      <h2 id="diff-heading">Czym różnimy się od innych baz skradzionych rowerów</h2>
+      <div class="sbs-diff-grid">
+        <div class="sbs-diff-card">
+          <div class="sbs-diff-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg>
+          </div>
+          <h3>Bezpłatne API</h3>
+          <p>Dowolna aplikacja, sklep rowerowy czy ubezpieczyciel może automatycznie sprawdzić, czy numer ramy jest zgłoszony jako skradziony.</p>
+        </div>
+        <div class="sbs-diff-card">
+          <div class="sbs-diff-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>Zgłoszenia z kontem</h3>
+          <p>Zgłoszenia wymagają konta CycloPick, nie anonimowego formularza.</p>
+        </div>
+        <div class="sbs-diff-card">
+          <div class="sbs-diff-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <h3>Zdjęcie i numer ramy</h3>
+          <p>Każde zgłoszenie ma zdjęcie roweru i numer ramy. Nie tylko opis tekstowy.</p>
+        </div>
+        <div class="sbs-diff-card">
+          <div class="sbs-diff-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>
+          </div>
+          <h3>Sprawdzane przy naprawie</h3>
+          <p>Serwisy rowerowe na CycloPick sprawdzają numer ramy przy przyjęciu roweru do naprawy.</p>
+        </div>
+        <div class="sbs-diff-card">
+          <div class="sbs-diff-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M2 9l2.5-5h15L22 9"/><path d="M9 21v-6h6v6"/></svg>
+          </div>
+          <h3>Dla lombardów i komisów</h3>
+          <p>Przez bezpłatne API tę samą bazę może wykorzystać też lombard czy komis przyjmujący rower do skupu.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MISJA ===== -->
+    <section class="sbs-mission-section" aria-labelledby="mission-heading">
+      <h2 id="mission-heading">Chcemy, żeby kradzież roweru przestała się opłacać</h2>
+      <p>
+        Im łatwiej sprawdzić numer ramy przed zakupem, tym trudniej sprzedać skradziony rower bez
+        wykrycia. Budujemy tę bazę, żeby każda kolejna osoba sprawdzająca rower, czy to kupujący, czy
+        serwis przyjmujący rower do naprawy, zwiększała ryzyko dla tego, kto próbuje go sprzedać.
+      </p>
+      <p>
+        Baza ma sens tylko, gdy długo działa. Zobowiązujemy się ją utrzymywać. Jeśli CycloPick
+        kiedyś przestanie istnieć, przekażemy bazę komuś, kto będzie nią dalej zarządzał, zamiast
+        pozwolić, by zniknęła.
+      </p>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="sbs-faq-section" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Najczęstsze pytania</h2>
+      <div class="sbs-faq-container">
+        <details *ngFor="let item of faqData" class="sbs-faq-item">
+          <summary class="sbs-faq-question">{{ item.question }}</summary>
+          <p class="sbs-faq-answer">{{ item.answer }}</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===== SEKCJA DLA FIRM (przygaszona, na dole) ===== -->
+    <section class="sbs-api-section" id="api" aria-labelledby="api-heading">
+      <div class="sbs-api-card">
+        <div class="sbs-api-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>
+        </div>
+        <div class="sbs-api-card-body">
+          <h3 id="api-heading">Prowadzisz serwis, komis lub lombard?</h3>
+          <p class="sbs-hint">
+            Bezpłatne API pozwala automatycznie sprawdzać numery ram przyjmowanych rowerów, bez
+            ręcznego wyszukiwania. Potrzebujemy Twojego e-maila i telefonu, żeby móc się z Tobą
+            skontaktować w razie nadużyć związanych z kluczem i móc go odwołać.
+          </p>
+
+          <div *ngIf="revealedApiKey" class="sbs-revealed-box">
+            <p class="sbs-revealed-label">Twój klucz API (zapisz go teraz — nie pokażemy go ponownie):</p>
+            <div class="sbs-revealed-key">{{ revealedApiKey }}</div>
+          </div>
+
+          <div class="sbs-api-form" *ngIf="!revealedApiKey">
+            <input type="email" class="sbs-input" [(ngModel)]="apiKeyEmail" placeholder="E-mail*" />
+            <input type="tel" class="sbs-input" [(ngModel)]="apiKeyPhone" placeholder="Telefon*" />
+            <input type="text" class="sbs-input" [(ngModel)]="apiKeyName" placeholder="Imię i nazwisko" />
+            <input type="text" class="sbs-input" [(ngModel)]="apiKeyCompany" placeholder="Firma" />
+
+            <label class="sbs-privacy-checkbox">
+              <input type="checkbox" [(ngModel)]="apiKeyPrivacyAccepted" name="apiKeyPrivacyAccepted" />
+              <span>Akceptuję <a routerLink="/privacy-policy" target="_blank">politykę prywatności</a> i zgadzam się na przetwarzanie podanych danych w celu obsługi klucza API.*</span>
+            </label>
+
+            <button
+              class="sbs-btn sbs-btn--primary"
+              [disabled]="!isApiKeyFormValid || registeringApiKey"
+              (click)="registerApiKey()"
+            >
+              {{ registeringApiKey ? 'Generowanie...' : 'Wygeneruj klucz API' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== KOŃCOWE CTA ===== -->
+    <section class="sbs-final-cta-banner" aria-labelledby="final-cta-heading">
+      <p id="final-cta-heading">Sprawdź numer ramy przed zakupem</p>
+      <button class="sbs-btn sbs-btn--primary" (click)="scrollToSearch()">Sprawdź rower</button>
+    </section>
+  </div>
+</article>
+
+<!-- Modal kontaktowy -->
+<div class="sbs-modal-overlay" *ngIf="contactingBicycle" (click)="closeContactModal()">
+  <div class="sbs-modal-content" (click)="$event.stopPropagation()">
+    <h3>Kontakt w sprawie znalezionego roweru</h3>
+    <p class="sbs-hint">
+      Twoja wiadomość i dane kontaktowe zostaną wysłane właścicielowi mailem — nie są nigdzie
+      publikowane. Dalszy kontakt odbywa się już bezpośrednio, poza platformą.
+    </p>
+
+    <input type="text" class="sbs-input" [(ngModel)]="finderName" placeholder="Twoje imię*" />
+    <input type="email" class="sbs-input" [(ngModel)]="finderEmail" placeholder="Twój e-mail*" />
+    <input type="tel" class="sbs-input" [(ngModel)]="finderPhone" placeholder="Telefon (opcjonalnie)" />
+    <textarea
+      class="sbs-textarea"
+      [(ngModel)]="contactMessage"
+      placeholder="Twoja wiadomość do osoby zgłaszającej kradzież tego roweru*"
+      rows="4"
+    ></textarea>
+
+    <label class="sbs-privacy-checkbox">
+      <input type="checkbox" [(ngModel)]="finderPersonalDataAccepted" name="finderPersonalDataAccepted" />
+      <span>Wyrażam zgodę na przetwarzanie moich danych osobowych podanych w tym formularzu w celu wysłania wiadomości do właściciela roweru.*</span>
+    </label>
+
+    <label class="sbs-privacy-checkbox">
+      <input type="checkbox" [(ngModel)]="finderDataSharingAccepted" name="finderDataSharingAccepted" />
+      <span>Wyrażam zgodę na przekazanie danych podanych w tym formularzu osobie, która zgłosiła kradzież tego roweru.*</span>
+    </label>
+
+    <div class="sbs-modal-actions">
+      <button class="sbs-btn sbs-btn--secondary" (click)="closeContactModal()">Anuluj</button>
+      <button
+        class="sbs-btn sbs-btn--primary"
+        [disabled]="!isContactFormValid || sendingContact"
+        (click)="sendContact()"
+      >
+        {{ sendingContact ? 'Wysyłanie...' : 'Wyślij' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox galerii -->
+<div class="sbs-lightbox-overlay" *ngIf="lightboxBicycle" (click)="closeLightbox()">
+  <button class="sbs-lightbox-close" (click)="closeLightbox()">&times;</button>
+  <img
+    class="sbs-lightbox-img"
+    [src]="allPhotos(lightboxBicycle)[lightboxIndex]"
+    alt="Zdjęcie roweru"
+    (click)="$event.stopPropagation()"
+  />
+</div>

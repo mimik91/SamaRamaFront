@@ -305,7 +305,8 @@
   "pricelist": {
   "tabs": {
     "services": "Cennik usług",
-    "packages": "Pakiety serwisowe"
+    "packages": "Pakiety serwisowe",
+    "parts": "Części"
   },
   "packages": {
     "title": "Zarządzanie pakietami serwisowymi",

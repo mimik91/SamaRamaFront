@@ -628,3 +628,9 @@
   [bicycleId]="bicycle.id"
   (close)="showBookServiceModal = false"
 ></app-book-service-modal>
+
+<app-stolen-bike-acknowledgment-modal
+  *ngIf="showStolenAckModal"
+  (confirmed)="onStolenAckConfirmed()"
+  (cancelled)="onStolenAckCancelled()"
+></app-stolen-bike-acknowledgment-modal>

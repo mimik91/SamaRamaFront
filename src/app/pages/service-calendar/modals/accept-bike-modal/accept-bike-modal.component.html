@@ -274,6 +274,15 @@
                   [placeholder]="t('service_calendar.create_order.frame_number_placeholder')"
                   [disabled]="selectedBikeId !== null"
                 />
+                <div class="stolen-check-actions" *ngIf="selectedBikeId === null">
+                  <span class="stolen-frame-hint" *ngIf="frameNumberTooShort">Numer ramy musi mieć co najmniej 4 znaki.</span>
+                  <button
+                    type="button"
+                    class="stolen-check-btn"
+                    [disabled]="!stolenCheckCriteriaMet || isCheckingStolen"
+                    (click)="runStolenCheck()"
+                  >Sprawdź w bazie</button>
+                </div>
               </div>
             </div>
 
@@ -284,27 +293,88 @@
               </div>
 
               <!-- Stolen check: OK -->
-              <div class="stolen-check ok" *ngIf="stolenCheckResult && !stolenCheckResult.stolen && !isCheckingStolen">
+              <div class="stolen-check ok" *ngIf="hasCompletedStolenCheck && !hasStolenHit && !isCheckingStolen && !isStolenCheckStale">
                 <span>Numer ramy zweryfikowany - brak zgloszen.</span>
               </div>
 
-              <!-- Stolen check: STOLEN -->
-              <div class="stolen-check stolen" *ngIf="stolenCheckResult?.stolen && !isCheckingStolen">
-                <div class="stolen-header">Ten numer ramy zostal zgloszony jako skradziony!</div>
-                <div class="stolen-bike-info" *ngIf="stolenCheckResult!.bikeName">
-                  Zgloszony rower: <strong>{{ stolenCheckResult!.bikeName }}</strong>
-                </div>
-                <div class="stolen-note">
-                  Uwaga: Zgloszenie dotyczy konkretnego roweru. Numery ram nie sa unikalne miedzy producentami,
-                  wiec przyjmowany rower nie musi byc tym zgloszonym.
-                </div>
+              <!-- Stolen check: rower klientki zgloszony jako skradziony -->
+              <div class="stolen-check stolen" *ngIf="hasStolenHit && stolenResolution === 'OWNED' && !isCheckingStolen && !isStolenCheckStale">
+                <div class="stolen-header">Ta klientka zgłosiła kradzież tego roweru.</div>
+                <div class="stolen-note">Poinformuj ją, że zostanie wycofany z bazy rowerów skradzionych.</div>
+              </div>
+
+              <!-- Stolen check: potrzebna decyzja serwisanta -->
+              <div class="stolen-check stolen" *ngIf="hasStolenHit && stolenResolution === null && !isCheckingStolen && !isStolenCheckStale">
+                <div class="stolen-header">Znaleziono zgłoszone rowery pasujące do danych: {{ stolenMatches.length }}.</div>
+                <button type="button" class="stolen-check-btn" (click)="openStolenMatches()">Zobacz i rozstrzygnij</button>
+              </div>
+
+              <!-- Stolen check: przyjęcie zablokowane -->
+              <div class="stolen-check stolen" *ngIf="stolenResolution === 'BLOCKED' && !isStolenCheckStale">
+                <div class="stolen-header">Rower zgloszony jako skradziony - przyjecie zablokowane.</div>
                 <div class="stolen-instructions">
                   <p>Zalecane kroki:</p>
                   <ol>
-                    <li>Przyjmij rower do serwisu w standardowy sposob i upewnij sie, ze posiadasz numer kontaktowy oraz adres e-mail klienta.</li>
-                    <li>Po opuszczeniu serwisu przez klienta niezwlocznie powiadom policje o sytuacji.</li>
+                    <li>Upewnij sie, ze posiadasz numer kontaktowy oraz adres e-mail klienta.</li>
+                    <li>Niezwlocznie powiadom policje o sytuacji.</li>
                     <li>Oczekuj na dalsze instrukcje ze strony policji dotyczace postepowania z rowerem.</li>
                   </ol>
+                </div>
+              </div>
+
+              <!-- Stolen check: serwisant potwierdzil, ze to nie zgloszony rower -->
+              <div class="stolen-check ok" *ngIf="stolenResolution === 'NONE' && !isStolenCheckStale">
+                <span>Serwisant potwierdził, że to nie jest zgłoszony rower.</span>
+              </div>
+
+              <!-- Okno z pasującymi rowerami -->
+              <div class="stolen-matches-overlay" *ngIf="showStolenMatches" (click)="closeStolenMatches()">
+                <div class="stolen-matches-dialog" (click)="$event.stopPropagation()">
+                  <h3>Pasujące zgłoszone rowery</h3>
+                  <p class="stolen-note">
+                    Numery ram nie są unikalne między producentami. Porównaj zdjęcie oraz markę i model z przyjmowanym rowerem.
+                  </p>
+
+                  <div class="stolen-match-card" *ngFor="let match of stolenMatches">
+                    <img *ngIf="match.mainPhotoUrl" [src]="match.mainPhotoUrl" alt="Zdjęcie roweru" />
+                    <div class="stolen-match-info">
+                      <strong *ngIf="match.source === 'INTERNAL'">{{ match.brand }} {{ match.model }}</strong>
+                      <strong *ngIf="match.source === 'EXTERNAL'">{{ match.bikeName || 'Zgłoszony rower' }}</strong>
+                      <div>Nr ramy: {{ match.frameNumber }}</div>
+                      <div class="stolen-owned-badge" *ngIf="match.ownedByClient">Rower tej klientki</div>
+                      <div class="stolen-note" *ngIf="match.source === 'EXTERNAL'">
+                        Zgłoszenie z zewnętrznego źródła - bez zdjęć i danych właściciela.
+                      </div>
+                      <button
+                        type="button"
+                        class="stolen-check-btn"
+                        *ngIf="!match.ownedByClient"
+                        [disabled]="isReportingSighting"
+                        (click)="confirmMatchIsThisBike(match)"
+                      >To jest ten rower</button>
+                    </div>
+                  </div>
+
+                  <div class="stolen-verification" *ngIf="!stolenVerificationOpen">
+                    <button type="button" class="stolen-check-btn" (click)="openStolenVerification()">To żaden z tych</button>
+                  </div>
+
+                  <div class="stolen-verification" *ngIf="stolenVerificationOpen">
+                    <p *ngIf="canEditVerificationFrame">
+                      Wpisz numer ramy, aby oznaczyć rower jako zweryfikowany. Bez numeru rower nie dostanie oznaczenia.
+                    </p>
+                    <input
+                      *ngIf="canEditVerificationFrame"
+                      type="text"
+                      class="stolen-verification-input"
+                      [(ngModel)]="stolenVerificationFrame"
+                      name="stolenVerificationFrame"
+                      placeholder="Numer ramy"
+                    />
+                    <button type="button" class="stolen-check-btn" (click)="confirmNoneOfMatches()">Potwierdź</button>
+                  </div>
+
+                  <button type="button" class="btn-cancel" (click)="closeStolenMatches()">Zamknij</button>
                 </div>
               </div>
           </div>

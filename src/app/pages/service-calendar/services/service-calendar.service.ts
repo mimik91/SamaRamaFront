@@ -27,6 +27,8 @@ import {
   SaveRepairPlanRequest,
   SendRepairPlanRequest
 } from '../../../shared/models/repair-plan.models';
+import { BicycleHistoryRecordDto } from '../../../shared/models/bicycle-service-history.models';
+import { ServiceStolenCheckResponse } from '../../../shared/models/stolen-bike.models';
 
 // ============================================
 // INTERFEJSY DLA ZDJEC ZLECENIA
@@ -44,12 +46,6 @@ export interface InitiateImageUploadResponse {
   imageId: string;
   uploadUrl: string;
   path: string;
-}
-
-export interface StolenCheckResponse {
-  stolen: boolean;
-  bikeName?: string;
-  frameNumber?: string;
 }
 
 export interface ReturnTransportRequestDto {
@@ -471,14 +467,29 @@ export class ServiceCalendarService {
   // ============================================
 
   /**
-   * Sprawdza czy rower o danym numerze ramy jest zgloszony jako skradziony
+   * Sprawdza czy rower o danym numerze ramy jest zgloszony jako skradziony — najpierw w wewnetrznej
+   * bazie CycloPick, a jesli tam pusto, jako fallback na numerramy.pl.
    */
-  checkStolenBike(frameNumber: string): Observable<StolenCheckResponse> {
-    const params = new HttpParams().set('frameNumber', frameNumber);
-    return this.http.get<StolenCheckResponse>(
-      `${this.apiUrl}${environment.endpoints.bicycleStatus.stolenCheck}`,
-      { params }
-    ).pipe(catchError(this.handleError('checkStolenBike')));
+  checkStolenForService(
+    serviceId: number,
+    frameNumber: string | undefined,
+    brand: string | undefined,
+    model: string | undefined,
+    clientId: number | null
+  ): Observable<ServiceStolenCheckResponse> {
+    let params = new HttpParams().set('serviceId', serviceId.toString());
+    if (frameNumber) params = params.set('frameNumber', frameNumber);
+    if (brand) params = params.set('brand', brand);
+    if (model) params = params.set('model', model);
+    if (clientId !== null) params = params.set('clientId', clientId.toString());
+    return this.http.get<ServiceStolenCheckResponse>(`${this.apiUrl}${this.endpoints.stolenCheck}`, { params })
+      .pipe(catchError(this.handleError('checkStolenForService')));
+  }
+
+  reportStolenSighting(serviceId: number, bicycleId: number): Observable<{ message: string }> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http.post<{ message: string }>(`${this.apiUrl}${this.endpoints.stolenSighting}`, { bicycleId }, { params })
+      .pipe(catchError(this.handleError('reportStolenSighting')));
   }
 
   // ============================================
@@ -509,6 +520,21 @@ export class ServiceCalendarService {
     return this.http
       .post<void>(`${this.apiUrl}/service-calendar/orders/${orderId}/repair-plan/send`, request, { params })
       .pipe(catchError(this.handleError('sendRepairPlan')));
+  }
+
+  // ============================================
+  // HISTORIA ROWERU (zakładka "Historia" w szczegółach zlecenia)
+  // ============================================
+
+  /** Historia tego roweru tylko w tym serwisie (bez cross-service, bez paginacji — z założenia krótka) */
+  getBicycleHistory(serviceId: number, bicycleId: number): Observable<BicycleHistoryRecordDto[]> {
+    const params = new HttpParams().set('serviceId', serviceId.toString());
+    return this.http
+      .get<BicycleHistoryRecordDto[]>(
+        `${this.apiUrl}${environment.endpoints.bikeServicesRegistered.base}/my-service/bicycles/${bicycleId}/service-records`,
+        { params }
+      )
+      .pipe(catchError(this.handleError('getBicycleHistory')));
   }
 
   // ============================================

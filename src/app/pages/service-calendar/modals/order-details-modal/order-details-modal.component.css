@@ -1598,6 +1598,110 @@
   color: var(--text-primary);
 }
 
+/* ── Historia roweru ── */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.history-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.history-card.expanded {
+  border-color: var(--color-primary-light);
+}
+
+.history-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  cursor: pointer;
+  background: var(--color-gray-50, #f9fafb);
+}
+
+.history-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-date {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.history-client {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.history-card-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.history-price-badge {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.history-card-body {
+  padding: var(--spacing-3);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.history-items h5,
+.history-repair-plan h5,
+.history-note h5,
+.history-messages h5 {
+  margin: 0 0 var(--spacing-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.history-note p {
+  margin: 0;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.items-table th,
+.items-table td {
+  padding: var(--spacing-2);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.items-table th:last-child,
+.items-table td:last-child {
+  text-align: right;
+}
+
+.items-table tfoot td {
+  border-bottom: none;
+  border-top: 2px solid var(--border-color);
+}
+
 .planned-time {
   color: var(--text-secondary);
   font-weight: var(--font-weight-normal);

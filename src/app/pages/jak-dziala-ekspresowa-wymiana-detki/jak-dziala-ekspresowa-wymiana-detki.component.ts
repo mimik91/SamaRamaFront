@@ -54,7 +54,7 @@ export class JakDzialaEkspresowaWymianaDetkiComponent implements OnInit, AfterVi
     },
     {
       name: 'Wybierz miejsce odbioru roweru',
-      text: 'Zdecyduj, czy kurier ma odebrać i zwrócić rower pod biuro, czy pod adres domowy. To tylko wybór lokalizacji, w granicach IV obwodnicy Krakowa.'
+      text: 'Zdecyduj, czy kurier ma odebrać i zwrócić rower pod biuro, czy pod adres domowy, w granicach IV obwodnicy Krakowa. W szczegółach zlecenia możesz opisać rower i dokładnie wskazać, gdzie się znajduje — w razie wątpliwości kurier się z Tobą skontaktuje.'
     },
     {
       name: 'Kurier odbiera rower i jedzie do warsztatu',
@@ -76,16 +76,36 @@ export class JakDzialaEkspresowaWymianaDetkiComponent implements OnInit, AfterVi
       answer: 'Tak. Jeśli złożysz zamówienie przed 20:00, kurier odbierze rower jeszcze tego samego dnia. Po 20:00 odbiór przechodzi na następny poranek.'
     },
     {
-      question: 'Ile kosztuje wymiana dętki?',
-      answer: 'Cenę zobaczysz przy wyborze pakietu "Wymiana dętki" w formularzu rezerwacji. Transport w obie strony jest już w niej wliczony.'
+      question: 'Ile kosztuje wymiana dętki i czy dętka jest wliczona w cenę?',
+      answer: 'Cenę zobaczysz przy wyborze pakietu "Wymiana dętki" w formularzu rezerwacji. Obejmuje ona standardową dętkę oraz transport w obie strony. Jeśli wymiana okaże się bardziej skomplikowana, zadzwonimy i zapytamy, czy mimo wyższej ceny chcesz, żebyśmy wykonali usługę. Obsługujemy też koła z oponami bezdętkowymi (tubeless) — w takim przypadku usługa kosztuje 150 zł.'
     },
     {
       question: 'Co jeśli okaże się, że to nie tylko dętka, tylko też opona?',
       answer: 'Pakiet obejmuje wyłącznie wymianę dętki. Jeśli mechanik stwierdzi, że trzeba wymienić też oponę, zadzwoni i zapyta, czy się na to zgadzasz. Po Twojej zgodzie wymieni ją od razu w tej samej wizycie. Robocizna jest już w cenie pakietu, dopłacasz tylko za samą oponę.'
     },
     {
+      question: 'Jaką dętkę i wentyl zamontujecie?',
+      answer: 'Standardowo montujemy dętkę z wentylem Presta. Jeśli wolisz wentyl samochodowy (Schrader), napisz to w szczegółach zlecenia — zamontujemy taki, jeśli będzie dostępny. Jeśli akurat nie będziemy mieli na miejscu pasującej dętki, skontaktujemy się i zapytamy, czy wolisz poczekać, aż ją sprowadzimy, czy żebyśmy zwrócili rower bez naprawy.'
+    },
+    {
+      question: 'Skąd kurier będzie wiedział, gdzie jest mój rower i o której dokładnie przyjedzie?',
+      answer: 'W szczegółach zlecenia możesz opisać rower oraz dokładnie wskazać, gdzie się znajduje. Po złożeniu zamówienia kontaktujemy się, aby doprecyzować dokładny termin odbioru, a w razie dodatkowych wątpliwości kurier skontaktuje się z Tobą jeszcze raz przed przyjazdem. Zazwyczaj dzwonimy — jeśli wolisz kontakt mailowy lub SMS, napisz to w szczegółach zlecenia, a dostosujemy się.'
+    },
+    {
+      question: 'Czy mogę zrezygnować, jeśli wymiana okaże się droższa niż standardowa?',
+      answer: 'Tak. Jeśli po naszym kontakcie zdecydujesz się zrezygnować z naprawy, pobierzemy opłatę tylko za transport roweru.'
+    },
+    {
+      question: 'Co jeśli usługa nie dojdzie do skutku z Waszej winy?',
+      answer: 'Podejmujemy próby kontaktu, aby zrealizować usługę zgodnie z zamówieniem. Jeśli z naszej winy nie dojdzie do jej wykonania, zwracamy pieniądze.'
+    },
+    {
       question: 'Czy usługa działa w całym Krakowie?',
-      answer: 'Odbiór i zwrot działają w granicach IV obwodnicy Krakowa, czyli m.in. Stare Miasto, Krowodrza, Zwierzyniec, Dębniki (w tym Ruczaj), Podgórze, Grzegórzki i Nowa Huta. Adres poza tym obszarem też możemy obsłużyć, ale napisz lub zadzwoń do nas przed rezerwacją, żeby to uzgodnić.'
+      answer: 'Odbiór i zwrot działają w granicach IV obwodnicy Krakowa, czyli m.in. Stare Miasto, Krowodrza, Zwierzyniec, Dębniki (w tym Ruczaj), Podgórze, Grzegórzki i Nowa Huta. Adres poza tym obszarem też możemy obsłużyć, ale napisz lub zadzwoń do nas przed rezerwacją, żeby to uzgodnić — zwykle wiąże się to z niewielką dopłatą, którą ustalamy bardzo szybko.'
+    },
+    {
+      question: 'Czy muszę założyć konto, żeby zamówić usługę?',
+      answer: 'Nie, konto nie jest wymagane do złożenia zamówienia. Służy wyłącznie do śledzenia statusu naprawy.'
     },
     {
       question: 'Czy mój rower jest ubezpieczony podczas transportu?',

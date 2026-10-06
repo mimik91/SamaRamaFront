@@ -1,0 +1,30 @@
+<div class="aks-wrapper">
+  <h3>Klucz API</h3>
+  <p class="aks-hint">
+    Klucz do publicznego API bazy skradzionych rowerów (sprawdzanie listy numerów ram —
+    <code>POST /api/stolen-bike-api/batch-check</code>).
+  </p>
+
+  <div *ngIf="revealedKey" class="aks-revealed-box">
+    <p class="aks-revealed-label">Twój nowy klucz (zapisz go teraz — nie pokażemy go ponownie):</p>
+    <div class="aks-revealed-key">{{ revealedKey }}</div>
+    <div class="aks-revealed-actions">
+      <button class="aks-btn aks-btn--small" (click)="copyRevealedKey()">Kopiuj</button>
+      <button class="aks-btn aks-btn--small aks-btn--secondary" (click)="dismissRevealedKey()">Zamknij</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="aks-loading">Ładowanie...</div>
+
+  <div *ngIf="!loading" class="aks-status-row">
+    <span *ngIf="status?.hasKey" class="aks-status-text">
+      Aktywny klucz: <code>{{ status?.keyPrefix }}…</code>
+    </span>
+    <span *ngIf="!status?.hasKey" class="aks-status-text aks-status-text--muted">
+      Brak aktywnego klucza.
+    </span>
+    <button class="aks-btn aks-btn--primary" [disabled]="generating" (click)="generate()">
+      {{ generating ? 'Generowanie...' : (status?.hasKey ? 'Wygeneruj nowy klucz' : 'Wygeneruj klucz') }}
+    </button>
+  </div>
+</div>

@@ -383,6 +383,7 @@ export interface BikeInOrderDto {
   model?: string;
   type?: string;
   frameNumber?: string;
+  stolenCheckVerified?: boolean;
 }
 
 /**
@@ -425,6 +426,7 @@ export interface UpdateCalendarOrderDto {
   brand?: string;
   model?: string;
   frameNumber?: string;
+  stolenCheckVerified?: boolean;
   type?: string;
   frameMaterial?: string;
   // Dane klienta

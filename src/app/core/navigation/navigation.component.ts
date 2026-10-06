@@ -168,6 +168,26 @@ export class NavigationComponent implements OnInit {
     }
   }
 
+  navigateToServiceStats(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    if (!this.serviceSuffix) {
+      this.loadServiceSuffix();
+    }
+
+    if (this.serviceSuffix) {
+      const encodedSuffix = encodeURIComponent(this.serviceSuffix);
+      this.router.navigateByUrl(`/${encodedSuffix}/statystyki`).then(
+        success => { if (success) this.closeMobileMenu(); }
+      );
+    } else {
+      this.notification.error('Nie można załadować danych serwisu. Spróbuj się wylogować i zalogować ponownie.');
+    }
+  }
+
   navigateToProfileSettings(event?: Event): void {
     if (event) {
       event.preventDefault();

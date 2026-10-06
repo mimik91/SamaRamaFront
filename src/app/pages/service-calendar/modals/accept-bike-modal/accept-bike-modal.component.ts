@@ -2,11 +2,11 @@ import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy, Host
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { I18nService } from '../../../../core/i18n.service';
 import { NotificationService } from '../../../../core/notification.service';
 import { EnumerationService } from '../../../../core/enumeration.service';
-import { ServiceCalendarService, StolenCheckResponse, ReturnTransportRequestDto } from '../../services/service-calendar.service';
+import { ServiceCalendarService, ReturnTransportRequestDto } from '../../services/service-calendar.service';
 import {
   CalendarOrder,
   CreateCalendarOrderDto,
@@ -16,6 +16,9 @@ import {
   ClientBike,
   Technician
 } from '../../../../shared/models/service-calendar.models';
+import { ServiceStolenMatch } from '../../../../shared/models/stolen-bike.models';
+
+const MIN_FRAME_NUMBER_LENGTH = 4;
 
 type ModalMode = 'select' | 'new';
 
@@ -82,9 +85,16 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
 
   cities: string[] = [];
 
-  stolenCheckResult: StolenCheckResponse | null = null;
+  stolenMatches: ServiceStolenMatch[] = [];
+  stolenResolution: 'NONE' | 'OWNED' | 'BLOCKED' | null = null;
+  showStolenMatches = false;
+  stolenVerificationOpen = false;
+  stolenVerificationFrame = '';
   isCheckingStolen: boolean = false;
-  private frameNumber$ = new Subject<string>();
+  isReportingSighting = false;
+  stolenCheckVerified: boolean = false;
+  private lastStolenCheckKey: string | null = null;
+  private orderClientId: number | null = null;
   private destroy$ = new Subject<void>();
 
   private fullOrderData: CalendarOrder | null = null;
@@ -107,14 +117,6 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.enumerationService.getCities().subscribe({
       next: (cities) => { this.cities = cities; },
       error: (err) => { console.error('Error loading cities:', err); }
-    });
-
-    this.frameNumber$.pipe(
-      debounceTime(600),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(frameNumber => {
-      this.performStolenCheck(frameNumber);
     });
 
     if (this.preselectedOrder) {
@@ -253,19 +255,130 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
 
   onFrameNumberChange(value: string): void {
     this.frameNumber = value;
-    if (value.trim().length >= 3) {
-      this.frameNumber$.next(value.trim());
-    } else {
-      this.stolenCheckResult = null;
-    }
+    this.stolenCheckVerified = false;
   }
 
-  private performStolenCheck(frameNumber: string): void {
+  get frameNumberTooShort(): boolean {
+    const length = this.frameNumber.trim().length;
+    return length > 0 && length < MIN_FRAME_NUMBER_LENGTH;
+  }
+
+  get stolenCheckCriteriaMet(): boolean {
+    return this.frameNumber.trim().length >= MIN_FRAME_NUMBER_LENGTH
+      || (!!this.bikeBrand.trim() && !!this.bikeModel.trim());
+  }
+
+  get isStolenCheckStale(): boolean {
+    return this.lastStolenCheckKey !== this.currentStolenCheckKey;
+  }
+
+  private get currentStolenCheckKey(): string {
+    return [
+      this.frameNumber.trim().toUpperCase(),
+      this.bikeBrand.trim().toLowerCase(),
+      this.bikeModel.trim().toLowerCase()
+    ].join('|');
+  }
+
+  runStolenCheck(): void {
+    if (!this.stolenCheckCriteriaMet || this.isCheckingStolen) return;
+    this.performStolenCheck();
+  }
+
+  private performStolenCheck(): void {
+    const frame = this.frameNumber.trim();
+    const brand = this.bikeBrand.trim();
+    const model = this.bikeModel.trim();
+
+    this.lastStolenCheckKey = this.currentStolenCheckKey;
     this.isCheckingStolen = true;
-    this.stolenCheckResult = null;
-    this.calendarService.checkStolenBike(frameNumber).subscribe({
-      next: (result) => { this.stolenCheckResult = result; this.isCheckingStolen = false; },
-      error: () => { this.stolenCheckResult = null; this.isCheckingStolen = false; }
+    this.stolenMatches = [];
+    this.stolenResolution = null;
+    this.stolenVerificationOpen = false;
+    this.stolenCheckVerified = false;
+    this.calendarService.checkStolenForService(
+      this.serviceId,
+      frame.length >= MIN_FRAME_NUMBER_LENGTH ? frame : undefined,
+      brand || undefined,
+      model || undefined,
+      this.resolvedClientId
+    ).subscribe({
+      next: (response) => {
+        this.stolenMatches = response.results;
+        this.isCheckingStolen = false;
+        if (this.hasStolenHit && this.stolenMatches.every(match => match.ownedByClient)) {
+          this.stolenResolution = 'OWNED';
+        } else if (this.stolenMatches.some(match => !match.ownedByClient)) {
+          this.showStolenMatches = true;
+        }
+      },
+      error: () => {
+        this.stolenMatches = [];
+        this.isCheckingStolen = false;
+      }
+    });
+  }
+
+  get hasStolenHit(): boolean {
+    return this.stolenMatches.length > 0;
+  }
+
+  get hasCompletedStolenCheck(): boolean {
+    return this.lastStolenCheckKey !== null;
+  }
+
+  get resolvedClientId(): number | null {
+    return this.foundClient?.id ?? this.orderClientId;
+  }
+
+  get canEditVerificationFrame(): boolean {
+    return this.selectedBikeId === null || !this.frameNumber.trim();
+  }
+
+  openStolenMatches(): void {
+    this.showStolenMatches = true;
+  }
+
+  closeStolenMatches(): void {
+    this.showStolenMatches = false;
+    this.stolenVerificationOpen = false;
+  }
+
+  openStolenVerification(): void {
+    this.stolenVerificationFrame = '';
+    this.stolenVerificationOpen = true;
+  }
+
+  confirmNoneOfMatches(): void {
+    const frame = this.stolenVerificationFrame.trim();
+    if (this.canEditVerificationFrame && frame.length >= MIN_FRAME_NUMBER_LENGTH) {
+      this.frameNumber = frame;
+      this.stolenCheckVerified = true;
+    }
+    this.stolenResolution = 'NONE';
+    this.lastStolenCheckKey = this.currentStolenCheckKey;
+    this.closeStolenMatches();
+  }
+
+  confirmMatchIsThisBike(match: ServiceStolenMatch): void {
+    if (this.isReportingSighting) return;
+    if (match.bicycleId === null) {
+      this.stolenResolution = 'BLOCKED';
+      this.closeStolenMatches();
+      return;
+    }
+    this.isReportingSighting = true;
+    this.calendarService.reportStolenSighting(this.serviceId, match.bicycleId).subscribe({
+      next: () => {
+        this.isReportingSighting = false;
+        this.stolenResolution = 'BLOCKED';
+        this.closeStolenMatches();
+        this.notificationService.info('Właściciel roweru został powiadomiony. Przyjęcie zablokowane.');
+      },
+      error: (err: any) => {
+        this.isReportingSighting = false;
+        this.notificationService.error(err?.error?.message ?? 'Nie udało się powiadomić właściciela.');
+      }
     });
   }
 
@@ -306,6 +419,11 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
       this.clientName = order.clientName || '';
       this.clientEmail = this.filterSyntheticEmail(order.clientEmail || '');
       this.clientPhone = order.clientPhone || '';
+    }
+    this.orderClientId = order.client?.id ?? order.clientId ?? null;
+
+    if (this.stolenCheckCriteriaMet) {
+      this.performStolenCheck();
     }
   }
 
@@ -361,6 +479,27 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     if (this.isSubmitting) return;
     if (!this.isFormValid) { this.showValidation = true; return; }
 
+    if (this.isStolenCheckStale) {
+      if (this.stolenCheckCriteriaMet) {
+        this.runStolenCheck();
+        this.notificationService.warning('Dane roweru się zmieniły — sprawdziłem numer w bazie. Zobacz wynik i przyjmij ponownie.');
+        return;
+      }
+      this.stolenMatches = [];
+      this.stolenResolution = null;
+      this.lastStolenCheckKey = null;
+    }
+    if (this.isCheckingStolen) return;
+    if (this.stolenResolution === 'BLOCKED') {
+      this.notificationService.error('Rower zgłoszony jako skradziony — nie można go przyjąć. Postępuj zgodnie z zaleceniami.');
+      return;
+    }
+    if (this.hasStolenHit && this.stolenResolution === null) {
+      this.showStolenMatches = true;
+      this.notificationService.warning('Rozstrzygnij, czy któryś z pasujących rowerów to przyjmowany rower.');
+      return;
+    }
+
     this.isSubmitting = true;
 
     if (this.mode === 'select' && this.selectedOrderId) {
@@ -388,12 +527,16 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
           }
       ),
       ...(this.selectedBikeId
-        ? { existingBicycleId: this.selectedBikeId }
+        ? {
+            existingBicycleId: this.selectedBikeId,
+            ...(this.stolenCheckVerified ? { frameNumber: this.frameNumber.trim(), stolenCheckVerified: true } : {})
+          }
         : {
             brand: this.bikeBrand.trim(),
             model: this.bikeModel.trim() || undefined,
             type: this.bikeType.trim() || undefined,
-            frameNumber: this.frameNumber.trim() || undefined
+            frameNumber: this.frameNumber.trim() || undefined,
+            stolenCheckVerified: this.frameNumber.trim() ? this.stolenCheckVerified : undefined
           }
       ),
       description: this.description.trim() || undefined,
@@ -476,12 +619,16 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
       ),
       bicycles: [
         this.selectedBikeId
-          ? { existingBicycleId: this.selectedBikeId }
+          ? {
+              existingBicycleId: this.selectedBikeId,
+              ...(this.stolenCheckVerified ? { frameNumber: this.frameNumber.trim(), stolenCheckVerified: true } : {})
+            }
           : {
               brand: this.bikeBrand.trim(),
               model: this.bikeModel.trim() || undefined,
               type: this.bikeType.trim() || undefined,
-              frameNumber: this.frameNumber.trim() || undefined
+              frameNumber: this.frameNumber.trim() || undefined,
+              stolenCheckVerified: this.frameNumber.trim() ? this.stolenCheckVerified : undefined
             }
       ],
       plannedDate: formatCalendarDate(new Date()),

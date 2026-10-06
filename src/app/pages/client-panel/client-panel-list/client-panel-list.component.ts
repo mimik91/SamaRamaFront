@@ -9,6 +9,7 @@ import { NotificationService } from '../../../core/notification.service';
 import { BicycleSelectionService } from '../bicycle-selection.service';
 import { CalendarOrderStatus, getStatusColor } from '../../../shared/models/service-calendar.models';
 import { getTransportStatusColor } from '../../../core/models/transport-order-status.util';
+import { StolenBikeAcknowledgmentModalComponent } from '../../../shared/stolen-bike-acknowledgment-modal/stolen-bike-acknowledgment-modal.component';
 
 export interface BikeStatusBadge {
   label: string;
@@ -18,7 +19,7 @@ export interface BikeStatusBadge {
 @Component({
   selector: 'app-client-panel-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, StolenBikeAcknowledgmentModalComponent],
   templateUrl: './client-panel-list.component.html',
   styleUrls: ['./client-panel-list.component.css']
 })
@@ -170,13 +171,48 @@ export class ClientPanelListComponent implements OnInit {
     }
   }
 
+  pendingStolenBicycle: Bicycle | null = null;
+
   toggleStolen(bicycle: Bicycle, event: Event): void {
     event.stopPropagation();
     const newValue = !bicycle.stolen;
-    const msg = newValue ? 'Czy na pewno chcesz zgłosić ten rower jako skradziony?' : 'Czy chcesz cofnąć zgłoszenie kradzieży?';
-    if (!window.confirm(msg)) return;
 
-    this.bicycleService.updateStolenStatus(bicycle.id, newValue).subscribe({
+    if (!newValue) {
+      if (!window.confirm('Czy chcesz cofnąć zgłoszenie kradzieży?')) return;
+      this.submitStolenStatus(bicycle, false, false);
+      return;
+    }
+
+    const missing = this.getMissingStolenReportFields(bicycle);
+    if (missing.length > 0) {
+      this.notificationService.error(`Aby zgłosić rower jako skradziony, uzupełnij najpierw: ${missing.join(', ')}.`);
+      return;
+    }
+
+    this.pendingStolenBicycle = bicycle;
+  }
+
+  private getMissingStolenReportFields(bicycle: Bicycle): string[] {
+    const missing: string[] = [];
+    if (!bicycle.frameNumber?.trim()) missing.push('numer ramy');
+    if (!bicycle.brand?.trim()) missing.push('markę');
+    if (!bicycle.model?.trim()) missing.push('model');
+    if (!bicycle.mainPhotoUrl) missing.push('zdjęcie główne');
+    return missing;
+  }
+
+  onStolenAckConfirmed(): void {
+    if (!this.pendingStolenBicycle) return;
+    this.submitStolenStatus(this.pendingStolenBicycle, true, true);
+    this.pendingStolenBicycle = null;
+  }
+
+  onStolenAckCancelled(): void {
+    this.pendingStolenBicycle = null;
+  }
+
+  private submitStolenStatus(bicycle: Bicycle, newValue: boolean, acknowledgedNoPolice: boolean): void {
+    this.bicycleService.updateStolenStatus(bicycle.id, newValue, acknowledgedNoPolice).subscribe({
       next: (res) => {
         bicycle.stolen = newValue;
         const backendMsg = res?.message;

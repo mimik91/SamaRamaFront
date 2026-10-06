@@ -130,6 +130,8 @@ export const environment = {
       clientLookup: '/service-calendar/clients/lookup',
       clientBikes: '/service-calendar/clients/:clientId/bikes',
       returnTransport: '/service-calendar/orders/:id/return-transport',
+      stolenCheck: '/service-calendar/stolen-check',
+      stolenSighting: '/service-calendar/stolen-sighting',
       transportAddress: '/service-calendar/orders/:id/transport-address',
       proposeDate: '/service-calendar/orders/:id/propose-date',
       bikes: '/service-calendar/bikes',
@@ -144,7 +146,11 @@ export const environment = {
 
     // Bicycle status
     bicycleStatus: {
-      stolenCheck: '/bicycle-status/stolen-check'
+      stolenLookup: '/bicycle-status/stolen-lookup',
+      // Baza dla POST /stolen-search/{bicycleId}/contact — backendowa ścieżka kontaktu zostaje
+      // pod starą nazwą "stolen-search", niezależnie od tego że sam GET wyszukiwania przeniósł się
+      // pod stolen-lookup.
+      stolenContactBase: '/bicycle-status/stolen-search'
     }
   },
   

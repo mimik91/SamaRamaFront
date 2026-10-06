@@ -12,6 +12,10 @@ import {
   PricelistItemWithPrice,
   CategoryWithPrices
 } from '../../../shared/models/service-pricelist.models';
+import {
+  ApprovePricelistSuggestionRequest,
+  PricelistSuggestionDto
+} from '../../../shared/models/pricelist-suggestion.models';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +23,7 @@ import {
 export class PricelistService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}`;
+  private adminUrl = `${environment.apiUrl}${environment.endpoints.admin.base}`;
 
   private availableItemsCache$: Observable<CategoryWithItemsDto[]> | null = null;
 
@@ -89,5 +94,83 @@ export class PricelistService {
         items: itemsWithPrices
       };
     });
+  }
+
+  // ============================================
+  // ADMIN — kategorie i pozycje cennika
+  // ============================================
+
+  adminListCategories(): Observable<PricelistCategoryDto[]> {
+    return this.http.get<PricelistCategoryDto[]>(`${this.adminUrl}/pricelist-categories`);
+  }
+
+  adminCreateCategory(name: string): Observable<{ message: string; category: PricelistCategoryDto }> {
+    return this.http.post<{ message: string; category: PricelistCategoryDto }>(
+      `${this.adminUrl}/pricelist-categories`,
+      { name }
+    );
+  }
+
+  adminUpdateCategory(id: number, name: string): Observable<{ message: string; category: PricelistCategoryDto }> {
+    return this.http.put<{ message: string; category: PricelistCategoryDto }>(
+      `${this.adminUrl}/pricelist-categories/${id}`,
+      { name }
+    );
+  }
+
+  adminDeleteCategory(id: number, force = false): Observable<{ message: string; deletedItemCount: number }> {
+    const params = new HttpParams().set('force', force.toString());
+    return this.http.delete<{ message: string; deletedItemCount: number }>(
+      `${this.adminUrl}/pricelist-categories/${id}`,
+      { params }
+    );
+  }
+
+  adminListItems(): Observable<PricelistItemDto[]> {
+    return this.http.get<PricelistItemDto[]>(`${this.adminUrl}/pricelist-items`);
+  }
+
+  adminCreateItem(name: string, categoryId: number): Observable<{ message: string; item: PricelistItemDto }> {
+    return this.http.post<{ message: string; item: PricelistItemDto }>(
+      `${this.adminUrl}/pricelist-items`,
+      { name, categoryId }
+    );
+  }
+
+  adminUpdateItem(id: number, name: string, categoryId: number): Observable<{ message: string; item: PricelistItemDto }> {
+    return this.http.put<{ message: string; item: PricelistItemDto }>(
+      `${this.adminUrl}/pricelist-items/${id}`,
+      { name, categoryId }
+    );
+  }
+
+  adminDeleteItem(id: number, force = false): Observable<{ message: string; affectedServices: number }> {
+    const params = new HttpParams().set('force', force.toString());
+    return this.http.delete<{ message: string; affectedServices: number }>(
+      `${this.adminUrl}/pricelist-items/${id}`,
+      { params }
+    );
+  }
+
+  // ============================================
+  // ADMIN — sugestie cennikowe
+  // ============================================
+
+  adminListSuggestions(): Observable<PricelistSuggestionDto[]> {
+    return this.http.get<PricelistSuggestionDto[]>(`${this.adminUrl}/pricelist-suggestions`);
+  }
+
+  adminApproveSuggestion(
+    id: number,
+    request: ApprovePricelistSuggestionRequest
+  ): Observable<{ message: string; item: PricelistItemDto; pricedServices: number }> {
+    return this.http.post<{ message: string; item: PricelistItemDto; pricedServices: number }>(
+      `${this.adminUrl}/pricelist-suggestions/${id}/approve`,
+      request
+    );
+  }
+
+  adminRejectSuggestion(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.adminUrl}/pricelist-suggestions/${id}`);
   }
 }

@@ -35,6 +35,9 @@ yarn-error.log
 /coverage
 /libpeerconnection.log
 testem.log
+/test-results
+/.nyc_output
+/playwright-report
 /typings
 
 # System files

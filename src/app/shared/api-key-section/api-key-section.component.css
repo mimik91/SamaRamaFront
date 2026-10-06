@@ -1,0 +1,119 @@
+.aks-wrapper {
+  background: var(--color-white);
+  border: 1px solid var(--border-color-gray);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.aks-wrapper h3 {
+  margin: 0 0 6px;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.aks-hint {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.aks-hint code {
+  background: var(--color-gray-50, #f5f5f5);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.aks-loading {
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+.aks-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.aks-status-text {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.aks-status-text code {
+  font-weight: 600;
+}
+
+.aks-status-text--muted {
+  color: var(--text-muted);
+}
+
+.aks-revealed-box {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: var(--radius-card);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.aks-revealed-label {
+  margin: 0 0 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.aks-revealed-key {
+  font-family: monospace;
+  font-size: 0.95rem;
+  background: var(--color-white);
+  border: 1px dashed var(--border-color-gray);
+  border-radius: var(--radius-input);
+  padding: 10px 12px;
+  word-break: break-all;
+  margin-bottom: 10px;
+}
+
+.aks-revealed-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.aks-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--radius-btn);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.aks-btn--primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.aks-btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.aks-btn--small {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+}
+
+.aks-btn--secondary {
+  background: var(--color-gray-200, #e0e0e0);
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .aks-status-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,128 @@
+<div class="apl-container">
+  <div class="apl-header">
+    <button class="apl-back-btn" (click)="goBack()">&larr; Panel admina</button>
+    <div class="apl-header-row">
+      <div>
+        <h1>Cennik usług</h1>
+        <p class="apl-hint">Kategorie i pozycje cennika, współdzielone między wszystkimi serwisami — ceny ustawia każdy serwis osobno.</p>
+      </div>
+      <button class="apl-btn apl-btn--primary" (click)="goToSuggestions()">Sugestie cennikowe</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="apl-loading">Ładowanie...</div>
+
+  <ng-container *ngIf="!loading">
+    <!-- Dodaj kategorię -->
+    <div class="apl-panel">
+      <h2>Dodaj kategorię</h2>
+      <div class="apl-add-row">
+        <input
+          type="text"
+          class="apl-input"
+          [(ngModel)]="newCategoryName"
+          (keydown.enter)="createCategory()"
+          placeholder="Nazwa kategorii..."
+        />
+        <button class="apl-btn apl-btn--primary" [disabled]="!newCategoryName.trim() || isCreatingCategory" (click)="createCategory()">
+          {{ isCreatingCategory ? 'Dodawanie...' : 'Dodaj kategorię' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Dodaj pozycję -->
+    <div class="apl-panel">
+      <h2>Dodaj pozycję</h2>
+      <div class="apl-add-row">
+        <input
+          type="text"
+          class="apl-input"
+          [(ngModel)]="newItemName"
+          placeholder="Nazwa usługi..."
+        />
+        <select class="apl-select" [(ngModel)]="newItemCategoryId">
+          <option [ngValue]="null">Wybierz kategorię...</option>
+          <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
+        </select>
+        <button class="apl-btn apl-btn--primary" [disabled]="!newItemName.trim() || !newItemCategoryId || isCreatingItem" (click)="createItem()">
+          {{ isCreatingItem ? 'Dodawanie...' : 'Dodaj pozycję' }}
+        </button>
+      </div>
+    </div>
+
+    <input
+      type="text"
+      class="apl-input apl-search"
+      [(ngModel)]="searchQuery"
+      placeholder="Szukaj pozycji po nazwie..."
+    />
+
+    <!-- Kategorie z pozycjami -->
+    <div class="apl-category-card" *ngFor="let category of categories">
+      <div class="apl-category-header">
+        <ng-container *ngIf="editingCategoryId !== category.id">
+          <h3>{{ category.name }}</h3>
+          <div class="apl-category-actions">
+            <button class="apl-btn apl-btn--small" (click)="startEditCategory(category)">Zmień nazwę</button>
+            <button
+              class="apl-btn apl-btn--small apl-btn--danger"
+              [disabled]="deletingCategoryId === category.id"
+              (click)="deleteCategory(category)"
+            >
+              {{ deletingCategoryId === category.id ? 'Usuwanie...' : 'Usuń' }}
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="editingCategoryId === category.id">
+          <input
+            type="text"
+            class="apl-input apl-edit-input"
+            [(ngModel)]="editingCategoryName"
+            (keydown.enter)="saveEditCategory(category)"
+            (keydown.escape)="cancelEditCategory()"
+          />
+          <div class="apl-category-actions">
+            <button class="apl-btn apl-btn--small apl-btn--primary" [disabled]="isSavingCategory" (click)="saveEditCategory(category)">Zapisz</button>
+            <button class="apl-btn apl-btn--small" (click)="cancelEditCategory()">Anuluj</button>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="apl-item-list" *ngIf="itemsForCategory(category.id).length > 0">
+        <div class="apl-item-row" *ngFor="let item of itemsForCategory(category.id)">
+          <ng-container *ngIf="editingItemId !== item.id">
+            <span class="apl-item-name">{{ item.name }}</span>
+            <button class="apl-btn apl-btn--small" (click)="startEditItem(item)">Edytuj</button>
+            <button
+              class="apl-btn apl-btn--small apl-btn--danger"
+              [disabled]="deletingItemId === item.id"
+              (click)="deleteItem(item)"
+            >
+              {{ deletingItemId === item.id ? 'Usuwanie...' : 'Usuń' }}
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="editingItemId === item.id">
+            <input
+              type="text"
+              class="apl-input apl-edit-input"
+              [(ngModel)]="editingItemName"
+              (keydown.enter)="saveEditItem(item)"
+              (keydown.escape)="cancelEditItem()"
+            />
+            <select class="apl-select apl-select--inline" [(ngModel)]="editingItemCategoryId">
+              <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
+            </select>
+            <button class="apl-btn apl-btn--small apl-btn--primary" [disabled]="isSavingItem" (click)="saveEditItem(item)">Zapisz</button>
+            <button class="apl-btn apl-btn--small" (click)="cancelEditItem()">Anuluj</button>
+          </ng-container>
+        </div>
+      </div>
+
+      <p class="apl-empty-hint" *ngIf="itemsForCategory(category.id).length === 0">Brak pozycji w tej kategorii.</p>
+    </div>
+
+    <p class="apl-empty-hint" *ngIf="categories.length === 0">Brak kategorii — dodaj pierwszą powyżej.</p>
+  </ng-container>
+</div>

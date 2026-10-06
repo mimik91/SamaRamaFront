@@ -98,3 +98,9 @@
     </ng-template>
   </ng-container>
 </div>
+
+<app-stolen-bike-acknowledgment-modal
+  *ngIf="pendingStolenBicycle"
+  (confirmed)="onStolenAckConfirmed()"
+  (cancelled)="onStolenAckCancelled()"
+></app-stolen-bike-acknowledgment-modal>

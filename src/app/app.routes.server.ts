@@ -83,6 +83,12 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
 
+  // Baza skradzionych rowerów - server render (SEO ważne, treść zależy od wyszukiwania klienta)
+  {
+    path: 'skradzione-rowery',
+    renderMode: RenderMode.Server
+  },
+
   // Wszystkie serwisy (bez miasta) - server render (SEO important, data changes)
   {
     path: 'serwisy',
@@ -244,6 +250,10 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: ':suffix/historia-zlecen',
+    renderMode: RenderMode.Client
+  },
+  {
+    path: ':suffix/statystyki',
     renderMode: RenderMode.Client
   },
 

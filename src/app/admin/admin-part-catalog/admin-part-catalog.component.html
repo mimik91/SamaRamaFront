@@ -1,0 +1,100 @@
+<div class="apc-container">
+  <div class="apc-header">
+    <button class="apc-back-btn" (click)="goBack()">&larr; Panel admina</button>
+    <h1>Katalog części</h1>
+    <p class="apc-hint">
+      Serwisy dodają nowe nazwy swobodnie, bez zatwierdzania — Twoja rola to porządkowanie po
+      fakcie: poprawianie literówek, usuwanie śmieci i scalanie duplikatów.
+    </p>
+  </div>
+
+  <!-- Dodaj nową nazwę -->
+  <div class="apc-panel">
+    <h2>Dodaj pozycję</h2>
+    <div class="apc-add-row">
+      <input
+        type="text"
+        class="apc-input"
+        [(ngModel)]="newName"
+        (keydown.enter)="createItem()"
+        placeholder="Nazwa części..."
+      />
+      <button class="apc-btn apc-btn--primary" [disabled]="!newName.trim() || isCreating" (click)="createItem()">
+        {{ isCreating ? 'Dodawanie...' : 'Dodaj' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Scalanie duplikatów -->
+  <div class="apc-panel">
+    <h2>Scal duplikaty</h2>
+    <p class="apc-hint">
+      Wybierz nazwę źródłową (zniknie) i docelową (zostanie). Jeśli serwis ma cenę pod obiema,
+      wygrywa cena pod nazwą docelową.
+    </p>
+    <div class="apc-merge-row">
+      <select class="apc-select" [(ngModel)]="mergeSourceId">
+        <option [ngValue]="null">Wybierz nazwę źródłową...</option>
+        <option *ngFor="let item of items" [ngValue]="item.id" [disabled]="item.id === mergeTargetId">{{ item.name }}</option>
+      </select>
+      <span class="apc-merge-arrow">&rarr;</span>
+      <select class="apc-select" [(ngModel)]="mergeTargetId">
+        <option [ngValue]="null">Wybierz nazwę docelową...</option>
+        <option *ngFor="let item of items" [ngValue]="item.id" [disabled]="item.id === mergeSourceId">{{ item.name }}</option>
+      </select>
+      <button
+        class="apc-btn apc-btn--primary"
+        [disabled]="!mergeSourceId || !mergeTargetId || isMerging"
+        (click)="merge()"
+      >
+        {{ isMerging ? 'Scalanie...' : 'Scal' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista -->
+  <div class="apc-panel">
+    <h2>Wszystkie pozycje ({{ items.length }})</h2>
+
+    <div *ngIf="loading" class="apc-loading">Ładowanie...</div>
+
+    <ng-container *ngIf="!loading">
+      <input
+        type="text"
+        class="apc-input apc-search"
+        [(ngModel)]="searchQuery"
+        placeholder="Szukaj po nazwie..."
+      />
+
+      <div class="apc-list" *ngIf="filteredItems.length > 0">
+        <div class="apc-row" *ngFor="let item of filteredItems">
+          <ng-container *ngIf="editingId !== item.id">
+            <span class="apc-row-name">{{ item.name }}</span>
+            <button class="apc-btn apc-btn--small" (click)="startEdit(item)">Zmień nazwę</button>
+            <button
+              class="apc-btn apc-btn--small apc-btn--danger"
+              [disabled]="deletingId === item.id"
+              (click)="deleteItem(item)"
+            >
+              {{ deletingId === item.id ? 'Usuwanie...' : 'Usuń' }}
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="editingId === item.id">
+            <input
+              type="text"
+              class="apc-input apc-edit-input"
+              [(ngModel)]="editingName"
+              (keydown.enter)="saveEdit(item)"
+              (keydown.escape)="cancelEdit()"
+            />
+            <button class="apc-btn apc-btn--small apc-btn--primary" [disabled]="isSavingEdit" (click)="saveEdit(item)">Zapisz</button>
+            <button class="apc-btn apc-btn--small" (click)="cancelEdit()">Anuluj</button>
+          </ng-container>
+        </div>
+      </div>
+
+      <p class="apc-empty-hint" *ngIf="filteredItems.length === 0">Brak pozycji pasujących do wyszukiwania.</p>
+    </ng-container>
+  </div>
+</div>

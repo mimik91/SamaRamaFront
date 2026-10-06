@@ -2,6 +2,8 @@ export type RepairPlanItemType = 'PART' | 'SERVICE';
 
 export interface RepairPlanLineItem {
   pricelistItemId: number | null;
+  /** Rozwiązana pozycja katalogu części — tylko dla type='PART', analogiczne do pricelistItemId dla usług */
+  partCatalogItemId: number | null;
   name: string;
   price: number;
   type: RepairPlanItemType;
@@ -26,6 +28,8 @@ export interface SaveRepairPlanItemRequest {
   name: string;
   price: number;
   type: RepairPlanItemType;
+  partCatalogItemId?: number | null;
+  pricelistItemId?: number | null;
 }
 
 // ===== RESPONSE =====
@@ -53,6 +57,8 @@ export interface RepairPlanItemResponse {
   price: number;
   type: RepairPlanItemType;
   excluded: boolean;
+  partCatalogItemId: number | null;
+  pricelistItemId: number | null;
 }
 
 export interface ConfirmRepairPlanRequest {

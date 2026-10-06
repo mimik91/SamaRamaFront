@@ -9,6 +9,7 @@ import { NotificationService } from '../../../../core/notification.service';
 import { ImageUtilsService } from '../../../../core/image-utils.service';
 import { EnumerationService } from '../../../../core/enumeration.service';
 import { ServiceCalendarService, OrderMessage, ReturnTransportRequestDto, TransportAddressResponse, BicycleUpdateDto } from '../../services/service-calendar.service';
+import { BicycleHistoryRecordDto } from '../../../../shared/models/bicycle-service-history.models';
 import {
   CalendarOrder,
   CalendarOrderStatus,
@@ -76,8 +77,16 @@ export class OrderDetailsModalComponent implements OnDestroy {
   isSendingMessage = false;
 
   // Tab
-  @Input() initialTab: 'details' | 'messages' | 'return' | 'repair-plan' = 'details';
-  activeTab: 'details' | 'messages' | 'return' | 'repair-plan' = 'details';
+  @Input() initialTab: 'details' | 'messages' | 'return' | 'repair-plan' | 'historia' = 'details';
+  activeTab: 'details' | 'messages' | 'return' | 'repair-plan' | 'historia' = 'details';
+
+  // Historia roweru (tylko w tym serwisie) — ładowana leniwie przy pierwszym wejściu w zakładkę
+  historyRecords: BicycleHistoryRecordDto[] = [];
+  isLoadingHistory = false;
+  historyLoaded = false;
+  expandedHistoryRecordId: number | null = null;
+  historyMessagesByRecordId: Record<number, OrderMessage[]> = {};
+  loadingHistoryMessagesRecordId: number | null = null;
 
   // Propose date
   showProposeDateForm = false;
@@ -886,6 +895,57 @@ export class OrderDetailsModalComponent implements OnDestroy {
         this.isSendingMessage = false;
       }
     });
+  }
+
+  // ============================================
+  // HISTORIA ROWERU (tylko w tym serwisie)
+  // ============================================
+
+  onHistoryTabClick(): void {
+    this.activeTab = 'historia';
+    if (!this.historyLoaded) {
+      this.loadHistory();
+    }
+  }
+
+  private loadHistory(): void {
+    if (!this.fullOrder.bicycleId) return;
+    this.isLoadingHistory = true;
+    this.calendarService.getBicycleHistory(this.serviceId, this.fullOrder.bicycleId).subscribe({
+      next: (records) => {
+        this.historyRecords = records;
+        this.isLoadingHistory = false;
+        this.historyLoaded = true;
+      },
+      error: () => {
+        this.historyRecords = [];
+        this.isLoadingHistory = false;
+        this.historyLoaded = true;
+      }
+    });
+  }
+
+  toggleHistoryRecord(record: BicycleHistoryRecordDto): void {
+    const isCurrentlyExpanded = this.expandedHistoryRecordId === record.id;
+    this.expandedHistoryRecordId = isCurrentlyExpanded ? null : record.id;
+
+    if (!isCurrentlyExpanded && record.serviceOrderId != null && !this.historyMessagesByRecordId[record.id]) {
+      this.loadingHistoryMessagesRecordId = record.id;
+      this.calendarService.getOrderMessages(this.serviceId, record.serviceOrderId).subscribe({
+        next: (response) => {
+          this.historyMessagesByRecordId[record.id] = response.messages;
+          this.loadingHistoryMessagesRecordId = null;
+        },
+        error: () => {
+          this.historyMessagesByRecordId[record.id] = [];
+          this.loadingHistoryMessagesRecordId = null;
+        }
+      });
+    }
+  }
+
+  historyRecordClientName(record: BicycleHistoryRecordDto): string {
+    return [record.clientFirstName, record.clientLastName].filter(Boolean).join(' ') || 'Klient';
   }
 
   // ============================================

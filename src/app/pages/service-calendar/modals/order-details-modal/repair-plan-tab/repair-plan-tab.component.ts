@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { PricelistService } from '../../../../service-admin-panel/service-admin-pricelist/pricelist.service';
 import { ServicePackagesService } from '../../../../service-admin-panel/service-admin-pricelist/service-packages.service';
+import { PartCatalogService } from '../../../../service-admin-panel/service-admin-pricelist/part-catalog.service';
 import { ServiceCalendarService } from '../../../services/service-calendar.service';
 import { NotificationService } from '../../../../../core/notification.service';
 import { CalendarOrder } from '../../../../../shared/models/service-calendar.models';
 import { ServicePackageDto, filterPackagesByBikeType } from '../../../../../shared/models/service-packages.models';
 import { PricelistItemWithPrice } from '../../../../../shared/models/service-pricelist.models';
+import { MyPartPriceDto } from '../../../../../shared/models/part-catalog.models';
 import { RepairPlanLineItem, RepairPlanResponse, SaveRepairPlanRequest } from '../../../../../shared/models/repair-plan.models';
 
 @Component({
@@ -21,6 +23,7 @@ import { RepairPlanLineItem, RepairPlanResponse, SaveRepairPlanRequest } from '.
 export class RepairPlanTabComponent implements OnInit, OnDestroy {
   private pricelistService = inject(PricelistService);
   private packagesService = inject(ServicePackagesService);
+  private partCatalogService = inject(PartCatalogService);
   private calendarService = inject(ServiceCalendarService);
   private notificationService = inject(NotificationService);
   private platformId = inject(PLATFORM_ID);
@@ -33,6 +36,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
 
   packagesForBikeType: ServicePackageDto[] = [];
   allPricelistItems: PricelistItemWithPrice[] = [];
+  allPartCatalogItems: MyPartPriceDto[] = [];
 
   selectedPackage: ServicePackageDto | null = null;
   /** Cena pakietu w tym konkretnym planie — domyślnie cena z cennika, ale serwis może ją nadpisać dla tego zlecenia */
@@ -46,6 +50,10 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   notes = '';
 
   newPartName = '';
+  private selectedPartAutocompleteItem: MyPartPriceDto | null = null;
+  partAutocompleteResults: MyPartPriceDto[] = [];
+  showPartAutocomplete = false;
+  focusedPartAutocompleteIndex = -1;
 
   newItemName = '';
   newItemPrice: number | null = null;
@@ -92,9 +100,10 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
       config: this.packagesService.getMyPackagesConfig(this.serviceId),
       availableItems: this.pricelistService.getAllAvailableItems(),
       servicePricelist: this.pricelistService.getMyPricelist(this.serviceId),
+      partPrices: this.partCatalogService.getMyPartPrices(this.serviceId),
       existingPlan: this.calendarService.getRepairPlan(this.serviceId, this.order.id)
     }).subscribe({
-      next: ({ config, availableItems, servicePricelist, existingPlan }) => {
+      next: ({ config, availableItems, servicePricelist, partPrices, existingPlan }) => {
         const activePackages = config.packages.filter(p => p.active);
         const bikeType = this.order.bicycleType ?? null;
         const filtered = bikeType ? filterPackagesByBikeType(activePackages, bikeType) : activePackages;
@@ -105,6 +114,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
           servicePricelist
         );
         this.allPricelistItems = categoriesWithPrices.flatMap(c => c.items);
+        this.allPartCatalogItems = partPrices;
 
         if (existingPlan) {
           this.applyPlanFromResponse(existingPlan);
@@ -125,7 +135,8 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
       this.packagePriceOverride = plan.packagePriceSnapshot;
     }
     const mapped: RepairPlanLineItem[] = plan.items.map(item => ({
-      pricelistItemId: null,
+      pricelistItemId: item.pricelistItemId,
+      partCatalogItemId: item.partCatalogItemId,
       name: item.name,
       price: item.price,
       type: item.type,
@@ -173,6 +184,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   selectAutocompleteItem(item: PricelistItemWithPrice): void {
     this.serviceItems.push({
       pricelistItemId: item.id,
+      partCatalogItemId: null,
       name: item.name,
       price: item.price ?? 0,
       type: 'SERVICE'
@@ -222,6 +234,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
       if (!name) return;
       this.serviceItems.push({
         pricelistItemId: null,
+        partCatalogItemId: null,
         name,
         price: 0,
         type: 'SERVICE'
@@ -239,6 +252,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
     if (!name) return;
     this.serviceItems.push({
       pricelistItemId: this.selectedAutocompleteItem?.id ?? null,
+      partCatalogItemId: null,
       name,
       price: 0,
       type: 'SERVICE'
@@ -250,11 +264,84 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
     this.focusedAutocompleteIndex = -1;
   }
 
+  // ===== Autocomplete części (katalog części) =====
+
+  onNewPartNameInput(): void {
+    this.selectedPartAutocompleteItem = null;
+    this.focusedPartAutocompleteIndex = -1;
+    const q = this.newPartName.toLowerCase().trim();
+    if (!q) {
+      this.partAutocompleteResults = [];
+      this.showPartAutocomplete = false;
+      return;
+    }
+    this.partAutocompleteResults = this.allPartCatalogItems
+      .filter(item => item.name.toLowerCase().includes(q))
+      .slice(0, 8);
+    this.showPartAutocomplete = this.partAutocompleteResults.length > 0;
+  }
+
+  selectPartAutocompleteItem(item: MyPartPriceDto): void {
+    this.partItems.push({
+      pricelistItemId: null,
+      partCatalogItemId: item.partCatalogItemId,
+      name: item.name,
+      // Podpowiadamy ostatnią znaną cenę tego serwisu dla tej części, jeśli ją mamy — serwis może
+      // ją i tak zmienić w wierszu, co ponownie nadpisze cenę w katalogu (auto-sync).
+      price: item.price ?? 0,
+      type: 'PART'
+    });
+    this.newPartName = '';
+    this.selectedPartAutocompleteItem = null;
+    this.partAutocompleteResults = [];
+    this.showPartAutocomplete = false;
+    this.focusedPartAutocompleteIndex = -1;
+  }
+
+  onPartAutocompleteBlur(): void {
+    setTimeout(() => {
+      this.showPartAutocomplete = false;
+      this.focusedPartAutocompleteIndex = -1;
+    }, 150);
+  }
+
+  onNewPartNameKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (!this.showPartAutocomplete) return;
+      this.focusedPartAutocompleteIndex = Math.min(
+        this.focusedPartAutocompleteIndex + 1,
+        this.partAutocompleteResults.length - 1
+      );
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!this.showPartAutocomplete) return;
+      this.focusedPartAutocompleteIndex = Math.max(this.focusedPartAutocompleteIndex - 1, -1);
+      return;
+    }
+    if (event.key === 'Escape') {
+      this.showPartAutocomplete = false;
+      this.focusedPartAutocompleteIndex = -1;
+      return;
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (this.showPartAutocomplete && this.focusedPartAutocompleteIndex >= 0) {
+        this.selectPartAutocompleteItem(this.partAutocompleteResults[this.focusedPartAutocompleteIndex]);
+        return;
+      }
+      this.addPartItem();
+    }
+  }
+
   addPartItem(): void {
     const name = this.newPartName.trim();
     if (!name) return;
     this.partItems.push({
       pricelistItemId: null,
+      partCatalogItemId: this.selectedPartAutocompleteItem?.partCatalogItemId ?? null,
       name,
       // Cena uzupełniana później, bezpośrednio w wierszu listy (updatePartItemPrice) —
       // przy dodawaniu części zwykle jeszcze jej nie znamy.
@@ -262,6 +349,10 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
       type: 'PART'
     });
     this.newPartName = '';
+    this.selectedPartAutocompleteItem = null;
+    this.partAutocompleteResults = [];
+    this.showPartAutocomplete = false;
+    this.focusedPartAutocompleteIndex = -1;
   }
 
   removePartItem(index: number): void {
@@ -310,7 +401,13 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
     return {
       packageId: this.selectedPackage?.id ?? null,
       packagePriceSnapshot: this.selectedPackage ? (this.packagePriceOverride ?? this.selectedPackage.price) : null,
-      items: this.allLineItems.map(item => ({ name: item.name, price: item.price, type: item.type })),
+      items: this.allLineItems.map(item => ({
+        name: item.name,
+        price: item.price,
+        type: item.type,
+        partCatalogItemId: item.partCatalogItemId,
+        pricelistItemId: item.pricelistItemId
+      })),
       customTotal: this.customTotalEnabled ? (this.customTotalValue ?? null) : null,
       notes: this.notes || null
     };

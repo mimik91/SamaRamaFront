@@ -66,6 +66,15 @@
           <span class="tab-icon" aria-hidden="true">🔧</span>
           <span class="tab-label">Plan naprawy</span>
         </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'historia'"
+          (click)="onHistoryTabClick()"
+          title="Historia roweru w tym serwisie"
+        >
+          <span class="tab-icon" aria-hidden="true">🕓</span>
+          <span class="tab-label">Historia</span>
+        </button>
       </div>
 
       <!-- Tab: Szczegóły zlecenia -->
@@ -565,6 +574,122 @@
       <!-- Tab: Plan naprawy -->
       <div class="tab-content" *ngIf="activeTab === 'repair-plan'">
         <app-repair-plan-tab [order]="fullOrder" [serviceId]="serviceId" />
+      </div>
+
+      <!-- Tab: Historia roweru (tylko w tym serwisie) -->
+      <div class="tab-content" *ngIf="activeTab === 'historia'">
+        <div class="detail-section">
+          <h3 class="section-title">Historia tego roweru w Twoim serwisie</h3>
+
+          <div class="messages-loading" *ngIf="isLoadingHistory">
+            <div class="spinner-small"></div>
+          </div>
+
+          <ng-container *ngIf="!isLoadingHistory">
+            <div class="no-messages" *ngIf="historyRecords.length === 0">
+              Brak wcześniejszej historii tego roweru w tym serwisie.
+            </div>
+
+            <div class="history-list" *ngIf="historyRecords.length > 0">
+              <div class="history-card" *ngFor="let record of historyRecords" [class.expanded]="expandedHistoryRecordId === record.id">
+                <div class="history-card-header" (click)="toggleHistoryRecord(record)">
+                  <div class="history-card-title">
+                    <span class="history-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
+                    <span class="history-client">{{ historyRecordClientName(record) }}</span>
+                  </div>
+                  <div class="history-card-summary">
+                    <span class="history-price-badge" *ngIf="record.totalPrice != null">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</span>
+                    <span class="expand-icon">{{ expandedHistoryRecordId === record.id ? '▲' : '▼' }}</span>
+                  </div>
+                </div>
+
+                <div class="history-card-body" *ngIf="expandedHistoryRecordId === record.id">
+                  <div *ngIf="record.items && record.items.length > 0" class="history-items">
+                    <h5>Wykonane usługi / części</h5>
+                    <table class="items-table">
+                      <thead><tr><th>Nazwa</th><th>Ilość</th><th>Cena</th></tr></thead>
+                      <tbody>
+                        <tr *ngFor="let item of record.items">
+                          <td>{{ item.name }}</td>
+                          <td>{{ item.quantity }}</td>
+                          <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div *ngIf="record.repairPlan" class="history-repair-plan">
+                    <h5>Plan naprawy</h5>
+                    <table class="items-table" *ngIf="record.repairPlan.items.length > 0 || record.repairPlan.packageName">
+                      <thead><tr><th>Pozycja</th><th>Cena</th></tr></thead>
+                      <tbody>
+                        <tr *ngIf="record.repairPlan.packageName">
+                          <td>{{ record.repairPlan.packageName }}</td>
+                          <td>&mdash;</td>
+                        </tr>
+                        <tr *ngFor="let item of record.repairPlan.items">
+                          <td>{{ item.name }}</td>
+                          <td>{{ item.price | currency:'PLN':'symbol':'1.2-2' }}</td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr><td><strong>Suma</strong></td><td><strong>{{ record.repairPlan.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong></td></tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  <div *ngIf="record.review" class="history-note">
+                    <h5>Ocena klienta</h5>
+                    <span class="history-price-badge">{{ record.review.totalScore }} / 5</span>
+                    <p *ngIf="record.review.comment">{{ record.review.comment }}</p>
+                  </div>
+
+                  <div *ngIf="record.orderNotes" class="history-note">
+                    <h5>Uwagi do zlecenia</h5>
+                    <p>{{ record.orderNotes }}</p>
+                  </div>
+                  <div *ngIf="record.serviceNotes" class="history-note">
+                    <h5>Notatki serwisanta</h5>
+                    <p>{{ record.serviceNotes }}</p>
+                  </div>
+                  <div *ngIf="record.maintenanceAdvice" class="history-note">
+                    <h5>Zalecenia obsługi</h5>
+                    <p>{{ record.maintenanceAdvice }}</p>
+                  </div>
+                  <div *ngIf="record.recommendedRepairs" class="history-note">
+                    <h5>Zalecane naprawy</h5>
+                    <p>{{ record.recommendedRepairs }}</p>
+                  </div>
+
+                  <div class="history-messages" *ngIf="record.serviceOrderId != null">
+                    <h5>Korespondencja z tego zlecenia</h5>
+                    <div class="messages-loading" *ngIf="loadingHistoryMessagesRecordId === record.id">
+                      <div class="spinner-small"></div>
+                    </div>
+                    <ng-container *ngIf="loadingHistoryMessagesRecordId !== record.id">
+                      <div class="messages-thread" *ngIf="(historyMessagesByRecordId[record.id]?.length ?? 0) > 0">
+                        <div
+                          *ngFor="let msg of historyMessagesByRecordId[record.id]"
+                          class="message-item"
+                          [class.message-service]="msg.senderType === 'SERVICE'"
+                          [class.message-client]="msg.senderType === 'CLIENT'"
+                        >
+                          <span class="message-meta">
+                            {{ msg.senderType === 'SERVICE' ? 'Ty (serwis)' : 'Klient' }} · {{ msg.createdAt | date:'dd.MM HH:mm' }}
+                          </span>
+                          <p class="message-content">{{ msg.content }}</p>
+                        </div>
+                      </div>
+                      <div class="no-messages" *ngIf="(historyMessagesByRecordId[record.id]?.length ?? 0) === 0">
+                        Brak wiadomości w tym zleceniu.
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
       </div>
 
     </div>

@@ -106,13 +106,29 @@
     <h4>Części</h4>
 
     <div class="rp-add-item">
-      <input
-        type="text"
-        class="rp-item-name-input"
-        [(ngModel)]="newPartName"
-        (keydown.enter)="addPartItem()"
-        placeholder="Nazwa części..."
-      />
+      <div class="rp-autocomplete-wrapper">
+        <input
+          type="text"
+          class="rp-item-name-input"
+          [(ngModel)]="newPartName"
+          (input)="onNewPartNameInput()"
+          (blur)="onPartAutocompleteBlur()"
+          (keydown)="onNewPartNameKeydown($event)"
+          placeholder="Wyszukaj lub wpisz własną część i naciśnij Enter..."
+        />
+        <div class="rp-autocomplete-dropdown" *ngIf="showPartAutocomplete">
+          <button
+            *ngFor="let item of partAutocompleteResults; let i = index"
+            class="rp-ac-option"
+            [class.focused]="focusedPartAutocompleteIndex === i"
+            (mousedown)="selectPartAutocompleteItem(item)"
+          >
+            <span class="rp-ac-name">{{ item.name }}</span>
+            <span class="rp-ac-price" *ngIf="item.price !== null">{{ item.price | number:'1.2-2' }} zł</span>
+            <span class="rp-ac-no-price" *ngIf="item.price === null">brak ceny</span>
+          </button>
+        </div>
+      </div>
       <button class="btn-rp-add no-print" (click)="addPartItem()" [disabled]="!newPartName.trim()">+ Dodaj część</button>
     </div>
 

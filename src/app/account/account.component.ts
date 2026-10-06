@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { NotificationService } from '../core/notification.service';
 import { AccountService } from './account.service';
+import { ApiKeySectionComponent } from '../shared/api-key-section/api-key-section.component';
 import {
   UserProfile,
   UserUpdateData,
@@ -14,7 +15,7 @@ import {
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ApiKeySectionComponent],
   templateUrl: './account.component.html',
   styleUrls: ['./account.component.css']
 })

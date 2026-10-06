@@ -17,11 +17,12 @@ import { ImageUtilsService } from '../../../core/image-utils.service';
 import { CalendarOrderStatus, getStatusColor } from '../../../shared/models/service-calendar.models';
 import { getTransportStatusColor } from '../../../core/models/transport-order-status.util';
 import { BookServiceModalComponent } from '../modals/book-service-modal/book-service-modal.component';
+import { StolenBikeAcknowledgmentModalComponent } from '../../../shared/stolen-bike-acknowledgment-modal/stolen-bike-acknowledgment-modal.component';
 
 @Component({
   selector: 'app-client-panel-bicycle-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, BookServiceModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, BookServiceModalComponent, StolenBikeAcknowledgmentModalComponent],
   templateUrl: './client-panel-bicycle-details.component.html',
   styleUrls: ['./client-panel-bicycle-details.component.css']
 })
@@ -960,16 +961,49 @@ export class ClientPanelDetailsComponent implements OnInit {
     this.showBookServiceModal = true;
   }
 
+  showStolenAckModal = false;
+
   reportStolen(): void {
     if (!this.bicycle) return;
     const isCurrentlyStolen = !!this.bicycle.stolen;
-    const msg = isCurrentlyStolen
-      ? 'Czy rower się znalazł? Cofnąć zgłoszenie kradzieży?'
-      : 'Czy na pewno chcesz zgłosić ten rower jako skradziony?';
-    if (!confirm(msg)) return;
 
-    const newValue = !isCurrentlyStolen;
-    this.bicycleService.updateStolenStatus(this.bicycle.id, newValue).subscribe({
+    if (isCurrentlyStolen) {
+      if (!confirm('Czy rower się znalazł? Cofnąć zgłoszenie kradzieży?')) return;
+      this.submitStolenStatus(false, false);
+      return;
+    }
+
+    const missing = this.getMissingStolenReportFields();
+    if (missing.length > 0) {
+      this.notificationService.error(`Aby zgłosić rower jako skradziony, uzupełnij najpierw: ${missing.join(', ')}.`);
+      return;
+    }
+
+    this.showStolenAckModal = true;
+  }
+
+  private getMissingStolenReportFields(): string[] {
+    if (!this.bicycle) return [];
+    const missing: string[] = [];
+    if (!this.bicycle.frameNumber?.trim()) missing.push('numer ramy');
+    if (!this.bicycle.brand?.trim()) missing.push('markę');
+    if (!this.bicycle.model?.trim()) missing.push('model');
+    if (!this.mainPhotoUrl) missing.push('zdjęcie główne');
+    return missing;
+  }
+
+  onStolenAckConfirmed(): void {
+    this.showStolenAckModal = false;
+    this.submitStolenStatus(true, true);
+  }
+
+  onStolenAckCancelled(): void {
+    this.showStolenAckModal = false;
+  }
+
+  private submitStolenStatus(newValue: boolean, acknowledgedNoPolice: boolean): void {
+    if (!this.bicycle) return;
+    this.bicycleService.updateStolenStatus(this.bicycle.id, newValue, acknowledgedNoPolice).subscribe({
       next: (res) => {
         this.bicycle!.stolen = newValue;
         const backendMsg = res?.message;

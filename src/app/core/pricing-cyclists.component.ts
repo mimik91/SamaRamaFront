@@ -148,7 +148,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
 
     .pricing-wrapper {
       min-height: 100vh;
-      background: var(--color-gray-100, #f3f4f6);
+      background: var(--color-slate-100, #f3f4f6);
       padding: 80px 16px 40px;
     }
 
@@ -267,7 +267,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     }
 
     .pricing-table tbody tr {
-      border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+      border-bottom: 1px solid var(--color-slate-100, #e5e7eb);
     }
 
     .pricing-table tbody tr:last-child {
@@ -275,13 +275,13 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     }
 
     .pricing-table tbody tr:hover {
-      background: var(--color-gray-50, #f9fafb);
+      background: var(--color-slate-50, #f9fafb);
     }
 
     .service-name {
       padding: 14px;
       font-weight: 500;
-      color: var(--color-gray-800, #1f2937);
+      color: var(--color-slate-600, #1f2937);
       display: flex;
       flex-direction: column;
       gap: 3px;
@@ -297,13 +297,13 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
       padding: 14px;
       text-align: center;
       font-weight: 600;
-      color: var(--color-gray-700, #374151);
+      color: var(--color-slate-600, #374151);
       vertical-align: middle;
     }
 
     .promo-price {
       background: #fff8e1;
-      color: var(--color-success-dark, #229954);
+      color: var(--color-primary, #229954);
     }
 
     .price-value {
@@ -316,7 +316,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     }
 
     .unavailable {
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-slate-300, #9ca3af);
       font-weight: 400;
       font-size: 0.85rem;
     }
@@ -326,16 +326,16 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
-      background: var(--color-gray-50, #f9fafb);
+      background: var(--color-slate-50, #f9fafb);
       padding: 24px 28px;
-      border-top: 1px solid var(--color-gray-200, #e5e7eb);
+      border-top: 1px solid var(--color-slate-100, #e5e7eb);
     }
 
     .info-card {
       background: var(--color-white, #fff);
       border-radius: 10px;
       padding: 18px 20px;
-      border: 1px solid var(--color-gray-200, #e5e7eb);
+      border: 1px solid var(--color-slate-100, #e5e7eb);
       box-shadow: var(--shadow-md, 0 2px 8px rgba(0,0,0,0.06));
     }
 
@@ -359,17 +359,17 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     .info-card h3 {
       font-size: 0.95rem;
       font-weight: 700;
-      color: var(--color-gray-800, #1f2937);
+      color: var(--color-slate-600, #1f2937);
       margin: 0;
     }
 
     .guarantee-card h3 {
-      color: var(--color-success-text, #155724);
+      color: var(--color-primary-dark, #155724);
     }
 
     .info-card p {
       font-size: 0.875rem;
-      color: var(--color-gray-600, #4b5563);
+      color: var(--color-slate-500, #4b5563);
       line-height: 1.55;
       margin: 0;
     }
@@ -383,7 +383,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     /* ── PROMO NOTE ── */
     .promo-note {
       background: var(--color-white, #fff);
-      border-top: 1px solid var(--color-gray-200, #e5e7eb);
+      border-top: 1px solid var(--color-slate-100, #e5e7eb);
       padding: 18px 28px;
       display: flex;
       gap: 12px;
@@ -451,7 +451,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
       }
 
       .pricing-table tbody tr {
-        border: 1px solid var(--color-gray-200, #e5e7eb);
+        border: 1px solid var(--color-slate-100, #e5e7eb);
         border-radius: 10px;
         margin-bottom: 12px;
         overflow: hidden;
@@ -482,7 +482,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
         align-items: center;
         padding: 10px 14px;
         text-align: right;
-        border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
+        border-bottom: 1px solid var(--color-slate-100, #f3f4f6);
         font-size: 0.9rem;
       }
 

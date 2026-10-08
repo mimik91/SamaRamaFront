@@ -46,7 +46,7 @@
 }
 
 .order-bar--plan-accepted {
-  border-top: 3px solid var(--color-success-dark);
+  border-top: 3px solid var(--color-primary);
   background: var(--color-success-bg);
 }
 
@@ -68,7 +68,7 @@
 }
 
 .order-plan-status-line--accepted {
-  color: var(--color-success-dark);
+  color: var(--color-primary);
 }
 
 .order-plan-status-line--rejected {

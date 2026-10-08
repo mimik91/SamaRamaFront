@@ -19,7 +19,7 @@
 }
 
 .app-breadcrumb [aria-current='page'] {
-  color: var(--text-dark);
+  color: var(--text-primary);
   font-weight: var(--font-weight-medium);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -28,7 +28,7 @@
 }
 
 .app-breadcrumb-sep {
-  color: var(--text-light);
+  color: var(--text-muted);
 }
 
 .app-breadcrumb.light {

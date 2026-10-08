@@ -9,8 +9,8 @@
   height: 520px;
   border-radius: var(--radius-card);
   overflow: hidden;
-  border: 1px solid var(--border-color-gray);
-  background: var(--color-gray-50);
+  border: 1px solid var(--border-color);
+  background: var(--color-slate-50);
 }
 
 @media (max-width: 640px) {
@@ -45,7 +45,7 @@
 .slm-spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid var(--color-gray-200, #e5e7eb);
+  border: 3px solid var(--color-slate-100, #e5e7eb);
   border-top: 3px solid var(--color-primary);
   border-radius: 50%;
   animation: slm-spin 1s linear infinite;

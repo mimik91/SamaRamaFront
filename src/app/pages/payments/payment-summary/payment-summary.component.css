@@ -10,7 +10,7 @@
 
 .summary-card {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-md);
   padding: 48px 40px;
@@ -55,8 +55,8 @@ h1 {
 
 /* Order details */
 .order-details {
-  background: var(--color-gray-50);
-  border: 1px solid var(--border-color-gray);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-input);
   padding: 16px 20px;
   margin-bottom: 24px;
@@ -68,7 +68,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   padding: 6px 0;
-  border-bottom: 1px solid var(--border-color-gray);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .detail-row:last-child {

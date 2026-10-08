@@ -1,6 +1,6 @@
 .aks-wrapper {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: 20px;
   margin-top: 16px;
@@ -20,7 +20,7 @@
 }
 
 .aks-hint code {
-  background: var(--color-gray-50, #f5f5f5);
+  background: var(--color-slate-50, #f5f5f5);
   padding: 1px 5px;
   border-radius: 4px;
 }
@@ -70,7 +70,7 @@
   font-family: monospace;
   font-size: 0.95rem;
   background: var(--color-white);
-  border: 1px dashed var(--border-color-gray);
+  border: 1px dashed var(--border-color);
   border-radius: var(--radius-input);
   padding: 10px 12px;
   word-break: break-all;
@@ -107,7 +107,7 @@
 }
 
 .aks-btn--secondary {
-  background: var(--color-gray-200, #e0e0e0);
+  background: var(--color-slate-100, #e0e0e0);
   color: var(--text-primary);
 }
 

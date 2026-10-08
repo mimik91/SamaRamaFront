@@ -77,7 +77,7 @@
 
 .error-state {
   background-color: var(--color-danger-bg-light);
-  color: var(--color-danger-red);
+  color: var(--color-danger);
 }
 
 .error-icon {
@@ -86,7 +86,7 @@
 }
 
 .error-state p {
-  color: var(--color-danger-red);
+  color: var(--color-danger);
 }
 
 .retry-button {

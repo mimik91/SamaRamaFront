@@ -710,14 +710,14 @@
   gap: var(--spacing-3);
   padding: var(--spacing-4) var(--spacing-6);
   border-top: 1px solid var(--border-color);
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   flex-shrink: 0;
 }
 
 .btn-cancel {
   padding: var(--spacing-3) var(--spacing-6);
   background: var(--color-white);
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-btn);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -1026,7 +1026,7 @@
   max-height: 280px;
   overflow-y: auto;
   padding: var(--spacing-3);
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-3);
@@ -1077,7 +1077,7 @@
   background: var(--color-white);
   border: 1px solid var(--border-color);
   border-bottom-left-radius: 4px;
-  color: var(--text-dark);
+  color: var(--text-primary);
 }
 
 .no-messages {
@@ -1098,14 +1098,14 @@
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-input);
   font-size: var(--font-size-sm);
-  color: var(--text-dark);
+  color: var(--text-primary);
   background: var(--color-white);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .message-input:focus {
   outline: none;
-  border-color: var(--color-primary-light);
+  border-color: var(--color-success);
   box-shadow: 0 0 0 3px var(--color-primary-alpha-15);
 }
 
@@ -1195,7 +1195,7 @@
 .return-transport-title {
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-success-dark, #1e8449);
+  color: var(--color-primary, #1e8449);
   margin: 0 0 var(--spacing-1);
 }
 
@@ -1234,7 +1234,7 @@
 .pickup-option.active {
   border-color: var(--color-success);
   background: var(--color-success-light, #dcfce7);
-  color: var(--color-success-dark, #1e8449);
+  color: var(--color-primary, #1e8449);
 }
 
 .pickup-option:hover:not(.active) {
@@ -1316,7 +1316,7 @@
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: var(--text-light);
+  color: var(--text-muted);
 }
 
 .form-group textarea {
@@ -1345,7 +1345,7 @@
 }
 
 .btn-order-transport:hover:not(:disabled) {
-  background: var(--color-success-dark, #1e8449);
+  background: var(--color-primary, #1e8449);
 }
 
 .btn-order-transport:disabled {
@@ -1418,7 +1418,7 @@
 .btn-propose-date {
   background: var(--color-white);
   color: var(--text-primary);
-  border: 2px solid var(--border-color-gray) !important;
+  border: 2px solid var(--border-color) !important;
 }
 
 .btn-propose-date:hover:not(:disabled) {
@@ -1612,7 +1612,7 @@
 }
 
 .history-card.expanded {
-  border-color: var(--color-primary-light);
+  border-color: var(--color-success);
 }
 
 .history-card-header {
@@ -1622,7 +1622,7 @@
   gap: var(--spacing-3);
   padding: var(--spacing-3);
   cursor: pointer;
-  background: var(--color-gray-50, #f9fafb);
+  background: var(--color-slate-50, #f9fafb);
 }
 
 .history-card-title {

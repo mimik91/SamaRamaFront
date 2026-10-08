@@ -24,7 +24,7 @@
 
 .rp-status-banner--accepted {
   background: var(--color-success-bg);
-  color: var(--color-success-dark);
+  color: var(--color-primary);
 }
 
 .rp-status-banner--rejected {
@@ -42,7 +42,7 @@
 
 .rp-section {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: var(--spacing-4) var(--spacing-5);
 }
@@ -104,7 +104,7 @@
   flex-direction: column;
   gap: 4px;
   padding: var(--spacing-3) var(--spacing-4);
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-card);
   background: var(--color-white);
   cursor: pointer;
@@ -194,7 +194,7 @@
 
 .rp-item-name-input {
   width: 100%;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   padding: 8px 12px;
   font-size: var(--font-size-sm);
@@ -283,7 +283,7 @@
   align-items: center;
   gap: var(--spacing-2);
   padding: var(--spacing-2) var(--spacing-3);
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: var(--radius-sm);
 }
 
@@ -315,7 +315,7 @@
 
 .rp-item-price-edit {
   width: 80px;
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-input);
   padding: 4px 8px;
   font-size: var(--font-size-sm);
@@ -378,7 +378,7 @@ input[type='number'] {
 }
 
 .rp-summary-divider {
-  border-top: 1px dashed var(--border-color-gray);
+  border-top: 1px dashed var(--border-color);
   margin: var(--spacing-1) 0;
 }
 
@@ -431,7 +431,7 @@ input[type='number'] {
   gap: var(--spacing-3);
   margin-bottom: var(--spacing-4);
   padding-top: var(--spacing-2);
-  border-top: 1px solid var(--border-color-gray);
+  border-top: 1px solid var(--border-color);
 }
 
 .rp-checkbox-label {
@@ -481,7 +481,7 @@ input[type='number'] {
 
 .rp-notes textarea {
   width: 100%;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   padding: 10px 12px;
   font-size: var(--font-size-sm);
@@ -504,8 +504,8 @@ input[type='number'] {
   justify-content: space-between;
   gap: var(--spacing-3);
   padding: var(--spacing-3) var(--spacing-5);
-  background: var(--color-gray-50);
-  border-top: 1px solid var(--border-color-gray);
+  background: var(--color-slate-50);
+  border-top: 1px solid var(--border-color);
   margin: 0 calc(-1 * var(--spacing-5)) calc(-1 * var(--spacing-5));
   border-radius: 0 0 var(--radius-card) var(--radius-card);
 }
@@ -647,7 +647,7 @@ input[type='number'] {
 .rp-popup-btn--secondary {
   background: var(--color-white);
   color: var(--text-secondary);
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
 }
 
 .rp-popup-btn--secondary:hover {
@@ -697,7 +697,7 @@ input[type='number'] {
 .btn-rp-retry {
   padding: 8px 16px;
   background: none;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-btn);
   cursor: pointer;
   font-size: var(--font-size-sm);

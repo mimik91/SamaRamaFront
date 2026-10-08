@@ -209,7 +209,7 @@
 
 .search-section h2 {
   font-size: var(--font-size-h2);
-  color: var(--text-dark);
+  color: var(--text-primary);
   text-align: center;
   margin: 0 0 var(--spacing-5);
 }
@@ -398,7 +398,7 @@
 .how-it-works-section h2 {
   font-size: var(--font-size-display-2);
   font-weight: var(--font-weight-bold);
-  color: var(--text-dark);
+  color: var(--text-primary);
   margin: 0 0 var(--spacing-3);
 }
 
@@ -453,7 +453,7 @@
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   line-height: 1.3;
-  color: var(--text-dark);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -502,7 +502,7 @@
   font-size: var(--font-size-display-2);
   font-weight: var(--font-weight-bold);
   line-height: 1.1;
-  color: var(--text-dark);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -548,7 +548,7 @@
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   line-height: 1.3;
-  color: var(--text-dark);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -602,7 +602,7 @@
 .poradnik-teaser-section h2 {
   font-size: var(--font-size-display-2);
   font-weight: var(--font-weight-bold);
-  color: var(--text-dark);
+  color: var(--text-primary);
   margin: 0 0 var(--spacing-3);
 }
 
@@ -726,7 +726,7 @@
   padding: var(--spacing-2) var(--spacing-3);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
-  color: var(--text-slate);
+  color: var(--text-secondary);
   background: var(--color-slate-100);
   border-radius: var(--radius-full);
   text-decoration: none;
@@ -738,7 +738,7 @@
 
 .cities-nav a:hover {
   background: var(--color-slate-200);
-  color: var(--text-dark);
+  color: var(--text-primary);
 }
 
 /* =========================================

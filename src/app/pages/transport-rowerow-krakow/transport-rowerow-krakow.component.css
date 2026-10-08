@@ -776,7 +776,7 @@
   padding: 60px 48px;
   background: linear-gradient(135deg, #f0fdf4 0%, var(--color-white) 60%);
   border-radius: 16px;
-  border: 1px solid var(--color-success-forest-border);
+  border: 1px solid var(--color-success-border);
   box-shadow: 0 4px 24px rgba(27, 94, 32, 0.07);
 }
 
@@ -838,7 +838,7 @@
   padding: 24px;
   width: 100%;
   max-width: 340px;
-  border: 1px solid var(--color-gray-200);
+  border: 1px solid var(--color-slate-100);
   transform: rotate(-1.5deg);
   transition: transform 0.3s ease;
 }
@@ -853,13 +853,13 @@
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: 1px solid var(--color-slate-100);
 }
 
 .mock-bike-name {
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--color-dark-300);
+  color: var(--color-slate-800);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -869,7 +869,7 @@
   font-weight: 600;
   color: var(--color-primary);
   background: var(--color-success-mint);
-  border: 1px solid var(--color-success-forest-border);
+  border: 1px solid var(--color-success-border);
   padding: 3px 10px;
   border-radius: 999px;
 }
@@ -886,20 +886,20 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: 8px;
-  border: 1px solid var(--color-gray-300);
+  border: 1px solid var(--color-slate-200);
 }
 
 .mock-entry--highlight {
   background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-  border-color: var(--color-success-forest-border);
+  border-color: var(--color-success-border);
 }
 
 .mock-entry-name {
   font-size: 0.83rem;
   font-weight: 600;
-  color: var(--color-dark-300);
+  color: var(--color-slate-800);
 }
 
 .mock-entry-date {
@@ -912,7 +912,7 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 14px;
-  border-top: 1px solid var(--color-gray-200);
+  border-top: 1px solid var(--color-slate-100);
 }
 
 .mock-next-service {
@@ -981,7 +981,7 @@
    ========================================= */
 .trust-bar {
   background: var(--color-white);
-  border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+  border-bottom: 1px solid var(--color-slate-100, #e5e7eb);
   padding: 14px 20px;
 }
 
@@ -1000,7 +1000,7 @@
   align-items: center;
   gap: 7px;
   font-size: 0.85rem;
-  color: var(--color-gray-700, #374151);
+  color: var(--color-slate-600, #374151);
   white-space: nowrap;
 }
 
@@ -1012,7 +1012,7 @@
 .trust-bar-divider {
   width: 1px;
   height: 18px;
-  background: var(--color-gray-300, #d1d5db);
+  background: var(--color-slate-200, #d1d5db);
   flex-shrink: 0;
 }
 
@@ -1087,7 +1087,7 @@
 
 .trust-stat-label {
   font-size: 0.85rem;
-  color: var(--color-gray-600, #4b5563);
+  color: var(--color-slate-500, #4b5563);
   line-height: 1.5;
 }
 
@@ -1156,7 +1156,7 @@
 .feature-icon {
   width: 70px;
   height: 70px;
-  background-color: var(--color-green-50);
+  background-color: var(--color-success-mint);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1214,7 +1214,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid var(--color-gray-200);
+  border: 1px solid var(--color-slate-100);
 }
 
 .faq-item[open] {
@@ -1261,7 +1261,7 @@
 }
 
 .faq-item[open] .faq-answer {
-  border-top-color: var(--color-gray-100);
+  border-top-color: var(--color-slate-100);
 }
 
 
@@ -1271,8 +1271,8 @@
 .seo-footer {
   margin-top: 40px;
   padding: 40px 0;
-  border-top: 2px solid var(--color-gray-200);
-  background-color: var(--color-gray-50);
+  border-top: 2px solid var(--color-slate-100);
+  background-color: var(--color-slate-50);
   border-radius: 10px;
 }
 
@@ -1550,7 +1550,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: var(--color-gray-200);
+    background: var(--color-slate-100);
   }
 
   .process-shared {
@@ -1758,7 +1758,7 @@
   width: 2px;
   flex: 1;
   min-height: 20px;
-  background: linear-gradient(to bottom, var(--color-gray-200), var(--color-gray-100));
+  background: linear-gradient(to bottom, var(--color-slate-100), var(--color-slate-100));
   margin-top: 8px;
 }
 
@@ -1830,7 +1830,7 @@
 
 .process-option--b {
   background: linear-gradient(160deg, #f0fdf4 0%, var(--color-white) 100%);
-  border: 1.5px solid var(--color-success-forest-border);
+  border: 1.5px solid var(--color-success-border);
 }
 
 .process-option-tag {
@@ -1852,7 +1852,7 @@
 .process-option--b .process-option-tag {
   color: var(--color-primary);
   background: var(--color-white);
-  border: 1px solid var(--color-success-forest-border);
+  border: 1px solid var(--color-success-border);
 }
 
 .process-option p {
@@ -1864,8 +1864,8 @@
 
 /* Shared layout (kroki wspólne dla obu opcji) */
 .process-shared {
-  background: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-100);
   border-radius: 12px;
   padding: 20px 24px;
   display: flex;
@@ -1953,12 +1953,12 @@
   align-items: center;
   gap: 8px;
   background: var(--color-white);
-  border: 1px solid var(--color-gray-200, #e2e8f0);
+  border: 1px solid var(--color-slate-100, #e2e8f0);
   border-radius: 20px;
   padding: 6px 16px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-gray-600, #475569);
+  color: var(--color-slate-500, #475569);
   margin-bottom: 40px;
   box-shadow: var(--shadow-md);
 }

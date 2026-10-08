@@ -61,7 +61,7 @@
 .cooperation-hero h2 {
   font-size: 1.8rem;
   margin-bottom: 20px;
-  color: var(--color-primary-light);
+  color: var(--color-success);
 }
 
 .cooperation-hero p {
@@ -139,7 +139,7 @@
   background: white;
   padding: 25px;
   border-radius: 8px;
-  border-top: 4px solid var(--color-primary-light);
+  border-top: 4px solid var(--color-success);
   box-shadow: var(--shadow-medium);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -153,7 +153,7 @@
   width: 60px;
   height: 60px;
   background-color: #f0f9ff;
-  color: var(--color-primary-light);
+  color: var(--color-success);
   border-radius: 50%;
   margin: 0 auto 20px;
   display: flex;
@@ -344,7 +344,7 @@
 }
 
 .contact-icon {
-  color: var(--color-primary-light);
+  color: var(--color-success);
   margin-right: 15px;
 }
 
@@ -402,8 +402,8 @@
 .seo-footer {
   margin-top: 60px;
   padding: 40px 0;
-  border-top: 2px solid var(--color-gray-200, #e2e8f0);
-  background-color: var(--color-gray-50, #f8fafc);
+  border-top: 2px solid var(--color-slate-100, #e2e8f0);
+  background-color: var(--color-slate-50, #f8fafc);
   border-radius: 10px;
 }
 

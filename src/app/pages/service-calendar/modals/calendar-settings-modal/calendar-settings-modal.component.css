@@ -28,7 +28,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-5) var(--spacing-6);
-  border-bottom: 1px solid var(--border-color-gray);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .panel-title {
@@ -60,7 +60,7 @@
 }
 
 .btn-close:hover {
-  background: var(--color-gray-100);
+  background: var(--color-slate-100);
   color: var(--text-primary);
 }
 
@@ -102,7 +102,7 @@
 .field-input,
 .field-select {
   padding: 10px 14px;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   font-size: var(--font-size-sm);
   color: var(--text-primary);
@@ -141,8 +141,8 @@
   justify-content: space-between;
   gap: var(--spacing-3);
   padding: var(--spacing-4) var(--spacing-6);
-  border-top: 1px solid var(--border-color-gray);
-  background: var(--color-gray-50);
+  border-top: 1px solid var(--border-color);
+  background: var(--color-slate-50);
   border-radius: 0 0 var(--radius-card) var(--radius-card);
 }
 
@@ -167,7 +167,7 @@
 .btn-cancel {
   padding: 9px var(--spacing-5);
   background: var(--color-white);
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-btn);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -227,7 +227,7 @@
 .spinner-sm-dark {
   width: 14px;
   height: 14px;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -235,7 +235,7 @@
 }
 
 .form-section + .form-section {
-  border-top: 1px solid var(--border-color-gray);
+  border-top: 1px solid var(--border-color);
   padding-top: var(--spacing-5);
 }
 
@@ -254,7 +254,7 @@
 
 .section-switcher {
   padding: 6px 10px;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   font-size: var(--font-size-sm);
   color: var(--text-primary);
@@ -303,8 +303,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
-  background: var(--color-gray-50);
-  border: 1px solid var(--border-color-gray);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: var(--spacing-3);
 }
@@ -373,7 +373,7 @@
   text-align: center;
   color: var(--text-muted);
   font-size: var(--font-size-sm);
-  border: 1px dashed var(--border-color-gray);
+  border: 1px dashed var(--border-color);
   border-radius: var(--radius-md);
 }
 
@@ -411,7 +411,7 @@
 }
 
 .technician-entry--inactive {
-  background: var(--color-gray-100);
+  background: var(--color-slate-100);
   opacity: 0.85;
 }
 
@@ -430,7 +430,7 @@
   align-items: center;
   justify-content: center;
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   cursor: pointer;
@@ -453,8 +453,8 @@
   align-items: center;
   gap: var(--spacing-2);
   padding: var(--spacing-2) var(--spacing-3);
-  background: var(--color-gray-50);
-  border: 1px dashed var(--border-color-gray);
+  background: var(--color-slate-50);
+  border: 1px dashed var(--border-color);
   border-radius: var(--radius-md);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
@@ -512,7 +512,7 @@
 }
 
 .templates-section {
-  border-top: 1px dashed var(--border-color-gray);
+  border-top: 1px dashed var(--border-color);
   padding-top: var(--spacing-4);
 }
 
@@ -571,7 +571,7 @@
 .btn-insert-input:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  border-color: var(--border-color-gray);
+  border-color: var(--border-color);
   color: var(--text-muted);
 }
 
@@ -621,7 +621,7 @@
 .btn-back {
   padding: 8px var(--spacing-4);
   background: var(--color-white);
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-btn);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);

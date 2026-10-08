@@ -6,7 +6,7 @@
 
 .bicycles-container h1 {
   margin-bottom: var(--spacing-8);
-  color: var(--text-dark);
+  color: var(--text-primary);
   font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   text-align: center;
@@ -65,13 +65,13 @@
 
 .multi-select-btn {
   background: var(--gradient-slate-alt);
-  color: var(--text-slate);
+  color: var(--text-secondary);
   border: 1px solid var(--border-color);
 }
 
 .multi-select-btn:hover {
   background: var(--color-slate-200);
-  color: var(--text-dark);
+  color: var(--text-primary);
 }
 
 .service-multi-btn {
@@ -93,7 +93,7 @@
 
 .cancel-multi-btn {
   background: var(--gradient-slate);
-  color: var(--text-slate);
+  color: var(--text-secondary);
   border: 1px solid var(--border-color);
 }
 
@@ -111,7 +111,7 @@
 }
 
 .loading-message {
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   color: var(--text-secondary);
 }
 
@@ -144,13 +144,13 @@
 .bicycle-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
-  border-color: var(--color-primary-light);
+  border-color: var(--color-success);
 }
 
 .bicycle-card.selected {
   border: 2px solid var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-alpha-15), var(--shadow-md);
-  background: var(--color-success-green-bg);
+  background: var(--color-success-bg);
 }
 
 /* ── Card content ── */
@@ -172,7 +172,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border: 1px solid var(--border-color);
 }
 
@@ -217,7 +217,7 @@
   margin: 0 0 var(--spacing-2) 0;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-dark);
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

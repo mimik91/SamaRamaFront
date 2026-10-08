@@ -156,7 +156,7 @@
 }
 
 .bike-btn:hover {
-  background: var(--color-success-dark, #1e8449);
+  background: var(--color-primary, #1e8449);
 }
 
 .action-btn .icon {

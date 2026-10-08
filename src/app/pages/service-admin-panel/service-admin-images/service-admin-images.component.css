@@ -20,9 +20,9 @@
 .image-section {
   margin-bottom: 48px;
   padding: 24px;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: 12px;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
 }
 
 .section-header {
@@ -54,7 +54,7 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--color-gray-200);
+  border: 3px solid var(--color-slate-100);
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -88,13 +88,13 @@
 
 .success-message {
   background-color: var(--color-success-bg);
-  color: var(--color-success-text);
+  color: var(--color-primary-dark);
   border: 1px solid var(--color-success-border);
 }
 
 .success-message svg {
   flex-shrink: 0;
-  color: var(--color-success-text);
+  color: var(--color-primary-dark);
 }
 
 /* Current Image Section */
@@ -107,7 +107,7 @@
 
 .current-image-section h4 {
   margin: 0 0 16px 0;
-  color: var(--color-dark-100);
+  color: var(--color-slate-700);
   font-size: 1.1rem;
 }
 
@@ -116,9 +116,9 @@
   justify-content: center;
   margin-bottom: 24px;
   padding: 24px;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: 8px;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
 }
 
 .current-image {
@@ -144,7 +144,7 @@
 }
 
 .no-image-state svg {
-  color: var(--color-gray-400);
+  color: var(--color-slate-300);
   margin-bottom: 16px;
 }
 
@@ -162,21 +162,21 @@
 
 .upload-section h4 {
   margin: 0 0 16px 0;
-  color: var(--color-dark-100);
+  color: var(--color-slate-700);
   font-size: 1.1rem;
 }
 
 .upload-requirements {
   margin-top: 24px;
   padding: 16px;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: 8px;
   border-left: 4px solid var(--color-primary);
 }
 
 .upload-requirements p {
   margin: 0 0 8px 0;
-  color: var(--color-dark-100);
+  color: var(--color-slate-700);
 }
 
 .upload-requirements ul {
@@ -221,7 +221,7 @@
 }
 
 .file-input-label.disabled {
-  background: var(--color-gray-400);
+  background: var(--color-slate-300);
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -237,7 +237,7 @@
   position: relative;
   margin-bottom: 24px;
   padding: 12px 16px;
-  background: var(--color-success-green-bg);
+  background: var(--color-success-bg);
   border-radius: 8px;
   border: 2px solid var(--color-success);
   display: flex;
@@ -246,7 +246,7 @@
 }
 
 .current-badge {
-  color: var(--color-success-text-dark);
+  color: var(--color-primary);
   font-weight: 600;
   font-size: 0.95rem;
 }
@@ -264,7 +264,7 @@
   justify-content: center;
   gap: 16px;
   padding: 40px 20px;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: 12px;
   margin-bottom: 24px;
 }
@@ -413,7 +413,7 @@
 /* Selected Preview */
 .selected-preview {
   padding: 24px;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: 12px;
   border: 2px solid var(--color-primary-dark);
   margin-top: 24px;
@@ -536,7 +536,7 @@
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: var(--color-gray-200);
+  background: var(--color-slate-100);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 8px;

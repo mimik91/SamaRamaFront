@@ -24,7 +24,7 @@ import { Meta } from '@angular/platform-browser';
     }
     h1 {
       font-size: var(--font-size-display-2);
-      color: var(--text-dark);
+      color: var(--text-primary);
       margin: 0 0 var(--spacing-4);
     }
     p {

@@ -101,7 +101,7 @@ import { FormsModule } from '@angular/forms';
     .ack-btn--secondary {
       background: var(--color-white);
       color: var(--text-primary);
-      border: 2px solid var(--border-color-gray);
+      border: 2px solid var(--border-color);
     }
   `]
 })

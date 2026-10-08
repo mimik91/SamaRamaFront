@@ -78,7 +78,7 @@
   display: flex;
   gap: 4px;
   margin-bottom: 24px;
-  border-bottom: 2px solid var(--border-color-gray, #e5e7eb);
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
 }
 
 .tab-btn {
@@ -125,7 +125,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  border: 1px solid var(--border-color-gray, #e5e7eb);
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: var(--radius-btn, 8px);
   background: white;
   color: var(--text-secondary, #555);
@@ -201,7 +201,7 @@
 .orders-table-wrapper {
   overflow-x: auto;
   background: white;
-  border: 1px solid var(--border-color-gray, #e5e7eb);
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-sm);
 }
@@ -218,7 +218,7 @@
   text-align: left;
   font-weight: 600;
   color: var(--text-secondary, #555);
-  border-bottom: 1px solid var(--border-color-gray, #e5e7eb);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
   white-space: nowrap;
 }
 
@@ -344,7 +344,7 @@
 
 .config-card {
   background: white;
-  border: 1px solid var(--border-color-gray, #e5e7eb);
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
@@ -443,7 +443,7 @@
 
 .day-btn {
   padding: 8px 16px;
-  border: 2px solid var(--border-color-gray, #e5e7eb);
+  border: 2px solid var(--border-color, #e5e7eb);
   border-radius: 8px;
   background: white;
   color: var(--text-primary, #333);
@@ -484,7 +484,7 @@
 }
 
 .form-input {
-  border: 2px solid var(--border-color-gray, #d1d5db);
+  border: 2px solid var(--border-color, #d1d5db);
   border-radius: var(--radius-input, 8px);
   padding: 10px 14px;
   font-size: 14px;
@@ -502,7 +502,7 @@
 .config-actions {
   padding: 20px 24px;
   background: #f9fafb;
-  border-top: 1px solid var(--border-color-gray, #e5e7eb);
+  border-top: 1px solid var(--border-color, #e5e7eb);
 }
 
 /* Buttons */
@@ -534,7 +534,7 @@
   display: inline-flex;
   align-items: center;
   padding: 10px 20px;
-  border: 2px solid var(--border-color-gray, #d1d5db);
+  border: 2px solid var(--border-color, #d1d5db);
   border-radius: var(--radius-btn, 8px);
   background: white;
   color: var(--text-primary, #333);
@@ -563,7 +563,7 @@
 
 .package-card {
   background: white;
-  border: 1px solid var(--border-color-gray, #e5e7eb);
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: var(--radius-card, 12px);
   padding: 18px;
   box-shadow: var(--shadow-sm);
@@ -723,7 +723,7 @@
 
 .btn-edit-sm {
   padding: 5px 12px;
-  border: 1px solid var(--border-color-gray, #d1d5db);
+  border: 1px solid var(--border-color, #d1d5db);
   border-radius: 6px;
   background: white;
   color: var(--text-primary, #333);
@@ -764,7 +764,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px;
-  border-bottom: 1px solid var(--border-color-gray, #e5e7eb);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
 }
 
 .modal-header h2 {
@@ -901,7 +901,7 @@
   justify-content: flex-end;
   gap: 10px;
   padding: 16px 20px;
-  border-top: 1px solid var(--border-color-gray, #e5e7eb);
+  border-top: 1px solid var(--border-color, #e5e7eb);
   background: #f9fafb;
 }
 

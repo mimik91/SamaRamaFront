@@ -51,7 +51,7 @@
 
 .success-message {
   font-size: 1rem;
-  color: var(--color-gray-600, #475569);
+  color: var(--color-slate-500, #475569);
   line-height: 1.6;
   margin: 0;
 }
@@ -86,5 +86,5 @@
 }
 
 .btn-home:hover {
-  background: var(--color-success-dark, #27ae60);
+  background: var(--color-primary, #27ae60);
 }

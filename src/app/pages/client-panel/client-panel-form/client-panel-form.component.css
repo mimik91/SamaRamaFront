@@ -6,7 +6,7 @@
 
 .bicycle-form-container h1 {
   margin-bottom: var(--spacing-8);
-  color: var(--text-dark);
+  color: var(--text-primary);
   font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   text-align: center;
@@ -37,7 +37,7 @@
   margin-bottom: var(--spacing-2);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-dark);
+  color: var(--text-primary);
 }
 
 /* ── Inputs & selects ── */
@@ -50,7 +50,7 @@ select {
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-input);
   font-size: var(--font-size-md);
-  color: var(--text-dark);
+  color: var(--text-primary);
   background: var(--color-white);
   box-sizing: border-box;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
@@ -61,12 +61,12 @@ select {
 input:focus,
 select:focus {
   outline: none;
-  border-color: var(--color-primary-light);
+  border-color: var(--color-success);
   box-shadow: 0 0 0 3px var(--color-primary-alpha-15);
 }
 
 .form-group input::placeholder {
-  color: var(--text-light);
+  color: var(--text-muted);
 }
 
 input[type="file"] {
@@ -88,18 +88,18 @@ select {
 }
 
 select:disabled {
-  background-color: var(--color-gray-100);
+  background-color: var(--color-slate-100);
   color: var(--text-muted);
   cursor: not-allowed;
 }
 
 select option:checked {
-  background-color: var(--color-primary-light);
+  background-color: var(--color-success);
   color: var(--color-white);
 }
 
 select option[disabled] {
-  color: var(--text-light);
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -135,7 +135,7 @@ select option[disabled] {
   top: 1px;
   bottom: 1px;
   width: 36px;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border: none;
   border-left: 1.5px solid var(--border-color);
   border-radius: 0 var(--radius-input) var(--radius-input) 0;
@@ -174,7 +174,7 @@ select option[disabled] {
   padding: var(--spacing-2) var(--spacing-4);
   cursor: pointer;
   font-size: var(--font-size-md);
-  color: var(--text-dark);
+  color: var(--text-primary);
   transition: background var(--transition-fast);
 }
 
@@ -190,7 +190,7 @@ select option[disabled] {
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: var(--spacing-4);
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   text-align: center;
 }
 
@@ -235,13 +235,13 @@ select option[disabled] {
 
 .cancel-btn {
   background: var(--gradient-slate-alt);
-  color: var(--text-slate);
+  color: var(--text-secondary);
   border: 1px solid var(--border-color);
 }
 
 .cancel-btn:hover {
   background: var(--color-slate-200);
-  color: var(--text-dark);
+  color: var(--text-primary);
 }
 
 .submit-btn {

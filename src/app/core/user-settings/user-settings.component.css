@@ -25,7 +25,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: var(--color-dark-50);
+  background-color: var(--color-slate-600);
   color: var(--color-white);
   display: flex;
   align-items: center;
@@ -73,7 +73,7 @@
 
 .user-email {
   font-weight: 500;
-  color: var(--color-dark-200);
+  color: var(--color-slate-800);
   margin-bottom: 4px;
   font-size: 14px;
 }
@@ -83,17 +83,17 @@
   font-size: 12px;
   padding: 3px 8px;
   border-radius: 12px;
-  background-color: var(--color-gray-200);
-  color: var(--color-dark-50);
+  background-color: var(--color-slate-100);
+  color: var(--color-slate-600);
 }
 
 .admin-role {
-  background-color: var(--color-success-forest-light);
-  color: var(--color-success-forest);
+  background-color: var(--color-success-bg);
+  color: var(--color-primary);
 }
 
 .moderator-role {
-  background-color: var(--color-blue-100);
+  background-color: var(--color-navy-bg);
   color: var(--color-info-dark);
 }
 
@@ -103,7 +103,7 @@
 }
 
 .service-role {
-  background-color: var(--color-warning-orange-bg);
+  background-color: var(--color-warning-bg);
   color: #7b341e;
 }
 
@@ -115,7 +115,7 @@
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  color: var(--color-dark-50);
+  color: var(--color-slate-600);
   text-decoration: none;
   transition: background-color 0.2s;
 }

@@ -76,7 +76,7 @@
 }
 
 .klaro .cookie-notice .cn-learn-more:hover {
-  color: var(--color-primary-light);
+  color: var(--color-success);
   text-decoration: underline;
 }
 
@@ -109,7 +109,7 @@
 }
 
 .klaro .cookie-notice .cm-btn.cm-btn-success:hover {
-  background: var(--color-primary-light);
+  background: var(--color-success);
   box-shadow: var(--shadow-primary-hover);
   transform: translateY(-1px);
 }
@@ -122,9 +122,9 @@
 }
 
 .klaro .cookie-notice .cm-btn.cm-btn-danger:hover {
-  background: var(--color-gray-100);
+  background: var(--color-slate-100);
   color: var(--text-primary);
-  border-color: var(--color-gray-400);
+  border-color: var(--color-slate-300);
 }
 
 /* ============================================
@@ -284,7 +284,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--color-gray-400);
+  background-color: var(--color-slate-300);
   transition: var(--transition-base);
   border-radius: var(--radius-full);
 }
@@ -359,7 +359,7 @@
 
 .klaro .cookie-modal .cm-btn.cm-btn-accept-all:hover,
 .klaro .cookie-modal .cm-btn.cm-btn-success:hover {
-  background: var(--color-primary-light);
+  background: var(--color-success);
   box-shadow: var(--shadow-primary-hover);
   transform: translateY(-1px);
 }
@@ -372,7 +372,7 @@
 }
 
 .klaro .cookie-modal .cm-btn.cm-btn-decline:hover {
-  background: var(--color-gray-100);
+  background: var(--color-slate-100);
   color: var(--text-primary);
 }
 

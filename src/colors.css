@@ -12,7 +12,6 @@
 :root {
   /* PRIMARY COLORS - Główne kolory aplikacji */
   --color-primary: #1B5E20;
-  --color-primary-light: #2e7d32;
   --color-primary-dark: #145018;
 
   /* SECONDARY COLORS (na razie bez zmian) */
@@ -20,8 +19,6 @@
 
   /* NAVY (granatowy) - rezerwacja online (pinezki z rezerwacją) */
   --color-navy: #1B3A5E;
-  --color-navy-dark: #142d4a;
-  --color-navy-light: #2a5282;
   --color-navy-bg: #ebf4ff;
   --color-navy-border: #bee3f8;
 
@@ -34,53 +31,30 @@
   --color-accent-orange-border: #ffccbc;
 
   /* ACCENT COLORS - Zielone jako akcent (ze skali marki) */
-  --color-accent: #2e7d32;          /* było: #4CAF50 (biały tekst 2.8:1 – nieczytelny) */
-  --color-accent-dark: #1B5E20;     /* było: #388E3C */
   --color-accent-light: #81C784;
 
   /* SUCCESS COLORS - zunifikowane do skali zieleni marki */
   --color-success: #2e7d32;               /* było: #27ae60 */
-  --color-success-dark: #1B5E20;          /* było: #229954 */
   --color-success-light: #43a047;         /* było: #2ecc71 */
-  --color-success-lighter: #a5d6a7;       /* było: #a3dfbe */
   --color-success-bg: #e8f5e9;            /* było: #d4edda */
   --color-success-border: #c8e6c9;        /* było: #c3e6cb */
-  --color-success-text: #145018;          /* było: #155724 */
-  --color-success-text-dark: #1B5E20;     /* było: #2f855a */
   --color-success-green: #43a047;         /* było: #48bb78 */
-  --color-success-green-dark: #2e7d32;
-  --color-success-green-bg: #e8f5e9;
-  --color-success-emerald: #2e7d32;       /* było: #059669 */
-  --color-success-emerald-light: #43a047; /* było: #10b981 */
-  --color-success-emerald-dark: #1B5E20;  /* było: #047857 */
   --color-success-mint: #f1f8f1;          /* było: #f0fff4 */
-  --color-success-forest: #1B5E20;        /* było: #166534 */
-  --color-success-forest-light: #e8f5e9;  /* było: #dcfce7 */
-  --color-success-forest-border: #c8e6c9; /* było: #bbf7d0 */
-  --color-success-teal: #2e7d32;          /* było: #38a169 */
-  --color-success-call: #2e7d32;          /* było: #28a745 */
-  --color-success-call-dark: #1B5E20;     /* było: #218838 */
 
   /* DANGER/ERROR COLORS - jedna skala czerwieni */
   --color-danger: #dc2626;                /* było: #e74c3c */
   --color-danger-dark: #b91c1c;           /* było: #c0392b */
-  --color-danger-red: #dc2626;
   --color-danger-red-light: #ef4444;
-  --color-danger-red-dark: #b91c1c;
   --color-danger-red-darker: #991b1b;     /* było: #c62828 */
   --color-danger-bg: #fee2e2;             /* było: #f8d7da */
   --color-danger-bg-light: #fef2f2;
   --color-danger-bg-lighter: #fff8f8;
-  --color-danger-bg-dark: #fee2e2;        /* było: #ffebee */
   --color-danger-text: #7f1d1d;           /* było: #721c24 */
-  --color-danger-coral: #ef4444;          /* było: #ff6b6b */
-  --color-danger-crimson: #dc2626;        /* było: #e53e3e */
 
   /* WARNING COLORS - bursztyn, wyraźnie inny niż pomarańcz marki */
   --color-warning: #f59e0b;
   --color-warning-bg: #fef3c7;
   --color-warning-orange: #b45309;        /* było: #e65100 (mylił się z pomarańczem marki) */
-  --color-warning-orange-bg: #fef3c7;     /* było: #fff3e0 */
 
   /* INFO COLORS - ciemniejsze dla czytelności tekstu */
   --color-info: #2b6cb0;                  /* było: #4299e1 */
@@ -96,51 +70,22 @@
   --color-slate-600: #475569;
   --color-slate-700: #334155;
   --color-slate-800: #1e293b;
-  --color-slate-900: #0f172a;
 
   /* gray-* przemapowane na skalę slate */
-  --color-gray-50: #f8fafc;               /* było: #f8f9fa */
-  --color-gray-100: #f1f5f9;              /* było: #f5f7fa */
-  --color-gray-200: #f1f5f9;              /* było: #ecf0f1 */
-  --color-gray-300: #e2e8f0;              /* było: #e9ecef */
-  --color-gray-350: #e2e8f0;              /* było: #dee2e6 */
-  --color-gray-400: #cbd5e1;              /* było: #bdc3c7 */
   --color-gray-500: #94a3b8;              /* było: #95a5a6 */
-  --color-gray-600: #64748b;              /* było: #7f8c8d (za mały kontrast jako tekst) */
-  --color-gray-700: #475569;              /* było: #555 */
-  --color-gray-800: #475569;              /* było: #666 */
-
-  --color-dark-50: #475569;               /* było: #4a5568 */
-  --color-dark-100: #334155;              /* było: #34495e */
-  --color-dark-200: #1e293b;              /* było: #2d3748 */
-  --color-dark-300: #1e293b;              /* było: #2c3e50 */
 
   /* BLUE TINTS - spójne z granatem (tła) */
   --color-blue-50: #f5f9ff;               /* było: #f0f9ff */
-  --color-blue-100: #ebf4ff;              /* było: #e0f2fe */
   --color-blue-200: #bee3f8;              /* było: #bfdbfe */
   --color-blue-300: #dbeafe;
-  --color-blue-400: #ebf4ff;              /* było: #e3f2fd */
-  --color-blue-500: #f5f9ff;              /* było: #ebf5fb */
-  --color-blue-600: #f5f9ff;              /* było: #e8f4f8 */
 
   /* GREEN TINTS - ze skali marki (bez żółtawej light-green z Material) */
-  --color-green-50: #f1f8f1;              /* było: #f1f8e9 */
-  --color-green-100: #e8f5e9;             /* było: #dcedc8 */
-  --color-green-200: #c8e6c9;             /* było: #c5e1a5 */
-  --color-green-300: #a5d6a7;             /* było: #aed581 */
-  --color-green-400: #81c784;             /* było: #9ccc65 */
-  --color-green-500: #66bb6a;             /* było: #8bc34a */
 
   /* PURPLE TINTS */
   --color-purple-100: #f3e5f5;
 
-  /* SOCIAL MEDIA */
-  --color-facebook: #3b5998;
-
   /* BASE COLORS */
   --color-white: #ffffff;
-  --color-white-alt: #fefefe;
   --color-black: #000000;
 
   /* SHADOWS & OVERLAYS */
@@ -165,23 +110,14 @@
   /* GRADIENTS */
   --gradient-primary: linear-gradient(135deg, #1B5E20 0%, #2e7d32 100%);
   --gradient-success: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);       /* było: #27ae60 → #10b981 */
-  --gradient-success-call: linear-gradient(135deg, #1B5E20 0%, #2e7d32 100%);  /* było: #059669 → #10b981 */
   --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  --gradient-danger-alt: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   --gradient-slate: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   --gradient-slate-alt: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  --gradient-blue: linear-gradient(135deg, #f5f9ff 0%, #ebf4ff 100%);          /* było: #f0f9ff → #e0f2fe */
-  --gradient-blue-purple: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-  --gradient-success-subtle: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
 
   /* BORDERS - przemapowane na skalę slate */
   --border-color-light: #f1f5f9;
   --border-color: #e2e8f0;
-  --border-color-gray: #e2e8f0;           /* było: #ecf0f1 */
-  --border-color-gray-light: #e2e8f0;     /* było: #e9ecef */
   --border-color-gray-medium: #cbd5e1;    /* było: #dee2e6 */
-  --border-color-slate: #e2e8f0;          /* było: #dce1e6 */
-  --border-color-muted: #e2e8f0;          /* było: #eaeaea */
 
   /* RGBA COLORS FOR TRANSPARENCY */
   --color-primary-alpha-08: rgba(27, 94, 32, 0.08);
@@ -191,20 +127,13 @@
   --color-primary-alpha-25: rgba(27, 94, 32, 0.25);
   --color-primary-alpha-30: rgba(27, 94, 32, 0.3);
   --color-primary-alpha-40: rgba(27, 94, 32, 0.4);
-  --color-primary-alpha-50: rgba(27, 94, 32, 0.5);
-  --color-primary-alpha-60: rgba(27, 94, 32, 0.6);
-  --color-primary-alpha-70: rgba(27, 94, 32, 0.7);
-  --color-primary-alpha-80: rgba(27, 94, 32, 0.8);
   --color-primary-alpha-95: rgba(27, 94, 32, 0.95);
 
   --color-secondary-alpha-60: rgba(225, 29, 72, 0.6);
   --color-secondary-alpha-80: rgba(225, 29, 72, 0.8);
 
-  --color-black-alpha-03: rgba(0, 0, 0, 0.03);
   --color-black-alpha-05: rgba(0, 0, 0, 0.05);
-  --color-black-alpha-08: rgba(0, 0, 0, 0.08);
   --color-black-alpha-10: rgba(0, 0, 0, 0.1);
-  --color-black-alpha-12: rgba(0, 0, 0, 0.12);
   --color-black-alpha-15: rgba(0, 0, 0, 0.15);
   --color-black-alpha-20: rgba(0, 0, 0, 0.2);
   --color-black-alpha-30: rgba(0, 0, 0, 0.3);
@@ -217,10 +146,7 @@
   --text-primary: #1e293b;                /* było: #2c3e50 */
   --text-secondary: #475569;              /* było: #64748b */
   --text-muted: #64748b;                  /* było: #7f8c8d (3.5:1) */
-  --text-light: #64748b;                  /* było: #94a3b8 (2.6:1) */
   --text-lighter: #cbd5e1;                /* bez zmian – tylko na ciemnym tle */
-  --text-dark: #1e293b;
-  --text-slate: #475569;
 
   /* ============================================
      KOLORY DLA MAPY (PINEZKI I KLASTRY)
@@ -257,8 +183,6 @@
      ============================================ */
 
   /* Grupa I — Rezerwacje (błękity) */
-  --status-pending:       #E3F2FD;   /* Oczekuje na potwierdzenie */
-  --status-awaiting-date: #90CAF9;   /* Oczekuje na potwierdzenie daty */
   --status-confirmed:     #42A5F5;   /* Potwierdzone */
   --status-waiting-bike:  #1E88E5;   /* Oczekuje na rower */
 
@@ -302,38 +226,27 @@
   --font-size-h2: 1.875rem;     /* 30px */
   --font-size-h3: 1.5rem;       /* 24px */
   --font-size-h4: 1.25rem;      /* 20px */
-  --font-size-h5: 1.125rem;     /* 18px */
-  --font-size-h6: 1rem;         /* 16px */
 
   /* Special text sizes */
-  --font-size-caption: 0.875rem;    /* 14px */
   --font-size-label: 0.95rem;       /* 15.2px */
   --font-size-button: 1rem;         /* 16px */
-  --font-size-input: 1rem;          /* 16px */
 
   /* Font weights */
-  --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
 
   /* Line heights */
   --line-height-tight: 1.2;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
-  --line-height-loose: 2;
 
   /* ============================================
      SPACING SYSTEM
      ============================================ */
 
-  /* Base spacing unit (4px) */
-  --spacing-unit: 0.25rem;      /* 4px */
-
   /* Spacing scale */
-  --spacing-0: 0;
   --spacing-1: 0.25rem;         /* 4px */
   --spacing-2: 0.5rem;          /* 8px */
   --spacing-3: 0.75rem;         /* 12px */
@@ -344,78 +257,35 @@
   --spacing-8: 2rem;            /* 32px */
   --spacing-10: 2.5rem;         /* 40px */
   --spacing-12: 3rem;           /* 48px */
-  --spacing-15: 3.75rem;        /* 60px */
   --spacing-16: 4rem;           /* 64px */
   --spacing-20: 5rem;           /* 80px */
-  --spacing-24: 6rem;           /* 96px */
-  --spacing-32: 8rem;           /* 128px */
-
-  /* Named spacings for common use cases */
-  --spacing-section: 3rem;      /* 48px - between sections */
-  --spacing-component: 1.5rem;  /* 24px - between components */
-  --spacing-element: 1rem;      /* 16px - between elements */
-  --spacing-inline: 0.5rem;     /* 8px - inline spacing */
 
   /* Padding presets */
   --padding-xs: 0.5rem 0.75rem;    /* 8px 12px */
   --padding-sm: 0.75rem 1rem;      /* 12px 16px */
   --padding-md: 1rem 1.5rem;       /* 16px 24px */
-  --padding-lg: 1.25rem 2rem;      /* 20px 32px */
-  --padding-xl: 1.5rem 2.5rem;     /* 24px 40px */
-
-  /* Margin presets */
-  --margin-xs: 0.5rem;
-  --margin-sm: 0.75rem;
-  --margin-md: 1rem;
-  --margin-lg: 1.5rem;
-  --margin-xl: 2rem;
 
   /* ============================================
      Z-INDEX SYSTEM
      ============================================ */
 
-  /* Base z-index values */
-  --z-index-base: 0;
-  --z-index-behind: -1;
-
   /* Content layers */
   --z-index-content: 1;
-  --z-index-elevated: 10;
   --z-index-sticky: 100;
-  --z-index-fixed: 200;
 
   /* UI element layers */
   --z-index-dropdown: 1000;
-  --z-index-tooltip: 1100;
-  --z-index-overlay: 1200;
   --z-index-modal-backdrop: 1300;
   --z-index-modal: 1400;
-  --z-index-popover: 1500;
-  --z-index-notification: 1600;
-
-  /* Top layers */
-  --z-index-header: 800;
-  --z-index-sidebar: 700;
-  --z-index-drawer: 900;
-
-  /* Map specific */
-  --z-index-map-controls: 500;
-  --z-index-map-popup: 600;
-  --z-index-map-marker: 50;
-
-  /* Maximum z-index (use sparingly) */
-  --z-index-maximum: 9999;
 
   /* ============================================
      BORDER RADIUS
      ============================================ */
 
-  --radius-none: 0;
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
-  --radius-2xl: 24px;
   --radius-full: 9999px;
 
   /* Named radius for components */
@@ -430,16 +300,12 @@
 
   --transition-fast: 0.15s ease;
   --transition-base: 0.3s ease;
-  --transition-slow: 0.5s ease;
 
   --transition-all: all 0.3s ease;
   --transition-colors: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
-  --transition-transform: transform 0.3s ease;
   --transition-opacity: opacity 0.3s ease;
 
   /* SHARED VARIABLES (legacy - deprecated, use specific variables above) */
-  --radius-sm: 4px;
-  --radius-md: 8px;
   --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
   --transition: 0.3s ease;
 }

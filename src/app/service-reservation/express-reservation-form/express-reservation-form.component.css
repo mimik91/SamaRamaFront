@@ -103,8 +103,8 @@
 .packages-unavailable {
   text-align: center;
   padding: var(--spacing-6) var(--spacing-5);
-  background: var(--color-gray-50);
-  border: 1px solid var(--border-color-gray);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   margin-bottom: var(--spacing-6);
   color: var(--text-secondary);
@@ -112,7 +112,7 @@
 
 .packages-panel {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   margin-bottom: var(--spacing-6);
   padding: var(--spacing-4) var(--spacing-5) var(--spacing-5);
@@ -131,8 +131,8 @@
 }
 
 .package-card {
-  background: var(--color-gray-50);
-  border: 2px solid var(--border-color-gray);
+  background: var(--color-slate-50);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: var(--spacing-4);
   cursor: pointer;
@@ -204,7 +204,7 @@
   justify-content: center;
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-sm);
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   background: var(--color-white);
   color: var(--text-secondary);
   transition: all 0.2s;
@@ -235,7 +235,7 @@
 .step-line {
   flex: 1;
   height: 2px;
-  background: var(--border-color-gray);
+  background: var(--border-color);
   margin: 0 var(--spacing-2);
   min-width: 40px;
   margin-bottom: 16px;
@@ -249,7 +249,7 @@
 /* ===== Form sections ===== */
 .form-section {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: var(--spacing-5);
   margin-bottom: var(--spacing-5);
@@ -297,7 +297,7 @@
 
 .form-input,
 .form-textarea {
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   padding: 10px 14px;
   font-size: var(--font-size-base);
@@ -321,7 +321,7 @@
 }
 
 .form-input:disabled {
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   color: var(--text-muted);
   cursor: not-allowed;
 }
@@ -346,8 +346,8 @@
 
 /* ===== Bike cards ===== */
 .bike-card {
-  background: var(--color-gray-50);
-  border: 1px solid var(--border-color-gray);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: var(--spacing-4);
   margin-bottom: var(--spacing-4);
@@ -504,7 +504,7 @@
   flex: 1;
   min-width: 160px;
   padding: var(--spacing-3) var(--spacing-4);
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-btn);
   background: var(--color-white);
   color: var(--text-primary);
@@ -611,7 +611,7 @@
 .btn-secondary {
   background: white;
   color: var(--text-primary);
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-btn);
   padding: 12px 24px;
   cursor: pointer;
@@ -633,7 +633,7 @@
 /* ===== Summary ===== */
 .summary-card {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: var(--spacing-5);
   margin-bottom: var(--spacing-5);
@@ -644,7 +644,7 @@
   display: flex;
   gap: var(--spacing-4);
   padding: var(--spacing-2) 0;
-  border-bottom: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-slate-100);
   font-size: var(--font-size-sm);
 }
 
@@ -680,7 +680,7 @@
 /* ===== Terms ===== */
 .terms-section {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: var(--spacing-4) var(--spacing-5);
   margin-bottom: var(--spacing-5);
@@ -813,7 +813,7 @@
 
 .coupon-message--success {
   background: var(--color-success-bg, #e6f4ea);
-  color: var(--color-success-text, #2f855a);
+  color: var(--color-primary-dark, #2f855a);
 }
 
 .coupon-message--error {

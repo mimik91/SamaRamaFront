@@ -10,7 +10,7 @@
 
 .card {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
   padding: var(--spacing-6);
@@ -45,7 +45,7 @@
 
 .reject-reason-textarea {
   width: 100%;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   padding: 10px 14px;
   font-family: inherit;
@@ -76,7 +76,7 @@
   transition: all 0.2s;
   background: white;
   color: var(--text-primary);
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
 }
 
 .btn-cancel:hover {
@@ -99,7 +99,7 @@
 }
 
 .loading-spinner {
-  border: 4px solid var(--color-gray-100);
+  border: 4px solid var(--color-slate-100);
   border-top: 4px solid var(--color-primary);
   border-radius: 50%;
   width: 36px;
@@ -146,7 +146,7 @@
   gap: var(--spacing-2);
   font-size: var(--font-size-sm);
   padding-bottom: var(--spacing-2);
-  border-bottom: 1px solid var(--border-color-gray);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .plan-item-name {
@@ -161,7 +161,7 @@
 
 .plan-package-block {
   padding-bottom: var(--spacing-2);
-  border-bottom: 1px solid var(--border-color-gray);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .plan-item--package {
@@ -203,7 +203,7 @@
 }
 
 .plan-item-toggle:hover {
-  background: var(--color-gray-100, #f1f5f9);
+  background: var(--color-slate-100, #f1f5f9);
   color: var(--color-danger);
 }
 
@@ -248,7 +248,7 @@
   padding: 2px 8px;
   border-radius: 999px;
   background: var(--color-success-bg, #d4edda);
-  color: var(--color-success-dark, #229954);
+  color: var(--color-primary, #229954);
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -259,7 +259,7 @@
 .plan-decision-row {
   margin-top: var(--spacing-5);
   padding-top: var(--spacing-4);
-  border-top: 1px dashed var(--border-color-gray);
+  border-top: 1px dashed var(--border-color);
 }
 
 .plan-decision-hint {
@@ -313,7 +313,7 @@
 .plan-decision-done {
   margin-top: var(--spacing-4);
   padding-top: var(--spacing-4);
-  border-top: 1px dashed var(--border-color-gray);
+  border-top: 1px dashed var(--border-color);
   font-weight: 600;
   color: var(--color-success);
 }
@@ -330,7 +330,7 @@
   max-height: 320px;
   overflow-y: auto;
   padding: var(--spacing-3);
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   scroll-behavior: smooth;
@@ -374,7 +374,7 @@
   background: var(--color-white);
   border: 1px solid var(--border-color);
   border-bottom-left-radius: 4px;
-  color: var(--text-dark);
+  color: var(--text-primary);
 }
 
 .message-client .message-content {
@@ -402,14 +402,14 @@
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-input);
   font-size: var(--font-size-sm);
-  color: var(--text-dark);
+  color: var(--text-primary);
   background: var(--color-white);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .message-input:focus {
   outline: none;
-  border-color: var(--color-primary-light);
+  border-color: var(--color-success);
   box-shadow: 0 0 0 3px var(--color-primary-alpha-15);
 }
 

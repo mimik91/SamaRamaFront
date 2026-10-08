@@ -30,8 +30,8 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  background-color: var(--color-gray-100);
-  border: 1px solid var(--border-color-gray-light);
+  background-color: var(--color-slate-100);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: var(--spacing-3) var(--spacing-4);
   color: var(--text-primary);
@@ -41,7 +41,7 @@
 }
 
 .back-btn:hover {
-  background-color: var(--color-gray-200);
+  background-color: var(--color-slate-100);
   transform: translateX(-2px);
 }
 
@@ -75,12 +75,12 @@
 }
 
 .save-btn {
-  background-color: var(--color-success-call);
+  background-color: var(--color-success);
   color: var(--color-white);
 }
 
 .save-btn:hover {
-  background-color: var(--color-success-call-dark);
+  background-color: var(--color-primary);
   transform: translateY(-1px);
   box-shadow: var(--shadow-success);
 }
@@ -95,12 +95,12 @@
 }
 
 .delete-btn {
-  background-color: var(--color-danger-red);
+  background-color: var(--color-danger);
   color: var(--color-white);
 }
 
 .delete-btn:hover {
-  background-color: var(--color-danger-red-dark);
+  background-color: var(--color-danger-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-danger);
 }
@@ -115,7 +115,7 @@
 }
 
 .loading-spinner {
-  border: 5px solid var(--color-gray-200);
+  border: 5px solid var(--color-slate-100);
   border-radius: var(--radius-full);
   border-top: 5px solid var(--color-info);
   width: 50px;
@@ -183,7 +183,7 @@
   color: var(--color-warning-orange); 
 }
 .status-confirmed { 
-  background-color: var(--color-blue-400); 
+  background-color: var(--color-navy-bg); 
   color: var(--color-info-dark); 
 }
 .status-to-pick-up { 
@@ -200,7 +200,7 @@
 }
 .status-delivered { 
   background-color: var(--color-success-bg); 
-  color: var(--color-success-text); 
+  color: var(--color-primary-dark); 
 }
 .status-returning { 
   background-color: var(--color-slate-200); 
@@ -208,7 +208,7 @@
 }
 .status-completed { 
   background-color: var(--color-success-bg); 
-  color: var(--color-success-text); 
+  color: var(--color-primary-dark); 
 }
 .status-cancelled { 
   background-color: var(--color-danger-bg); 
@@ -287,7 +287,7 @@
 }
 
 .detail-row .value.price {
-  color: var(--color-success-call);
+  color: var(--color-success);
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-lg);
 }

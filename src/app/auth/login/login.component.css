@@ -6,7 +6,7 @@
   min-height: calc(100vh - 60px);
   padding: 20px;
   padding-top: 80px;
-  background-color: var(--color-gray-50);
+  background-color: var(--color-slate-50);
 }
 
 .login-form-container {
@@ -73,7 +73,7 @@ label {
 }
 
 .forgot-password a {
-  color: var(--color-primary-light);
+  color: var(--color-success);
   font-size: 0.875rem;
   text-decoration: none;
 }
@@ -115,7 +115,7 @@ label {
 }
 
 .primary-btn:disabled {
-  background-color: var(--color-gray-400);
+  background-color: var(--color-slate-300);
   cursor: not-allowed;
 }
 
@@ -147,7 +147,7 @@ label {
 .success-message {
   padding: 12px 14px;
   background-color: var(--color-success-bg);
-  color: var(--color-success-text);
+  color: var(--color-primary-dark);
   border-radius: var(--radius-md);
   margin-top: 14px;
   font-size: 0.9rem;
@@ -156,7 +156,7 @@ label {
 .resend-verification-container {
   margin-top: 20px;
   padding: 18px;
-  background-color: var(--color-green-50);
+  background-color: var(--color-success-mint);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-accent-light);
 }
@@ -181,13 +181,13 @@ label {
 }
 
 .cancel-btn {
-  background-color: var(--color-gray-300);
+  background-color: var(--color-slate-200);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
 }
 
 .cancel-btn:hover {
-  background-color: var(--color-gray-200);
+  background-color: var(--color-slate-100);
   color: var(--text-primary);
 }
 
@@ -208,7 +208,7 @@ label {
   margin-top: 14px;
   padding: 12px 14px;
   background-color: var(--color-success-bg);
-  color: var(--color-success-text);
+  color: var(--color-primary-dark);
   border-radius: var(--radius-md);
   font-size: 0.9rem;
 }

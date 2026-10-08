@@ -44,7 +44,7 @@
 
 .aps-card {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: 18px 20px;
   margin-bottom: 16px;
@@ -58,7 +58,7 @@
   flex-wrap: wrap;
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px dashed var(--border-color-gray);
+  border-bottom: 1px dashed var(--border-color);
 }
 
 .aps-original-name {
@@ -83,7 +83,7 @@
   display: flex;
   justify-content: space-between;
   padding: 6px 10px;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: var(--radius-input);
   font-size: 0.9rem;
 }
@@ -133,7 +133,7 @@
   flex: 1;
   min-width: 160px;
   padding: 10px 14px;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   font-size: 0.95rem;
   box-sizing: border-box;
@@ -146,7 +146,7 @@
 
 .aps-select {
   padding: 10px 14px;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   font-size: 0.95rem;
   background: var(--color-white);

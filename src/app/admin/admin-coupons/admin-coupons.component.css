@@ -114,7 +114,7 @@
 }
 
 .add-btn:hover {
-  background-color: var(--color-success-dark, #218838);
+  background-color: var(--color-primary, #218838);
 }
 
 .coupon-group {

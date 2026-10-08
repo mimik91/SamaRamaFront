@@ -700,7 +700,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-5) var(--spacing-6);
-  border-bottom: 1px solid var(--border-color-gray-light);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h2 {
@@ -722,7 +722,7 @@
 }
 
 .close-btn:hover {
-  color: var(--color-danger-red);
+  color: var(--color-danger);
 }
 
 .modal-body {
@@ -735,7 +735,7 @@
   gap: var(--spacing-4);
   margin-bottom: var(--spacing-6);
   padding: var(--spacing-4);
-  background-color: var(--color-gray-50);
+  background-color: var(--color-slate-50);
   border-radius: var(--radius-md);
 }
 
@@ -776,8 +776,8 @@
   justify-content: flex-end;
   gap: var(--spacing-3);
   padding: var(--spacing-5) var(--spacing-6);
-  border-top: 1px solid var(--border-color-gray-light);
-  background-color: var(--color-gray-50);
+  border-top: 1px solid var(--border-color);
+  background-color: var(--color-slate-50);
   border-radius: 0 0 var(--radius-modal) var(--radius-modal);
 }
 

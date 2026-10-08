@@ -235,7 +235,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
 
     .pricing-wrapper {
       min-height: 100vh;
-      background: var(--color-gray-100, #f3f4f6);
+      background: var(--color-slate-100, #f3f4f6);
       padding: 80px 16px 40px;
     }
 
@@ -331,7 +331,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     .table-section {
       background: var(--color-white, #fff);
       padding: 28px 28px 20px;
-      border-top: 1px solid var(--color-gray-200, #e5e7eb);
+      border-top: 1px solid var(--color-slate-100, #e5e7eb);
     }
 
     .table-title {
@@ -390,7 +390,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     }
 
     .pricing-table tbody tr {
-      border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+      border-bottom: 1px solid var(--color-slate-100, #e5e7eb);
     }
 
     .pricing-table tbody tr:last-child {
@@ -398,7 +398,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     }
 
     .pricing-table tbody tr:hover {
-      background: var(--color-gray-50, #f9fafb);
+      background: var(--color-slate-50, #f9fafb);
     }
 
     .row-highlight {
@@ -412,7 +412,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     .offer-name {
       padding: 14px;
       font-weight: 500;
-      color: var(--color-gray-800, #1f2937);
+      color: var(--color-slate-600, #1f2937);
       display: flex;
       flex-direction: column;
       gap: 5px;
@@ -421,20 +421,20 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     .offer-tag {
       font-size: 0.75rem;
       font-weight: 400;
-      color: var(--color-success-dark, #229954);
+      color: var(--color-primary, #229954);
     }
 
     .price {
       padding: 14px;
       text-align: center;
       font-weight: 600;
-      color: var(--color-gray-700, #374151);
+      color: var(--color-slate-600, #374151);
       vertical-align: middle;
     }
 
     .partner-price {
       background: #f0fdf4;
-      color: var(--color-success-dark, #229954);
+      color: var(--color-primary, #229954);
     }
 
     .row-highlight .partner-price {
@@ -459,18 +459,18 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     }
 
     .free-color {
-      color: var(--color-success-dark, #229954);
+      color: var(--color-primary, #229954);
     }
 
     .dash {
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-slate-300, #9ca3af);
       font-size: 1.1rem;
     }
 
     .conditions {
       padding: 14px;
       font-size: 0.83rem;
-      color: var(--color-gray-600, #4b5563);
+      color: var(--color-slate-500, #4b5563);
       vertical-align: middle;
       text-align: center;
     }
@@ -482,7 +482,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     .guarantee-chip {
       display: inline-block;
       background: var(--color-success-bg, #d4edda);
-      color: var(--color-success-text, #155724);
+      color: var(--color-primary-dark, #155724);
       border-radius: 20px;
       padding: 2px 10px;
       font-size: 0.78rem;
@@ -493,7 +493,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     /* ── BENEFITS ── */
     .benefits-section {
       background: var(--color-white, #fff);
-      border-top: 1px solid var(--color-gray-200, #e5e7eb);
+      border-top: 1px solid var(--color-slate-100, #e5e7eb);
       padding: 28px 28px 24px;
     }
 
@@ -517,8 +517,8 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
       display: flex;
       gap: 16px;
       align-items: flex-start;
-      background: var(--color-gray-50, #f9fafb);
-      border: 1px solid var(--color-gray-200, #e5e7eb);
+      background: var(--color-slate-50, #f9fafb);
+      border: 1px solid var(--color-slate-100, #e5e7eb);
       border-radius: 10px;
       padding: 18px 20px;
     }
@@ -532,13 +532,13 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     .benefit-body h3 {
       font-size: 0.95rem;
       font-weight: 700;
-      color: var(--color-gray-800, #1f2937);
+      color: var(--color-slate-600, #1f2937);
       margin: 0 0 6px;
     }
 
     .benefit-body p {
       font-size: 0.875rem;
-      color: var(--color-gray-600, #4b5563);
+      color: var(--color-slate-500, #4b5563);
       line-height: 1.6;
       margin: 0;
     }
@@ -546,7 +546,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
     /* ── PARTNER CONDITIONS ── */
     .conditions-section {
       background: var(--color-white, #fff);
-      border-top: 1px solid var(--color-gray-200, #e5e7eb);
+      border-top: 1px solid var(--color-slate-100, #e5e7eb);
       padding: 28px 28px 24px;
     }
 
@@ -565,8 +565,8 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
       font-size: 0.78rem;
       font-weight: 400;
       color: var(--color-gray-500, #6b7280);
-      background: var(--color-gray-100, #f3f4f6);
-      border: 1px solid var(--color-gray-200, #e5e7eb);
+      background: var(--color-slate-100, #f3f4f6);
+      border: 1px solid var(--color-slate-100, #e5e7eb);
       border-radius: 20px;
       padding: 2px 10px;
     }
@@ -584,12 +584,12 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
       display: flex;
       gap: 12px;
       align-items: flex-start;
-      background: var(--color-gray-50, #f9fafb);
-      border: 1px solid var(--color-gray-200, #e5e7eb);
+      background: var(--color-slate-50, #f9fafb);
+      border: 1px solid var(--color-slate-100, #e5e7eb);
       border-radius: 8px;
       padding: 14px 16px;
       font-size: 0.875rem;
-      color: var(--color-gray-700, #374151);
+      color: var(--color-slate-600, #374151);
       line-height: 1.55;
     }
 
@@ -656,7 +656,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
       gap: 12px;
       align-items: flex-start;
       font-size: 0.875rem;
-      color: var(--color-gray-700, #374151);
+      color: var(--color-slate-600, #374151);
       line-height: 1.55;
     }
 
@@ -756,7 +756,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
       }
 
       .pricing-table tbody tr {
-        border: 1px solid var(--color-gray-200, #e5e7eb);
+        border: 1px solid var(--color-slate-100, #e5e7eb);
         border-radius: 10px;
         margin-bottom: 12px;
         overflow: hidden;
@@ -784,7 +784,7 @@ import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constan
         justify-content: space-between;
         align-items: center;
         padding: 10px 14px;
-        border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
+        border-bottom: 1px solid var(--color-slate-100, #f3f4f6);
         font-size: 0.88rem;
       }
 

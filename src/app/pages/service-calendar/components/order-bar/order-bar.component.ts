@@ -48,7 +48,7 @@ export class OrderBarComponent {
       return 'var(--color-teal-400, #4DD0E1)';
     }
     if (s === 'IN_PROGRESS' || s === 'READY_FOR_PICKUP') {
-      return 'var(--color-accent)';
+      return 'var(--color-success)';
     }
     if (s === 'WAITING_FOR_PARTS') return 'var(--status-waiting-parts)';
     if (s === 'AWAITING_CLIENT_DECISION') return 'var(--status-awaiting-decision)';

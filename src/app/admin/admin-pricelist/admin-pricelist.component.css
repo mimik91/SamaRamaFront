@@ -46,7 +46,7 @@
 
 .apl-panel {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: 20px;
   margin-bottom: 20px;
@@ -60,7 +60,7 @@
 
 .apl-input {
   padding: 10px 14px;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   font-size: 0.95rem;
   box-sizing: border-box;
@@ -84,7 +84,7 @@
 
 .apl-select {
   padding: 10px 14px;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   font-size: 0.95rem;
   background: var(--color-white);
@@ -128,7 +128,7 @@
 .apl-btn--small {
   padding: 6px 12px;
   font-size: 0.85rem;
-  background: var(--color-gray-200, #e0e0e0);
+  background: var(--color-slate-100, #e0e0e0);
   color: var(--text-primary);
 }
 
@@ -154,7 +154,7 @@
 
 .apl-category-card {
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   padding: 18px 20px;
   margin-bottom: 16px;
@@ -168,7 +168,7 @@
   flex-wrap: wrap;
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px dashed var(--border-color-gray);
+  border-bottom: 1px dashed var(--border-color);
 }
 
 .apl-category-header h3 {
@@ -198,7 +198,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
 }
 

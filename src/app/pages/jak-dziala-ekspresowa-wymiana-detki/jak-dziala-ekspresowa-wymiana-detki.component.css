@@ -177,7 +177,7 @@
    ========================================= */
 .express-trust-bar {
   background: var(--color-white);
-  border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+  border-bottom: 1px solid var(--color-slate-100, #e5e7eb);
   padding: 14px 20px;
 }
 
@@ -196,7 +196,7 @@
   align-items: center;
   gap: 7px;
   font-size: 0.85rem;
-  color: var(--color-gray-700, #374151);
+  color: var(--color-slate-600, #374151);
   white-space: nowrap;
 }
 
@@ -208,7 +208,7 @@
 .express-trust-divider {
   width: 1px;
   height: 18px;
-  background: var(--color-gray-300, #d1d5db);
+  background: var(--color-slate-200, #d1d5db);
   flex-shrink: 0;
 }
 
@@ -264,7 +264,7 @@
   gap: 20px;
   align-items: center;
   background: var(--color-white);
-  border: 1px solid var(--border-color-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
   padding: var(--spacing-5);
@@ -342,7 +342,7 @@
 .variant-card {
   border-radius: var(--radius-card);
   overflow: hidden;
-  border: 2px solid var(--border-color-gray);
+  border: 2px solid var(--border-color);
   background: var(--color-white);
 }
 
@@ -429,7 +429,7 @@
    ========================================= */
 .detka-teaser {
   margin: 40px 0;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: var(--radius-card);
   padding: var(--spacing-8);
 }
@@ -461,7 +461,7 @@
    ========================================= */
 .why-section {
   margin: 60px 0;
-  background: var(--color-gray-50);
+  background: var(--color-slate-50);
   border-radius: var(--radius-card);
   padding: var(--spacing-8);
 }
@@ -522,12 +522,12 @@
   align-items: center;
   gap: 8px;
   background: var(--color-white);
-  border: 1px solid var(--color-gray-200, #e2e8f0);
+  border: 1px solid var(--color-slate-100, #e2e8f0);
   border-radius: 20px;
   padding: 6px 16px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-gray-600, #475569);
+  color: var(--color-slate-500, #475569);
   margin-bottom: 40px;
   box-shadow: var(--shadow-md);
 }
@@ -607,7 +607,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid var(--color-gray-200);
+  border: 1px solid var(--color-slate-100);
 }
 
 .faq-item[open] {
@@ -654,7 +654,7 @@
 }
 
 .faq-item[open] .faq-answer {
-  border-top-color: var(--color-gray-100);
+  border-top-color: var(--color-slate-100);
 }
 
 /* =========================================

@@ -44,7 +44,7 @@ h1 {
 }
 
 .subtitle {
-  color: var(--color-gray-600);
+  color: var(--color-slate-500);
   font-size: var(--font-size-md);
   margin-bottom: var(--spacing-10);
   line-height: 1.6;

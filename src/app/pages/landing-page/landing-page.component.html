@@ -17,7 +17,7 @@
           >
         </div>
 
-        <h1>Znajdź i zarezerwuj<br>serwis rowerowy<span class="hero-h1-city-suffix"><br>w Twoim mieście</span></h1>
+        <h1>Znajdź i zarezerwuj serwis rowerowy w&nbsp;Twoim mieście</h1>
       </div>
 
       <p class="hero-tagline"><ng-container *ngIf="statsSummary; else genericTagline">{{ statsSummary.totalServices }} sprawdzonych warsztatów w {{ statsSummary.totalCities }} miastach w całej Polsce.</ng-container><ng-template #genericTagline>Setki sprawdzonych warsztatów w całej Polsce.</ng-template><br>Wyszukaj, porównaj opinie i zarezerwuj wizytę online, bez dzwonienia.</p>
@@ -28,6 +28,7 @@
     <section class="search-section" aria-labelledby="search-heading">
       <h2 id="search-heading" class="visually-hidden">Znajdź serwis w swoim mieście</h2>
 
+      <div class="search-panel">
       <div class="actions-bar">
         <!-- Wyszukiwanie po mieście -->
         <div class="city-autocomplete-wrapper">
@@ -109,9 +110,18 @@
             ><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
           </div>
         </div>
+
+        <button type="button" class="btn-search-submit" (click)="onSearchSubmit()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Szukaj
+        </button>
       </div>
 
       <app-service-search-filters (filtersChanged)="onFiltersChanged($event)" (expandedChange)="searchFiltersExpanded = $event"></app-service-search-filters>
+      </div><!-- /search-panel -->
 
       <a routerLink="/serwisy" class="browse-all-link">
         Albo przeglądaj wszystkie serwisy w Polsce
@@ -121,15 +131,6 @@
         </svg>
       </a>
 
-      <div class="search-submit-row">
-        <button type="button" class="btn-search-submit" (click)="onSearchSubmit()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          Szukaj
-        </button>
-      </div>
     </section>
     </div><!-- /search-section-container -->
   </div><!-- /hero-banner-wrap -->
@@ -146,37 +147,6 @@
       <div class="steps-grid">
         <div class="step-card" *ngFor="let step of steps; let i = index">
           <div class="step-number">{{ i + 1 }}</div>
-          <div class="step-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <ng-container [ngSwitch]="step.icon">
-                <ng-container *ngSwitchCase="'search'">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </ng-container>
-                <ng-container *ngSwitchCase="'clock'">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </ng-container>
-                <ng-container *ngSwitchCase="'calendar'">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </ng-container>
-                <ng-container *ngSwitchCase="'check-circle'">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </ng-container>
-                <ng-container *ngSwitchCase="'tool'">
-                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                </ng-container>
-                <ng-container *ngSwitchCase="'credit-card'">
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                  <line x1="1" y1="10" x2="23" y2="10"></line>
-                </ng-container>
-              </ng-container>
-            </svg>
-          </div>
           <div class="step-content">
             <h3>{{ step.title }}</h3>
             <p>{{ step.description }}</p>
@@ -191,6 +161,42 @@
           <polyline points="12 5 19 12 12 19"></polyline>
         </svg>
       </a>
+    </section>
+
+    <!-- ===== WIĘCEJ NIŻ REZERWACJA ===== -->
+    <section id="korzysci" class="benefits-section" aria-labelledby="benefits-heading">
+      <div class="benefits-inner">
+        <h2 id="benefits-heading">Więcej niż rezerwacja</h2>
+        <p class="benefits-subtitle">Twój rower pod opieką także po wizycie w serwisie.</p>
+
+        <div class="benefits-grid">
+          <article class="benefit-card" *ngFor="let benefit of benefits">
+            <span class="benefit-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ng-container [ngSwitch]="benefit.icon">
+                  <ng-container *ngSwitchCase="'shield'">
+                    <path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"></path>
+                    <path d="M12 8v5M12 16h.01"></path>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'file'">
+                    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z"></path>
+                    <path d="M14 3v5h5M9 13h6M9 17h4"></path>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'history'">
+                    <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+                    <path d="M3 4v5h5M12 7v5l3 2"></path>
+                  </ng-container>
+                </ng-container>
+              </svg>
+            </span>
+            <h3>{{ benefit.title }}</h3>
+            <p>{{ benefit.description }}</p>
+            <a [routerLink]="benefit.link" class="benefit-link">Dowiedz się więcej →</a>
+          </article>
+        </div>
+
+        <a routerLink="/register" class="benefits-cta">Załóż darmowe konto</a>
+      </div>
     </section>
 
     <!-- ===== PASEK PARTNERÓW ===== -->
@@ -269,17 +275,6 @@
           </a>
         </div>
       </aside>
-
-      <div class="footer-register-cta">
-        <div class="footer-register-cta-text">
-          <h3>Prowadzisz serwis rowerowy? Zdobądź nowych klientów online.</h3>
-          <p>Dołącz do CycloPick i pozwól rowerzystom znaleźć Cię, sprawdzić opinie i zarezerwować wizytę bez telefonu.</p>
-        </div>
-        <div class="footer-register-cta-actions">
-          <a routerLink="/dla-serwisow" class="btn-footer-secondary">Zobacz jak to działa</a>
-          <a routerLink="/register-service" class="btn-footer-primary">Zarejestruj serwis za darmo</a>
-        </div>
-      </div>
     </div>
 
     <!-- ===== FOOTER: MIASTA ===== -->
@@ -299,6 +294,16 @@
     <!-- ===== FOOTER: ODNOŚNIKI DO INNYCH STRON ===== -->
     <footer class="site-links-footer">
       <div class="site-links-content">
+        <nav class="site-links-section" aria-label="Dla rowerzystów">
+          <h3>Dla rowerzystów</h3>
+          <div class="site-links-list">
+            <a [routerLink]="riderLinks.booking">Rezerwacja serwisu online</a>
+            <a [routerLink]="riderLinks.pickup">Odbiór roweru spod domu</a>
+            <a [routerLink]="riderLinks.documents">Dokumenty roweru</a>
+            <a [routerLink]="riderLinks.history">Historia serwisowa</a>
+            <a [routerLink]="riderLinks.theft">Zgłoszenie kradzieży</a>
+          </div>
+        </nav>
         <nav class="site-links-section" aria-label="Dla serwisów">
           <h3>Dla serwisów</h3>
           <div class="site-links-list">

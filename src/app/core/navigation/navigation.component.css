@@ -84,6 +84,8 @@
 /* Style dla standardowego menu */
 .navbar-menu {
   display: flex;
+  align-items: center;
+  flex: 1;
   gap: 20px;
 }
 
@@ -94,6 +96,39 @@
   font-size: 1.05rem;
   border-radius: 6px;
   transition: background-color 0.3s;
+  white-space: nowrap;
+}
+
+/* Grupa "Zaloguj się" + "Załóż konto" (niezalogowany) — po prawej stronie paska */
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.navbar-menu a.nav-register {
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  border-radius: var(--radius-button);
+  padding: 12px 20px;
+}
+
+.navbar-menu a.nav-register:hover {
+  background-color: var(--color-slate-100);
+  color: var(--color-primary);
+}
+
+.navbar-menu a.nav-login-desktop {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+}
+
+/* "Zaloguj się" przy hamburgerze i plakietka w menu — tylko mobile */
+.mobile-login-link,
+.menu-partner-badge {
+  display: none;
 }
 
 .nav-cta-reserve {
@@ -210,12 +245,6 @@
   z-index: 9998; /* Pod menu, ale nad mapą */
 }
 
-/* Pasek partnera "Rowerem do pracy" pod navbarem — widoczny tylko na mobile (patrz media query
-   poniżej); na desktopie odznaka jest już w .partner-badge-nav obok logo, więc tu jest ukryty. */
-.mobile-partner-strip {
-  display: none;
-}
-
 .menu-overlay.active {
   display: block;
 }
@@ -232,6 +261,26 @@
   }
 }
 
+/* Węższe okna desktopowe: ciaśniejsze odstępy, żeby wszystkie pozycje mieściły się w jednej linii */
+@media screen and (min-width: 769px) and (max-width: 1280px) {
+  .navbar-container {
+    gap: 16px;
+  }
+
+  .navbar-menu {
+    gap: 4px;
+  }
+
+  .navbar-menu a {
+    padding: 14px 12px;
+    font-size: 0.97rem;
+  }
+
+  .navbar-menu a.nav-register {
+    padding: 12px 16px;
+  }
+}
+
 /* Media queries for responsive design */
 @media screen and (max-width: 768px) {
   .navbar {
@@ -243,52 +292,42 @@
   }
 
   .menu-overlay {
-    top: 96px;
+    top: 60px;
   }
 
   .partner-badge-nav {
     display: none;
   }
 
-  .mobile-partner-strip {
-    display: flex;
+  .navbar-container,
+  .auth-navbar-container {
+    gap: 8px;
+  }
+
+  .mobile-login-link {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    padding: 7px 12px;
-    background-color: var(--color-white);
-    border-top: 1px solid var(--color-black-alpha-10);
-    text-decoration: none;
-    z-index: 9999; /* nad overlayem/mapą, pod dropdownem menu (10001) */
-  }
-
-  .mobile-partner-strip img {
-    display: block;
-    height: 20px;
-    width: auto;
-    flex-shrink: 0;
-  }
-
-  .mobile-partner-strip span {
-    font-size: 0.72rem;
-    line-height: 1.2;
-    color: var(--color-primary-dark, var(--color-primary));
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    min-height: 44px;
+    margin-left: auto;
+    padding: 0 12px;
+    color: var(--color-white);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
   }
 
-  .mobile-partner-strip .strip-text-short {
-    display: none;
+  .mobile-login-link + .mobile-menu-btn {
+    margin-left: 0;
+  }
+
+  .mobile-menu-btn {
+    min-width: 44px;
+    min-height: 44px;
   }
 
   .navbar-menu {
     position: fixed;
-    top: 96px;
+    top: 60px;
     left: 0;
     right: 0;
     flex-direction: column;
@@ -321,12 +360,51 @@
   .navbar-menu a:last-child {
     border-bottom: none;
   }
+
+  /* Mobile: logowanie jest przy hamburgerze, w menu zostaje tylko "Załóż konto" */
+  .nav-auth {
+    margin-left: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navbar-menu a.nav-login-desktop {
+    display: none;
+  }
+
+  .navbar-menu a.nav-register {
+    text-align: center;
+    min-height: 44px;
+    box-sizing: border-box;
+    border-bottom: none;
+  }
+
+  .navbar-menu a.menu-partner-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: var(--color-white);
+    color: var(--color-primary-dark);
+    border-bottom: none;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    white-space: normal;
+  }
+
+  .menu-partner-badge img {
+    display: block;
+    height: 24px;
+    width: auto;
+    flex-shrink: 0;
+  }
   
   /* Style mobilne dla menu auth */
   .auth-links {
     flex-direction: column;
     position: fixed;
-    top: 96px;
+    top: 60px;
     left: 0;
     right: 0;
     background-color: var(--color-primary-light);
@@ -351,17 +429,5 @@
     padding: 10px;
     text-align: center;
     display: block;
-  }
-}
-
-/* Na bardzo wąskich ekranach (np. iPhone SE, 320px) pełny napis paska partnera się nie mieści —
-   przełącz na krótszy wariant zamiast przycinać tekst wielokropkiem. */
-@media screen and (max-width: 360px) {
-  .mobile-partner-strip .strip-text-full {
-    display: none;
-  }
-
-  .mobile-partner-strip .strip-text-short {
-    display: inline;
   }
 }

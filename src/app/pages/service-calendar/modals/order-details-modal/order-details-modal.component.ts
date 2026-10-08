@@ -400,6 +400,16 @@ export class OrderDetailsModalComponent implements OnDestroy {
       || status === 'COMPLETED';
   }
 
+  get canStartWork(): boolean {
+    const status = this.fullOrder?.status || this.order.status;
+    return status === 'IN_QUEUE';
+  }
+
+  onStartWorkClick(): void {
+    this.selectedStatus = 'IN_PROGRESS';
+    this.onStatusChange();
+  }
+
   onAcceptBikeClick(): void {
     this.acceptBike.emit(this.fullOrder || this.order);
   }

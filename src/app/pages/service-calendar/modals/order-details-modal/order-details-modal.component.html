@@ -104,6 +104,14 @@
             >
               {{ t('service_calendar.buttons.accept_bike') }}
             </button>
+            <button
+              *ngIf="canStartWork"
+              class="btn-accept-bike"
+              (click)="onStartWorkClick()"
+              [disabled]="isUpdating"
+            >
+              {{ t('service_calendar.buttons.start_work') }}
+            </button>
           </div>
         </div>
 

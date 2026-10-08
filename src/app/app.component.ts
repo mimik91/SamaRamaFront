@@ -23,14 +23,6 @@ declare let gtag: Function;
     .content-container {
       padding-top: 60px;
     }
-
-    /* Pod paskiem "Rowerem do pracy" (.mobile-partner-strip), widocznym tylko na mobile,
-       potrzeba dodatkowego odstępu, żeby treść strony na niego nie nachodziła. */
-    @media screen and (max-width: 768px) {
-      .content-container {
-        padding-top: 96px;
-      }
-    }
   `]
 })
 export class AppComponent implements OnInit {

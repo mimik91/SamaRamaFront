@@ -6,6 +6,12 @@
   margin-bottom: var(--spacing-4);
 }
 
+/* Wewnątrz białego panelu wyszukiwarki na stronie głównej: bez własnego cienia i marginesu */
+:host-context(.search-panel) .ssf-container {
+  box-shadow: none;
+  margin-bottom: 0;
+}
+
 /* ============ HEADER ============ */
 
 .ssf-header {

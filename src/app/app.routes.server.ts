@@ -43,6 +43,14 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender
   },
   {
+    path: 'dokumenty-roweru',
+    renderMode: RenderMode.Prerender
+  },
+  {
+    path: 'historia-serwisowa-roweru',
+    renderMode: RenderMode.Prerender
+  },
+  {
     path: 'cooperation',
     renderMode: RenderMode.Prerender
   },

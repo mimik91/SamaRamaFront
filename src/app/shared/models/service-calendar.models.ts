@@ -336,6 +336,9 @@ export interface CalendarOrder {
   // Status potwierdzenia planu naprawy — obecne tylko gdy plan wymaga potwierdzenia i został wysłany
   repairPlanStatus?: 'SENT_TO_CLIENT' | 'ACCEPTED' | 'REJECTED';
 
+  // Zlecenie ma już przypisany transport (powiązany lub oczekujący na zgodę klienta)
+  hasTransport?: boolean;
+
   // Metadane
   createdAt?: string;
   updatedAt?: string;

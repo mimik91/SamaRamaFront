@@ -468,6 +468,9 @@
 .btn-action--resume   { background: #faf5ff; color: #6d28d9; }
 .btn-action--resume:hover   { background: #ede9fe; }
 
+.btn-action--start   { background: #fff7ed; color: #c2410c; }
+.btn-action--start:hover   { background: #ffedd5; }
+
 .btn-action--complete { background: #f0fdf4; color: #166534; }
 .btn-action--complete:hover { background: #bbf7d0; }
 

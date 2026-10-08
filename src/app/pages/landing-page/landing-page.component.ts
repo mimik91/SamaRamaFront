@@ -16,6 +16,7 @@ import { environment } from '../../environments/environments';
 import { CityConfig } from '../city-services-page/city-services-page.component';
 import { ServiceProfileService, PartnerLogoDto } from '../service-profile/service-profile.service';
 import { ServiceSearchFiltersComponent, ServiceListFiltersChange } from '../../shared/components/service-search-filters/service-search-filters.component';
+import { RIDER_LINKS } from './rider-links';
 import { PoradnikArticleCardComponent } from '../poradnik/poradnik-article-card/poradnik-article-card.component';
 import { PORADNIK_ARTICLES } from '../poradnik/poradnik-articles.data';
 
@@ -48,34 +49,52 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   // względem skróconej wersji na /jak-dzialamy
   readonly steps = [
     {
-      icon: 'search',
       title: 'Znajdź serwis rowerowy',
       description: 'Przeszukaj katalog setek serwisów w całej Polsce — filtruj po mieście i rodzaju usługi, by znaleźć ten najbliższy Ciebie.'
     },
     {
-      icon: 'clock',
       title: 'Sprawdź dostępne terminy i cennik',
       description: 'Zobacz godziny otwarcia, opinie innych klientów i orientacyjne ceny usług, zanim się zdecydujesz.'
     },
     {
-      icon: 'calendar',
       title: 'Zarezerwuj wizytę online',
       description: 'Wybierz dogodny termin i wyślij zgłoszenie rezerwacji w kilka minut — bez telefonowania.'
     },
     {
-      icon: 'check-circle',
       title: 'Poczekaj na potwierdzenie wizyty przez serwis',
       description: 'Serwis potwierdzi Twoją rezerwację — otrzymasz powiadomienie, gdy termin zostanie zaakceptowany.'
     },
     {
-      icon: 'tool',
       title: 'Przyjedź z rowerem w umówionym terminie',
       description: 'Serwis już na Ciebie czeka — zero kolejek, zero niespodzianek.'
     },
     {
-      icon: 'credit-card',
       title: 'Odbierz naprawiony rower',
       description: 'Zapłać na miejscu i wróć na trasę — z pewnością, że rower jest w dobrych rękach.'
+    }
+  ];
+
+  readonly riderLinks = RIDER_LINKS;
+
+  // Sekcja "Więcej niż rezerwacja" — korzyści z konta (linki do podstron "w przygotowaniu")
+  readonly benefits = [
+    {
+      icon: 'shield',
+      title: 'Zgłoszenie kradzieży roweru',
+      description: 'Ukradli Ci rower? Zgłoś to w CycloPick. Serwisy partnerskie sprawdzają przyjmowane rowery w naszej bazie.',
+      link: RIDER_LINKS.theft
+    },
+    {
+      icon: 'file',
+      title: 'Dokumenty roweru zawsze pod ręką',
+      description: 'Zdjęcia roweru, dowód zakupu i karta gwarancyjna w jednym miejscu. Przydadzą się przy sprzedaży, reklamacji i rozmowie z ubezpieczycielem.',
+      link: RIDER_LINKS.documents
+    },
+    {
+      icon: 'history',
+      title: 'Historia serwisowa roweru',
+      description: 'Każda naprawa zapisuje się automatycznie. Przy sprzedaży pokażesz, że rower był zadbany.',
+      link: RIDER_LINKS.history
     }
   ];
 

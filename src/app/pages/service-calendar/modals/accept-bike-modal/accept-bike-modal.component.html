@@ -65,7 +65,7 @@
         </div>
 
         <!-- Pickup method for select mode -->
-        <div class="form-section pickup-section" *ngIf="selectedOrderId">
+        <div class="form-section pickup-section" *ngIf="selectedOrderId && !orderHasTransport">
           <h3 class="section-title">Odbiór roweru</h3>
           <div class="pickup-options">
             <label class="pickup-option" [class.active]="pickupMethod === 'self'">
@@ -218,7 +218,7 @@
                   <button
                     type="button"
                     class="expand-btn"
-                    (click)="expandAllBrands()"
+                    (click)="toggleAllBrands()"
                     [title]="t('service_calendar.brand_autocomplete.show_all')"
                     [disabled]="selectedBikeId !== null"
                   >
@@ -401,7 +401,7 @@
           </div>
 
           <!-- Pickup method -->
-          <div class="form-section">
+          <div class="form-section" *ngIf="!orderHasTransport">
             <h3 class="section-title">Odbiór roweru</h3>
 
             <div class="pickup-options">

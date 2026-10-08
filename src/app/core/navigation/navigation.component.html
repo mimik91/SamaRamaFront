@@ -8,6 +8,7 @@
     </div>
 
     <a
+      *ngIf="!authService.isLoggedIn()"
       class="partner-badge-nav"
       href="https://roweremdopracy.um.krakow.pl/campaign-editions/5#sponsor-39"
       target="_blank"
@@ -17,7 +18,14 @@
       <span>Jesteśmy partnerem akcji <strong>Rowerem do pracy</strong></span>
     </a>
 
-    <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+    <a *ngIf="!authService.isLoggedIn()" routerLink="/login" class="mobile-login-link">Zaloguj się</a>
+
+    <button
+      class="mobile-menu-btn"
+      type="button"
+      (click)="toggleMobileMenu()"
+      [attr.aria-label]="mobileMenuOpen ? 'Zamknij menu' : 'Otwórz menu'"
+      [attr.aria-expanded]="mobileMenuOpen">
       <span class="hamburger-icon" [class.open]="mobileMenuOpen">
         <span></span>
         <span></span>
@@ -36,10 +44,6 @@
 
         <!-- Menu dla zalogowanych serwisów -->
         <ng-container *ngIf="authService.isService()">
-          <a href="javascript:void(0)" (click)="navigateToProfileSettings($event)" class="nav-link nav-link--icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Ustawienia profilu
-          </a>
           <a href="javascript:void(0)" (click)="navigateToKanban($event)" class="nav-link nav-link--icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="11" rx="1"/><rect x="17" y="3" width="5" height="15" rx="1"/></svg>
             Statusy zleceń
@@ -85,7 +89,7 @@
       <!-- Menu dla niezalogowanych -->
       <ng-template #notLoggedInMenu>
         <ng-container *ngTemplateOutlet="mapLink"></ng-container>
-        <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Login</a>
+        <a routerLink="/dla-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Dla serwisów</a>
       </ng-template>
 
       <!-- CTA rezerwacji — widoczne dla wszystkich na stronie profilu serwisu -->
@@ -97,6 +101,23 @@
       </a>
 
       <a routerLink="/poradnik" routerLinkActive="active" (click)="closeMobileMenu()">Poradnik</a>
+
+      <ng-container *ngIf="!authService.isLoggedIn()">
+        <div class="nav-auth">
+          <a routerLink="/login" class="nav-login-desktop" (click)="closeMobileMenu()">Zaloguj się</a>
+          <a routerLink="/register" class="nav-register" (click)="closeMobileMenu()">Załóż konto</a>
+        </div>
+
+        <!-- Plakietka partnera: na mobile na dole rozwiniętego menu (na desktopie jest obok logo) -->
+        <a
+          class="menu-partner-badge"
+          href="https://roweremdopracy.um.krakow.pl/campaign-editions/5#sponsor-39"
+          target="_blank"
+          rel="noopener noreferrer">
+          <img src="assets/images/rowerem-do-pracy-logo.png" alt="Rowerem do pracy">
+          <span>Jesteśmy partnerem akcji <strong>Rowerem do pracy</strong></span>
+        </a>
+      </ng-container>
     </div>
 
     <!-- User Settings Dropdown -->
@@ -136,15 +157,4 @@
 
   <!-- Overlay dla menu mobilnego -->
   <div class="menu-overlay" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()"></div>
-
-  <!-- Pasek partnera "Rowerem do pracy" — tylko mobile (na desktopie odznaka jest w .partner-badge-nav) -->
-  <a
-    class="mobile-partner-strip"
-    href="https://roweremdopracy.um.krakow.pl/campaign-editions/5#sponsor-39"
-    target="_blank"
-    rel="noopener noreferrer">
-    <img src="assets/images/rowerem-do-pracy-logo.png" alt="Rowerem do pracy">
-    <span class="strip-text-full">Jesteśmy partnerem akcji <strong>Rowerem do pracy</strong></span>
-    <span class="strip-text-short">Partner akcji <strong>Rowerem do pracy</strong></span>
-  </a>
 </nav>

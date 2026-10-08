@@ -29,6 +29,7 @@ import { ServicesMapResolver } from './pages/services-map-page/services-map-page
 // REFACTORED COMPONENTS - NEW STRUCTURE
 import { ServicesMapPageComponent } from './pages/services-map-page/services-map-page.component';
 import { StolenBikesSearchPageComponent } from './pages/stolen-bikes-search-page/stolen-bikes-search-page.component';
+import { ComingSoonComponent } from './pages/coming-soon/coming-soon.component';
 import { HowItWorksPageComponent } from './pages/how-it-works-page/how-it-works-page.component';
 import { CooperationComponent } from './cooperation/cooperation.component';
 import { ServiceProfilePageComponent } from './pages/service-profile/service-profile.component';
@@ -59,6 +60,20 @@ export const routes: Routes = [
       path: 'skradzione-rowery',
       component: StolenBikesSearchPageComponent,
       title: 'Baza skradzionych rowerów | CycloPick'
+    },
+
+    // Podstrony oferty dla rowerzystów (linki z sekcji "Więcej niż rezerwacja") — na razie "w przygotowaniu"
+    {
+      path: 'dokumenty-roweru',
+      component: ComingSoonComponent,
+      title: 'Dokumenty roweru | CycloPick',
+      data: { heading: 'Dokumenty roweru zawsze pod ręką' }
+    },
+    {
+      path: 'historia-serwisowa-roweru',
+      component: ComingSoonComponent,
+      title: 'Historia serwisowa roweru | CycloPick',
+      data: { heading: 'Historia serwisowa roweru' }
     },
 
     // Map page - interaktywna mapa serwisów

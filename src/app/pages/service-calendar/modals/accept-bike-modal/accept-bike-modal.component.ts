@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -34,7 +34,6 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
   private notificationService = inject(NotificationService);
   private calendarService = inject(ServiceCalendarService);
   private enumerationService = inject(EnumerationService);
-  private elementRef = inject(ElementRef);
 
   @Input() serviceId!: number;
   @Input() waitingOrders: CalendarOrder[] = [];
@@ -158,16 +157,26 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     this.showBrandDropdown = false;
   }
 
-  expandAllBrands(): void {
+  toggleAllBrands(): void {
+    if (this.showBrandDropdown) {
+      this.showBrandDropdown = false;
+      return;
+    }
     this.filteredBrands = [...this.allBrands];
     this.showBrandDropdown = true;
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest?.('.autocomplete-container')) {
       this.showBrandDropdown = false;
     }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.showBrandDropdown = false;
   }
 
   // ============================================
@@ -280,12 +289,12 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     ].join('|');
   }
 
-  runStolenCheck(): void {
+  runStolenCheck(onComplete?: () => void): void {
     if (!this.stolenCheckCriteriaMet || this.isCheckingStolen) return;
-    this.performStolenCheck();
+    this.performStolenCheck(onComplete);
   }
 
-  private performStolenCheck(): void {
+  private performStolenCheck(onComplete?: () => void): void {
     const frame = this.frameNumber.trim();
     const brand = this.bikeBrand.trim();
     const model = this.bikeModel.trim();
@@ -311,10 +320,12 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
         } else if (this.stolenMatches.some(match => !match.ownedByClient)) {
           this.showStolenMatches = true;
         }
+        onComplete?.();
       },
       error: () => {
         this.stolenMatches = [];
         this.isCheckingStolen = false;
+        onComplete?.();
       }
     });
   }
@@ -460,6 +471,20 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
     return this.hasAnyTechnician;
   }
 
+  /**
+   * Zlecenie ma już przypisany transport (np. z rezerwacji lub oczekujący na zgodę klienta) —
+   * backend odrzuca drugi transport zwrotny, więc nie oferujemy wyboru odbioru roweru.
+   */
+  get orderHasTransport(): boolean {
+    if (this.mode === 'select') {
+      return !!this.selectedOrder?.hasTransport;
+    }
+    if (this.preselectedOrder) {
+      return !!(this.fullOrderData?.hasTransport ?? this.preselectedOrder.hasTransport);
+    }
+    return false;
+  }
+
   get isDeliveryAddressValid(): boolean {
     if (this.pickupMethod !== 'delivery') return true;
     return !!(this.deliveryStreet.trim() && this.deliveryBuilding.trim() && this.deliveryCity.trim());
@@ -477,12 +502,14 @@ export class AcceptBikeModalComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.isSubmitting) return;
+    if (this.orderHasTransport) this.pickupMethod = 'self';
     if (!this.isFormValid) { this.showValidation = true; return; }
 
     if (this.isStolenCheckStale) {
       if (this.stolenCheckCriteriaMet) {
-        this.runStolenCheck();
-        this.notificationService.warning('Dane roweru się zmieniły — sprawdziłem numer w bazie. Zobacz wynik i przyjmij ponownie.');
+        // Dane roweru się zmieniły: sprawdzamy ponownie i kontynuujemy przyjęcie automatycznie.
+        // Przy trafieniu (rower figuruje jako skradziony) onSubmit zatrzyma się na rozstrzygnięciu.
+        this.runStolenCheck(() => this.onSubmit());
         return;
       }
       this.stolenMatches = [];

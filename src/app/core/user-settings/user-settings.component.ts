@@ -55,6 +55,17 @@ export class UserSettingsComponent implements OnInit {
     this.router.navigate(['/account']);
   }
 
+  navigateToProfileSettings(event: Event): void {
+    event.preventDefault();
+    this.isOpen = false;
+    const suffix = this.authService.getServiceSuffix();
+    if (suffix) {
+      this.router.navigateByUrl(`/${encodeURIComponent(suffix)}/panel-administratora/profil`);
+    } else {
+      this.notificationService.error('Nie można załadować danych serwisu. Spróbuj się wylogować i zalogować ponownie.');
+    }
+  }
+
   private getUserInfo(): void {
     const email = this.authService.getCurrentUserEmail();
     if (email) {

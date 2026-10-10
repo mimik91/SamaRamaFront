@@ -14,7 +14,7 @@
 
 .modal-content {
   background: var(--color-white);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-modal);
   width: 100%;
   max-width: 440px;
   max-height: 90vh;
@@ -35,7 +35,7 @@
 .modal-header h2 {
   margin: 0;
   font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
+  font-weight: 800;
   color: var(--text-primary);
 }
 

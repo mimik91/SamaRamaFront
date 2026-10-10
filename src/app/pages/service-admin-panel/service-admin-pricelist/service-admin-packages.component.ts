@@ -32,7 +32,7 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
 
   isLoading = true;
   isSaving = false;
-  isEditingSettings = false;
+  readonly isEditingSettings = true;
   error: string = '';
   successMessage: string = '';
 
@@ -75,6 +75,12 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
           this.comment = config.comment || '';
           this.defaultBikeType = config.defaultBikeType;
           this.configActive = config.active;
+          this.originalSettings = {
+            generalDescription: this.generalDescription,
+            comment: this.comment,
+            defaultBikeType: this.defaultBikeType,
+            active: this.configActive
+          };
 
           if (this.allBikeTypes.length > 0 && !this.selectedBikeType) {
             this.selectedBikeType = this.defaultBikeType || this.allBikeTypes[0];
@@ -92,16 +98,13 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
 
   // ===== USTAWIENIA GLOBALNE =====
 
-  startEditingSettings(): void {
-    this.originalSettings = {
-      generalDescription: this.generalDescription,
-      comment: this.comment,
-      defaultBikeType: this.defaultBikeType,
-      active: this.configActive
-    };
-    this.isEditingSettings = true;
-    this.successMessage = '';
-    this.error = '';
+  get isSettingsDirty(): boolean {
+    const o = this.originalSettings;
+    if (!o) return false;
+    return (o.generalDescription || '') !== this.generalDescription
+      || (o.comment || '') !== this.comment
+      || o.defaultBikeType !== this.defaultBikeType
+      || o.active !== this.configActive;
   }
 
   cancelEditingSettings(): void {
@@ -110,9 +113,7 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
       this.comment = this.originalSettings.comment || '';
       this.defaultBikeType = this.originalSettings.defaultBikeType;
       this.configActive = this.originalSettings.active;
-      this.originalSettings = null;
     }
-    this.isEditingSettings = false;
     this.error = '';
   }
 
@@ -132,9 +133,7 @@ export class ServiceAdminPackagesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.successMessage = 'pricelist.packages.messages.settings_saved';
-          this.isEditingSettings = false;
           this.isSaving = false;
-          this.originalSettings = null;
           this.loadPackages();
           setTimeout(() => { this.successMessage = ''; }, 5000);
         },

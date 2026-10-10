@@ -47,7 +47,9 @@ export class ServiceAdminReservationsComponent implements OnInit {
   isSavingSettings: boolean = false;
   settingsSuccess: boolean = false;
   settingsError: string = '';
-  isEditMode: boolean = false;
+  readonly isEditMode = true;
+  private savedAvailability = false;
+  private settingsSnapshot = '';
 
   readonly daysOfWeek = [
     { key: 'MONDAY', label: 'Poniedziałek' },
@@ -69,6 +71,7 @@ export class ServiceAdminReservationsComponent implements OnInit {
 
   ngOnInit(): void {
     this.reservationAvailable = this.serviceDetails?.reservationAvailable ?? false;
+    this.savedAvailability = this.reservationAvailable;
     this.initDayStates();
     this.loadSettings();
   }
@@ -90,6 +93,7 @@ export class ServiceAdminReservationsComponent implements OnInit {
       next: (data) => {
         this.displayedSettings = data;
         this.populateFromSettings(data);
+        this.settingsSnapshot = JSON.stringify(this.buildPayload());
         this.isLoadingSettings = false;
       },
       error: (err) => {
@@ -134,18 +138,34 @@ export class ServiceAdminReservationsComponent implements OnInit {
     return time.substring(0, 5);
   }
 
-  enterEditMode(): void {
-    this.isEditMode = true;
+  get isDirty(): boolean {
+    if (this.isLoadingSettings || this.settingsLoadError) return false;
+    return this.reservationAvailable !== this.savedAvailability
+      || JSON.stringify(this.buildPayload()) !== this.settingsSnapshot;
+  }
+
+  get isSaving(): boolean {
+    return this.isSavingAvailability || this.isSavingSettings;
   }
 
   cancelEdit(): void {
+    this.reservationAvailable = this.savedAvailability;
     if (this.displayedSettings) {
       this.populateFromSettings(this.displayedSettings);
     } else {
       this.initDayStates();
     }
-    this.isEditMode = false;
     this.settingsError = '';
+    this.availabilityError = '';
+  }
+
+  saveAll(): void {
+    if (this.reservationAvailable !== this.savedAvailability) {
+      this.saveAvailability();
+    }
+    if (JSON.stringify(this.buildPayload()) !== this.settingsSnapshot) {
+      this.saveSettings();
+    }
   }
 
   saveAvailability(): void {
@@ -159,6 +179,7 @@ export class ServiceAdminReservationsComponent implements OnInit {
       next: () => {
         this.isSavingAvailability = false;
         this.availabilitySuccess = true;
+        this.savedAvailability = this.reservationAvailable;
         this.serviceDetails.reservationAvailable = this.reservationAvailable;
         setTimeout(() => this.availabilitySuccess = false, 3000);
       },
@@ -170,11 +191,7 @@ export class ServiceAdminReservationsComponent implements OnInit {
     });
   }
 
-  saveSettings(): void {
-    this.isSavingSettings = true;
-    this.settingsError = '';
-    this.settingsSuccess = false;
-
+  private buildPayload(): ReservationSettingsDto {
     const selectedDays = this.daysOfWeek
       .filter(d => this.acceptedDays[d.key])
       .map(d => d.key);
@@ -190,11 +207,19 @@ export class ServiceAdminReservationsComponent implements OnInit {
       }
     });
 
-    const payload: ReservationSettingsDto = {
+    return {
       acceptedDays: selectedDays,
       formSchedule: formSchedule,
       estimatedReservationDay: this.estimatedReservationDay || null
     };
+  }
+
+  saveSettings(): void {
+    this.isSavingSettings = true;
+    this.settingsError = '';
+    this.settingsSuccess = false;
+
+    const payload = this.buildPayload();
 
     this.http.put(`${this.apiUrl}/my-service/reservation-settings?serviceId=${this.serviceId}`, payload)
       .subscribe({
@@ -202,7 +227,7 @@ export class ServiceAdminReservationsComponent implements OnInit {
           this.isSavingSettings = false;
           this.settingsSuccess = true;
           this.displayedSettings = payload;
-          this.isEditMode = false;
+          this.settingsSnapshot = JSON.stringify(payload);
           setTimeout(() => this.settingsSuccess = false, 3000);
         },
         error: (err) => {

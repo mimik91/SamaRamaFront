@@ -44,6 +44,15 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
   searching = false;
   hasSearched = false;
   lastSearchByFrame = false;
+  searchError = false;
+  frameTooShort = false;
+  /** Mobile: pola marki i modelu są domyślnie zwinięte pod polem numeru ramy. */
+  moreOpen = false;
+  selectedPhotoIndex = 0;
+  openFaqIndex = 0;
+  apiKeyCopied = false;
+  contactSent = false;
+  contactTouched = false;
 
   // Modal kontaktowy
   contactingBicycle: StolenLookupResult | null = null;
@@ -67,6 +76,14 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
   apiKeyPrivacyAccepted = false;
   registeringApiKey = false;
   revealedApiKey: string | null = null;
+
+  readonly features = [
+    { title: 'Sprawdzane przy naprawie', text: 'Serwisy rowerowe w CycloPick sprawdzają numer ramy przy przyjęciu roweru do naprawy.' },
+    { title: 'Bezpłatne API', text: 'Aplikacja, sklep rowerowy czy ubezpieczyciel może automatycznie sprawdzić, czy numer ramy jest zgłoszony jako skradziony.' },
+    { title: 'Dla komisów i lombardów', text: 'Przez bezpłatne API bazę może wykorzystać też komis lub lombard przyjmujący rower do skupu.' },
+    { title: 'Zgłoszenia z kontem', text: 'Zgłoszenia wymagają konta CycloPick, a nie anonimowego formularza.' },
+    { title: 'Zdjęcie i numer ramy', text: 'Każde zgłoszenie ma zdjęcie roweru i numer ramy, nie tylko opis tekstowy.' }
+  ];
 
   readonly faqData = [
     {
@@ -95,11 +112,11 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
     },
     {
       question: 'Czy zgłoszenie w CycloPick zastępuje zgłoszenie na Policję?',
-      answer: 'Nie. Zawsze zgłoś kradzież też na Policji.'
+      answer: 'Nie. Zawsze zgłoś kradzież także na Policji.'
     },
     {
       question: 'Czy moje dane kontaktowe są widoczne dla osób sprawdzających rower?',
-      answer: 'Nie. Kontakt odbywa się przez CycloPick mailem, bez ujawniania numeru telefonu czy adresu.'
+      answer: 'Nie. Kontakt odbywa się przez CycloPick mailem, bez ujawniania Twojego numeru telefonu czy adresu.'
     },
     {
       question: 'Czy zgłoszenia są weryfikowane przez CycloPick?',
@@ -107,7 +124,7 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
     },
     {
       question: 'Jak serwis, komis lub lombard może korzystać z API?',
-      answer: 'Przez bezpłatne API do automatycznego sprawdzania numerów ram. Klucz i instrukcja integracji przychodzą mailem po wypełnieniu krótkiego formularza.'
+      answer: 'Przez bezpłatne API do automatycznego sprawdzania numerów ram. Klucz dostajesz od razu po wypełnieniu krótkiego formularza, a instrukcję integracji — mailem.'
     }
   ];
 
@@ -163,6 +180,10 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
     ].filter(Boolean));
   }
 
+  scrollTo(id: string): void {
+    this.document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   scrollToSearch(): void {
     this.frameNumberInput?.nativeElement.focus({ preventScroll: true });
     const el = this.document.getElementById('wyszukiwarka');
@@ -175,11 +196,72 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
     return !!(frame || (this.brand.trim() && this.model.trim()));
   }
 
+  /** Jeden wynik po numerze ramy → szczegółowa karta z galerią; w pozostałych przypadkach lista. */
+  get isSingleResult(): boolean {
+    return this.lastSearchByFrame && this.results.length === 1;
+  }
+
+  get listTitle(): string {
+    if (this.lastSearchByFrame) {
+      const n = this.results.length;
+      return `Ten numer ramy ma ${n} ${n < 5 ? 'zgłoszenia' : 'zgłoszeń'} kradzieży`;
+    }
+    const name = `${this.brand.trim()} ${this.model.trim()}`.trim();
+    return `Zgłoszone rowery ${name}: ${this.results.length}`;
+  }
+
+  get listSubtitle(): string {
+    return this.lastSearchByFrame
+      ? `Numer ${this.frameNumber.trim()} jest w bazie więcej niż raz. To sygnał ostrzegawczy, nie wyrok.`
+      : 'To wszystkie zgłoszone rowery tej marki i modelu — nie dopasowanie do Twojego roweru. Porównaj numer ramy na rowerze z numerami poniżej.';
+  }
+
+  photoCountLabel(bicycle: StolenLookupResult): string {
+    const n = this.allPhotos(bicycle).length;
+    if (n === 0) return '';
+    if (n === 1) return '1 zdjęcie';
+    return n < 5 ? `${n} zdjęcia` : `${n} zdjęć`;
+  }
+
+  resultName(bicycle: StolenLookupResult): string {
+    if (bicycle.source === 'EXTERNAL') return bicycle.bikeName || 'Zgłoszony rower';
+    return `${bicycle.brand ?? ''} ${bicycle.model ?? ''}`.trim() || 'Zgłoszony rower';
+  }
+
+  toggleMore(): void {
+    this.moreOpen = !this.moreOpen;
+  }
+
+  toggleFaq(index: number): void {
+    this.openFaqIndex = this.openFaqIndex === index ? -1 : index;
+  }
+
+  selectPhoto(index: number): void {
+    this.selectedPhotoIndex = index;
+  }
+
+  resetSearch(): void {
+    this.hasSearched = false;
+    this.results = [];
+    this.searchError = false;
+    this.frameTooShort = false;
+    this.frameNumber = '';
+    this.brand = '';
+    this.model = '';
+    this.scrollToSearch();
+  }
+
   search(): void {
-    if (!this.canSearch || this.searching) return;
+    if (this.searching) return;
+    const frame = this.frameNumber.trim();
+    this.frameTooShort = !!frame && frame.length < 4;
+    if (this.frameTooShort || !this.canSearch) return;
+
     this.searching = true;
     this.hasSearched = true;
-    this.lastSearchByFrame = !!this.frameNumber.trim();
+    this.searchError = false;
+    this.selectedPhotoIndex = 0;
+    this.lastSearchByFrame = !!frame;
     this.stolenBikesService.search(this.frameNumber, this.brand, this.model).subscribe({
       next: (response) => {
         this.results = response.results;
@@ -188,7 +270,7 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
       error: () => {
         this.results = [];
         this.searching = false;
-        this.notificationService.error('Nie udało się wyszukać rowerów. Spróbuj ponownie.');
+        this.searchError = true;
       }
     });
   }
@@ -201,10 +283,13 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
     this.contactMessage = '';
     this.finderPersonalDataAccepted = false;
     this.finderDataSharingAccepted = false;
+    this.contactSent = false;
+    this.contactTouched = false;
   }
 
   closeContactModal(): void {
     this.contactingBicycle = null;
+    this.contactSent = false;
   }
 
   get isContactFormValid(): boolean {
@@ -218,6 +303,7 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
   }
 
   sendContact(): void {
+    this.contactTouched = true;
     if (!this.contactingBicycle?.id || !this.isContactFormValid || this.sendingContact) return;
 
     this.sendingContact = true;
@@ -230,9 +316,8 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
       dataSharingAccepted: this.finderDataSharingAccepted
     }).subscribe({
       next: () => {
-        this.notificationService.success('Wiadomość została wysłana do właściciela roweru.');
         this.sendingContact = false;
-        this.contactingBicycle = null;
+        this.contactSent = true;
       },
       error: (err) => {
         this.notificationService.error(err?.error?.message ?? 'Nie udało się wysłać wiadomości.');
@@ -256,6 +341,13 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
       photos.unshift(bicycle.mainPhotoUrl);
     }
     return photos;
+  }
+
+  copyApiKey(): void {
+    if (!this.revealedApiKey || typeof navigator === 'undefined' || !navigator.clipboard) return;
+    navigator.clipboard.writeText(this.revealedApiKey).then(() => {
+      this.apiKeyCopied = true;
+    });
   }
 
   get isApiKeyFormValid(): boolean {

@@ -10,7 +10,25 @@
   <div class="stats-loading" *ngIf="loading">Ładowanie...</div>
   <div class="stats-error" *ngIf="loadError">Nie udało się załadować statystyk.</div>
 
-  <div [hidden]="loading || loadError">
+  <div class="stats-body" [hidden]="loading || loadError">
+    <div class="stats-tiles" *ngIf="monthlyStats.length > 0 || technicianStats.length > 0">
+      <div class="stats-tile">
+        <span class="tile-label">Zlecenia</span>
+        <strong class="tile-value">{{ totalOrdersInPeriod }}</strong>
+        <span class="tile-note">w ostatnich 12 miesiącach</span>
+      </div>
+      <div class="stats-tile">
+        <span class="tile-label">Wykonane zlecenia</span>
+        <strong class="tile-value">{{ totalCompletedOrders }}</strong>
+        <span class="tile-note">zakończone, wszyscy serwisanci</span>
+      </div>
+      <div class="stats-tile">
+        <span class="tile-label">Przychód</span>
+        <strong class="tile-value">{{ totalRevenue | currency:'PLN':'symbol':'1.2-2' }}</strong>
+        <span class="tile-note">z wykonanych zleceń</span>
+      </div>
+    </div>
+
     <div class="stats-section">
       <h4>Zlecenia w ostatnich 12 miesiącach</h4>
       <div class="chart-container">
@@ -30,22 +48,31 @@
         </div>
       </div>
 
-      <table class="technician-table" *ngIf="technicianStats.length > 0">
-        <thead>
-          <tr>
-            <th>Serwisant</th>
-            <th>Wykonane zlecenia</th>
-            <th>Przychód</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let t of technicianStats" [class.unassigned-row]="t.technicianId === null">
-            <td>{{ t.technicianNickname }}</td>
-            <td>{{ t.completedOrdersCount }}</td>
-            <td>{{ t.totalRevenue | currency:'PLN':'symbol':'1.2-2' }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-scroll" *ngIf="technicianStats.length > 0">
+        <table class="technician-table">
+          <thead>
+            <tr>
+              <th scope="col">Serwisant</th>
+              <th scope="col">Wykonane zlecenia</th>
+              <th scope="col">Przychód</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of technicianStats" [class.unassigned-row]="t.technicianId === null">
+              <td>{{ t.technicianNickname }}</td>
+              <td>{{ t.completedOrdersCount }}</td>
+              <td>{{ t.totalRevenue | currency:'PLN':'symbol':'1.2-2' }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Razem</td>
+              <td>{{ totalCompletedOrders }}</td>
+              <td>{{ totalRevenue | currency:'PLN':'symbol':'1.2-2' }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
 
       <p class="no-data-hint" *ngIf="!loading && technicianStats.length === 0">
         Brak jeszcze danych — statystyki pojawią się po najbliższym nocnym przeliczeniu.

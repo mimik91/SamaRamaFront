@@ -66,7 +66,7 @@
         <!-- Menu dla zalogowanych klientów -->
         <ng-container *ngIf="authService.isClient() && !authService.hasAdminPrivileges()">
           <ng-container *ngTemplateOutlet="mapLink"></ng-container>
-          <a routerLink="/bicycles" routerLinkActive="active" (click)="closeMobileMenu()">Moje Rowery</a>
+          <a routerLink="/bicycles" routerLinkActive="active" (click)="closeMobileMenu()">Moje rowery</a>
         </ng-container>
 
         <!-- Menu dla administratorów -->

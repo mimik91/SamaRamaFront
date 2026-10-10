@@ -1,7 +1,6 @@
-import { Component, OnInit, OnDestroy, HostListener, Input, inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, Input, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { environment } from '../../../environments/environments';
 import { PricelistService } from './pricelist.service';
 import {
   CategoryWithPrices,
@@ -17,17 +16,15 @@ import {
   templateUrl: './service-admin-pricelist.component.html',
   styleUrls: ['./service-admin-pricelist.component.css']
 })
-export class ServiceAdminPricelistComponent implements OnInit, OnDestroy {
+export class ServiceAdminPricelistComponent implements OnInit {
   private pricelistService = inject(PricelistService);
-  private platformId = inject(PLATFORM_ID);
-  private isBrowser = isPlatformBrowser(this.platformId);
-  private readonly autoSaveUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}/my-service/pricelist`;
 
   @Input() serviceId!: number;
 
   // Stan komponentu
   isLoading = true;
-  isEditing = false;
+  readonly isEditing = true;
+  private snapshot = '';
   isSaving = false;
   error: string = '';
   successMessage: string = '';
@@ -92,6 +89,7 @@ export class ServiceAdminPricelistComponent implements OnInit, OnDestroy {
           this.pricelistNote = servicePricelist.pricelistNote || '';
           this.pricelistActive = servicePricelist.pricelistActive;
 
+          this.captureOriginal();
           this.isLoading = false;
         }
       })
@@ -104,29 +102,27 @@ export class ServiceAdminPricelistComponent implements OnInit, OnDestroy {
 
   // ===== EDYCJA =====
 
-  startEditing(): void {
-    // Zapisz oryginalne dane
+  get isDirty(): boolean {
+    return !!this.originalData && JSON.stringify(this.buildPricelistPayload()) !== this.snapshot;
+  }
+
+  private captureOriginal(): void {
     this.originalData = {
       categoriesWithPrices: JSON.parse(JSON.stringify(this.categoriesWithPrices)),
       pricelistInfo: this.pricelistInfo,
       pricelistNote: this.pricelistNote,
       pricelistActive: this.pricelistActive
     };
-    this.isEditing = true;
-    this.successMessage = '';
-    this.error = '';
+    this.snapshot = JSON.stringify(this.buildPricelistPayload());
   }
 
   cancelEditing(): void {
     if (this.originalData) {
-      // Przywróć oryginalne dane
-      this.categoriesWithPrices = this.originalData.categoriesWithPrices;
+      this.categoriesWithPrices = JSON.parse(JSON.stringify(this.originalData.categoriesWithPrices));
       this.pricelistInfo = this.originalData.pricelistInfo;
       this.pricelistNote = this.originalData.pricelistNote;
       this.pricelistActive = this.originalData.pricelistActive;
-      this.originalData = null;
     }
-    this.isEditing = false;
     this.error = '';
   }
 
@@ -158,9 +154,7 @@ export class ServiceAdminPricelistComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.successMessage = 'Cennik został zaktualizowany pomyślnie!';
-          this.isEditing = false;
           this.isSaving = false;
-          this.originalData = null;
 
           // Odśwież dane z odpowiedzi
           this.loadPricelist();
@@ -176,33 +170,6 @@ export class ServiceAdminPricelistComponent implements OnInit, OnDestroy {
           this.isSaving = false;
         }
       });
-  }
-
-  ngOnDestroy(): void {
-    if (this.isEditing) {
-      this.pricelistService.updateMyPricelist(this.serviceId, this.buildPricelistPayload()).subscribe();
-    }
-  }
-
-  @HostListener('window:beforeunload')
-  onBeforeUnload(): void {
-    if (!this.isBrowser || !this.isEditing) return;
-
-    const sessionStr = localStorage.getItem('auth_session');
-    if (!sessionStr) return;
-
-    try {
-      const session = JSON.parse(sessionStr) as { token: string };
-      fetch(`${this.autoSaveUrl}?serviceId=${this.serviceId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.token}`
-        },
-        body: JSON.stringify(this.buildPricelistPayload()),
-        keepalive: true
-      });
-    } catch { /* best-effort */ }
   }
 
     /**

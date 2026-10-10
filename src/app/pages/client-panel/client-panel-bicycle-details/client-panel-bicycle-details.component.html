@@ -1,379 +1,398 @@
 <div class="bicycle-details-container">
-  <div class="header-section">
-    <h1>Szczegóły roweru</h1>
-    <button class="back-btn" (click)="goBack()">
-      Powrót do listy
-    </button>
-  </div>
+  <a class="back-link" href="javascript:void(0)" (click)="goBack()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    Moje rowery
+  </a>
 
   <div class="content-container" *ngIf="bicycle">
-    <div class="bicycle-info-container">
-      <!-- Zdjęcie -->
-      <div class="bicycle-image-wrapper">
-        <div class="bicycle-image-container">
-          <ng-container *ngIf="mainPhotoUrl; else noImage">
-            <img [src]="mainPhotoUrl" (error)="handleImageError()" alt="Zdjęcie roweru" class="bicycle-image">
-          </ng-container>
-          <ng-template #noImage>
-            <div class="no-image">
-              <button *ngIf="!isEditing" class="add-photo-inline-btn" (click)="openPhotoUpload()">
-                + Dodaj zdjęcie
-              </button>
-              <div *ngIf="isEditing" class="placeholder-content"><span>Brak zdjęcia</span></div>
-            </div>
-          </ng-template>
-        </div>
-        <button
-          *ngIf="mainPhotoUrl && !isEditing"
-          class="photo-delete-overlay-btn"
-          (click)="confirmDeletePhoto()"
-          [disabled]="isPhotoDeleting"
-          title="Usuń zdjęcie główne"
-        >
-          {{ isPhotoDeleting ? '…' : '✕' }}
-        </button>
-      </div>
 
-      <!-- Info + przyciski -->
-      <div class="bicycle-info">
-        <h2>{{ bicycle.brand }} {{ bicycle.model || '' }}</h2>
-
-        <div class="bicycle-details">
-          <p *ngIf="bicycle.type"><strong>Typ roweru:</strong> {{ bicycle.type }}</p>
-          <p *ngIf="bicycle.frameMaterial"><strong>Materiał ramy:</strong> {{ bicycle.frameMaterial }}</p>
-          <p *ngIf="bicycle.frameNumber" class="frame-number"><strong>Numer ramy:</strong> {{ bicycle.frameNumber }}</p>
-          <p *ngIf="bicycle.productionDate"><strong>Rok produkcji:</strong> {{ bicycle.productionDate | date:'yyyy' }}</p>
-        </div>
-
-        <div class="action-buttons">
-          <button class="action-btn edit-btn" (click)="startEditing()">Edytuj dane roweru</button>
-          <button class="action-btn service-btn" (click)="openBookServiceModal()">Umów serwis</button>
-          <button class="action-btn report-btn" [class.found-btn]="bicycle.stolen" (click)="reportStolen()">
-            {{ bicycle.stolen ? 'Rower się znalazł' : 'Zgłoś kradzież' }}
+    <!-- ── Karta roweru ── -->
+    <section class="cp-card bike-card">
+      <button type="button" class="btn-ghost btn-ghost--delete actions-wide" (click)="confirmDelete()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>
+        Usuń rower
+      </button>
+      <div class="bike-photo">
+        <ng-container *ngIf="mainPhotoUrl; else noImage">
+          <img [src]="mainPhotoUrl" (error)="handleImageError()" alt="Zdjęcie roweru" class="bicycle-image">
+          <button *ngIf="!isEditing" type="button" class="photo-delete-overlay-btn" (click)="confirmDeletePhoto()" [disabled]="isPhotoDeleting" title="Usuń zdjęcie główne" aria-label="Usuń zdjęcie główne">
+            {{ isPhotoDeleting ? '…' : '✕' }}
           </button>
-          <button class="action-btn delete-btn" (click)="confirmDelete()">Usuń rower</button>
+        </ng-container>
+        <ng-template #noImage>
+          <button type="button" class="add-photo-tile" (click)="openPhotoUpload()">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>
+            Dodaj zdjęcie roweru
+          </button>
+        </ng-template>
+      </div>
+
+      <div class="bike-main">
+        <div class="bike-heading">
+          <div class="bike-title-row">
+            <h1>{{ bicycle.brand }} {{ bicycle.model || '' }}</h1>
+            <span class="stolen-pill" *ngIf="bicycle.stolen">SKRADZIONY</span>
+            <span class="status-pill" *ngIf="activeServiceOrder" [style.background]="serviceOrderStatusColor">{{ activeServiceOrder.statusDisplayName }}</span>
+            <span class="status-pill" *ngIf="!activeServiceOrder && showTransportCard" [style.background]="transportOrderStatusColor">{{ activeTransport?.transport?.statusDisplayName || activeTransport?.transport?.status }}</span>
+          </div>
+          <span class="bike-type" *ngIf="bicycle.type || bicycle.frameMaterial">
+            {{ bicycle.type }}<ng-container *ngIf="bicycle.type && bicycle.frameMaterial"> · </ng-container><ng-container *ngIf="bicycle.frameMaterial">rama: {{ bicycle.frameMaterial }}</ng-container>
+          </span>
+        </div>
+
+        <dl class="bike-specs">
+          <div *ngIf="bicycle.frameNumber"><dt>Numer ramy</dt><dd>{{ bicycle.frameNumber }}</dd></div>
+          <div *ngIf="bicycle.productionDate"><dt>Rok produkcji</dt><dd>{{ bicycle.productionDate | date:'yyyy' }}</dd></div>
+        </dl>
+
+        <div class="doc-chips">
+          <span class="chip chip--ok" *ngIf="hasReceipt; else missingReceipt">✓ Dowód zakupu</span>
+          <ng-template #missingReceipt>
+            <a class="chip chip--missing" href="javascript:void(0)" (click)="showDocumentsTab(); scrollToSection('dokumenty')">+ Dowód zakupu</a>
+          </ng-template>
+          <a class="chip chip--missing" href="javascript:void(0)" *ngIf="!mainPhotoUrl" (click)="openPhotoUpload()">+ Zdjęcie</a>
+        </div>
+
+        <div class="bike-actions">
+          <button type="button" class="btn btn--primary" *ngIf="!bicycle.stolen" (click)="openBookServiceModal()">Umów serwis</button>
+          <button type="button" class="btn btn--primary" *ngIf="bicycle.stolen" (click)="reportStolen()">Rower odnaleziony</button>
+          <button type="button" class="btn btn--secondary" (click)="startEditing()">Edytuj dane</button>
+          <button type="button" class="btn-ghost btn-ghost--warn actions-wide" *ngIf="!bicycle.stolen" (click)="reportStolen()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"></path></svg>
+            Zgłoś kradzież
+          </button>
+          <button type="button" class="menu-btn actions-narrow" aria-label="Więcej opcji" aria-haspopup="menu" [attr.aria-expanded]="menuOpen" (click)="toggleMenu($event)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg>
+          </button>
+          <div class="bike-menu actions-narrow" role="menu" *ngIf="menuOpen" (click)="$event.stopPropagation()">
+            <button type="button" role="menuitem" class="menu-item--warn" *ngIf="!bicycle.stolen" (click)="menuOpen = false; reportStolen()">Zgłoś kradzież</button>
+            <hr *ngIf="!bicycle.stolen">
+            <button type="button" role="menuitem" class="menu-item--danger" (click)="menuOpen = false; confirmDelete()">Usuń rower…</button>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <input #photoInput type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)">
 
-    <!-- ── Status aktywny ── -->
-    <div class="bicycle-active-status" *ngIf="activeServiceOrder || (activeTransport?.hasActiveTransport && !isTransportDelivered)">
-
-      <!-- Karta serwisu -->
-      <div class="status-card status-card--service" *ngIf="activeServiceOrder">
-        <div class="status-card-top-row">
-          <div class="status-card-icon">🔧</div>
-          <span class="status-card-label">
-            Aktywne zlecenie –
-            <strong *ngIf="activeServiceOrder.serviceName"> {{ activeServiceOrder.serviceName }}</strong>
+    <!-- ── Transport do serwisu ── -->
+    <section class="cp-card status-section" *ngIf="showTransportCard">
+      <div class="status-head">
+        <div class="status-head-main">
+          <span class="status-icon status-icon--transport">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7z"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg>
           </span>
-          <span class="service-order-unread" *ngIf="serviceOrderUnreadCount > 0">{{ serviceOrderUnreadCount }}</span>
-          <span class="status-card-badge" [style.background]="serviceOrderStatusColor">{{ activeServiceOrder.statusDisplayName }}</span>
-          <button class="status-card-toggle" (click)="toggleServiceOrderDetails()" [title]="isServiceOrderExpanded ? 'Zwiń' : 'Rozwiń szczegóły'">
-            {{ isServiceOrderExpanded ? '▲' : '▼' }}
-          </button>
-        </div>
-        <div class="status-card-details" *ngIf="activeServiceOrder.plannedDate">
-          <div class="status-card-detail-row">
-            <span class="status-detail-label">Planowana data:</span>
-            <span>{{ activeServiceOrder.plannedDate | date:'dd.MM.yyyy' }}</span>
+          <div class="status-head-text">
+            <h2>Transport do serwisu</h2>
+            <span *ngIf="activeTransport?.transport?.targetServiceName">Serwis: <strong>{{ activeTransport?.transport?.targetServiceName }}</strong></span>
           </div>
         </div>
+        <span class="status-pill" [style.background]="transportOrderStatusColor">{{ activeTransport?.transport?.statusDisplayName || activeTransport?.transport?.status }}</span>
+      </div>
+      <div class="status-body">
+        <ol class="steps steps--4" aria-label="Etapy transportu">
+          <li *ngFor="let label of transportStepLabels; let i = index" [class.done]="i <= transportStepIndex" [class.current]="i === transportStepIndex">
+            <span class="step-bar"></span>
+            <span class="step-label">{{ label }}</span>
+          </li>
+        </ol>
+        <dl class="facts">
+          <div *ngIf="activeTransport?.transport?.pickupDate"><dt>Odbiór</dt><dd>{{ activeTransport?.transport?.pickupDate | date:'dd.MM.yyyy' }}</dd></div>
+          <div *ngIf="activeTransport?.transport?.pickupAddress"><dt>Skąd</dt><dd>{{ activeTransport?.transport?.pickupAddress }}</dd></div>
+          <div *ngIf="activeTransport?.transport?.deliveryAddress"><dt>Dokąd</dt><dd>{{ activeTransport?.transport?.deliveryAddress }}</dd></div>
+          <div *ngIf="activeTransport?.transport?.orderDate"><dt>Zamówiono</dt><dd>{{ activeTransport?.transport?.orderDate | date:'dd.MM.yyyy' }}</dd></div>
+        </dl>
+      </div>
+    </section>
 
-        <!-- Propozycja nowej daty od serwisu -->
-        <div class="status-card-date-proposal" *ngIf="activeServiceOrder.status === 'AWAITING_CLIENT_DATE_CONFIRMATION' && activeServiceOrder.proposedDate">
-          <p>Serwis zaproponował nowy termin — potwierdź lub odrzuć:</p>
-          <div class="status-card-detail-row">
-            <span class="status-detail-label">Nowa data serwisu:</span>
-            <span>{{ activeServiceOrder.proposedDate | date:'dd.MM.yyyy' }}</span>
-          </div>
-          <div class="status-card-detail-row" *ngIf="previewShiftedPickupDate">
-            <span class="status-detail-label">Nowa data odbioru roweru:</span>
-            <span>{{ previewShiftedPickupDate | date:'dd.MM.yyyy' }}</span>
-          </div>
-          <div class="plan-decision-buttons">
-            <button class="btn-reject" type="button" [disabled]="isAcceptingProposedDate || isRejectingProposedDate" (click)="rejectProposedDate()">
-              {{ isRejectingProposedDate ? 'Odrzucanie…' : 'Odrzuć' }}
-            </button>
-            <button class="btn-confirm" type="button" [disabled]="isAcceptingProposedDate || isRejectingProposedDate" (click)="acceptProposedDate()">
-              {{ isAcceptingProposedDate ? 'Potwierdzanie…' : 'Akceptuj nową datę' }}
-            </button>
+    <!-- ── Aktywne zlecenie ── -->
+    <section class="cp-card status-section" *ngIf="activeServiceOrder">
+      <div class="status-head">
+        <div class="status-head-main">
+          <span class="status-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"></path></svg>
+          </span>
+          <div class="status-head-text">
+            <h2>Aktywne zlecenie</h2>
+            <span>
+              <ng-container *ngIf="activeServiceOrder.serviceName">Serwis: <strong>{{ activeServiceOrder.serviceName }}</strong></ng-container>
+              <ng-container *ngIf="activeServiceOrder.plannedDate"> · planowana data: <strong>{{ activeServiceOrder.plannedDate | date:'dd.MM.yyyy' }}</strong></ng-container>
+            </span>
           </div>
         </div>
+        <span class="status-pill" [style.background]="serviceOrderStatusColor">{{ activeServiceOrder.statusDisplayName }}</span>
+      </div>
 
-        <!-- Rozwinięte szczegóły -->
-        <div class="service-order-expanded" *ngIf="isServiceOrderExpanded">
-          <div class="service-order-loading" *ngIf="isLoadingServiceOrderDetail">Ładowanie...</div>
+      <div class="steps-wrap">
+        <ol class="steps steps--5" aria-label="Etapy zlecenia">
+          <li *ngFor="let label of repairStepLabels; let i = index" [class.done]="i <= repairStepIndex" [class.current]="i === repairStepIndex">
+            <span class="step-bar"></span>
+            <span class="step-label">{{ label }}</span>
+          </li>
+        </ol>
+      </div>
 
-          <ng-container *ngIf="!isLoadingServiceOrderDetail">
-
-            <!-- Notatki serwisu -->
-            <div class="service-notes-box" *ngIf="serviceOrderDetail?.serviceNotes">
-              <span class="service-notes-label">Notatki serwisu:</span>
-              <p>{{ serviceOrderDetail?.serviceNotes }}</p>
-            </div>
-
-            <!-- Zdjęcia od serwisu -->
-            <div class="service-order-images-section" *ngIf="serviceOrderImages.length">
-              <span class="service-section-title">Zdjęcia od serwisu</span>
-              <div class="service-order-images-grid">
-                <img
-                  *ngFor="let img of serviceOrderImages; let i = index"
-                  [src]="img.url"
-                  alt="Zdjęcie zlecenia"
-                  loading="lazy"
-                  class="service-order-thumb"
-                  (click)="openSoLightbox(i)"
-                >
-              </div>
-            </div>
-
-            <!-- Plan naprawy -->
-            <div class="repair-plan-section" *ngIf="repairPlan">
-              <span class="service-section-title">Plan naprawy</span>
-
-              <div class="plan-items" *ngIf="repairPlan.items.length || repairPlan.packageName">
-                <div class="plan-package-block" *ngIf="repairPlan.packageName">
-                  <div class="plan-item plan-item--package" [class.plan-item--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded">
-                    <span class="plan-item-name">{{ repairPlan.packageName }}</span>
-                    <span class="plan-item-price">{{ repairPlan.packagePriceSnapshot | number:'1.2-2' }} zł</span>
-                    <button
-                      *ngIf="repairPlanAwaitingDecision"
-                      type="button"
-                      class="plan-item-toggle"
-                      (click)="toggleRepairPlanPackageExclusion()"
-                      [title]="repairPlanPackageExcluded ? 'Przywróć pakiet' : 'Zrezygnuj z pakietu'"
-                      [attr.aria-label]="repairPlanPackageExcluded ? 'Przywróć pakiet ' + repairPlan.packageName : 'Zrezygnuj z pakietu ' + repairPlan.packageName"
-                    >
-                      <svg *ngIf="!repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                      <svg *ngIf="repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
-                    </button>
-                  </div>
-                  <ul class="plan-package-items" [class.plan-package-items--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded" *ngIf="parseRepairPlanPackageItems(repairPlan.packageDescription).length">
-                    <li *ngFor="let line of parseRepairPlanPackageItems(repairPlan.packageDescription)">{{ line }}</li>
-                  </ul>
+              <!-- Propozycja nowej daty od serwisu -->
+              <div class="status-card-date-proposal" *ngIf="activeServiceOrder.status === 'AWAITING_CLIENT_DATE_CONFIRMATION' && activeServiceOrder.proposedDate">
+                <p>Serwis zaproponował nowy termin — potwierdź lub odrzuć:</p>
+                <div class="status-card-detail-row">
+                  <span class="status-detail-label">Nowa data serwisu:</span>
+                  <span>{{ activeServiceOrder.proposedDate | date:'dd.MM.yyyy' }}</span>
                 </div>
-                <ng-container *ngIf="repairPlanServiceItems.length > 0">
-                  <span class="plan-group-title">Usługi</span>
-                  <div
-                    class="plan-item"
-                    *ngFor="let item of repairPlanServiceItems"
-                    [class.plan-item--excluded]="repairPlanAwaitingDecision ? isRepairPlanItemExcluded(item.id) : item.excluded"
-                  >
-                    <span class="plan-item-name">{{ item.name }}</span>
-                    <span class="plan-item-price">{{ item.price | number:'1.2-2' }} zł</span>
-                    <button
-                      *ngIf="repairPlanAwaitingDecision"
-                      type="button"
-                      class="plan-item-toggle"
-                      (click)="toggleRepairPlanItemExclusion(item.id)"
-                      [title]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję' : 'Zrezygnuj z pozycji'"
-                      [attr.aria-label]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję ' + item.name : 'Zrezygnuj z pozycji ' + item.name"
-                    >
-                      <svg *ngIf="!isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                      <svg *ngIf="isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
-                    </button>
-                  </div>
-                </ng-container>
-
-                <ng-container *ngIf="repairPlanPartItems.length > 0">
-                  <span class="plan-group-title">Części</span>
-                  <div
-                    class="plan-item"
-                    *ngFor="let item of repairPlanPartItems"
-                    [class.plan-item--excluded]="repairPlanAwaitingDecision ? isRepairPlanItemExcluded(item.id) : item.excluded"
-                  >
-                    <span class="plan-item-name">{{ item.name }}</span>
-                    <span class="plan-item-price">{{ item.price | number:'1.2-2' }} zł</span>
-                    <button
-                      *ngIf="repairPlanAwaitingDecision"
-                      type="button"
-                      class="plan-item-toggle"
-                      (click)="toggleRepairPlanItemExclusion(item.id)"
-                      [title]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję' : 'Zrezygnuj z pozycji'"
-                      [attr.aria-label]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję ' + item.name : 'Zrezygnuj z pozycji ' + item.name"
-                    >
-                      <svg *ngIf="!isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                      <svg *ngIf="isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
-                    </button>
-                  </div>
-                </ng-container>
-              </div>
-
-              <p class="plan-notes" *ngIf="repairPlan.notes">{{ repairPlan.notes }}</p>
-
-              <div class="plan-total">
-                <ng-container *ngIf="repairPlanHasDiscount; else plainPlanTotal">
-                  <span class="plan-total-original">{{ repairPlan.calculatedTotal | number:'1.2-2' }} zł</span>
-                  Łącznie: <strong>{{ repairPlan.customTotal | number:'1.2-2' }} zł</strong>
-                  <span class="plan-discount-badge">Zniżka</span>
-                </ng-container>
-                <ng-template #plainPlanTotal>
-                  Łącznie: <strong>{{ repairPlanPreviewTotal | number:'1.2-2' }} zł</strong>
-                </ng-template>
-              </div>
-
-              <p class="plan-edit-hint" *ngIf="isEditingRepairPlanItems && repairPlan.customTotal != null">
-                Cena ustalona przez serwis dotyczyła pełnego zestawu — po potwierdzeniu zmian zapłacisz za wybrane pozycje.
-              </p>
-
-              <div class="plan-decision-row" *ngIf="repairPlanAwaitingDecision">
-                <p class="plan-decision-hint">Możesz zrezygnować z wybranych pozycji (ikona obok), a potem potwierdzić lub odrzucić cały plan.</p>
+                <div class="status-card-detail-row" *ngIf="previewShiftedPickupDate">
+                  <span class="status-detail-label">Nowa data odbioru roweru:</span>
+                  <span>{{ previewShiftedPickupDate | date:'dd.MM.yyyy' }}</span>
+                </div>
                 <div class="plan-decision-buttons">
-                  <button class="btn-reject" [disabled]="isDecidingRepairPlan" (click)="openRejectReasonModal()">Odrzucam</button>
-                  <button class="btn-confirm" [disabled]="isDecidingRepairPlan" (click)="confirmRepairPlan()">Potwierdzam</button>
+                  <button class="btn-reject" type="button" [disabled]="isAcceptingProposedDate || isRejectingProposedDate" (click)="rejectProposedDate()">
+                    {{ isRejectingProposedDate ? 'Odrzucanie…' : 'Odrzuć' }}
+                  </button>
+                  <button class="btn-confirm" type="button" [disabled]="isAcceptingProposedDate || isRejectingProposedDate" (click)="acceptProposedDate()">
+                    {{ isAcceptingProposedDate ? 'Potwierdzanie…' : 'Akceptuj nową datę' }}
+                  </button>
                 </div>
               </div>
 
-              <div class="plan-decision-done" *ngIf="repairPlan.status === 'ACCEPTED'">Plan naprawy potwierdzony.</div>
-              <div class="plan-decision-done plan-decision-done--rejected" *ngIf="repairPlan.status === 'REJECTED'">Plan naprawy odrzucony.</div>
+      <div class="order-columns">
+        <div class="order-col">
+          <div class="service-order-loading" *ngIf="isLoadingServiceOrderDetail">Ładowanie...</div>
+                      <!-- Notatki serwisu -->
+                      <div class="service-notes-box" *ngIf="serviceOrderDetail?.serviceNotes">
+                        <span class="service-notes-label">Notatki serwisu:</span>
+                        <p>{{ serviceOrderDetail?.serviceNotes }}</p>
+                      </div>
+
+                      <!-- Zdjęcia od serwisu -->
+                      <div class="service-order-images-section" *ngIf="serviceOrderImages.length">
+                        <span class="service-section-title">Zdjęcia od serwisu</span>
+                        <div class="service-order-images-grid">
+                          <img
+                            *ngFor="let img of serviceOrderImages; let i = index"
+                            [src]="img.url"
+                            alt="Zdjęcie zlecenia"
+                            loading="lazy"
+                            class="service-order-thumb"
+                            (click)="openSoLightbox(i)"
+                          >
+                        </div>
+                      </div>
+                      <!-- Plan naprawy -->
+                      <div class="repair-plan-section" *ngIf="repairPlan">
+                        <span class="service-section-title">Plan naprawy</span>
+
+                        <div class="plan-items" *ngIf="repairPlan.items.length || repairPlan.packageName">
+                          <div class="plan-package-block" *ngIf="repairPlan.packageName">
+                            <div class="plan-item plan-item--package" [class.plan-item--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded">
+                              <span class="plan-item-name">{{ repairPlan.packageName }}</span>
+                              <span class="plan-item-price">{{ repairPlan.packagePriceSnapshot | number:'1.2-2' }} zł</span>
+                              <button
+                                *ngIf="repairPlanAwaitingDecision"
+                                type="button"
+                                class="plan-item-toggle"
+                                (click)="toggleRepairPlanPackageExclusion()"
+                                [title]="repairPlanPackageExcluded ? 'Przywróć pakiet' : 'Zrezygnuj z pakietu'"
+                                [attr.aria-label]="repairPlanPackageExcluded ? 'Przywróć pakiet ' + repairPlan.packageName : 'Zrezygnuj z pakietu ' + repairPlan.packageName"
+                              >
+                                <svg *ngIf="!repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                <svg *ngIf="repairPlanPackageExcluded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
+                              </button>
+                            </div>
+                            <ul class="plan-package-items" [class.plan-package-items--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded" *ngIf="parseRepairPlanPackageItems(repairPlan.packageDescription).length">
+                              <li *ngFor="let line of parseRepairPlanPackageItems(repairPlan.packageDescription)">{{ line }}</li>
+                            </ul>
+                          </div>
+                          <ng-container *ngIf="repairPlanServiceItems.length > 0">
+                            <span class="plan-group-title">Usługi</span>
+                            <div
+                              class="plan-item"
+                              *ngFor="let item of repairPlanServiceItems"
+                              [class.plan-item--excluded]="repairPlanAwaitingDecision ? isRepairPlanItemExcluded(item.id) : item.excluded"
+                            >
+                              <span class="plan-item-name">{{ item.name }}</span>
+                              <span class="plan-item-price">{{ item.price | number:'1.2-2' }} zł</span>
+                              <button
+                                *ngIf="repairPlanAwaitingDecision"
+                                type="button"
+                                class="plan-item-toggle"
+                                (click)="toggleRepairPlanItemExclusion(item.id)"
+                                [title]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję' : 'Zrezygnuj z pozycji'"
+                                [attr.aria-label]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję ' + item.name : 'Zrezygnuj z pozycji ' + item.name"
+                              >
+                                <svg *ngIf="!isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                <svg *ngIf="isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
+                              </button>
+                            </div>
+                          </ng-container>
+
+                          <ng-container *ngIf="repairPlanPartItems.length > 0">
+                            <span class="plan-group-title">Części</span>
+                            <div
+                              class="plan-item"
+                              *ngFor="let item of repairPlanPartItems"
+                              [class.plan-item--excluded]="repairPlanAwaitingDecision ? isRepairPlanItemExcluded(item.id) : item.excluded"
+                            >
+                              <span class="plan-item-name">{{ item.name }}</span>
+                              <span class="plan-item-price">{{ item.price | number:'1.2-2' }} zł</span>
+                              <button
+                                *ngIf="repairPlanAwaitingDecision"
+                                type="button"
+                                class="plan-item-toggle"
+                                (click)="toggleRepairPlanItemExclusion(item.id)"
+                                [title]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję' : 'Zrezygnuj z pozycji'"
+                                [attr.aria-label]="isRepairPlanItemExcluded(item.id) ? 'Przywróć pozycję ' + item.name : 'Zrezygnuj z pozycji ' + item.name"
+                              >
+                                <svg *ngIf="!isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                <svg *ngIf="isRepairPlanItemExcluded(item.id)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-6.7L3 9"/></svg>
+                              </button>
+                            </div>
+                          </ng-container>
+                        </div>
+
+                        <p class="plan-notes" *ngIf="repairPlan.notes">{{ repairPlan.notes }}</p>
+
+                        <div class="plan-total">
+                          <ng-container *ngIf="repairPlanHasDiscount; else plainPlanTotal">
+                            <span class="plan-total-original">{{ repairPlan.calculatedTotal | number:'1.2-2' }} zł</span>
+                            Łącznie: <strong>{{ repairPlan.customTotal | number:'1.2-2' }} zł</strong>
+                            <span class="plan-discount-badge">Zniżka</span>
+                          </ng-container>
+                          <ng-template #plainPlanTotal>
+                            Łącznie: <strong>{{ repairPlanPreviewTotal | number:'1.2-2' }} zł</strong>
+                          </ng-template>
+                        </div>
+
+                        <p class="plan-edit-hint" *ngIf="isEditingRepairPlanItems && repairPlan.customTotal != null">
+                          Cena ustalona przez serwis dotyczyła pełnego zestawu — po potwierdzeniu zmian zapłacisz za wybrane pozycje.
+                        </p>
+
+                        <div class="plan-decision-row" *ngIf="repairPlanAwaitingDecision">
+                          <p class="plan-decision-hint">Możesz zrezygnować z wybranych pozycji (ikona obok), a potem potwierdzić lub odrzucić cały plan.</p>
+                          <div class="plan-decision-buttons">
+                            <button class="btn-reject" [disabled]="isDecidingRepairPlan" (click)="openRejectReasonModal()">Odrzucam</button>
+                            <button class="btn-confirm" [disabled]="isDecidingRepairPlan" (click)="confirmRepairPlan()">Potwierdzam</button>
+                          </div>
+                        </div>
+
+                        <div class="plan-decision-done" *ngIf="repairPlan.status === 'ACCEPTED'">Plan naprawy potwierdzony.</div>
+                        <div class="plan-decision-done plan-decision-done--rejected" *ngIf="repairPlan.status === 'REJECTED'">Plan naprawy odrzucony.</div>
+                      </div>
+          <p class="empty-hint" *ngIf="!repairPlan && !isLoadingServiceOrderDetail">Plan naprawy pojawi się, gdy serwis go przygotuje.</p>
+                      <!-- Powód odrzucenia planu naprawy -->
+                      <div class="reject-reason-overlay" *ngIf="showRejectReasonModal" (click)="cancelRejectReasonModal()">
+                        <div class="reject-reason-modal" (click)="$event.stopPropagation()">
+                          <h3 class="reject-reason-title">Powód odrzucenia (opcjonalnie)</h3>
+                          <p class="reject-reason-hint">Jeśli chcesz, napisz serwisowi dlaczego odrzucasz ten plan — trafi to do korespondencji.</p>
+                          <textarea
+                            class="reject-reason-textarea"
+                            [(ngModel)]="rejectReason"
+                            rows="4"
+                            placeholder="Np. cena jest za wysoka, chcę tylko część usług..."
+                          ></textarea>
+                          <div class="reject-reason-buttons">
+                            <button class="btn-cancel" (click)="cancelRejectReasonModal()">Anuluj</button>
+                            <button class="btn-reject" (click)="confirmRejectWithReason()">Odrzuć plan</button>
+                          </div>
+                        </div>
+                      </div>
+        </div>
+        <div class="order-col">
+                      <!-- Korespondencja -->
+                      <div class="messages-section">
+                        <span class="service-section-title">Wiadomości z serwisem</span>
+
+                        <div class="messages-thread">
+                          <div
+                            *ngFor="let msg of serviceOrderMessages"
+                            class="message-item"
+                            [class.message-service]="msg.senderType === 'SERVICE'"
+                            [class.message-client]="msg.senderType === 'CLIENT'"
+                          >
+                            <span class="message-meta">
+                              {{ msg.senderType === 'SERVICE' ? 'Serwis' : 'Ty' }} · {{ msg.createdAt | date:'dd.MM HH:mm' }}
+                            </span>
+                            <p class="message-content">{{ msg.content }}</p>
+                          </div>
+                          <div class="no-messages" *ngIf="serviceOrderMessages.length === 0">
+                            Brak wiadomości — napisz pierwszy!
+                          </div>
+                        </div>
+
+                        <div class="message-input-row">
+                          <input
+                            type="text"
+                            class="message-input"
+                            [(ngModel)]="newMessageContent"
+                            placeholder="Napisz wiadomość..."
+                            [disabled]="isSendingMessage"
+                            (keydown.enter)="sendServiceOrderMessage()"
+                          >
+                          <button
+                            class="message-send-btn"
+                            (click)="sendServiceOrderMessage()"
+                            [disabled]="!newMessageContent.trim() || isSendingMessage"
+                          >
+                            {{ isSendingMessage ? '...' : 'Wyślij' }}
+                          </button>
+                        </div>
+                      </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Zdjęcia i dokumenty ── -->
+    <section class="cp-card gallery-section" id="dokumenty">
+      <div class="section-head">
+        <h2>Zdjęcia i dokumenty</h2>
+        <div class="seg-tabs" role="tablist" aria-label="Zdjęcia i dokumenty">
+          <button type="button" role="tab" [attr.aria-selected]="activeGalleryTab === 'RECEIPT'" [class.active]="activeGalleryTab === 'RECEIPT'" (click)="showDocumentsTab()">Dokumenty</button>
+          <button type="button" role="tab" [attr.aria-selected]="activeGalleryTab === 'GALLERY'" [class.active]="activeGalleryTab === 'GALLERY'" (click)="showPhotosTab()">Zdjęcia</button>
+        </div>
+      </div>
+
+      <input #galleryInput type="file" accept="image/*" multiple style="display:none" (change)="onGalleryPhotoSelected($event)">
+
+      <!-- Dokumenty -->
+      <div class="doc-grid" *ngIf="activeGalleryTab === 'RECEIPT'">
+        <div class="doc-card" [class.doc-card--ok]="hasReceipt">
+          <strong>Dowód zakupu</strong>
+          <ng-container *ngIf="hasReceipt; else noReceipt">
+            <span class="doc-hint">Dodane pliki: {{ galleryImages.length }}</span>
+            <div class="gallery-grid">
+              <div *ngFor="let image of galleryImages; let i = index" class="gallery-item" (click)="openLightbox(i)">
+                <img [src]="image.url" alt="Dowód zakupu" loading="lazy">
+              </div>
             </div>
-
-            <!-- Powód odrzucenia planu naprawy -->
-            <div class="reject-reason-overlay" *ngIf="showRejectReasonModal" (click)="cancelRejectReasonModal()">
-              <div class="reject-reason-modal" (click)="$event.stopPropagation()">
-                <h3 class="reject-reason-title">Powód odrzucenia (opcjonalnie)</h3>
-                <p class="reject-reason-hint">Jeśli chcesz, napisz serwisowi dlaczego odrzucasz ten plan — trafi to do korespondencji.</p>
-                <textarea
-                  class="reject-reason-textarea"
-                  [(ngModel)]="rejectReason"
-                  rows="4"
-                  placeholder="Np. cena jest za wysoka, chcę tylko część usług..."
-                ></textarea>
-                <div class="reject-reason-buttons">
-                  <button class="btn-cancel" (click)="cancelRejectReasonModal()">Anuluj</button>
-                  <button class="btn-reject" (click)="confirmRejectWithReason()">Odrzuć plan</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Korespondencja -->
-            <div class="messages-section">
-              <span class="service-section-title">Korespondencja z serwisem</span>
-
-              <div class="messages-thread">
-                <div
-                  *ngFor="let msg of serviceOrderMessages"
-                  class="message-item"
-                  [class.message-service]="msg.senderType === 'SERVICE'"
-                  [class.message-client]="msg.senderType === 'CLIENT'"
-                >
-                  <span class="message-meta">
-                    {{ msg.senderType === 'SERVICE' ? 'Serwis' : 'Ty' }} · {{ msg.createdAt | date:'dd.MM HH:mm' }}
-                  </span>
-                  <p class="message-content">{{ msg.content }}</p>
-                </div>
-                <div class="no-messages" *ngIf="serviceOrderMessages.length === 0">
-                  Brak wiadomości — napisz pierwszy!
-                </div>
-              </div>
-
-              <div class="message-input-row">
-                <input
-                  type="text"
-                  class="message-input"
-                  [(ngModel)]="newMessageContent"
-                  placeholder="Napisz wiadomość..."
-                  [disabled]="isSendingMessage"
-                  (keydown.enter)="sendServiceOrderMessage()"
-                >
-                <button
-                  class="message-send-btn"
-                  (click)="sendServiceOrderMessage()"
-                  [disabled]="!newMessageContent.trim() || isSendingMessage"
-                >
-                  {{ isSendingMessage ? '...' : 'Wyślij' }}
-                </button>
-              </div>
-            </div>
-
           </ng-container>
+          <ng-template #noReceipt><span class="doc-hint">Zdjęcie paragonu lub faktury przyda się przy reklamacji.</span></ng-template>
+          <button type="button" class="doc-action" (click)="galleryInput.click()" [disabled]="isGalleryUploading">{{ galleryUploadLabel }}</button>
+        </div>
+        <div class="doc-card">
+          <strong>Rachunki z serwisu</strong>
+          <span class="doc-hint">Dodają się automatycznie po każdym zleceniu w CycloPick.</span>
+          <ng-container *ngIf="serviceRecords.length > 0; else noBills">
+            <a *ngFor="let record of serviceRecords" class="doc-link" href="javascript:void(0)" (click)="expandedRecordIds.add(record.id); scrollToSection('historia')">{{ record.serviceName }} · {{ record.serviceDate | date:'dd.MM.yyyy' }}</a>
+          </ng-container>
+          <ng-template #noBills><span class="doc-hint">Brak zakończonych zleceń.</span></ng-template>
         </div>
       </div>
 
-      <!-- Karta transportu (ukryta gdy DELIVERED) -->
-      <div class="status-card status-card--transport" *ngIf="activeTransport?.hasActiveTransport && !isTransportDelivered">
-        <div class="status-card-top-row">
-          <div class="status-card-icon">🚴</div>
-          <span class="status-card-label">
-            Zamówiony transport do serwisu:
-            <strong *ngIf="activeTransport?.transport?.targetServiceName"> {{ activeTransport?.transport?.targetServiceName }}</strong>
-          </span>
-          <span class="status-card-badge" [style.background]="transportOrderStatusColor">
-            {{ activeTransport?.transport?.statusDisplayName || activeTransport?.transport?.status }}
-          </span>
-        </div>
-        <div class="status-card-details">
-          <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.pickupDate">
-            <span class="status-detail-label">Odbiór:</span>
-            <span>{{ activeTransport?.transport?.pickupDate | date:'dd.MM.yyyy' }}</span>
-          </div>
-          <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.pickupAddress">
-            <span class="status-detail-label">Skąd:</span>
-            <span>{{ activeTransport?.transport?.pickupAddress }}</span>
-          </div>
-          <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.deliveryAddress">
-            <span class="status-detail-label">Dokąd:</span>
-            <span>{{ activeTransport?.transport?.deliveryAddress }}</span>
-          </div>
-          <div class="status-card-detail-row" *ngIf="activeTransport?.transport?.orderDate">
-            <span class="status-detail-label">Zamówiono:</span>
-            <span>{{ activeTransport?.transport?.orderDate | date:'dd.MM.yyyy' }}</span>
+      <!-- Zdjęcia -->
+      <ng-container *ngIf="activeGalleryTab === 'GALLERY'">
+        <div class="gallery-grid" *ngIf="galleryImages.length > 0; else emptyGallery">
+          <div *ngFor="let image of galleryImages; let i = index" class="gallery-item" (click)="openLightbox(i)">
+            <img [src]="image.url" alt="Zdjęcie roweru" loading="lazy">
           </div>
         </div>
-      </div>
-
-    </div>
-
-    <!-- ── Galeria ── -->
-    <div class="gallery-section">
-      <div class="gallery-section-header">
-        <h3>Zdjęcia i dokumenty</h3>
-        <button
-          class="add-gallery-photo-btn"
-          (click)="galleryInput.click()"
-          [disabled]="isGalleryUploading"
-        >
-          {{ galleryUploadLabel }}
-        </button>
-        <input
-          #galleryInput
-          type="file"
-          accept="image/*"
-          multiple
-          style="display:none"
-          (change)="onGalleryPhotoSelected($event)"
-        >
-      </div>
-
-      <div class="gallery-tabs">
-        <button
-          class="gallery-tab"
-          [class.active]="activeGalleryTab === 'GALLERY'"
-          (click)="activeGalleryTab = 'GALLERY'"
-        >
-          Galeria
-        </button>
-        <button
-          class="gallery-tab"
-          [class.active]="activeGalleryTab === 'RECEIPT'"
-          (click)="activeGalleryTab = 'RECEIPT'"
-        >
-          Rachunki
-        </button>
-      </div>
-
-      <div class="gallery-grid" *ngIf="galleryImages.length > 0; else emptyGallery">
-        <div *ngFor="let image of galleryImages; let i = index" class="gallery-item" (click)="openLightbox(i)">
-          <img [src]="image.url" alt="Zdjęcie roweru" loading="lazy">
-        </div>
-      </div>
-      <ng-template #emptyGallery>
-        <div class="no-records-message">Brak zdjęć w tej kategorii.</div>
-      </ng-template>
-    </div>
+        <ng-template #emptyGallery>
+          <button type="button" class="photos-empty" (click)="galleryInput.click()" [disabled]="isGalleryUploading">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>
+            <strong>{{ galleryUploadLabel }}</strong>
+            <span>Zdjęcia z kilku stron i numeru ramy pomogą przy zgłoszeniu kradzieży lub sprzedaży.</span>
+          </button>
+        </ng-template>
+        <button type="button" class="doc-action doc-action--inline" *ngIf="galleryImages.length > 0" (click)="galleryInput.click()" [disabled]="isGalleryUploading">{{ galleryUploadLabel }}</button>
+      </ng-container>
+    </section>
 
     <!-- ── Lightbox ── -->
     <div
@@ -442,29 +461,24 @@
       >&#8250;</button>
     </div>
 
-    <!-- Historia serwisowa -->
-    <div class="service-records-section">
-      <h3>Historia serwisowa</h3>
+    <!-- ── Historia serwisowa ── -->
+    <section class="cp-card history-section" id="historia">
+      <h2>Historia serwisowa</h2>
       <div *ngIf="loading" class="loading-message">Ładowanie historii serwisowej...</div>
       <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-      <div *ngIf="!loading && !errorMessage">
-        <div *ngIf="serviceRecords.length > 0; else noRecords" class="service-records-list">
-          <div *ngFor="let record of serviceRecords" class="service-record-card" [class.expanded]="expandedRecordIds.has(record.id)">
-            <div class="service-record-header" (click)="toggleRecord(record.id)">
-              <div class="service-record-title">
-                <h4>
-                  <a *ngIf="record.suffix" [routerLink]="['/', record.suffix]" class="service-name-link" (click)="$event.stopPropagation()">{{ record.serviceName }}</a>
-                  <ng-container *ngIf="!record.suffix">{{ record.serviceName }}</ng-container>
-                </h4>
-                <span class="service-date">{{ record.serviceDate | date:'dd.MM.yyyy' }}</span>
-                <span class="service-duration" *ngIf="record.actualDurationHours != null">Czas realizacji: {{ formatDuration(record.actualDurationHours) }}</span>
-              </div>
-              <div class="service-record-summary">
-                <span class="service-price-badge">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</span>
-                <span class="expand-icon">{{ expandedRecordIds.has(record.id) ? '▲' : '▼' }}</span>
-              </div>
-            </div>
-            <div class="service-record-body" *ngIf="expandedRecordIds.has(record.id)">
+      <ng-container *ngIf="!loading && !errorMessage">
+        <div *ngIf="serviceRecords.length > 0; else noRecords" class="history-list">
+          <div *ngFor="let record of serviceRecords" class="history-item" [class.expanded]="expandedRecordIds.has(record.id)">
+            <button type="button" class="history-row" (click)="toggleRecord(record.id)" [attr.aria-expanded]="expandedRecordIds.has(record.id)">
+              <span class="history-title">
+                <strong>{{ record.serviceName }}</strong>
+                <span class="history-meta">{{ record.serviceDate | date:'dd.MM.yyyy' }}<ng-container *ngIf="record.actualDurationHours != null"> · czas realizacji: {{ formatDuration(record.actualDurationHours) }}</ng-container></span>
+              </span>
+              <span class="history-rating" *ngIf="record.review">★ {{ record.review.totalScore }} / 5</span>
+              <strong class="history-price">{{ record.totalPrice | currency:'PLN':'symbol':'1.2-2' }}</strong>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path [attr.d]="expandedRecordIds.has(record.id) ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'"></path></svg>
+            </button>
+            <div class="history-body" *ngIf="expandedRecordIds.has(record.id)">
               <div *ngIf="record.items && record.items.length > 0" class="service-items">
                 <h5>Wykonane usługi / części</h5>
                 <table class="items-table">
@@ -538,14 +552,15 @@
                 <h5>Zalecane naprawy</h5>
                 <p>{{ record.recommendedRepairs }}</p>
               </div>
+              <a *ngIf="record.suffix" class="history-service-link" [routerLink]="['/', record.suffix]">Profil serwisu</a>
             </div>
           </div>
         </div>
         <ng-template #noRecords>
           <div class="no-records-message">Brak historii serwisowej dla tego roweru.</div>
         </ng-template>
-      </div>
-    </div>
+      </ng-container>
+    </section>
 
     <!-- ── Formularz edycji ── -->
     <form *ngIf="isEditing" #editForm [formGroup]="bicycleForm" (ngSubmit)="onSubmit()" class="edit-form">

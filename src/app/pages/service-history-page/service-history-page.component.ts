@@ -19,9 +19,12 @@ import { ServiceAdminHistoryComponent } from '../service-admin-panel/service-adm
   `,
   styles: [`
     .page-container {
-      max-width: 960px;
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 32px 24px;
+      padding: var(--spacing-6) var(--spacing-4) var(--spacing-12);
+      box-sizing: border-box;
+      background: var(--color-slate-50);
+      min-height: calc(100vh - 60px);
     }
     .page-loading {
       display: flex;
@@ -31,8 +34,8 @@ import { ServiceAdminHistoryComponent } from '../service-admin-panel/service-adm
     .spinner {
       width: 36px;
       height: 36px;
-      border: 3px solid #e2e8f0;
-      border-top-color: #3b82f6;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--color-primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }

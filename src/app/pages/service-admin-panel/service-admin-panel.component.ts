@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { I18nService } from '../../core/i18n.service';
 import { BikeServiceVerificationService } from '../../auth/bike-service-verification.service';
 import { ServiceAdminBasicInfoComponent } from './service-admin-basic-info/service-admin-basic-info.component';
@@ -27,6 +27,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     ServiceAdminBasicInfoComponent,
     ServiceAdminCoveragesComponent,
     ServiceAdminPricelistWrapperComponent,

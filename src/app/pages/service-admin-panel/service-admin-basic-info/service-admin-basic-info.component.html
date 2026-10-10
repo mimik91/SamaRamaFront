@@ -1,24 +1,6 @@
 <div class="basic-info-container">
   <!-- Header with Edit/Save buttons -->
   <div class="header-section">
-    <div class="header-actions">
-      <button
-        *ngIf="!isEditMode"
-        (click)="toggleEditMode()"
-        class="edit-btn">
-        Edytuj dane
-      </button>
-      <ng-container *ngIf="isEditMode">
-        <button (click)="toggleEditMode()" class="cancel-btn">Anuluj</button>
-        <button
-          (click)="saveChanges()"
-          [disabled]="isSaving"
-          class="save-btn">
-          {{ isSaving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
-        </button>
-      </ng-container>
-    </div>
-
     <div *ngIf="saveSuccess" class="success-message">
       ✓ Zmiany zostały zapisane pomyślnie
     </div>
@@ -53,9 +35,19 @@
         <input *ngIf="isEditMode" type="text" [value]="serviceDetails.name" disabled class="edit-input input-disabled" />
       </div>
       <div class="detail-item">
-        <span class="label">Suffix:</span>
-        <span class="value" *ngIf="!isEditMode">{{ serviceDetails.suffix || '-' }}</span>
-        <input *ngIf="isEditMode" type="text" [value]="serviceDetails.suffix || ''" disabled class="edit-input input-disabled" />
+        <span class="label">Strona serwisu:</span>
+        <span class="value">
+          <span class="profile-url">cyclopick.pl/<strong>{{ serviceDetails.suffix || '-' }}</strong></span>
+          <button
+            *ngIf="serviceDetails.suffix"
+            type="button"
+            class="copy-link-btn"
+            aria-label="Kopiuj adres strony serwisu"
+            (click)="copyProfileUrl()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a1 1 0 0 1 1-1h10"></path></svg>
+            {{ profileUrlCopied ? 'Skopiowano' : 'Kopiuj' }}
+          </button>
+        </span>
       </div>
       <div class="detail-item">
         <span class="label">Email:</span>
@@ -360,10 +352,13 @@
   </div>
 
   <!-- Bottom action buttons (edit mode) -->
-  <div *ngIf="isEditMode" class="bottom-actions">
-    <button (click)="toggleEditMode()" class="cancel-btn">Anuluj</button>
-    <button (click)="saveChanges()" [disabled]="isSaving" class="save-btn">
-      {{ isSaving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
-    </button>
+  <div *ngIf="isDirty" class="bottom-actions" role="region" aria-label="Niezapisane zmiany">
+    <span class="bottom-actions-hint">Masz niezapisane zmiany</span>
+    <div class="bottom-actions-buttons">
+      <button type="button" (click)="cancelChanges()" [disabled]="isSaving" class="cancel-btn">Anuluj</button>
+      <button type="button" (click)="saveChanges()" [disabled]="isSaving" class="save-btn">
+        {{ isSaving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+      </button>
+    </div>
   </div>
 </div>

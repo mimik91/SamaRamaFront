@@ -1,15 +1,16 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { ActiveServiceOrderCard, ActiveTransportResponse, BicycleService } from '../bicycle.service';
+import { ActiveServiceOrderCard, ActiveTransportResponse, BicycleService, GroupedImagesResponse } from '../bicycle.service';
 import { Bicycle } from '../../../shared/models/bicycle.model';
 import { NotificationService } from '../../../core/notification.service';
 import { BicycleSelectionService } from '../bicycle-selection.service';
 import { CalendarOrderStatus, getStatusColor } from '../../../shared/models/service-calendar.models';
 import { getTransportStatusColor } from '../../../core/models/transport-order-status.util';
 import { StolenBikeAcknowledgmentModalComponent } from '../../../shared/stolen-bike-acknowledgment-modal/stolen-bike-acknowledgment-modal.component';
+import { BookServiceModalComponent } from '../modals/book-service-modal/book-service-modal.component';
 
 export interface BikeStatusBadge {
   label: string;
@@ -19,7 +20,7 @@ export interface BikeStatusBadge {
 @Component({
   selector: 'app-client-panel-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, StolenBikeAcknowledgmentModalComponent],
+  imports: [CommonModule, RouterModule, StolenBikeAcknowledgmentModalComponent, BookServiceModalComponent],
   templateUrl: './client-panel-list.component.html',
   styleUrls: ['./client-panel-list.component.css']
 })
@@ -48,6 +49,12 @@ export class ClientPanelListComponent implements OnInit {
 
   private activeServiceOrdersByBikeId = new Map<number, ActiveServiceOrderCard>();
   private activeTransportsByBikeId = new Map<number, ActiveTransportResponse>();
+  private receiptBikeIds = new Set<number>();
+
+  /** Rower, którego menu „⋯” jest otwarte. */
+  openMenuBikeId: number | null = null;
+  /** Rower, dla którego otwarto modal „Umów serwis”. */
+  bookServiceBicycleId: number | null = null;
 
   ngOnInit(): void {
     this.loadBicycles();
@@ -79,6 +86,15 @@ export class ClientPanelListComponent implements OnInit {
   private loadStatusBadges(bicycles: Bicycle[]): void {
     const activeBicycles = bicycles.filter(b => !b.stolen);
     if (activeBicycles.length === 0) return;
+
+    forkJoin(
+      activeBicycles.map(b => this.bicycleService.getAllBicycleImages(b.id).pipe(
+        map((resp: GroupedImagesResponse) => ({ bikeId: b.id, hasReceipt: (resp.images?.RECEIPT?.length ?? 0) > 0 })),
+        catchError(() => of({ bikeId: b.id, hasReceipt: false }))
+      ))
+    ).subscribe(list => {
+      this.receiptBikeIds = new Set(list.filter(x => x.hasReceipt).map(x => x.bikeId));
+    });
 
     forkJoin({
       orders: this.bicycleService.getActiveServiceOrders().pipe(catchError(() => of([] as ActiveServiceOrderCard[]))),
@@ -117,6 +133,33 @@ export class ClientPanelListComponent implements OnInit {
     }
 
     return null;
+  }
+
+  hasReceipt(bicycleId: number): boolean {
+    return this.receiptBikeIds.has(bicycleId);
+  }
+
+  toggleMenu(bicycleId: number, event: Event): void {
+    event.stopPropagation();
+    this.openMenuBikeId = this.openMenuBikeId === bicycleId ? null : bicycleId;
+  }
+
+  @HostListener('document:click')
+  closeMenu(): void {
+    this.openMenuBikeId = null;
+  }
+
+  openBookService(bicycleId: number, event?: Event): void {
+    event?.stopPropagation();
+    this.openMenuBikeId = null;
+    this.bookServiceBicycleId = bicycleId;
+  }
+
+  /** Przejście do szczegółów z parametrem zapytania (edycja, dokumenty, historia). */
+  goToDetails(bicycleId: number, queryParams: Record<string, string>, event?: Event): void {
+    event?.stopPropagation();
+    this.openMenuBikeId = null;
+    this.router.navigate(['/bicycles', bicycleId], { queryParams });
   }
 
   getBicyclePhotoUrl(bicycleId: number): string {

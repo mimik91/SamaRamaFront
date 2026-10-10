@@ -20,7 +20,7 @@ interface OpeningHoursData {
   templateUrl: './service-admin-opening-hours.component.html',
   styleUrls: ['./service-admin-opening-hours.component.css']
 })
-export class ServiceAdminOpeningHoursComponent implements OnInit, OnDestroy {
+export class ServiceAdminOpeningHoursComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
   @Input() serviceId!: number;
@@ -28,7 +28,7 @@ export class ServiceAdminOpeningHoursComponent implements OnInit, OnDestroy {
   private apiUrl = `${environment.apiUrl}${environment.endpoints.bikeServicesRegistered.base}`;
 
   openingHoursForm!: FormGroup;
-  isEditMode = false;
+  readonly isEditMode = true;
   isLoading = true;
   isSaving = false;
   hasExistingHours = false;
@@ -86,9 +86,6 @@ export class ServiceAdminOpeningHoursComponent implements OnInit, OnDestroy {
         
         if (this.hasExistingHours) {
           this.populateForm(data);
-          this.isEditMode = false; // Są dane - tryb wyświetlania
-        } else {
-          this.isEditMode = true; // Brak danych - tryb edycji (formularz)
         }
         
         this.isLoading = false;
@@ -97,7 +94,6 @@ export class ServiceAdminOpeningHoursComponent implements OnInit, OnDestroy {
         console.error('Error loading opening hours:', error);
         // Nawet jak błąd, pokaż formularz do wypełnienia
         this.hasExistingHours = false;
-        this.isEditMode = true;
         this.isLoading = false;
       }
     });
@@ -132,19 +128,17 @@ export class ServiceAdminOpeningHoursComponent implements OnInit, OnDestroy {
     });
   }
 
-  enterEditMode(): void {
-    this.isEditMode = true;
+  get isDirty(): boolean {
+    return !!this.openingHoursForm?.dirty;
   }
 
   cancelEdit(): void {
     if (this.hasExistingHours && this.displayedData) {
       this.populateForm(this.displayedData);
-      this.isEditMode = false;
     } else {
-      // Jeśli nie ma danych, zresetuj formularz
-      this.openingHoursForm.reset();
       this.initForm();
     }
+    this.openingHoursForm.markAsPristine();
   }
 
   private buildPayload(): OpeningHoursData {
@@ -187,7 +181,7 @@ export class ServiceAdminOpeningHoursComponent implements OnInit, OnDestroy {
         this.showSuccess('Godziny otwarcia zostały zapisane');
         this.hasExistingHours = true;
         this.displayedData = response;
-        this.isEditMode = false;
+        this.openingHoursForm.markAsPristine();
         this.isSaving = false;
       },
       error: (error) => {
@@ -196,38 +190,6 @@ export class ServiceAdminOpeningHoursComponent implements OnInit, OnDestroy {
         this.isSaving = false;
       }
     });
-  }
-
-  ngOnDestroy(): void {
-    if (this.isEditMode && this.openingHoursForm?.dirty) {
-      const method = this.hasExistingHours ? 'put' : 'post';
-      this.http.request(method, `${this.apiUrl}/my-service/opening-hours`, {
-        body: this.buildPayload(),
-        params: { serviceId: this.serviceId.toString() }
-      }).subscribe();
-    }
-  }
-
-  @HostListener('window:beforeunload')
-  onBeforeUnload(): void {
-    if (!this.isBrowser || !this.isEditMode || !this.openingHoursForm?.dirty) return;
-
-    const sessionStr = localStorage.getItem('auth_session');
-    if (!sessionStr) return;
-
-    try {
-      const session = JSON.parse(sessionStr) as { token: string };
-      const method = this.hasExistingHours ? 'PUT' : 'POST';
-      fetch(`${this.apiUrl}/my-service/opening-hours?serviceId=${this.serviceId}`, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.token}`
-        },
-        body: JSON.stringify(this.buildPayload()),
-        keepalive: true
-      });
-    } catch { /* best-effort */ }
   }
 
   getDayControl(dayKey: string): FormGroup {
@@ -260,6 +222,7 @@ export class ServiceAdminOpeningHoursComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.openingHoursForm.markAsDirty();
     this.showSuccess('Godziny skopiowane do wszystkich dni');
   }
 

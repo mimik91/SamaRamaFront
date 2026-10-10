@@ -38,6 +38,10 @@ export class ServiceAdminStatsComponent implements OnInit, AfterViewInit, OnDest
   private chart: Chart | null = null;
   private viewReady = false;
 
+  get totalOrdersInPeriod(): number {
+    return this.monthlyStats.reduce((sum, m) => sum + m.orderCount, 0);
+  }
+
   get totalCompletedOrders(): number {
     return this.technicianStats.reduce((sum, t) => sum + t.completedOrdersCount, 0);
   }
@@ -81,7 +85,7 @@ export class ServiceAdminStatsComponent implements OnInit, AfterViewInit, OnDest
         datasets: [{
           label: 'Zlecenia',
           data: this.monthlyStats.map(m => m.orderCount),
-          backgroundColor: '#1B5E20',
+          backgroundColor: this.readCssVar('--color-primary'),
           borderRadius: 4
         }]
       },
@@ -99,6 +103,11 @@ export class ServiceAdminStatsComponent implements OnInit, AfterViewInit, OnDest
         }
       }
     });
+  }
+
+  private readCssVar(name: string): string {
+    const el = this.chartCanvas?.nativeElement;
+    return el ? getComputedStyle(el).getPropertyValue(name).trim() : '';
   }
 
   ngOnDestroy(): void {

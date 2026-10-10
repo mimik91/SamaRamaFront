@@ -24,7 +24,7 @@ export class ServiceAdminPricelistWrapperComponent {
   
   @Input() serviceId!: number;
 
-  activeTab: TabType = 'services';
+  activeTab: TabType = 'packages';
 
   setActiveTab(tab: TabType): void {
     this.activeTab = tab;

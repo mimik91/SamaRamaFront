@@ -67,7 +67,9 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
   readonly SHORT_NAME_MAX_LENGTH = 12;
   readonly SHORT_NAME_PATTERN = /^[A-Za-z0-9 -]*$/;
 
-  isEditMode: boolean = false;
+  readonly isEditMode = true;
+  private snapshot = '';
+  profileUrlCopied = false;
   isSaving: boolean = false;
   saveError: string = '';
   saveSuccess: boolean = false;
@@ -82,6 +84,11 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
 
   ngOnInit(): void {
     this.initEditableData();
+    this.loadDistrictSuggestions();
+  }
+
+  get isDirty(): boolean {
+    return JSON.stringify(this.editableData) !== this.snapshot;
   }
 
   initEditableData(): void {
@@ -103,6 +110,16 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
       reservationAvailable: this.serviceDetails.reservationAvailable ?? false,
       shortName: this.serviceDetails.shortName || ''
     };
+    this.snapshot = JSON.stringify(this.editableData);
+  }
+
+  copyProfileUrl(): void {
+    const suffix = this.serviceDetails?.suffix;
+    if (!suffix || typeof navigator === 'undefined' || !navigator.clipboard) return;
+    navigator.clipboard.writeText(`https://www.cyclopick.pl/${suffix}`).then(() => {
+      this.profileUrlCopied = true;
+      setTimeout(() => (this.profileUrlCopied = false), 2000);
+    });
   }
 
   isShortNameValid(): boolean {
@@ -111,14 +128,9 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
     return value.length <= this.SHORT_NAME_MAX_LENGTH && this.SHORT_NAME_PATTERN.test(value);
   }
 
-  toggleEditMode(): void {
-    if (this.isEditMode) {
-      this.initEditableData();
-      this.showDistrictDropdown = false;
-    } else {
-      this.loadDistrictSuggestions();
-    }
-    this.isEditMode = !this.isEditMode;
+  cancelChanges(): void {
+    this.initEditableData();
+    this.showDistrictDropdown = false;
     this.saveError = '';
     this.saveSuccess = false;
   }
@@ -183,10 +195,10 @@ export class ServiceAdminBasicInfoComponent implements OnInit {
       next: () => {
         this.isSaving = false;
         this.saveSuccess = true;
-        this.isEditMode = false;
-        
+
         // Update service details with new values
         Object.assign(this.serviceDetails, this.editableData);
+        this.snapshot = JSON.stringify(this.editableData);
         
         // Hide success message after 3 seconds
         setTimeout(() => {

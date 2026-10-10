@@ -64,7 +64,7 @@ export class ClientPanelDetailsComponent implements OnInit {
 
   // Images
   bicycleImages: GroupedImagesResponse | null = null;
-  activeGalleryTab: 'GALLERY' | 'RECEIPT' = 'GALLERY';
+  activeGalleryTab: 'GALLERY' | 'RECEIPT' = 'RECEIPT';
   isGalleryUploading = false;
 
   // Lightbox
@@ -154,10 +154,73 @@ export class ClientPanelDetailsComponent implements OnInit {
   }
 
   get galleryUploadLabel(): string {
-    if (!this.isGalleryUploading) return '+ Dodaj zdjęcia';
+    if (!this.isGalleryUploading) return this.activeGalleryTab === 'RECEIPT' ? '+ Dodaj dowód zakupu' : '+ Dodaj zdjęcia';
     return this.galleryUploadTotal > 1
       ? `Dodawanie (${this.galleryUploadCurrent}/${this.galleryUploadTotal})…`
       : 'Dodawanie…';
+  }
+
+  readonly transportStepLabels = ['Zamówiony', 'Potwierdzony', 'Rower odebrany', 'Dostarczony do serwisu'];
+  readonly repairStepLabels = ['Zgłoszone', 'Potwierdzone', 'W trakcie', 'Gotowe do odbioru', 'Odebrane'];
+
+  private static readonly REPAIR_STEP_BY_STATUS: Record<string, number> = {
+    PENDING_CONFIRMATION: 0,
+    AWAITING_CLIENT_DATE_CONFIRMATION: 0,
+    CONFIRMED: 1,
+    WAITING_FOR_BIKE: 1,
+    IN_PROGRESS: 2,
+    WAITING_FOR_PARTS: 2,
+    AWAITING_CLIENT_DECISION: 2,
+    READY_FOR_PICKUP: 3,
+    COMPLETED: 4
+  };
+
+  private static readonly TRANSPORT_STEP_BY_STATUS: Record<string, number> = {
+    PENDING: 0,
+    CONFIRMED: 1,
+    PICKED_UP: 2,
+    ON_THE_WAY: 2,
+    DELIVERED: 3
+  };
+
+  get repairStepIndex(): number {
+    return ClientPanelDetailsComponent.REPAIR_STEP_BY_STATUS[this.activeServiceOrder?.status ?? ''] ?? 0;
+  }
+
+  get transportStepIndex(): number {
+    return ClientPanelDetailsComponent.TRANSPORT_STEP_BY_STATUS[this.activeTransport?.transport?.status ?? ''] ?? 0;
+  }
+
+  get showTransportCard(): boolean {
+    return !!this.activeTransport?.hasActiveTransport && !this.isTransportDelivered;
+  }
+
+  get hasReceipt(): boolean {
+    return (this.bicycleImages?.images?.RECEIPT?.length ?? 0) > 0;
+  }
+
+  showDocumentsTab(): void {
+    this.activeGalleryTab = 'RECEIPT';
+  }
+
+  showPhotosTab(): void {
+    this.activeGalleryTab = 'GALLERY';
+  }
+
+  menuOpen = false;
+
+  scrollToSection(id: string): void {
+    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  toggleMenu(event: Event): void {
+    event.stopPropagation();
+    this.menuOpen = !this.menuOpen;
+  }
+
+  @HostListener('document:click')
+  closeMenu(): void {
+    this.menuOpen = false;
   }
 
   get isTransportDelivered(): boolean {
@@ -237,6 +300,7 @@ export class ClientPanelDetailsComponent implements OnInit {
         this.loadBicycleImages(id);
         this.loadBicycleStatus(id);
         this.loading = false;
+        this.handleQueryParams();
       },
       error: (error) => {
         console.error('Error loading bicycle:', error);
@@ -244,6 +308,19 @@ export class ClientPanelDetailsComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  /** Parametry z listy: ?edycja=1 otwiera formularz edycji, ?sekcja=historia|dokumenty przewija do sekcji. */
+  private handleQueryParams(): void {
+    const params = this.route.snapshot.queryParamMap;
+    if (params.get('edycja')) {
+      this.startEditing();
+      return;
+    }
+    const section = params.get('sekcja');
+    if (section === 'historia' || section === 'dokumenty') {
+      setTimeout(() => document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+    }
   }
 
   loadBicycleStatus(bicycleId: number): void {
@@ -258,6 +335,11 @@ export class ClientPanelDetailsComponent implements OnInit {
           ? o.bicycleId === bicycleId
           : o.bicycleBrand === this.bicycle?.brand && o.bicycleModel === this.bicycle?.model
         ) ?? null;
+        // Aktywne zlecenie jest zawsze rozwinięte (plan naprawy i wiadomości obok siebie)
+        if (this.activeServiceOrder && !this.isServiceOrderExpanded) {
+          this.isServiceOrderExpanded = true;
+          this.loadServiceOrderDetails(this.activeServiceOrder.id);
+        }
       },
       error: () => { this.activeServiceOrder = null; }
     });

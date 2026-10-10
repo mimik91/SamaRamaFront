@@ -1,6 +1,6 @@
 {
   "service_admin": {
-    "panel_title": "Ustawienia Profilu Serwisu",
+    "panel_title": "Ustawienia profilu",
     "select_service": "Wybierz serwis:",
     "loading_services": "Ładowanie listy serwisów...",
     "loading_details": "Ładowanie danych serwisu...",
@@ -12,13 +12,13 @@
       "load_details_failed": "Nie udało się załadować danych serwisu. Spróbuj ponownie."
     },
     "tabs": {
-      "basic_info": "Podstawowe informacje",
-      "services": "Dostępne usługi",
-      "pricelist": "Zarządzaj cennikiem",
+      "basic_info": "Dane serwisu",
+      "services": "Usługi i specjalizacje",
+      "pricelist": "Pakiety i cennik",
       "hours": "Godziny otwarcia",
-      "images": "Zarządzaj zdjęciami",
+      "images": "Logo i zdjęcia",
       "history": "Historia zleceń",
-      "reservations": "Zarządzanie rezerwacjami"
+      "reservations": "Rezerwacja online"
     }
   },
   "service_calendar": {
@@ -305,8 +305,8 @@
   },
   "pricelist": {
   "tabs": {
-    "services": "Cennik usług",
-    "packages": "Pakiety serwisowe",
+    "services": "Usługi",
+    "packages": "Pakiety",
     "parts": "Części"
   },
   "packages": {

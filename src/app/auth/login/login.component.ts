@@ -34,6 +34,7 @@ export class LoginComponent {
   isResendingVerification: boolean = false;
   showResendVerification: boolean = false;
   verificationResendSuccess: boolean = false;
+  showPassword = false;
 
   constructor() {
     this.loginForm = this.fb.group({

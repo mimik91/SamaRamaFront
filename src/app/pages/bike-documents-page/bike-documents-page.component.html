@@ -1,0 +1,212 @@
+<main class="bdp">
+
+  <!-- ===== HERO ===== -->
+  <section class="bdp-hero">
+    <div class="bdp-container">
+      <app-breadcrumb [items]="[{ label: 'Strona główna', url: '/' }, { label: 'Dokumenty roweru' }]"></app-breadcrumb>
+
+      <div class="bdp-hero-grid">
+        <div class="bdp-hero-text">
+          <h1>Dokumenty roweru w jednym miejscu</h1>
+          <p class="bdp-lead">
+            Zdjęcia roweru, dowód zakupu, karta gwarancyjna i numer ramy trzymasz w profilu roweru w CycloPick.
+            Sięgniesz po nie przy sprzedaży, reklamacji albo rozmowie z ubezpieczycielem.
+          </p>
+          <div class="bdp-hero-actions">
+            <a class="bdp-btn bdp-btn--primary" [routerLink]="addBikeLink">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+              Dodaj rower
+            </a>
+            <button type="button" class="bdp-link" (click)="scrollTo('jak-zaczac')">
+              Jak zacząć
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Makieta profilu roweru -->
+        <div class="bdp-mock" aria-hidden="true">
+          <div class="bdp-mock-photos">
+            <div class="bdp-mock-photo bdp-mock-photo--main">
+              <img src="assets/images/dokumenty-rower.jpg" alt="" width="1408" height="768" fetchpriority="high">
+            </div>
+            <div class="bdp-mock-photo">
+              <img src="assets/images/dokumenty-rower-las.jpg" alt="" width="480" height="399" loading="lazy">
+            </div>
+            <div class="bdp-mock-photo">
+              <img src="assets/images/dokumenty-rower-miasto.jpg" alt="" width="480" height="399" loading="lazy">
+            </div>
+          </div>
+          <div class="bdp-mock-head">
+            <strong>Mój rower</strong>
+            <span>Szosowy</span>
+          </div>
+          <dl class="bdp-mock-list">
+            <div><dt>Numer ramy</dt><dd class="bdp-mock-frame">WTU••••789</dd></div>
+            <div><dt>Dowód zakupu</dt><dd class="bdp-ok">✓ paragon.jpg</dd></div>
+            <div><dt>Karta gwarancyjna</dt><dd class="bdp-ok">✓ gwarancja.jpg</dd></div>
+            <div><dt>Zdjęcia roweru</dt><dd class="bdp-ok">✓ 3 zdjęcia</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PO CO ===== -->
+  <section class="bdp-section" aria-labelledby="po-co">
+    <div class="bdp-container bdp-why">
+      <div class="bdp-why-text">
+        <h2 id="po-co" class="bdp-h2">Po co trzymać dokumenty w jednym miejscu?</h2>
+        <p>
+          Paragon leży w szufladzie z kablami, zdjęcia roweru toną w galerii telefonu, a numer ramy zapisałeś gdzieś
+          w notatkach. Dopóki niczego nie potrzebujesz, to nie przeszkadza. Problem pojawia się, gdy chcesz zareklamować
+          część, sprzedać rower albo udowodnić, że go kupiłeś.
+        </p>
+        <p><strong>Profil roweru w CycloPick zbiera te informacje w jednym miejscu.</strong></p>
+      </div>
+
+      <div class="bdp-why-visual" aria-hidden="true">
+        <div class="bdp-scatter">
+          <div class="bdp-scatter-card bdp-scatter-card--1"><strong>Paragon</strong><span>w szufladzie z kablami</span></div>
+          <div class="bdp-scatter-card bdp-scatter-card--2"><strong>Zdjęcia roweru</strong><span>w galerii telefonu</span></div>
+          <div class="bdp-scatter-card bdp-scatter-card--3"><strong>Numer ramy</strong><span>gdzieś w notatkach</span></div>
+        </div>
+        <svg class="bdp-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"></path></svg>
+        <div class="bdp-gathered">
+          <strong>Profil roweru w CycloPick</strong>
+          <ul>
+            <li>Paragon</li>
+            <li>Zdjęcia roweru</li>
+            <li>Numer ramy</li>
+            <li>Karta gwarancyjna</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CO ZAPISZESZ ===== -->
+  <section class="bdp-section bdp-section--alt" aria-labelledby="co-zapiszesz">
+    <div class="bdp-container">
+      <h2 id="co-zapiszesz" class="bdp-h2 bdp-h2--center">Co zapiszesz w profilu roweru?</h2>
+      <div class="bdp-grid bdp-grid--4">
+        <article class="bdp-card" *ngFor="let f of features">
+          <span class="bdp-icon" aria-hidden="true">
+            <ng-container [ngSwitch]="f.icon">
+              <svg *ngSwitchCase="'camera'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>
+              <svg *ngSwitchCase="'receipt'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+              <svg *ngSwitchCase="'shield'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg>
+              <svg *ngSwitchCase="'hash'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"></path></svg>
+            </ng-container>
+          </span>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.text }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== KIEDY SIĘ PRZYDAJE ===== -->
+  <section class="bdp-section" aria-labelledby="kiedy">
+    <div class="bdp-container">
+      <h2 id="kiedy" class="bdp-h2 bdp-h2--center">Kiedy się przydaje</h2>
+      <div class="bdp-grid bdp-grid--2">
+        <article class="bdp-card bdp-card--row" *ngFor="let u of useCases">
+          <span class="bdp-icon bdp-icon--round" aria-hidden="true">
+            <ng-container [ngSwitch]="u.icon">
+              <svg *ngSwitchCase="'tag'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>
+              <svg *ngSwitchCase="'receipt'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+              <svg *ngSwitchCase="'shield'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"></path></svg>
+              <svg *ngSwitchCase="'wrench'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"></path></svg>
+            </ng-container>
+          </span>
+          <div>
+            <h3>{{ u.title }}</h3>
+            <p>{{ u.text }}</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== JAK ZACZĄĆ ===== -->
+  <section class="bdp-section bdp-section--green" id="jak-zaczac" aria-labelledby="jak-zaczac-h">
+    <div class="bdp-container">
+      <h2 id="jak-zaczac-h" class="bdp-h2 bdp-h2--center">Jak zacząć</h2>
+      <ol class="bdp-grid bdp-grid--3 bdp-steps">
+        <li class="bdp-card bdp-step" *ngFor="let s of steps; let i = index">
+          <span class="bdp-step-number" aria-hidden="true">{{ i + 1 }}</span>
+          <p>{{ s }}</p>
+        </li>
+      </ol>
+      <div class="bdp-steps-cta">
+        <span>Całość zajmuje kilka minut.</span>
+        <a class="bdp-btn bdp-btn--primary" [routerLink]="addBikeLink">Dodaj rower</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PRYWATNOŚĆ ===== -->
+  <section class="bdp-section" aria-labelledby="prywatnosc">
+    <div class="bdp-container bdp-privacy">
+      <div class="bdp-privacy-text">
+        <span class="bdp-lock" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+        </span>
+        <h2 id="prywatnosc" class="bdp-h2">Prywatność dokumentów</h2>
+        <p>
+          Zdjęcia paragonu i karty gwarancyjnej zostają u Ciebie. CycloPick nie udostępnia ich współpracującym
+          serwisom. Serwis dostaje wyłącznie dane techniczne roweru, potrzebne do rezerwacji naprawy.
+        </p>
+      </div>
+
+      <div class="bdp-visibility">
+        <div class="bdp-visibility-card bdp-visibility-card--you">
+          <strong>Ty widzisz</strong>
+          <ul>
+            <li *ngFor="let item of youSee"><span aria-hidden="true">✓</span>{{ item }}</li>
+          </ul>
+        </div>
+        <div class="bdp-visibility-card">
+          <strong>Serwis widzi</strong>
+          <ul>
+            <li><span aria-hidden="true">✓</span>Dane techniczne</li>
+            <li class="bdp-no"><span aria-hidden="true">✕</span>Dowód zakupu</li>
+            <li class="bdp-no"><span aria-hidden="true">✕</span>Karta gwarancyjna</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="bdp-section bdp-section--alt" id="faq" aria-labelledby="faq-heading">
+    <div class="bdp-container bdp-container--narrow">
+      <h2 id="faq-heading" class="bdp-h2 bdp-h2--center">Najczęstsze pytania</h2>
+      <div class="bdp-faq">
+        <div class="bdp-faq-item" *ngFor="let item of faqData; let i = index">
+          <button type="button" class="bdp-faq-question" (click)="toggleFaq(i)" [attr.aria-expanded]="openFaqIndex === i">
+            <span>{{ item.question }}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path [attr.d]="openFaqIndex === i ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'"></path></svg>
+          </button>
+          <p class="bdp-faq-answer" *ngIf="openFaqIndex === i">{{ item.answer }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== KOŃCOWE CTA ===== -->
+  <section class="bdp-section bdp-section--cta">
+    <div class="bdp-container">
+      <div class="bdp-cta">
+        <h2>Dodaj swój rower</h2>
+        <p>Zrób zdjęcia, wpisz numer ramy i zapisz dokumenty, zanim ktoś o nie zapyta.</p>
+        <a class="bdp-btn bdp-btn--light" [routerLink]="addBikeLink">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          Dodaj rower
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>

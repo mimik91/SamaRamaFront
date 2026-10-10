@@ -23,6 +23,7 @@ export class RegistrationComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
   isSubmitting: boolean = false;
+  showPassword = false;
 
   constructor() {
     this.registrationForm = this.fb.group({

@@ -1,0 +1,214 @@
+<main class="bhp">
+
+  <!-- ===== HERO ===== -->
+  <section class="bhp-hero">
+    <div class="bhp-container">
+      <app-breadcrumb [items]="[{ label: 'Strona główna', url: '/' }, { label: 'Historia serwisowa roweru' }]"></app-breadcrumb>
+
+      <div class="bhp-hero-grid">
+        <div class="bhp-hero-text">
+          <h1>Historia serwisowa roweru</h1>
+          <p class="bhp-hook">Wiesz, kiedy ostatnio wymieniałeś łańcuch? A kiedy serwis sprawdzał hamulce?</p>
+          <p class="bhp-lead">
+            W CycloPick nie musisz tego pamiętać. Historia serwisowa zbiera informacje o naprawach i przeglądach
+            Twojego roweru w jednym miejscu.
+          </p>
+          <p class="bhp-lead bhp-lead--small">
+            To trochę jak książka serwisowa samochodu — tylko dla roweru. Bez szukania starych rachunków, bez
+            zastanawiania się „kiedy to było?” i bez zgadywania, co było robione poprzednim razem.
+          </p>
+          <div class="bhp-hero-actions">
+            <a class="bhp-btn bhp-btn--primary" [routerLink]="addBikeLink">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+              Dodaj rower
+            </a>
+            <button type="button" class="bhp-link" (click)="scrollTo('jak-to-dziala')">
+              Jak to działa?
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Makieta historii serwisowej -->
+        <div class="bhp-mock" aria-hidden="true">
+          <div class="bhp-mock-head">
+            <strong>Historia serwisowa</strong>
+            <span>Mój rower · Szosowy</span>
+          </div>
+          <ul class="bhp-timeline">
+            <li class="bhp-timeline-item bhp-timeline-item--latest">
+              <span class="bhp-dot"></span>
+              <div>
+                <div class="bhp-timeline-row"><strong>Wymiana klocków hamulcowych</strong><span>45 zł</span></div>
+                <span class="bhp-timeline-meta">12.04.2026 · Serwis rowerowy · klocki: model części</span>
+              </div>
+            </li>
+            <li class="bhp-timeline-item">
+              <span class="bhp-dot"></span>
+              <div>
+                <div class="bhp-timeline-row"><strong>Regulacja przerzutek</strong><span>40 zł</span></div>
+                <span class="bhp-timeline-meta">28.05.2026 · Serwis rowerowy</span>
+              </div>
+            </li>
+            <li class="bhp-timeline-item">
+              <span class="bhp-dot"></span>
+              <div>
+                <div class="bhp-timeline-row"><strong>Przegląd okresowy</strong><span>120 zł</span></div>
+                <span class="bhp-timeline-meta">15.03.2026 · Serwis rowerowy · diagnoza: opis</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PO CO ===== -->
+  <section class="bhp-section" aria-labelledby="po-co">
+    <div class="bhp-container bhp-why">
+      <div class="bhp-why-text">
+        <h2 id="po-co" class="bhp-h2">Po co mieć historię serwisową?</h2>
+        <p>
+          Przegląd wiosną, wymiana klocków latem, regulacja przerzutek gdzieś po drodze. Na początku wszystko
+          pamiętasz, ale z czasem szczegóły zaczynają się zacierać.
+        </p>
+        <p>
+          A potem chcesz wymienić część, oddać rower do serwisu albo sprawdzić, czy zbliża się czas kolejnego
+          przeglądu. I pojawia się pytanie: <strong>co właściwie było robione wcześniej?</strong>
+        </p>
+        <p>
+          Historia serwisowa w CycloPick pomaga zachować nad tym kontrolę. Serwis współpracujący z platformą
+          zapisuje wykonane prace, a Ty możesz później sprawdzić daty, zakres napraw, wymienione części, koszty
+          i miejsce wykonania usługi.
+        </p>
+        <p>
+          Nie musisz prowadzić własnych notatek ani pamiętać o zapisywaniu każdej wizyty. Historia gromadzi się
+          w profilu Twojego roweru.
+        </p>
+      </div>
+
+      <div class="bhp-why-visual" aria-hidden="true">
+        <div class="bhp-pills">
+          <span class="bhp-pill">Przegląd wiosną</span>
+          <span class="bhp-pill">Wymiana klocków latem</span>
+          <span class="bhp-pill bhp-pill--faded">Regulacja przerzutek…</span>
+        </div>
+        <ol class="bhp-flow">
+          <li>
+            <span class="bhp-flow-number">1</span>
+            <span><strong>Serwis zapisuje wykonane prace</strong><span>po każdej usłudze w CycloPick</span></span>
+          </li>
+          <li>
+            <span class="bhp-flow-number">2</span>
+            <span><strong>Historia gromadzi się w profilu roweru</strong><span>bez Twoich notatek</span></span>
+          </li>
+          <li>
+            <span class="bhp-flow-number">3</span>
+            <span><strong>Ty sprawdzasz, kiedy chcesz</strong><span>daty, zakres napraw, części, koszty, miejsce</span></span>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CO ZNAJDZIESZ ===== -->
+  <section class="bhp-section bhp-section--alt" aria-labelledby="co-znajdziesz">
+    <div class="bhp-container">
+      <h2 id="co-znajdziesz" class="bhp-h2 bhp-h2--center">Co znajdziesz w historii serwisowej?</h2>
+      <div class="bhp-grid bhp-grid--3">
+        <article class="bhp-card" *ngFor="let f of features">
+          <span class="bhp-icon" aria-hidden="true">
+            <ng-container [ngSwitch]="f.icon">
+              <svg *ngSwitchCase="'calendar'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
+              <svg *ngSwitchCase="'wrench'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"></path></svg>
+              <svg *ngSwitchCase="'search'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.5-4.5M11 8.5v5M8.5 11h5"></path></svg>
+              <svg *ngSwitchCase="'sliders'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M8 14v6"></path></svg>
+              <svg *ngSwitchCase="'receipt'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+              <svg *ngSwitchCase="'shop'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"></path><path d="M4 9v11h16V9"></path><path d="M9 20v-6h6v6"></path></svg>
+            </ng-container>
+          </span>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.text }}</p>
+        </article>
+      </div>
+
+      <div class="bhp-banner">
+        <p>Jeśli serwis zapisze dokładny model wymienionej części, łatwiej będzie Ci sprawdzić, co zostało zamontowane i czego szukać przy kolejnej wymianie.</p>
+        <strong>Wszystkie te informacje znajdziesz w profilu swojego roweru.</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PRZYDA CI SIĘ ===== -->
+  <section class="bhp-section" aria-labelledby="przyda-sie">
+    <div class="bhp-container">
+      <h2 id="przyda-sie" class="bhp-h2 bhp-h2--center">Przyda Ci się, gdy…</h2>
+      <div class="bhp-grid bhp-grid--2">
+        <article class="bhp-card bhp-card--row" *ngFor="let u of useCases">
+          <span class="bhp-icon bhp-icon--solid" aria-hidden="true">
+            <ng-container [ngSwitch]="u.icon">
+              <svg *ngSwitchCase="'wrench'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"></path></svg>
+              <svg *ngSwitchCase="'heart'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg>
+              <svg *ngSwitchCase="'cart'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M3 4h2l2.5 11h11L21 7H6.5"></path></svg>
+              <svg *ngSwitchCase="'tag'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>
+            </ng-container>
+          </span>
+          <div>
+            <h3>{{ u.title }}</h3>
+            <p>{{ u.text }}</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== JAK TO DZIAŁA ===== -->
+  <section class="bhp-section bhp-section--green" id="jak-to-dziala" aria-labelledby="jak-to-dziala-h">
+    <div class="bhp-container">
+      <h2 id="jak-to-dziala-h" class="bhp-h2 bhp-h2--center">Jak to działa?</h2>
+      <ol class="bhp-grid bhp-grid--3 bhp-steps">
+        <li class="bhp-card bhp-step" *ngFor="let s of steps; let i = index">
+          <span class="bhp-step-number" aria-hidden="true">{{ i + 1 }}</span>
+          <p><strong>{{ s.lead }}</strong> {{ s.text }}</p>
+        </li>
+      </ol>
+      <p class="bhp-steps-note">
+        Nie musisz samodzielnie zapisywać każdej naprawy. Gdy współpracujący serwis uzupełni historię,
+        informacje będą dostępne w profilu Twojego roweru.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="bhp-section bhp-section--alt" id="faq" aria-labelledby="faq-heading">
+    <div class="bhp-container bhp-container--narrow">
+      <h2 id="faq-heading" class="bhp-h2 bhp-h2--center">FAQ — najczęściej zadawane pytania</h2>
+      <div class="bhp-faq">
+        <div class="bhp-faq-item" *ngFor="let item of faqData; let i = index">
+          <button type="button" class="bhp-faq-question" (click)="toggleFaq(i)" [attr.aria-expanded]="openFaqIndex === i">
+            <span>{{ item.question }}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path [attr.d]="openFaqIndex === i ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'"></path></svg>
+          </button>
+          <p class="bhp-faq-answer" *ngIf="openFaqIndex === i">{{ item.answer }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== KOŃCOWE CTA ===== -->
+  <section class="bhp-section bhp-section--cta">
+    <div class="bhp-container">
+      <div class="bhp-cta">
+        <h2>Dodaj swój rower</h2>
+        <p>Zacznij budować historię serwisową swojego roweru i miej najważniejsze informacje o naprawach zawsze pod ręką.</p>
+        <p class="bhp-cta-small">Przyda się przy kolejnej wizycie w serwisie, planowaniu wymiany części, a nawet wtedy, gdy zdecydujesz się sprzedać rower.</p>
+        <p class="bhp-cta-strong">Twój rower ma swoją historię. W CycloPick możesz ją zachować.</p>
+        <a class="bhp-btn bhp-btn--light" [routerLink]="addBikeLink">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          Dodaj rower
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>

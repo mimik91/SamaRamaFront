@@ -1,113 +1,85 @@
-<div class="login-container">
-  <div class="login-form-container">
-    <h2>Logowanie Klienta</h2>
-    
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input 
-          type="email" 
-          id="email" 
-          formControlName="email" 
-          class="form-control"
-          required
+<main class="login-page">
+  <section class="login-card" aria-labelledby="login-title">
+    <h1 id="login-title">Zaloguj się</h1>
+    <p class="login-sub">Do swoich rowerów, rezerwacji i historii serwisowej.</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="login-field">
+        <label for="email">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          autocomplete="email"
+          placeholder="np. anna@poczta.pl"
+          [class.is-invalid]="isFieldInvalid(loginForm, 'email')"
+          [attr.aria-invalid]="isFieldInvalid(loginForm, 'email')"
         />
+        <span class="login-error" *ngIf="isFieldInvalid(loginForm, 'email')">Podaj poprawny adres e-mail</span>
       </div>
-      
-      <div class="form-group">
-        <label for="password">Hasło</label>
-        <input 
-          type="password" 
-          id="password" 
-          formControlName="password"
-          class="form-control" 
-          required
-        />
-      </div>
-      <div class="forgot-password">
-        <a routerLink="/password-reset-request">Nie pamiętasz hasła?</a>
-      </div>
-      
-      <div class="form-actions">
-        <button
-          type="button"
-          class="secondary-btn"
-          routerLink="/register"
-        >
-          Stwórz nowe konto
-        </button>
-        
-        <button 
-          type="submit" 
-          class="primary-btn" 
-          [disabled]="loginForm.invalid || isSubmitting"
-        >
-          {{ isSubmitting ? 'Logowanie...' : 'Zaloguj się' }}
-        </button>
-      </div>
-    </form>
-    
-    <!-- Komunikaty błędów i powodzeń -->
-    <div *ngIf="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
-    
-    <div *ngIf="successMessage" class="success-message">
-      {{ successMessage }}
-    </div>
-    
-    <!-- Komunikat o niezweryfikowanym koncie i formularz ponownego wysłania -->
-    <div *ngIf="showResendVerification" class="resend-verification-container">
-      <div class="resend-verification-header">
-        <h3>Wyślij link weryfikacyjny ponownie</h3>
-        <p class="info-text">
-          Wprowadź swój adres email, aby otrzymać nowy link weryfikacyjny
-        </p>
-      </div>
-      
-      <form [formGroup]="resendVerificationForm" (ngSubmit)="resendVerification()" class="resend-form">
-        <div class="form-group">
-          <label for="verificationEmail">Email</label>
-          <input 
-            type="email" 
-            id="verificationEmail" 
-            formControlName="email" 
-            class="form-control"
-            [class.is-invalid]="isFieldInvalid(resendVerificationForm, 'email')"
-            required
-          />
-          <div *ngIf="isFieldInvalid(resendVerificationForm, 'email')" class="validation-error">
-            Podaj poprawny adres email
-          </div>
+
+      <div class="login-field">
+        <div class="login-label-row">
+          <label for="password">Hasło</label>
+          <a routerLink="/password-reset-request" class="login-forgot">Nie pamiętasz hasła?</a>
         </div>
-        
-        <div class="form-actions verification-actions">
-          <button 
-            type="button" 
-            class="secondary-btn cancel-btn" 
-            (click)="toggleResendForm()"
-          >
-            Anuluj
+        <div class="login-password" [class.is-invalid]="isFieldInvalid(loginForm, 'password')">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            formControlName="password"
+            autocomplete="current-password"
+            [attr.aria-invalid]="isFieldInvalid(loginForm, 'password')"
+          />
+          <button type="button" class="login-password-toggle" (click)="showPassword = !showPassword" [attr.aria-pressed]="showPassword">
+            {{ showPassword ? 'Ukryj' : 'Pokaż' }}
           </button>
-          
-          <button 
-            type="submit" 
-            class="primary-btn" 
-            [disabled]="resendVerificationForm.invalid || isResendingVerification"
-          >
+        </div>
+        <span class="login-error" *ngIf="isFieldInvalid(loginForm, 'password')">Hasło musi mieć co najmniej 6 znaków</span>
+      </div>
+
+      <button type="submit" class="login-submit" [disabled]="loginForm.invalid || isSubmitting">
+        {{ isSubmitting ? 'Logowanie...' : 'Zaloguj się' }}
+      </button>
+    </form>
+
+    <!-- Komunikaty błędów i powodzeń -->
+    <div class="login-messages" aria-live="polite">
+      <div *ngIf="errorMessage" class="login-alert login-alert--error" role="alert">{{ errorMessage }}</div>
+      <div *ngIf="successMessage" class="login-alert login-alert--success" role="status">{{ successMessage }}</div>
+    </div>
+
+    <!-- Konto niezweryfikowane — ponowne wysłanie linku -->
+    <div *ngIf="showResendVerification" class="login-resend">
+      <h2>Wyślij link weryfikacyjny ponownie</h2>
+      <p>Wprowadź swój adres e-mail, aby otrzymać nowy link weryfikacyjny.</p>
+
+      <form [formGroup]="resendVerificationForm" (ngSubmit)="resendVerification()" novalidate>
+        <div class="login-field">
+          <label for="verificationEmail">E-mail</label>
+          <input
+            type="email"
+            id="verificationEmail"
+            formControlName="email"
+            [class.is-invalid]="isFieldInvalid(resendVerificationForm, 'email')"
+          />
+          <span class="login-error" *ngIf="isFieldInvalid(resendVerificationForm, 'email')">Podaj poprawny adres e-mail</span>
+        </div>
+
+        <div class="login-resend-actions">
+          <button type="button" class="login-secondary" (click)="toggleResendForm()">Anuluj</button>
+          <button type="submit" class="login-submit login-submit--inline" [disabled]="resendVerificationForm.invalid || isResendingVerification">
             {{ isResendingVerification ? 'Wysyłanie...' : 'Wyślij link' }}
           </button>
         </div>
       </form>
     </div>
-    
-    <!-- Komunikat o powodzeniu wysłania linku weryfikacyjnego -->
-    <div *ngIf="verificationResendSuccess" class="resend-success-message">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-      </svg>
-      <p>Link weryfikacyjny został wysłany na podany adres email.</p>
+
+    <div *ngIf="verificationResendSuccess" class="login-alert login-alert--success" role="status">
+      Link weryfikacyjny został wysłany na podany adres e-mail.
     </div>
-  </div>
-</div>
+
+    <p class="login-alt">Nie masz konta? <a routerLink="/register">Załóż darmowe konto</a></p>
+    <p class="login-alt login-alt--service">Prowadzisz serwis rowerowy? <a routerLink="/register-service">Zarejestruj serwis →</a></p>
+  </section>
+</main>

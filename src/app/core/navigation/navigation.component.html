@@ -18,7 +18,7 @@
       <span>Jesteśmy partnerem akcji <strong>Rowerem do pracy</strong></span>
     </a>
 
-    <a *ngIf="!authService.isLoggedIn()" routerLink="/login" class="mobile-login-link">Zaloguj się</a>
+    <a *ngIf="!authService.isLoggedIn() && !isLoginPage()" routerLink="/login" class="mobile-login-link">Zaloguj się</a>
 
     <button
       class="mobile-menu-btn"
@@ -104,7 +104,7 @@
 
       <ng-container *ngIf="!authService.isLoggedIn()">
         <div class="nav-auth">
-          <a routerLink="/login" class="nav-login-desktop" (click)="closeMobileMenu()">Zaloguj się</a>
+          <a *ngIf="!isLoginPage()" routerLink="/login" class="nav-login-desktop" (click)="closeMobileMenu()">Zaloguj się</a>
           <a routerLink="/register" class="nav-register" (click)="closeMobileMenu()">Załóż konto</a>
         </div>
 
@@ -133,20 +133,6 @@
     </div>
 
     <div class="auth-links">
-      <!-- Menu dla strony logowania klienta -->
-      <ng-container *ngIf="isLoginPage()">
-        <!-- <a routerLink="/cennik" routerLinkActive="active">Cennik</a> -->
-        <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
-        <a routerLink="/register-service" routerLinkActive="active" (click)="closeMobileMenu()">Zarejestruj serwis</a>
-      </ng-container>
-
-      <!-- Menu dla strony rejestracji klienta -->
-      <ng-container *ngIf="isRegisterPage()">
-        <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>
-        <a routerLink="/login" routerLinkActive="active" (click)="closeMobileMenu()">Login</a>
-        <a routerLink="/register-service" routerLinkActive="active" (click)="closeMobileMenu()">Zarejestruj serwis</a>
-      </ng-container>
-
       <!-- Menu dla strony rejestracji serwisu -->
       <ng-container *ngIf="isServiceRegisterPage()">
         <a routerLink="/mapa-serwisow" routerLinkActive="active" (click)="closeMobileMenu()">Mapa</a>

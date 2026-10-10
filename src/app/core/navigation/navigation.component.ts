@@ -225,19 +225,17 @@ export class NavigationComponent implements OnInit {
     return this.currentUrl.startsWith('/mapa-serwisow');
   }
 
+  /** Uproszczony pasek tylko dla rejestracji serwisu; logowanie i rejestracja klienta mają pełne menu. */
   isAuthPage(): boolean {
-    return this.currentUrl.includes('/login') || 
-           this.currentUrl.includes('/register') ||
-           this.currentUrl.includes('/register-service') ||
-           this.currentUrl.includes('/register-serviceman');
+    return this.isServiceRegisterPage();
   }
 
   isLoginPage(): boolean {
-    return this.currentUrl === '/login';
+    return this.currentUrl.split(/[?#]/)[0] === '/login';
   }
 
   isRegisterPage(): boolean {
-    return this.currentUrl === '/register';
+    return this.currentUrl.split(/[?#]/)[0] === '/register';
   }
 
   isServiceRegisterPage(): boolean {

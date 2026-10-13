@@ -1,0 +1,131 @@
+<main class="ps">
+
+  <!-- ===== HERO ===== -->
+  <section class="ps-hero">
+    <div class="ps-container">
+      <app-breadcrumb [items]="[{ label: 'Strona główna', url: '/' }, { label: 'Dla serwisów' }]"></app-breadcrumb>
+
+      <span class="ps-eyebrow">Dla serwisów rowerowych</span>
+      <h1>Rezerwacje online dla Twojego serwisu. Na start bez opłat.</h1>
+      <p class="ps-lead">
+        Przyjmuj rezerwacje online, bądź widoczny na mapie i usprawnij obsługę klientów. Zarejestruj serwis do
+        <strong>28 lutego 2027 r.</strong> bez opłaty rejestracyjnej.
+      </p>
+
+      <ul class="ps-chips">
+        <li>✓ 0 zł za rejestrację</li>
+        <li>✓ Panel rezerwacji</li>
+        <li>✓ Widoczność na mapie</li>
+        <li>✓ Powiadomienia SMS</li>
+      </ul>
+
+      <div class="ps-actions">
+        <a class="ps-btn ps-btn--primary" routerLink="/register-service">Zarejestruj warsztat</a>
+        <a class="ps-btn ps-btn--secondary" [href]="contactMail">Napisz do nas</a>
+      </div>
+
+      <div class="ps-note">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+        <span>Pierwsze 20 miejsc partnerskich w programie Early Access jest już zajętych. Nadal możesz dołączyć do CycloPick na zasadach opisanych poniżej.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CENNIK ===== -->
+  <section class="ps-section" aria-labelledby="cennik">
+    <div class="ps-container">
+      <h2 id="cennik" class="ps-h2">Cennik</h2>
+      <p class="ps-sub">Prosto i bez ukrytych kosztów.</p>
+
+      <div class="ps-price-grid">
+        <div class="ps-price ps-price--hl">
+          <span class="ps-price-tag">Teraz</span>
+          <span class="ps-price-label">Rejestracja do 28.02.2027</span>
+          <span class="ps-price-value">0 zł</span>
+          <p>Bez opłaty rejestracyjnej. Wystarczy założyć konto serwisu.</p>
+        </div>
+        <div class="ps-price">
+          <span class="ps-price-label">Rejestracja od 1.03.2027</span>
+          <span class="ps-price-value">300 zł <small>jednorazowo</small></span>
+          <p>Jednorazowa opłata za rejestrację serwisu.</p>
+        </div>
+      </div>
+
+      <div class="ps-account">
+        <div>
+          <span class="ps-price-label">Prowadzenie konta</span>
+          <div class="ps-price-value">0 zł</div>
+          <span class="ps-account-note">co najmniej do 30.09.2027</span>
+        </div>
+        <ul>
+          <li><b aria-hidden="true">✓</b>Po tym terminie rozważamy niewysoką opłatę za prowadzenie konta.</li>
+          <li><b aria-hidden="true">✓</b>Poinformujemy Cię o niej z wyprzedzeniem. Nie naliczamy opłat w ciemno.</li>
+          <li><b aria-hidden="true">✓</b>Jeśli nie zdecydujesz się zapłacić, stracisz jedynie dostęp do funkcji płatnych.</li>
+        </ul>
+      </div>
+
+      <div class="ps-price-cta">
+        <a class="ps-btn ps-btn--primary" routerLink="/register-service">Zarejestruj warsztat</a>
+        <span>Do 28.02.2027 bez opłaty rejestracyjnej.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CO ZYSKUJESZ ===== -->
+  <section class="ps-section ps-section--alt" aria-labelledby="zysk">
+    <div class="ps-container">
+      <h2 id="zysk" class="ps-h2">Co zyskujesz z CycloPick?</h2>
+      <p class="ps-sub">Więcej możliwości pozyskiwania klientów, mniej ręcznej obsługi i lepsza widoczność Twojego serwisu.</p>
+
+      <div class="ps-benefits">
+        <article class="ps-benefit" *ngFor="let b of benefits">
+          <div class="ps-benefit-head">
+            <span class="ps-icon" aria-hidden="true">
+              <ng-container [ngSwitch]="b.icon">
+                <svg *ngSwitchCase="'calendar'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>
+                <svg *ngSwitchCase="'pin'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>
+                <svg *ngSwitchCase="'globe'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>
+                <svg *ngSwitchCase="'sms'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"></path></svg>
+                <svg *ngSwitchCase="'truck'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7z"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg>
+              </ng-container>
+            </span>
+            <h3>{{ b.title }}</h3>
+            <span class="ps-pill" *ngIf="b.pill" [class.ps-pill--new]="b.pill.kind === 'new'" [class.ps-pill--city]="b.pill.kind === 'city'">{{ b.pill.label }}</span>
+          </div>
+          <p>{{ b.text }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="ps-section" id="faq" aria-labelledby="faq-heading">
+    <div class="ps-container ps-container--narrow">
+      <h2 id="faq-heading" class="ps-h2 ps-h2--center">Najczęstsze pytania</h2>
+      <div class="ps-faq">
+        <div class="ps-faq-item" *ngFor="let item of faq; let i = index">
+          <button type="button" class="ps-faq-question" (click)="toggleFaq(i)" [attr.aria-expanded]="openFaqIndex === i">
+            <span>{{ item.question }}</span>
+            <span class="ps-faq-sign" aria-hidden="true">{{ openFaqIndex === i ? '−' : '+' }}</span>
+          </button>
+          <p class="ps-faq-answer" *ngIf="openFaqIndex === i">{{ item.answer }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== KOŃCOWE CTA ===== -->
+  <section class="ps-cta-section">
+    <div class="ps-container">
+      <div class="ps-cta">
+        <h2>Masz pytania?</h2>
+        <p>Napisz do nas lub od razu zarejestruj swój warsztat — do 28.02.2027 r. bez opłaty rejestracyjnej.</p>
+        <div class="ps-actions ps-actions--center">
+          <a class="ps-btn ps-btn--light" routerLink="/register-service">Zarejestruj warsztat</a>
+          <a class="ps-btn ps-btn--outline" [href]="contactMail">Napisz do nas</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>

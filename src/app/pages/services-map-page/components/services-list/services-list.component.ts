@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MapService } from '../../services/map.service';
 import { LogoCacheService } from '../../services/logo-cache.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MapPin } from '../../../../shared/models/map.models';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-services-list',
   standalone: true,
-  imports: [CommonModule, ScrollingModule],
+  imports: [CommonModule, ScrollingModule, RouterLink],
   templateUrl: './services-list.component.html',
   styleUrls: ['./services-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -67,6 +67,12 @@ export class ServicesListComponent implements OnDestroy {
    * Obsługa kliknięcia przycisku "Zobacz szczegóły".
    * Pobiera sufiks URL dla serwisu i nawiguje do strony szczegółów.
    */
+  /** Kliknięcie prawdziwego linku do profilu — nawigację wykonuje routerLink, tu tylko nie zaznaczamy karty i informujemy rodzica. */
+  onDetailsLinkClick(service: MapPin, event: Event): void {
+    event.stopPropagation();
+    this.serviceDetailsRequested.emit(service);
+  }
+
   onViewDetails(service: MapPin, event: Event): void {
     event.stopPropagation();
     this.serviceDetailsRequested.emit(service);

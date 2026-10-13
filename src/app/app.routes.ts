@@ -382,6 +382,12 @@ export const routes: Routes = [
     },
 
     {
+      path: 'admin-register-service',
+      loadComponent: () => import('./admin/admin-register-service/admin-register-service.component').then(m => m.AdminRegisterServiceComponent),
+      canActivate: [adminGuard],
+      title: 'Rejestracja serwisu - Admin'
+    },
+    {
       path: 'admin-service-edit/:id',
       loadComponent: () => import('./admin/admin-registered-service-edition/admin-registered-service-edition.component').then(m => m.AdminRegisteredServiceEditionComponent),
       canActivate: [adminGuard],

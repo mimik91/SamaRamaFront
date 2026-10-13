@@ -1,0 +1,340 @@
+<div class="ars-page">
+  <header class="ars-header">
+    <button type="button" class="ars-back" (click)="goBack()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+      Panel admina
+    </button>
+    <h1>Zarejestruj serwis</h1>
+    <p class="ars-lead">
+      Serwis powstaje od razu jako zarejestrowany. Konto dostaje losowe hasło, a mail powitalny z przyciskiem
+      „Ustaw hasło” wyjdzie jutro o 10:00.
+    </p>
+  </header>
+
+  <!-- ===== EKRAN SUKCESU ===== -->
+  <section class="ars-card ars-success" *ngIf="result" role="status">
+    <span class="ars-success-icon" aria-hidden="true">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>
+    </span>
+    <h2>Serwis „{{ result.name }}” został zarejestrowany</h2>
+
+    <div class="ars-link-row">
+      <span class="ars-link-label">Adres profilu</span>
+      <strong class="ars-link">{{ profileUrl }}</strong>
+      <button type="button" class="ars-btn ars-btn--ghost" (click)="copyProfileLink()">
+        {{ linkCopied ? 'Skopiowano' : 'Kopiuj' }}
+      </button>
+    </div>
+
+    <p class="ars-info">
+      Mail powitalny wyjdzie <strong>{{ welcomeDate }}</strong> o 10:00.
+    </p>
+
+    <div class="ars-logo-status" *ngIf="logoFile">
+      <ng-container [ngSwitch]="logoStatus">
+        <span *ngSwitchCase="'uploading'" class="ars-muted">Wysyłanie logo…</span>
+        <span *ngSwitchCase="'uploaded'" class="ars-ok">✓ Logo zostało wysłane.</span>
+        <span *ngSwitchCase="'error'" class="ars-error-text">
+          Serwis jest już zarejestrowany, ale logo się nie wysłało: {{ logoUploadError }}
+          <button type="button" class="ars-btn ars-btn--ghost" (click)="uploadLogo()">Spróbuj ponownie</button>
+        </span>
+      </ng-container>
+    </div>
+
+    <div class="ars-actions">
+      <button type="button" class="ars-btn ars-btn--primary" (click)="registerAnother()">Zarejestruj kolejny</button>
+      <button type="button" class="ars-btn ars-btn--secondary" (click)="goToDashboard()">Wróć do panelu admina</button>
+    </div>
+  </section>
+
+  <!-- ===== FORMULARZ ===== -->
+  <form *ngIf="!result" [formGroup]="form" (ngSubmit)="submit()" novalidate class="ars-form">
+
+    <div class="ars-alert ars-alert--error" role="alert" *ngIf="errorMessage">
+      <span *ngFor="let line of errorMessage.split('\n')">{{ line }}<br></span>
+    </div>
+
+    <!-- Konto i dane serwisu -->
+    <section class="ars-card">
+      <h2>Konto i dane serwisu</h2>
+
+      <div class="ars-field">
+        <label for="ars-name">Nazwa serwisu *</label>
+        <input id="ars-name" type="text" formControlName="name" maxlength="50" [class.ars-invalid]="showError('name')">
+        <span class="ars-hint" *ngIf="isPending('name')">Sprawdzam dostępność…</span>
+        <span class="ars-error" *ngIf="hasError('name', 'required')">Podaj nazwę serwisu.</span>
+        <span class="ars-error" *ngIf="hasError('name', 'serviceNameTaken')">Serwis o takiej nazwie już istnieje.</span>
+      </div>
+
+      <div class="ars-field">
+        <label for="ars-suffix">Suffix (adres cyclopick.pl/…) *</label>
+        <div class="ars-inline">
+          <span class="ars-prefix" aria-hidden="true">cyclopick.pl/</span>
+          <input id="ars-suffix" type="text" formControlName="suffix" maxlength="50" autocapitalize="none" [class.ars-invalid]="showError('suffix')">
+          <button type="button" class="ars-btn ars-btn--ghost" (click)="suggestSuffix()">Zaproponuj z nazwy</button>
+        </div>
+        <span class="ars-hint" *ngIf="isPending('suffix')">Sprawdzam dostępność…</span>
+        <span class="ars-hint" *ngIf="!showError('suffix') && !isPending('suffix')">3–50 znaków: litery, cyfry, pojedyncze kropki lub myślniki w środku.</span>
+        <span class="ars-error" *ngIf="hasError('suffix', 'required')">Podaj suffix.</span>
+        <span class="ars-error" *ngIf="hasError('suffix', 'minlength')">Suffix musi mieć co najmniej 3 znaki.</span>
+        <span class="ars-error" *ngIf="hasError('suffix', 'pattern')">Dozwolone tylko litery, cyfry oraz pojedyncze kropki i myślniki (nie na początku ani końcu).</span>
+        <span class="ars-error" *ngIf="hasError('suffix', 'suffixTaken')">Ten suffix jest zajęty lub niedozwolony.</span>
+      </div>
+
+      <div class="ars-field">
+        <label for="ars-email">E-mail (login konta i adres serwisu) *</label>
+        <input id="ars-email" type="email" formControlName="email" maxlength="50" autocomplete="off" [class.ars-invalid]="showError('email')">
+        <span class="ars-hint" *ngIf="isPending('email')">Sprawdzam, czy konto już istnieje…</span>
+        <span class="ars-error" *ngIf="hasError('email', 'required')">Podaj adres e-mail.</span>
+        <span class="ars-error" *ngIf="hasError('email', 'email')">Wpisz poprawny adres e-mail.</span>
+        <span class="ars-error" *ngIf="hasError('email', 'accountExists')">Konto z tym e-mailem już istnieje.</span>
+        <span class="ars-error" *ngIf="hasError('email', 'emailUsedByService')">E-mail jest już użyty przez serwis/pinezkę.</span>
+      </div>
+    </section>
+
+    <!-- Kontakt -->
+    <section class="ars-card">
+      <h2>Kontakt</h2>
+      <div class="ars-grid">
+        <div class="ars-field">
+          <label for="ars-phone">Telefon</label>
+          <input id="ars-phone" type="tel" formControlName="phoneNumber" inputmode="numeric" placeholder="123456789" [class.ars-invalid]="showError('phoneNumber')">
+          <span class="ars-error" *ngIf="hasError('phoneNumber', 'pattern')">Telefon musi mieć 9 cyfr.</span>
+        </div>
+        <div class="ars-field">
+          <label for="ars-contact">Osoba kontaktowa</label>
+          <input id="ars-contact" type="text" formControlName="contactPerson" maxlength="100">
+        </div>
+        <div class="ars-field">
+          <label for="ars-sms">Nazwa w SMS</label>
+          <input id="ars-sms" type="text" formControlName="shortName" maxlength="12" [class.ars-invalid]="showError('shortName')">
+          <span class="ars-hint" *ngIf="!showError('shortName')">Max 12 znaków, A–Z bez polskich znaków, cyfry, spacja, myślnik. Puste = „Cyclopick”.</span>
+          <span class="ars-error" *ngIf="hasError('shortName', 'pattern')">Tylko A–Z bez polskich znaków, cyfry, spacja i myślnik.</span>
+        </div>
+      </div>
+      <div class="ars-switches">
+        <label class="ars-check"><input type="checkbox" formControlName="displayEmail"> E-mail widoczny publicznie na profilu</label>
+        <label class="ars-check"><input type="checkbox" formControlName="displayPhoneNumber"> Telefon widoczny publicznie na profilu</label>
+      </div>
+    </section>
+
+    <!-- Adres -->
+    <section class="ars-card">
+      <h2>Adres i lokalizacja</h2>
+      <div class="ars-grid ars-grid--address">
+        <div class="ars-field ars-span-2">
+          <label for="ars-street">Ulica *</label>
+          <input id="ars-street" type="text" formControlName="street" [class.ars-invalid]="showError('street')">
+          <span class="ars-error" *ngIf="hasError('street', 'required')">Podaj ulicę.</span>
+        </div>
+        <div class="ars-field">
+          <label for="ars-building">Numer *</label>
+          <input id="ars-building" type="text" formControlName="building" maxlength="20" [class.ars-invalid]="showError('building')">
+          <span class="ars-error" *ngIf="hasError('building', 'required')">Podaj numer.</span>
+        </div>
+        <div class="ars-field">
+          <label for="ars-flat">Lokal</label>
+          <input id="ars-flat" type="text" formControlName="flat" maxlength="20">
+        </div>
+        <div class="ars-field">
+          <label for="ars-postal">Kod pocztowy *</label>
+          <input id="ars-postal" type="text" formControlName="postalCode" maxlength="10" placeholder="00-000" [class.ars-invalid]="showError('postalCode')">
+          <span class="ars-error" *ngIf="hasError('postalCode', 'required')">Podaj kod pocztowy.</span>
+        </div>
+        <div class="ars-field">
+          <label for="ars-city">Miasto *</label>
+          <input id="ars-city" type="text" formControlName="city" list="ars-cities" autocomplete="off" [class.ars-invalid]="showError('city')">
+          <datalist id="ars-cities"><option *ngFor="let c of cities" [value]="c"></option></datalist>
+          <span class="ars-error" *ngIf="hasError('city', 'required')">Podaj miasto.</span>
+        </div>
+        <div class="ars-field">
+          <label for="ars-district">Dzielnica</label>
+          <input id="ars-district" type="text" formControlName="district" list="ars-districts" autocomplete="off">
+          <datalist id="ars-districts"><option *ngFor="let d of districts" [value]="d"></option></datalist>
+        </div>
+      </div>
+
+      <div class="ars-field">
+        <label for="ars-coords">Współrzędne z Google Maps *</label>
+        <input id="ars-coords" type="text" formControlName="coordinates" placeholder="50.0647, 19.9450" autocomplete="off" [class.ars-invalid]="showError('coordinates')">
+        <span class="ars-hint" *ngIf="!parsedCoordinates && !showError('coordinates')">Prawy klik na mapie → kliknij pierwszą linię (współrzędne), wklej tutaj.</span>
+        <span class="ars-ok" *ngIf="parsedCoordinates as c">
+          Szerokość {{ c.lat }}, długość {{ c.lon }} ·
+          <a [href]="mapsUrl" target="_blank" rel="noopener noreferrer">sprawdź na mapie</a>
+        </span>
+        <span class="ars-error" *ngIf="hasError('coordinates', 'required')">Podaj współrzędne.</span>
+        <span class="ars-error" *ngIf="hasError('coordinates', 'coordsFormat')">Format: „50.0647, 19.9450” (szerokość, długość, kropka jako separator dziesiętny).</span>
+        <span class="ars-error" *ngIf="hasError('coordinates', 'coordsRange')">Szerokość musi mieścić się w −90…90, a długość w −180…180.</span>
+      </div>
+    </section>
+
+    <!-- Profil -->
+    <section class="ars-card">
+      <h2>Profil</h2>
+      <div class="ars-field">
+        <label for="ars-desc">Opis</label>
+        <textarea id="ars-desc" rows="4" formControlName="description" maxlength="1500" [class.ars-invalid]="showError('description')"></textarea>
+        <span class="ars-hint">{{ (ctrl('description').value || '').length }}/1500</span>
+      </div>
+      <div class="ars-grid">
+        <div class="ars-field">
+          <label for="ars-www">Strona WWW</label>
+          <input id="ars-www" type="url" formControlName="website" placeholder="https://twojserwis.pl" [class.ars-invalid]="showError('website')">
+          <span class="ars-error" *ngIf="hasError('website', 'invalidUrl')">Wpisz pełny adres zaczynający się od https://</span>
+        </div>
+        <div class="ars-field">
+          <label for="ars-fb">Facebook</label>
+          <input id="ars-fb" type="url" formControlName="facebook" placeholder="https://facebook.com/…" [class.ars-invalid]="showError('facebook')">
+          <span class="ars-error" *ngIf="hasError('facebook', 'invalidUrl')">Wpisz pełny adres zaczynający się od https://</span>
+        </div>
+      </div>
+      <p class="ars-hint ars-hint--block">Brak strony WWW zmienia wariant maila powitalnego (zachęta do dodania cyclopick.pl/suffix do Google Maps).</p>
+    </section>
+
+    <!-- Pakiety -->
+    <section class="ars-card">
+      <h2>Pakiety serwisowe <span class="ars-optional">opcjonalne</span></h2>
+      <div class="ars-grid">
+        <div class="ars-field ars-span-2">
+          <label for="ars-pk-desc">Opis nad pakietami</label>
+          <textarea id="ars-pk-desc" rows="2" formControlName="packagesGeneralDescription" maxlength="1000"></textarea>
+        </div>
+        <div class="ars-field">
+          <label for="ars-pk-comment">Komentarz wewnętrzny</label>
+          <textarea id="ars-pk-comment" rows="2" formControlName="packagesComment" maxlength="1000"></textarea>
+        </div>
+        <div class="ars-field">
+          <label for="ars-pk-default">Rower pokazywany jako pierwszy</label>
+          <select id="ars-pk-default" formControlName="packagesDefaultBikeType">
+            <option value="">— brak —</option>
+            <option *ngFor="let t of bikeTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+      </div>
+      <label class="ars-check"><input type="checkbox" formControlName="packagesActive"> Pakiety widoczne na profilu</label>
+
+      <div formArrayName="packages" class="ars-packages">
+        <article class="ars-package" *ngFor="let pkg of packagesArray.controls; let i = index" [formGroupName]="i">
+          <div class="ars-package-head">
+            <strong>Pakiet {{ i + 1 }}</strong>
+            <button type="button" class="ars-btn ars-btn--danger" (click)="removePackage(i)">Usuń</button>
+          </div>
+          <div class="ars-grid">
+            <div class="ars-field">
+              <label [for]="'ars-pk-level-' + i">Poziom</label>
+              <select [id]="'ars-pk-level-' + i" formControlName="packageLevel">
+                <option *ngFor="let l of packageLevels" [value]="l.value">{{ l.label }}</option>
+              </select>
+            </div>
+            <div class="ars-field">
+              <label [for]="'ars-pk-name-' + i">Nazwa własna (opcjonalnie)</label>
+              <input [id]="'ars-pk-name-' + i" type="text" formControlName="customName" maxlength="100">
+            </div>
+            <div class="ars-field">
+              <label [for]="'ars-pk-price-' + i">Cena (zł) *</label>
+              <input [id]="'ars-pk-price-' + i" type="number" min="0.01" step="0.01" formControlName="price" [class.ars-invalid]="packageControlInvalid(i, 'price')">
+              <span class="ars-error" *ngIf="packageControlInvalid(i, 'price')">Podaj cenę większą od 0.</span>
+            </div>
+          </div>
+          <fieldset class="ars-types" [class.ars-invalid]="packageControlInvalid(i, 'bikeTypes')">
+            <legend>Dla jakich rowerów *</legend>
+            <p class="ars-hint" *ngIf="bikeTypes.length === 0">Brak listy typów rowerów — nie udało się jej pobrać.</p>
+            <label class="ars-check" *ngFor="let t of bikeTypes">
+              <input type="checkbox" [checked]="isBikeTypeSelected(i, t)" (change)="toggleBikeType(i, t)"> {{ t }}
+            </label>
+            <span class="ars-error" *ngIf="packageControlInvalid(i, 'bikeTypes')">Zaznacz przynajmniej jeden typ roweru.</span>
+          </fieldset>
+          <div class="ars-field">
+            <label [for]="'ars-pk-desc-' + i">Co zawiera</label>
+            <textarea [id]="'ars-pk-desc-' + i" rows="2" formControlName="description" maxlength="2000"></textarea>
+          </div>
+          <label class="ars-check"><input type="checkbox" formControlName="active"> Pokazuj ten pakiet klientom</label>
+        </article>
+      </div>
+      <button type="button" class="ars-btn ars-btn--secondary" (click)="addPackage()">+ Dodaj pakiet</button>
+      <p class="ars-hint ars-hint--block">Ten sam typ roweru na tym samym poziomie może mieć tylko jeden pakiet — przy konflikcie backend zostawi ostatni.</p>
+    </section>
+
+    <!-- Godziny otwarcia -->
+    <section class="ars-card" formGroupName="hours">
+      <h2>Godziny otwarcia <span class="ars-optional">opcjonalne</span></h2>
+      <div class="ars-day" *ngFor="let day of days" [formGroupName]="day.key">
+        <label class="ars-check ars-day-name">
+          <input type="checkbox" formControlName="enabled"> <strong>{{ day.label }}</strong>
+        </label>
+        <ng-container *ngIf="isDayEnabled(day.key)">
+          <div class="ars-time">
+            <label class="ars-sr" [for]="'ars-open-' + day.key">{{ day.label }} od</label>
+            <input [id]="'ars-open-' + day.key" type="time" formControlName="openTime" [class.ars-invalid]="dayInvalid(day.key)">
+            <span aria-hidden="true">–</span>
+            <label class="ars-sr" [for]="'ars-close-' + day.key">{{ day.label }} do</label>
+            <input [id]="'ars-close-' + day.key" type="time" formControlName="closeTime" [class.ars-invalid]="dayInvalid(day.key)">
+          </div>
+          <button type="button" class="ars-btn ars-btn--ghost" (click)="copyHoursToOtherDays(day.key)">Kopiuj na pozostałe dni</button>
+          <span class="ars-error ars-day-error" *ngIf="dayInvalid(day.key)">Godzina zamknięcia musi być późniejsza niż otwarcia.</span>
+        </ng-container>
+        <span class="ars-closed" *ngIf="!isDayEnabled(day.key)">Zamknięte</span>
+      </div>
+    </section>
+
+    <section class="ars-card">
+      <h2>Informacje do godzin otwarcia</h2>
+      <div class="ars-grid">
+        <div class="ars-field">
+          <label for="ars-hours-info">Informacje</label>
+          <textarea id="ars-hours-info" rows="2" formControlName="hoursInfo" maxlength="500" placeholder="np. W środy czynne od 10:00"></textarea>
+        </div>
+        <div class="ars-field">
+          <label for="ars-hours-note">Uwagi</label>
+          <textarea id="ars-hours-note" rows="2" formControlName="hoursNote" maxlength="500" placeholder="np. W święta godziny mogą się zmienić"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rezerwacje -->
+    <section class="ars-card" formGroupName="acceptedDays">
+      <h2>Akceptowane dni rezerwacji</h2>
+      <p class="ars-hint ars-hint--block">Klienci mogą rezerwować wizyty tylko na zaznaczone dni (domyślnie poniedziałek–piątek).</p>
+      <div class="ars-days-grid">
+        <label class="ars-check" *ngFor="let day of days">
+          <input type="checkbox" [formControlName]="day.key"> {{ day.label }}
+        </label>
+      </div>
+    </section>
+
+    <!-- Przełączniki -->
+    <section class="ars-card">
+      <h2>Co ma być aktywne na profilu</h2>
+      <div class="ars-switches ars-switches--col">
+        <label class="ars-check"><input type="checkbox" formControlName="pricelistActive"> Cennik aktywny</label>
+        <p class="ars-warning" *ngIf="ctrl('pricelistActive').value">Cennik jest włączony, ale pusty — serwis dopisze ceny w swoim panelu.</p>
+        <label class="ars-check"><input type="checkbox" formControlName="openingHoursActive"> Godziny otwarcia aktywne</label>
+        <p class="ars-warning" role="alert" *ngIf="hoursWarning">Godziny są włączone, ale nie ustawiono żadnego otwartego dnia — klienci nic nie zobaczą.</p>
+        <label class="ars-check"><input type="checkbox" formControlName="reservationAvailable"> Rezerwacja online aktywna</label>
+      </div>
+    </section>
+
+    <!-- Logo -->
+    <section class="ars-card">
+      <h2>Logo <span class="ars-optional">opcjonalne</span></h2>
+      <p class="ars-hint ars-hint--block">JPG, PNG, WEBP lub GIF, max 1 MB, najlepiej kwadratowe. Logo wyślemy zaraz po utworzeniu serwisu.</p>
+      <div class="ars-logo">
+        <img *ngIf="logoPreviewUrl" [src]="logoPreviewUrl" alt="Podgląd logo" class="ars-logo-preview">
+        <div class="ars-logo-actions">
+          <input #logoInput id="ars-logo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" (change)="onLogoSelected($event)" class="ars-file">
+          <label for="ars-logo" class="ars-btn ars-btn--secondary">{{ logoFile ? 'Zmień plik' : 'Wybierz plik' }}</label>
+          <button type="button" class="ars-btn ars-btn--ghost" *ngIf="logoFile" (click)="clearLogo(logoInput)">Usuń</button>
+          <span class="ars-muted" *ngIf="logoFile">{{ logoFile.name }}</span>
+        </div>
+      </div>
+      <span class="ars-error" *ngIf="logoError">{{ logoError }}</span>
+    </section>
+
+    <div class="ars-submit-bar">
+      <button type="submit" class="ars-btn ars-btn--primary ars-btn--lg" [disabled]="isSubmitting || form.pending">
+        {{ isSubmitting ? 'Rejestrowanie…' : 'Zarejestruj serwis' }}
+      </button>
+      <span class="ars-hint" *ngIf="form.invalid && !form.pending">Pola oznaczone * są wymagane — po kliknięciu zaznaczę brakujące.</span>
+    </div>
+  </form>
+</div>

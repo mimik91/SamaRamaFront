@@ -78,8 +78,17 @@
       </div>
 
       <!-- Arrow to details -->
+      <!-- prawdziwy link (otwieranie w nowej karcie); przycisk poniżej to zapas, gdy API nie zwróciło suffixu -->
+      <a
+        *ngIf="isVerified(service) && service.suffix"
+        class="btn-details"
+        [routerLink]="['/', service.suffix]"
+        (click)="onDetailsLinkClick(service, $event)"
+        title="Zobacz szczegóły"
+        [attr.aria-label]="'Zobacz profil serwisu ' + service.name"
+      >›</a>
       <button
-        *ngIf="isVerified(service)"
+        *ngIf="isVerified(service) && !service.suffix"
         class="btn-details"
         (click)="onViewDetails(service, $event)"
         type="button"

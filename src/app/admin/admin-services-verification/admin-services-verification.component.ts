@@ -150,6 +150,10 @@ export class AdminServicesVerificationComponent implements OnInit {
     });
   }
 
+  goToRegisterService(): void {
+    this.router.navigate(['/admin-register-service']);
+  }
+
   goBack(): void {
     this.router.navigate(['/admin-dashboard']);
   }

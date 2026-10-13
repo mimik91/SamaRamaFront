@@ -125,6 +125,10 @@ export class AdminDashboardComponent implements OnInit {
     this.router.navigate(['/admin-office-addresses']);
   }
 
+  navigateToRegisterService(): void {
+    this.router.navigate(['/admin-register-service']);
+  }
+
   navigateToCoupons(): void {
     this.router.navigate(['/admin-coupons']);
   }

@@ -40,7 +40,7 @@ export class NavigationComponent implements OnInit {
     'complete-registration', 'register-service', 'register-serviceman', 'about',
     'dla-serwisow', 'service-pending-verification', 'client-dashboard', 'admin-dashboard',
     'bicycles', 'admin-orders', 'account', 'admin-users', 'admin-services-verification',
-    'admin-service-edit', 'admin-enumerations', 'admin-service-slots', 'admin-bike-services',
+    'admin-service-edit', 'admin-register-service', 'admin-enumerations', 'admin-service-slots', 'admin-bike-services',
     'admin-office-addresses', 'admin-coupons', 'mistrzauta', 'order-transport', 'reserve-service',
     'ulotka', 'sukces', 'opinia', 'moje-zlecenie',
     'skradzione-rowery', 'dokumenty-roweru', 'historia-serwisowa-roweru'

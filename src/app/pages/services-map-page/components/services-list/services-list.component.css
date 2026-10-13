@@ -221,6 +221,7 @@ cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
   transition: all 0.15s ease;
   line-height: 1;
   padding: 0;
+  text-decoration: none;
 }
 
 .service-card:hover .btn-details {

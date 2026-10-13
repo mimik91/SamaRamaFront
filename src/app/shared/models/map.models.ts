@@ -24,6 +24,8 @@ export interface MapPin {
   category?: string;
   logoUrl?: string;
   transportCost?: number;
+  /** Suffix profilu (tylko serwisy zarejestrowane) — do prawdziwych linków <a href> */
+  suffix?: string | null;
   // Statystyki z RegisteredServiceInfo (zadanie 3) — null/0 gdy serwis nie ma jeszcze danych
   averageRating?: number | null;
   reviewCount?: number | null;

@@ -193,6 +193,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
   {
+    path: 'admin-register-service',
+    renderMode: RenderMode.Client
+  },
+  {
     path: 'admin-service-edit/:id',
     renderMode: RenderMode.Client
   },

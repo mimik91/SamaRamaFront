@@ -1445,3 +1445,32 @@ h1 { text-align: center; margin-bottom: var(--spacing-8); font-size: var(--font-
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* ===== Rezerwacja online niedostępna ===== */
+.reservation-unavailable {
+  max-width: 600px;
+  margin: var(--spacing-8) auto;
+  padding: var(--spacing-10) var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--color-white);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+.reservation-unavailable-image { max-width: 100%; max-height: 260px; object-fit: contain; margin-bottom: var(--spacing-6); border-radius: var(--radius-lg); }
+.reservation-unavailable h2 { font-size: var(--font-size-h3); color: var(--text-primary); margin: 0 0 var(--spacing-3); font-weight: var(--font-weight-bold); }
+.reservation-unavailable p { color: var(--text-secondary); font-size: var(--font-size-lg); margin: 0 0 var(--spacing-5); }
+.reservation-unavailable-call { display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-2); padding: 12px 24px; margin: 0; text-decoration: none; }
+.reservation-unavailable .reservation-unavailable-phone-label { font-size: var(--font-size-sm); margin: var(--spacing-5) 0 var(--spacing-1); }
+.reservation-unavailable-phone { font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--text-primary); user-select: all; }
+.reservation-unavailable-back { margin-top: var(--spacing-6); color: var(--color-primary); font-weight: var(--font-weight-semibold); }
+
+@media (max-width: 640px) {
+  .reservation-unavailable { padding: var(--spacing-8) var(--spacing-4); }
+  .reservation-unavailable-image { max-height: 200px; }
+  .reservation-unavailable h2 { font-size: var(--font-size-h4); }
+  .reservation-unavailable-call { width: 100%; }
+}

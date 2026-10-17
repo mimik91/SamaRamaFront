@@ -22,6 +22,11 @@ import {
   getAvailableStatusTransitions
 } from '../../../../shared/models/service-calendar.models';
 
+/** Minimalna długość numeru ramy — jak w oknie przyjęcia roweru */
+const MIN_FRAME_NUMBER_LENGTH = 4;
+
+type FrameCheckState = 'idle' | 'checking' | 'ok' | 'hit' | 'error';
+
 @Component({
   selector: 'app-order-details-modal',
   standalone: true,
@@ -80,7 +85,10 @@ export class OrderDetailsModalComponent implements OnDestroy {
   @Input() initialTab: 'details' | 'messages' | 'return' | 'repair-plan' | 'historia' = 'details';
   activeTab: 'details' | 'messages' | 'return' | 'repair-plan' | 'historia' = 'details';
 
-  // Historia roweru (tylko w tym serwisie) — ładowana leniwie przy pierwszym wejściu w zakładkę
+  // Opis zlecenia od klienta — domyślnie zwinięty do kilku linii
+  descriptionExpanded = false;
+
+  // Historia roweru (tylko w tym serwisie) — ładowana od razu po wczytaniu zlecenia (licznik na zakładce)
   historyRecords: BicycleHistoryRecordDto[] = [];
   isLoadingHistory = false;
   historyLoaded = false;
@@ -154,14 +162,47 @@ export class OrderDetailsModalComponent implements OnDestroy {
   private originalBikeModel: string = '';
   private originalBikeType: string = '';
   private originalBikeFrameMaterial: string = '';
+  private originalBikeFrameNumber: string = '';
 
   // Bike edit fields (always active)
   editBikeBrand: string = '';
   editBikeModel: string = '';
   editBikeType: string = '';
   editBikeFrameMaterial: string = '';
+  editBikeFrameNumber: string = '';
+
+  // Sprawdzenie numeru ramy w bazie skradzionych rowerów (przed pierwszym zapisem numeru)
+  frameCheck: FrameCheckState = 'idle';
+  frameCheckHits = 0;
+  private frameCheckedKey = '';
   bikeTypes: string[] = [];
   frameMaterials: string[] = [];
+
+  /**
+   * Szczegóły, plan naprawy i wiadomości to jeden widok ("Zlecenie"): na desktopie wszystkie trzy panele
+   * są widoczne naraz, na mobile każdy ma własną zakładkę. Pozostałe zakładki ('return', 'historia')
+   * zastępują cały widok.
+   */
+  get isMainTab(): boolean {
+    return this.activeTab === 'details' || this.activeTab === 'messages' || this.activeTab === 'repair-plan';
+  }
+
+  onMainTabClick(): void {
+    if (!this.isMainTab) {
+      this.activeTab = 'details';
+    }
+  }
+
+  /** Opis zlecenia (co jest do zrobienia) — z `description` albo `orderNotes`, zależnie od tego, które pole dostaliśmy */
+  get orderDescription(): string {
+    return (this.fullOrder?.description || this.fullOrder?.orderNotes || '').trim();
+  }
+
+  /** Podtytuł nagłówka: rower + e-mail klienta (np. "Ecobike Freeway · test@test.pl") */
+  get headerSubtitle(): string {
+    const bike = [this.fullOrder?.bicycleBrand, this.fullOrder?.bicycleModel].filter(Boolean).join(' ');
+    return [bike, this.displayEmail].filter(Boolean).join(' · ');
+  }
 
   get canEditTime(): boolean {
     const s = this.fullOrder?.status || this.order.status;
@@ -177,7 +218,114 @@ export class OrderDetailsModalComponent implements OnDestroy {
       || this.editBikeBrand.trim() !== this.originalBikeBrand
       || this.editBikeModel.trim() !== this.originalBikeModel
       || this.editBikeType !== this.originalBikeType
-      || this.editBikeFrameMaterial !== this.originalBikeFrameMaterial;
+      || this.editBikeFrameMaterial !== this.originalBikeFrameMaterial
+      || this.frameNumberChanged;
+  }
+
+  // ============================================
+  // NUMER RAMY (wpisywany raz, po sprawdzeniu w bazie skradzionych)
+  // ============================================
+
+  /** Numer można wpisać tylko, gdy rower go jeszcze nie ma — istniejącego numeru nie nadpisujemy */
+  get canEditFrameNumber(): boolean {
+    return !this.originalBikeFrameNumber && !!this.fullOrder?.bicycleId;
+  }
+
+  get frameNumberChanged(): boolean {
+    return this.canEditFrameNumber && this.editBikeFrameNumber.trim().length > 0;
+  }
+
+  get frameNumberTooShort(): boolean {
+    const length = this.editBikeFrameNumber.trim().length;
+    return this.canEditFrameNumber && length > 0 && length < MIN_FRAME_NUMBER_LENGTH;
+  }
+
+  get canCheckFrameNumber(): boolean {
+    return this.canEditFrameNumber
+      && this.editBikeFrameNumber.trim().length >= MIN_FRAME_NUMBER_LENGTH
+      && this.frameCheck !== 'checking';
+  }
+
+  /** Numer przeszedł sprawdzenie i od tego czasu nie był zmieniany */
+  get isFrameCheckClean(): boolean {
+    return this.frameCheck === 'ok' && this.frameCheckedKey === this.editBikeFrameNumber.trim().toUpperCase();
+  }
+
+  onFrameNumberInput(value: string): void {
+    this.editBikeFrameNumber = value;
+    this.frameCheck = 'idle';
+    this.frameCheckHits = 0;
+  }
+
+  /**
+   * Sprawdza numer ramy w bazie skradzionych rowerów (tylko po numerze — bez marki/modelu, żeby
+   * przypadkowe podobieństwo nie blokowało zapisu). Zwraca true, gdy numer jest czysty.
+   */
+  async runFrameCheck(): Promise<boolean> {
+    const frame = this.editBikeFrameNumber.trim();
+    if (frame.length < MIN_FRAME_NUMBER_LENGTH) return false;
+
+    this.frameCheck = 'checking';
+    this.frameCheckHits = 0;
+    try {
+      const response = await firstValueFrom(this.calendarService.checkStolenForService(
+        this.serviceId, frame, undefined, undefined, this.fullOrder.clientId ?? null
+      ));
+      // zgłoszenia samego klienta nie blokują — to jego własny rower
+      const foreignHits = response.results.filter(match => !match.ownedByClient);
+      if (foreignHits.length > 0) {
+        this.frameCheck = 'hit';
+        this.frameCheckHits = foreignHits.length;
+        return false;
+      }
+      this.frameCheck = 'ok';
+      this.frameCheckedKey = frame.toUpperCase();
+      return true;
+    } catch {
+      this.frameCheck = 'error';
+      return false;
+    }
+  }
+
+  /**
+   * Przed zapisem: jeśli wpisano nowy numer ramy, musi być poprawny i czysty w bazie skradzionych.
+   * Zwraca false, gdy zapis trzeba wstrzymać (okno zostaje otwarte, stan widać przy polu).
+   */
+  private async prepareFrameNumber(): Promise<boolean> {
+    if (!this.frameNumberChanged) return true;
+    if (this.frameNumberTooShort) {
+      this.notificationService.error(`Numer ramy musi mieć co najmniej ${MIN_FRAME_NUMBER_LENGTH} znaki.`);
+      return false;
+    }
+    if (this.isFrameCheckClean) return true;
+
+    const clean = await this.runFrameCheck();
+    if (!clean) {
+      this.notificationService.error(this.frameCheck === 'hit'
+        ? 'Ten numer ramy figuruje w Bazie skradzionych rowerów — nie można go zapisać.'
+        : 'Nie udało się sprawdzić numeru ramy w bazie skradzionych rowerów. Spróbuj ponownie.');
+    }
+    return clean;
+  }
+
+  /** Czy zmieniły się dane roweru (bez numeru ramy — ten ma osobną ścieżkę) */
+  private get bikeFieldsChanged(): boolean {
+    return this.editBikeBrand.trim() !== this.originalBikeBrand
+      || this.editBikeModel.trim() !== this.originalBikeModel
+      || this.editBikeType !== this.originalBikeType
+      || this.editBikeFrameMaterial !== this.originalBikeFrameMaterial
+      || this.frameNumberChanged;
+  }
+
+  private buildBikeDto(): BicycleUpdateDto {
+    return {
+      brand: this.editBikeBrand.trim(),
+      model: this.editBikeModel.trim() || undefined,
+      type: this.editBikeType || undefined,
+      frameMaterial: this.editBikeFrameMaterial || undefined,
+      // numer trafia do zapisu dopiero po przejściu sprawdzenia (patrz prepareFrameNumber)
+      frameNumber: this.frameNumberChanged && this.isFrameCheckClean ? this.editBikeFrameNumber.trim() : undefined
+    };
   }
 
   // Min date for date picker (today)
@@ -222,6 +370,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
     this.originalBikeModel = this.editBikeModel;
     this.originalBikeType = this.editBikeType;
     this.originalBikeFrameMaterial = this.editBikeFrameMaterial;
+    this.originalBikeFrameNumber = this.editBikeFrameNumber.trim();
   }
 
   ngOnInit(): void {
@@ -270,12 +419,17 @@ export class OrderDetailsModalComponent implements OnDestroy {
         this.editBikeModel = this.fullOrder.bicycleModel || '';
         this.editBikeType = this.fullOrder.bicycleType || '';
         this.editBikeFrameMaterial = this.fullOrder.bicycleFrameMaterial || '';
+        this.editBikeFrameNumber = this.fullOrder.bicycleFrameNumber || '';
+        this.frameCheck = 'idle';
         this.initOriginals();
         this.isLoading = false;
         this.resizeAllNoteTextareas();
         // Laduj zdjecia jesli status na to pozwala
         this.loadImages();
         this.loadMessages();
+        if (!this.historyLoaded && !this.isLoadingHistory) {
+          this.loadHistory();
+        }
       },
       error: (err: any) => {
         // On error, use the passed order data
@@ -302,6 +456,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
       this.fullOrder.bicycleFrameMaterial = data.bicycle.frameMaterial || '';
     }
     if (data.client) {
+      this.fullOrder.clientId = this.fullOrder.clientId ?? data.client.id;
       const firstName = data.client.firstName || '';
       const lastName = data.client.lastName || '';
       this.fullOrder.clientName = this.fullOrder.clientName || `${firstName} ${lastName}`.trim();
@@ -428,6 +583,10 @@ export class OrderDetailsModalComponent implements OnDestroy {
       this.close.emit();
       return;
     }
+    // Nowy numer ramy musi przejść sprawdzenie w bazie skradzionych — inaczej okno zostaje otwarte
+    if (!(await this.prepareFrameNumber())) {
+      return;
+    }
     this.isUpdating = true;
     try {
       await this.savePendingChanges();
@@ -451,6 +610,7 @@ export class OrderDetailsModalComponent implements OnDestroy {
     this.editBikeModel = this.originalBikeModel;
     this.editBikeType = this.originalBikeType;
     this.editBikeFrameMaterial = this.originalBikeFrameMaterial;
+    this.editBikeFrameNumber = this.originalBikeFrameNumber;
     this.close.emit();
   }
 
@@ -482,19 +642,10 @@ export class OrderDetailsModalComponent implements OnDestroy {
       saves.push(firstValueFrom(this.calendarService.updateOrder(this.serviceId, this.fullOrder.id, orderPayload)));
     }
 
-    const bikeChanged = this.editBikeBrand.trim() !== this.originalBikeBrand
-      || this.editBikeModel.trim() !== this.originalBikeModel
-      || this.editBikeType !== this.originalBikeType
-      || this.editBikeFrameMaterial !== this.originalBikeFrameMaterial;
-
-    if (bikeChanged && this.fullOrder.bicycleId) {
-      const dto: BicycleUpdateDto = {
-        brand: this.editBikeBrand.trim(),
-        model: this.editBikeModel.trim() || undefined,
-        type: this.editBikeType || undefined,
-        frameMaterial: this.editBikeFrameMaterial || undefined
-      };
-      saves.push(firstValueFrom(this.calendarService.updateBicycle(this.fullOrder.bicycleId, this.serviceId, dto)));
+    if (this.bikeFieldsChanged && this.fullOrder.bicycleId) {
+      saves.push(firstValueFrom(
+        this.calendarService.updateBicycle(this.fullOrder.bicycleId, this.serviceId, this.buildBikeDto())
+      ));
     }
 
     await Promise.all(saves);
@@ -518,28 +669,28 @@ export class OrderDetailsModalComponent implements OnDestroy {
       return;
     }
 
+    // Nowy numer ramy musi przejść sprawdzenie, zanim zapiszemy rower razem ze zmianą statusu
+    if (!(await this.prepareFrameNumber())) {
+      setTimeout(() => { this.selectedStatus = this.fullOrder.status; });
+      return;
+    }
+
     this.isUpdating = true;
 
     // Jeśli dane roweru są zmienione lokalnie, zapisz je przed zmianą statusu
-    const bikeChanged = this.editBikeBrand.trim() !== this.originalBikeBrand
-      || this.editBikeModel.trim() !== this.originalBikeModel
-      || this.editBikeType !== this.originalBikeType
-      || this.editBikeFrameMaterial !== this.originalBikeFrameMaterial;
-
-    if (bikeChanged && this.fullOrder.bicycleId) {
+    if (this.bikeFieldsChanged && this.fullOrder.bicycleId) {
       try {
-        const dto: BicycleUpdateDto = {
-          brand: this.editBikeBrand.trim(),
-          model: this.editBikeModel.trim() || undefined,
-          type: this.editBikeType || undefined,
-          frameMaterial: this.editBikeFrameMaterial || undefined
-        };
+        const dto = this.buildBikeDto();
         await firstValueFrom(this.calendarService.updateBicycle(this.fullOrder.bicycleId, this.serviceId, dto));
         this.fullOrder.bicycleType = this.editBikeType;
+        if (dto.frameNumber) {
+          this.fullOrder.bicycleFrameNumber = dto.frameNumber;
+        }
         this.originalBikeBrand = this.editBikeBrand.trim();
         this.originalBikeModel = this.editBikeModel.trim();
         this.originalBikeType = this.editBikeType;
         this.originalBikeFrameMaterial = this.editBikeFrameMaterial;
+        this.originalBikeFrameNumber = this.editBikeFrameNumber.trim();
       } catch {
         this.notificationService.error('Nie udało się zapisać danych roweru przed zmianą statusu.');
         this.isUpdating = false;

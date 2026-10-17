@@ -12,17 +12,30 @@
 
 <div class="repair-plan-container" *ngIf="!isLoading && !loadError">
 
-  <!-- Status planu (widoczny dopiero po wysłaniu do klienta) -->
-  <div class="rp-status-banner" *ngIf="planStatus && planStatus !== 'DRAFT'" [class]="'rp-status-banner--' + planStatus.toLowerCase()">
-    {{ planStatusLabels[planStatus] }}
-    <span *ngIf="planStatus === 'SENT_TO_CLIENT' && !planRequiresConfirmation" class="rp-status-note">(informacyjnie, bez wymaganego potwierdzenia)</span>
+  <!-- Nagłówek planu: tytuł + status + akcje -->
+  <div class="rp-head">
+    <div class="rp-head-title">
+      <h3>Plan naprawy</h3>
+      <span class="rp-status-chip" *ngIf="!planStatus || planStatus === 'DRAFT'">Szkic · nie wysłano do klienta</span>
+      <span class="rp-status-chip" *ngIf="planStatus && planStatus !== 'DRAFT'" [class]="'rp-status-chip rp-status-chip--' + planStatus.toLowerCase()">
+        {{ planStatusLabels[planStatus] }}
+        <span *ngIf="planStatus === 'SENT_TO_CLIENT' && !planRequiresConfirmation" class="rp-status-note">(informacyjnie, bez wymaganego potwierdzenia)</span>
+      </span>
+    </div>
+    <div class="rp-action-buttons no-print">
+      <button class="btn-rp-print" (click)="printPlan()">Drukuj</button>
+      <button class="btn-rp-send" (click)="sendToClient()" [disabled]="isSaving || isSending">
+        <span *ngIf="isSaving || isSending" class="rp-spinner"></span>
+        {{ isSaving ? 'Zapisywanie…' : isSending ? 'Wysyłanie…' : 'Wyślij do klienta' }}
+      </button>
+    </div>
   </div>
 
   <!-- Pakiet serwisowy -->
   <div class="rp-section">
     <div class="rp-section-header">
-      <h4>Pakiet serwisowy <span class="rp-optional">(opcjonalny)</span></h4>
-      <span class="rp-bike-type-badge" *ngIf="order.bicycleType">{{ order.bicycleType }}</span>
+      <h4>Pakiet serwisowy</h4>
+      <span class="rp-optional">opcjonalny<ng-container *ngIf="order.bicycleType"> · dla typu: {{ order.bicycleType }}</ng-container></span>
     </div>
 
     <p class="rp-empty-hint" *ngIf="packagesForBikeType.length === 0">
@@ -45,7 +58,8 @@
         [class.selected]="!selectedPackage"
         (click)="selectedPackage = null"
       >
-        Bez pakietu
+        <span class="rp-pkg-name">Bez pakietu</span>
+        <span class="rp-pkg-desc">Tylko wybrane usługi i części</span>
       </button>
     </div>
   </div>
@@ -63,7 +77,7 @@
           (input)="onNewItemNameInput()"
           (blur)="onAutocompleteBlur()"
           (keydown)="onNewItemNameKeydown($event)"
-          placeholder="Wyszukaj lub wpisz własną usługę i naciśnij Enter..."
+          placeholder="Wyszukaj usługę lub wpisz własną…"
         />
         <div class="rp-autocomplete-dropdown" *ngIf="showAutocomplete">
           <button
@@ -78,7 +92,7 @@
           </button>
         </div>
       </div>
-      <button class="btn-rp-add no-print" (click)="addLineItem()" [disabled]="!newItemName.trim()">+ Dodaj usługę</button>
+      <button class="btn-rp-add no-print" (click)="addLineItem()" [disabled]="!newItemName.trim()">+ Dodaj</button>
     </div>
 
     <div class="rp-items-list" *ngIf="serviceItems.length > 0">
@@ -114,7 +128,7 @@
           (input)="onNewPartNameInput()"
           (blur)="onPartAutocompleteBlur()"
           (keydown)="onNewPartNameKeydown($event)"
-          placeholder="Wyszukaj lub wpisz własną część i naciśnij Enter..."
+          placeholder="Wyszukaj część lub wpisz własną…"
         />
         <div class="rp-autocomplete-dropdown" *ngIf="showPartAutocomplete">
           <button
@@ -129,7 +143,7 @@
           </button>
         </div>
       </div>
-      <button class="btn-rp-add no-print" (click)="addPartItem()" [disabled]="!newPartName.trim()">+ Dodaj część</button>
+      <button class="btn-rp-add no-print" (click)="addPartItem()" [disabled]="!newPartName.trim()">+ Dodaj</button>
     </div>
 
     <div class="rp-items-list" *ngIf="partItems.length > 0">
@@ -154,8 +168,6 @@
 
   <!-- Podsumowanie -->
   <div class="rp-section rp-summary-section">
-    <h4>Podsumowanie</h4>
-
     <div class="rp-summary-rows">
       <div class="rp-summary-row rp-summary-row--package" *ngIf="selectedPackage" [class.rp-summary-row--excluded]="planPackageExcluded">
         <span>Pakiet &ndash; {{ selectedPackage.displayName }}
@@ -178,7 +190,7 @@
         <span *ngIf="planPackageExcluded">{{ selectedPackage.price | number:'1.2-2' }} zł</span>
       </div>
       <div class="rp-summary-row" *ngIf="lineItemsCount > 0">
-        <span>Pozycje ({{ lineItemsCount }})</span>
+        <span>Usługi i części ({{ lineItemsCount }})</span>
         <span>{{ itemsCost | number:'1.2-2' }} zł</span>
       </div>
       <div class="rp-summary-divider"></div>
@@ -218,18 +230,9 @@
     </div>
   </div>
 
-  <!-- Akcje -->
-  <div class="rp-actions no-print">
-    <span class="rp-autosave-hint" *ngIf="!planStatus || planStatus === 'DRAFT'">Zapisywane automatycznie przy zamknięciu</span>
-    <span class="rp-autosave-hint" *ngIf="planStatus && planStatus !== 'DRAFT'">Plan już wysłany — zmiany zapiszesz przyciskiem „Wyślij do klienta”</span>
-    <div class="rp-action-buttons">
-      <button class="btn-rp-send" (click)="sendToClient()" [disabled]="isSaving || isSending">
-        <span *ngIf="isSaving || isSending" class="rp-spinner"></span>
-        {{ isSaving ? 'Zapisywanie…' : isSending ? 'Wysyłanie…' : 'Wyślij do klienta' }}
-      </button>
-      <button class="btn-rp-print" (click)="printPlan()">Drukuj</button>
-    </div>
-  </div>
+  <!-- Podpowiedź o zapisie -->
+  <p class="rp-autosave-hint no-print" *ngIf="!planStatus || planStatus === 'DRAFT'">Szkic zapisuje się automatycznie przy zamknięciu okna</p>
+  <p class="rp-autosave-hint no-print" *ngIf="planStatus && planStatus !== 'DRAFT'">Plan już wysłany — zmiany zapiszesz przyciskiem „Wyślij do klienta”</p>
 
 </div>
 

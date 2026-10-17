@@ -2,10 +2,48 @@
   <div class="modal-content">
     <div class="modal-header">
       <div class="header-info">
-        <h2>{{ t('service_calendar.order_details.title') }}</h2>
-        <span class="order-id">#{{ fullOrder.id || order.id }}</span>
+        <div class="header-title-row">
+          <h2>{{ t('service_calendar.order_details.title') }}</h2>
+          <span class="order-id">#{{ fullOrder.id || order.id }}</span>
+        </div>
+        <div class="header-subtitle" *ngIf="headerSubtitle">{{ headerSubtitle }}</div>
       </div>
-      <button class="close-btn" (click)="onClose()">&times;</button>
+
+      <!-- Status + akcje główne (zawsze widoczne, niezależnie od zakładki) -->
+      <div class="header-controls" *ngIf="fullOrder">
+        <div class="status-pill" [style.--status-color]="statusColor">
+          <span class="status-dot" aria-hidden="true"></span>
+          <select
+            [(ngModel)]="selectedStatus"
+            (change)="onStatusChange()"
+            [disabled]="isUpdating"
+            class="status-select"
+            [attr.aria-label]="t('service_calendar.order_details.status')"
+          >
+            <option *ngFor="let status of statuses" [value]="status.value">
+              {{ getStatusLabel(status.value) }}
+            </option>
+          </select>
+        </div>
+        <button
+          *ngIf="canAcceptBike"
+          class="btn-accept-bike"
+          (click)="onAcceptBikeClick()"
+          [disabled]="isUpdating"
+        >
+          {{ t('service_calendar.buttons.accept_bike') }}
+        </button>
+        <button
+          *ngIf="canStartWork"
+          class="btn-accept-bike"
+          (click)="onStartWorkClick()"
+          [disabled]="isUpdating"
+        >
+          {{ t('service_calendar.buttons.start_work') }}
+        </button>
+      </div>
+
+      <button class="close-btn" (click)="onClose()" aria-label="Zamknij">&times;</button>
     </div>
 
     <!-- Loading state -->
@@ -15,8 +53,40 @@
 
     <div class="modal-body" *ngIf="!isLoading && fullOrder">
 
-      <!-- Tab bar -->
-      <div class="tab-bar">
+      <!-- Pasek zakładek — desktop: Zlecenie / Sposób zwrotu / Historia roweru -->
+      <div class="tab-bar tab-bar--desktop">
+        <button
+          class="tab-btn"
+          [class.active]="isMainTab"
+          (click)="onMainTabClick()"
+        >
+          <span class="tab-label">Zlecenie</span>
+        </button>
+        <button
+          *ngIf="showReturnTab"
+          class="tab-btn"
+          [class.active]="activeTab === 'return'"
+          (click)="onReturnTabClick()"
+        >
+          <span class="tab-label">
+            Sposób zwrotu
+            <span class="return-badge" *ngIf="hasReturnTransport">&#10003;</span>
+          </span>
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'historia'"
+          (click)="onHistoryTabClick()"
+        >
+          <span class="tab-label">
+            Historia roweru
+            <span class="count-badge" *ngIf="historyLoaded && historyRecords.length > 0">{{ historyRecords.length }}</span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Pasek zakładek — mobile: menu obrazkowe (ikony zamiast napisów) -->
+      <div class="tab-bar tab-bar--mobile">
         <button
           class="tab-btn"
           [class.active]="activeTab === 'details'"
@@ -24,20 +94,29 @@
           title="Szczegóły zlecenia"
         >
           <span class="tab-icon" aria-hidden="true">📋</span>
-          <span class="tab-label">Szczegóły zlecenia</span>
+          <span class="tab-label">Szczegóły</span>
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'repair-plan'"
+          (click)="activeTab = 'repair-plan'"
+          title="Plan naprawy"
+        >
+          <span class="tab-icon" aria-hidden="true">🔧</span>
+          <span class="tab-label">Plan naprawy</span>
         </button>
         <button
           class="tab-btn"
           [class.active]="activeTab === 'messages'"
           (click)="activeTab = 'messages'"
-          title="Korespondencja"
+          title="Wiadomości"
         >
           <span class="tab-icon" aria-hidden="true">
             💬
             <span class="unread-dot" *ngIf="messagesUnreadCount > 0"></span>
           </span>
           <span class="tab-label">
-            Korespondencja
+            Wiadomości
             <span class="unread-badge" *ngIf="messagesUnreadCount > 0">{{ messagesUnreadCount }}</span>
           </span>
         </button>
@@ -59,15 +138,6 @@
         </button>
         <button
           class="tab-btn"
-          [class.active]="activeTab === 'repair-plan'"
-          (click)="activeTab = 'repair-plan'"
-          title="Plan naprawy"
-        >
-          <span class="tab-icon" aria-hidden="true">🔧</span>
-          <span class="tab-label">Plan naprawy</span>
-        </button>
-        <button
-          class="tab-btn"
           [class.active]="activeTab === 'historia'"
           (click)="onHistoryTabClick()"
           title="Historia roweru w tym serwisie"
@@ -77,187 +147,190 @@
         </button>
       </div>
 
-      <!-- Tab: Szczegóły zlecenia -->
-      <div class="tab-content" *ngIf="activeTab === 'details'">
+      <!-- ===== Widok "Zlecenie": szczegóły | plan naprawy | wiadomości (desktop: 3 kolumny, mobile: jedna na raz) ===== -->
+      <div class="order-layout" *ngIf="isMainTab">
 
-        <!-- Status -->
-        <div class="detail-section status-section">
-          <div class="status-row">
-            <div class="status-display" [style.border-color]="statusColor">
-              <label>{{ t('service_calendar.order_details.status') }}</label>
-              <select
-                [(ngModel)]="selectedStatus"
-                (change)="onStatusChange()"
-                [disabled]="isUpdating"
-                class="status-select"
-              >
-                <option *ngFor="let status of statuses" [value]="status.value">
-                  {{ getStatusLabel(status.value) }}
-                </option>
-              </select>
-            </div>
-            <button
-              *ngIf="canAcceptBike"
-              class="btn-accept-bike"
-              (click)="onAcceptBikeClick()"
-              [disabled]="isUpdating"
-            >
-              {{ t('service_calendar.buttons.accept_bike') }}
-            </button>
-            <button
-              *ngIf="canStartWork"
-              class="btn-accept-bike"
-              (click)="onStartWorkClick()"
-              [disabled]="isUpdating"
-            >
-              {{ t('service_calendar.buttons.start_work') }}
-            </button>
-          </div>
-        </div>
+        <!-- Kolumna 1: Dane zlecenia -->
+        <section class="panel panel--details" [class.is-active]="activeTab === 'details'">
+          <h3 class="panel-title">Dane zlecenia</h3>
 
-        <!-- Data wizyty -->
-        <div class="detail-section planned-date-section">
-          <div class="detail-grid detail-grid--cols">
-            <div class="detail-item">
-              <span class="detail-label">Data wizyty</span>
-              <span class="detail-value planned-date-value">
-                {{ fullOrder.plannedDate | date:'d MMMM yyyy' }}
-                <span *ngIf="fullOrder.plannedTime" class="planned-time"> {{ fullOrder.plannedTime }}</span>
-              </span>
-            </div>
-          </div>
-        </div>
+          <!-- Akcje potwierdzenia (tylko dla PENDING_CONFIRMATION) -->
+          <div class="form-block pending-actions" *ngIf="isPendingConfirmation">
+            <h4 class="block-title">Akcje</h4>
 
-        <!-- Dane klienta -->
-        <div class="detail-section">
-          <h3 class="section-title">{{ t('service_calendar.order_details.customer') }}</h3>
-          <div class="detail-grid detail-grid--cols">
-            <div class="detail-item">
-              <span class="detail-label">{{ t('service_calendar.order_details.name') }}</span>
-              <span class="detail-value">{{ fullOrder.clientName }}</span>
+            <div class="pending-buttons">
+              <button class="btn-confirm-order" (click)="onConfirmOrder()" [disabled]="isUpdating">
+                Potwierdź zlecenie
+              </button>
+              <button class="btn-reject-order" (click)="onRejectOrder()" [disabled]="isUpdating">
+                Odrzuć zlecenie
+              </button>
+              <button class="btn-propose-date" (click)="showProposeDateForm = !showProposeDateForm" [disabled]="isUpdating">
+                Zaproponuj zmianę daty
+              </button>
             </div>
-            <div class="detail-item" *ngIf="displayEmail">
-              <span class="detail-label">{{ t('service_calendar.order_details.email') }}</span>
-              <span class="detail-value">{{ displayEmail }}</span>
-            </div>
-            <div class="detail-item" *ngIf="fullOrder.clientPhone">
-              <span class="detail-label">{{ t('service_calendar.order_details.phone') }}</span>
-              <span class="detail-value">{{ fullOrder.clientPhone }}</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- Dane roweru -->
-        <div class="detail-section">
-          <h3 class="section-title">{{ t('service_calendar.order_details.bike') }}</h3>
-          <div class="bike-edit-form">
-            <div class="bike-edit-row">
-              <div class="bike-edit-field">
-                <label class="bike-edit-label">Marka</label>
-                <input type="text" [(ngModel)]="editBikeBrand" class="bike-edit-input" placeholder="np. Trek" />
-              </div>
-              <div class="bike-edit-field">
-                <label class="bike-edit-label">Model</label>
-                <input type="text" [(ngModel)]="editBikeModel" class="bike-edit-input" placeholder="np. FX3" />
+            <div class="propose-date-form" *ngIf="showProposeDateForm">
+              <label class="propose-date-label">Proponowana data wizyty</label>
+              <div class="propose-date-row">
+                <input
+                  type="date"
+                  [(ngModel)]="proposedDate"
+                  [min]="minDate"
+                  class="date-input"
+                  [disabled]="isUpdating"
+                />
+                <button
+                  class="btn-send-proposal"
+                  (click)="onSubmitProposeDate()"
+                  [disabled]="!proposedDate || isUpdating"
+                >
+                  {{ isUpdating ? '...' : 'Wyślij propozycję' }}
+                </button>
               </div>
             </div>
-            <div class="bike-edit-row">
-              <div class="bike-edit-field">
-                <label class="bike-edit-label">Typ roweru</label>
-                <select [(ngModel)]="editBikeType" class="bike-edit-input">
+          </div>
+
+          <!-- Opis zlecenia -->
+          <div class="form-block">
+            <h4 class="block-title">Opis zlecenia</h4>
+            <div class="description-box" [class.expanded]="descriptionExpanded" [class.description-box--empty]="!orderDescription">{{ orderDescription || 'Brak opisu zlecenia' }}</div>
+            <button
+              type="button"
+              class="description-toggle"
+              *ngIf="orderDescription.length > 200"
+              (click)="descriptionExpanded = !descriptionExpanded"
+            >
+              {{ descriptionExpanded ? 'Zwiń ▴' : 'Pokaż całość ▾' }}
+            </button>
+          </div>
+
+          <!-- Klient -->
+          <div class="form-block">
+            <h4 class="block-title">{{ t('service_calendar.order_details.customer') }}</h4>
+            <div class="field">
+              <label class="field-label">Imię i nazwisko</label>
+              <input type="text" class="field-input" readonly [value]="fullOrder.clientName || ''" placeholder="Nie podano" />
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">{{ t('service_calendar.order_details.email') }}</label>
+                <input type="text" class="field-input" readonly [value]="displayEmail" placeholder="Nie podano" />
+              </div>
+              <div class="field">
+                <label class="field-label">{{ t('service_calendar.order_details.phone') }}</label>
+                <input type="text" class="field-input" readonly [value]="fullOrder.clientPhone || ''" placeholder="Nie podano" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Rower -->
+          <div class="form-block">
+            <h4 class="block-title">{{ t('service_calendar.order_details.bike') }}</h4>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Marka</label>
+                <input type="text" [(ngModel)]="editBikeBrand" class="field-input" placeholder="np. Trek" />
+              </div>
+              <div class="field">
+                <label class="field-label">Model</label>
+                <input type="text" [(ngModel)]="editBikeModel" class="field-input" placeholder="np. FX3" />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Typ roweru</label>
+                <select [(ngModel)]="editBikeType" class="field-input">
                   <option value="">— brak —</option>
                   <option *ngFor="let bt of bikeTypes" [value]="bt">{{ bt }}</option>
                 </select>
               </div>
-              <div class="bike-edit-field">
-                <label class="bike-edit-label">Materiał ramy</label>
-                <select [(ngModel)]="editBikeFrameMaterial" class="bike-edit-input">
+              <div class="field">
+                <label class="field-label">Materiał ramy</label>
+                <select [(ngModel)]="editBikeFrameMaterial" class="field-input">
                   <option value="">— brak —</option>
                   <option *ngFor="let fm of frameMaterials" [value]="fm">{{ fm }}</option>
                 </select>
               </div>
             </div>
-            <div class="bike-frame-info" *ngIf="fullOrder.bicycleFrameNumber || fullOrder.description">
-              <div class="detail-item" *ngIf="fullOrder.bicycleFrameNumber">
-                <span class="detail-label">{{ t('service_calendar.order_details.frame_number') }}</span>
-                <span class="detail-value">{{ fullOrder.bicycleFrameNumber }}</span>
-              </div>
-              <div class="detail-item detail-item--full" *ngIf="fullOrder.description">
-                <span class="detail-label">Opis zlecenia</span>
-                <span class="detail-value">{{ fullOrder.description }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Akcje potwierdzenia (tylko dla PENDING_CONFIRMATION) -->
-        <div class="detail-section pending-actions" *ngIf="isPendingConfirmation">
-          <h3 class="section-title">Akcje</h3>
-
-          <div class="pending-buttons">
-            <button class="btn-confirm-order" (click)="onConfirmOrder()" [disabled]="isUpdating">
-              Potwierdź zlecenie
-            </button>
-            <button class="btn-reject-order" (click)="onRejectOrder()" [disabled]="isUpdating">
-              Odrzuć zlecenie
-            </button>
-            <button class="btn-propose-date" (click)="showProposeDateForm = !showProposeDateForm" [disabled]="isUpdating">
-              Zaproponuj zmianę daty
-            </button>
-          </div>
-
-          <div class="propose-date-form" *ngIf="showProposeDateForm">
-            <label class="propose-date-label">Proponowana data wizyty</label>
-            <div class="propose-date-row">
+            <div class="field">
+              <label class="field-label" for="orderFrameNumber">{{ t('service_calendar.order_details.frame_number') }}</label>
               <input
-                type="date"
-                [(ngModel)]="proposedDate"
-                [min]="minDate"
-                class="date-input"
-                [disabled]="isUpdating"
+                id="orderFrameNumber"
+                type="text"
+                class="field-input field-input--mono"
+                [readOnly]="!canEditFrameNumber"
+                [ngModel]="editBikeFrameNumber"
+                (ngModelChange)="onFrameNumberInput($event)"
+                [ngModelOptions]="{ standalone: true }"
+                [placeholder]="canEditFrameNumber ? 'Wpisz numer ramy' : 'Nie podano'"
+                autocomplete="off"
               />
-              <button
-                class="btn-send-proposal"
-                (click)="onSubmitProposeDate()"
-                [disabled]="!proposedDate || isUpdating"
-              >
-                {{ isUpdating ? '...' : 'Wyślij propozycję' }}
-              </button>
+
+              <ng-container *ngIf="canEditFrameNumber">
+                <span class="frame-hint frame-hint--warn" *ngIf="frameNumberTooShort">Numer ramy musi mieć co najmniej 4 znaki.</span>
+
+                <div class="frame-check-row" *ngIf="frameCheck === 'idle' && canCheckFrameNumber">
+                  <button type="button" class="frame-check-btn" (click)="runFrameCheck()">
+                    Sprawdź w Bazie skradzionych rowerów
+                  </button>
+                </div>
+
+                <span class="frame-hint" *ngIf="frameCheck === 'checking'">Sprawdzanie numeru ramy…</span>
+                <span class="frame-hint frame-hint--ok" *ngIf="isFrameCheckClean">✓ Nie figuruje w Bazie skradzionych rowerów</span>
+                <span class="frame-hint frame-hint--error" *ngIf="frameCheck === 'hit'">
+                  ⚠ Ten numer figuruje w Bazie skradzionych rowerów ({{ frameCheckHits }}) — nie zostanie zapisany.
+                  Rozstrzygnięcie zgłoszenia jest dostępne przy przyjmowaniu roweru.
+                </span>
+                <span class="frame-hint frame-hint--error" *ngIf="frameCheck === 'error'">
+                  Nie udało się sprawdzić numeru ramy.
+                  <button type="button" class="frame-check-link" (click)="runFrameCheck()">Spróbuj ponownie</button>
+                </span>
+                <span class="frame-hint" *ngIf="frameCheck === 'idle' && !canCheckFrameNumber && !frameNumberTooShort && !editBikeFrameNumber.trim()">
+                  Numer wpiszesz raz — zostanie sprawdzony w bazie skradzionych rowerów przed zapisem.
+                </span>
+              </ng-container>
             </div>
           </div>
-        </div>
 
-        <!-- Data i serwisant -->
-        <div class="detail-section" *ngIf="(!canShowImages || showTechnicianSelector) && !isPendingConfirmation">
-          <h3 class="section-title">{{ t('service_calendar.order_details.order_info') }}</h3>
-          <div class="detail-grid detail-grid--cols">
-            <div class="detail-item" *ngIf="!canShowImages">
-              <span class="detail-label">{{ t('service_calendar.order_details.date') }}</span>
-              <input
-                type="date"
-                [(ngModel)]="selectedDate"
-                [min]="minDate"
-                class="date-input"
-              />
-            </div>
-            <div class="detail-item" *ngIf="!canShowImages && canEditTime">
-              <span class="detail-label">{{ t('service_calendar.create_order.time') }}</span>
-              <div class="time-select-row">
-                <select [(ngModel)]="selectedHour" class="time-select">
-                  <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
-                </select>
-                <span class="time-colon">:</span>
-                <select [(ngModel)]="selectedMinute" class="time-select">
-                  <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
-                </select>
+          <!-- Termin i serwisant -->
+          <div class="form-block">
+            <h4 class="block-title">Termin i serwisant</h4>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">{{ t('service_calendar.order_details.date') }}</label>
+                <input
+                  *ngIf="!canShowImages && !isPendingConfirmation; else readonlyDate"
+                  type="date"
+                  [(ngModel)]="selectedDate"
+                  [min]="minDate"
+                  class="field-input"
+                />
+                <ng-template #readonlyDate>
+                  <input type="text" class="field-input" readonly
+                         [value]="(fullOrder.plannedDate | date:'dd.MM.yyyy') || ''" placeholder="Nie podano" />
+                </ng-template>
+              </div>
+              <div class="field" *ngIf="!canShowImages && !isPendingConfirmation && canEditTime">
+                <label class="field-label">{{ t('service_calendar.create_order.time') }}</label>
+                <div class="time-select-row">
+                  <select [(ngModel)]="selectedHour" class="field-input time-select">
+                    <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
+                  </select>
+                  <span class="time-colon">:</span>
+                  <select [(ngModel)]="selectedMinute" class="field-input time-select">
+                    <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field" *ngIf="(canShowImages || isPendingConfirmation || !canEditTime) && fullOrder.plannedTime">
+                <label class="field-label">{{ t('service_calendar.create_order.time') }}</label>
+                <input type="text" class="field-input" readonly [value]="fullOrder.plannedTime" />
               </div>
             </div>
-            <div class="detail-item" *ngIf="showTechnicianSelector">
-              <span class="detail-label">{{ t('service_calendar.order_details.technician') }}</span>
-              <select
-                [(ngModel)]="selectedTechnicianId"
-                class="technician-select"
-              >
+            <div class="field" *ngIf="showTechnicianSelector && !isPendingConfirmation">
+              <label class="field-label">{{ t('service_calendar.order_details.technician') }}</label>
+              <select [(ngModel)]="selectedTechnicianId" class="field-input">
                 <option [ngValue]="null">{{ t('service_calendar.order_details.no_technician') }}</option>
                 <option *ngFor="let tech of technicians" [ngValue]="tech.id">
                   {{ tech.nickname }}
@@ -265,337 +338,311 @@
               </select>
             </div>
           </div>
-        </div>
 
-        <!-- Zdjecia -->
-        <div class="detail-section" *ngIf="canShowImages && !isPendingConfirmation">
-          <div class="section-header">
-            <h3 class="section-title">{{ t('service_calendar.order_details.images') }}</h3>
-            <span class="images-count" *ngIf="images.length > 0">({{ images.length }})</span>
+          <!-- Notatka wewnętrzna (niewidoczna dla klienta) -->
+          <div class="internal-note" *ngIf="!isPendingConfirmation">
+            <div class="internal-note-title"><span aria-hidden="true">🔒</span> Notatka wewnętrzna</div>
+            <div class="internal-note-hint">Widzi tylko serwis – klient jej nie zobaczy.</div>
+            <textarea
+              #noteTextarea
+              [(ngModel)]="maintenanceAdvice"
+              placeholder="Uwagi dla mechanika..."
+              rows="4"
+            ></textarea>
           </div>
+        </section>
 
-          <div class="images-loading" *ngIf="isLoadingImages">
-            <div class="spinner-small"></div>
-          </div>
+        <!-- Kolumna 2: Plan naprawy -->
+        <section class="panel panel--plan" [class.is-active]="activeTab === 'repair-plan'">
+          <app-repair-plan-tab [order]="fullOrder" [serviceId]="serviceId" />
+        </section>
 
-          <div class="images-grid" *ngIf="!isLoadingImages && images.length > 0">
-            <div class="image-item" *ngFor="let image of images; let i = index">
-              <img
-                [src]="image.thumbnailUrl || image.url"
-                [alt]="t('service_calendar.order_details.order_image')"
-                (click)="openLightbox(i)"
-                class="image-clickable"
-              >
-              <button
-                class="image-delete-btn"
-                (click)="deleteImage(image)"
-                [title]="t('common.delete')"
-              >
-                &times;
-              </button>
+        <!-- Kolumna 3: Wiadomości + zdjęcia i notatka dla klienta -->
+        <div class="side-col" [class.is-active]="activeTab === 'messages'">
+
+          <section class="panel panel--messages">
+            <div class="panel-title-row">
+              <h3 class="panel-title">Wiadomości z klientem</h3>
+              <span class="unread-badge" *ngIf="messagesUnreadCount > 0">{{ messagesUnreadCount }}</span>
             </div>
-          </div>
 
-          <div class="no-images" *ngIf="!isLoadingImages && images.length === 0 && selectedFiles.length === 0">
-            <span>{{ t('service_calendar.order_details.no_images') }}</span>
-          </div>
+            <div class="messages-loading" *ngIf="isLoadingMessages">
+              <div class="spinner-small"></div>
+            </div>
 
-          <div class="image-upload-section">
-            <div class="selected-previews" *ngIf="selectedFiles.length > 0">
-              <div class="preview-item" *ngFor="let preview of selectedPreviews; let i = index">
-                <img [src]="preview" alt="Preview">
-                <button class="preview-remove-btn" (click)="removeSelectedFile(i)">&times;</button>
+            <ng-container *ngIf="!isLoadingMessages">
+              <div class="messages-thread">
+                <div
+                  *ngFor="let msg of messages"
+                  class="message-item"
+                  [class.message-service]="msg.senderType === 'SERVICE'"
+                  [class.message-client]="msg.senderType === 'CLIENT'"
+                >
+                  <span class="message-meta">
+                    {{ msg.senderType === 'SERVICE' ? 'Ty (serwis)' : 'Klient' }} · {{ msg.createdAt | date:'dd.MM HH:mm' }}
+                  </span>
+                  <p class="message-content">{{ msg.content }}</p>
+                </div>
+                <div class="no-messages" *ngIf="messages.length === 0">
+                  Brak wiadomości
+                </div>
               </div>
-            </div>
 
-            <div class="upload-controls" *ngIf="!isUploadingImage">
-              <input
-                #imageInput
-                type="file"
-                accept="image/*"
-                multiple
-                (change)="onImagesSelected($event)"
-                class="file-input"
-                [disabled]="isUploadingImage"
-              >
-              <button
-                class="btn-select-image"
-                (click)="imageInput.click()"
-                [disabled]="isUploadingImage"
-              >
-                <span class="icon">&#128247;</span>
-                {{ t('service_calendar.order_details.select_image') }}
-              </button>
-              <button
-                class="btn-upload-image"
-                *ngIf="selectedFiles.length > 0"
-                (click)="uploadAllImages()"
-                [disabled]="isUploadingImage"
-              >
-                {{ t('service_calendar.order_details.upload_image') }} ({{ selectedFiles.length }})
-              </button>
-            </div>
-
-            <div class="upload-progress" *ngIf="isUploadingImage">
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+              <div class="message-input-row">
+                <input
+                  type="text"
+                  class="message-input"
+                  [(ngModel)]="newMessageContent"
+                  placeholder="Napisz wiadomość do klienta..."
+                  [disabled]="isSendingMessage"
+                  (keydown.enter)="sendMessage()"
+                >
+                <button
+                  class="message-send-btn"
+                  (click)="sendMessage()"
+                  [disabled]="!newMessageContent.trim() || isSendingMessage"
+                >
+                  {{ isSendingMessage ? '...' : 'Wyślij' }}
+                </button>
               </div>
-              <span class="progress-text">
-                {{ isCompressingImage ? t('service_calendar.order_details.compressing') : t('service_calendar.order_details.uploading') }}
-                {{ uploadCurrentIndex + 1 }}/{{ uploadTotalCount }}
-                ({{ uploadProgress | number:'1.0-0' }}%)
-              </span>
-            </div>
-          </div>
-        </div>
+            </ng-container>
+          </section>
 
-        <!-- Notatki -->
-        <div class="detail-section" *ngIf="!isPendingConfirmation">
-          <h3 class="section-title">{{ t('service_calendar.order_details.notes') }}</h3>
-          <div class="notes-two-col">
-            <div class="notes-col">
-              <label class="notes-label notes-label--client">Notatka serwisowa dla klienta</label>
+          <section class="panel panel--photos" *ngIf="!isPendingConfirmation">
+            <div class="panel-title-row">
+              <h3 class="panel-title">{{ canShowImages ? 'Zdjęcia i notatka dla klienta' : 'Notatka dla klienta' }}</h3>
+              <span class="images-count" *ngIf="canShowImages && images.length > 0">({{ images.length }})</span>
+            </div>
+
+            <!-- Zdjęcia (dostępne od statusu IN_PROGRESS) -->
+            <ng-container *ngIf="canShowImages">
+              <div class="images-loading" *ngIf="isLoadingImages">
+                <div class="spinner-small"></div>
+              </div>
+
+              <div class="images-grid" *ngIf="!isLoadingImages && images.length > 0">
+                <div class="image-item" *ngFor="let image of images; let i = index">
+                  <img
+                    [src]="image.thumbnailUrl || image.url"
+                    [alt]="t('service_calendar.order_details.order_image')"
+                    (click)="openLightbox(i)"
+                    class="image-clickable"
+                  >
+                  <button
+                    class="image-delete-btn"
+                    (click)="deleteImage(image)"
+                    [title]="t('common.delete')"
+                  >
+                    &times;
+                  </button>
+                </div>
+              </div>
+
+              <div class="no-images" *ngIf="!isLoadingImages && images.length === 0 && selectedFiles.length === 0">
+                <span>{{ t('service_calendar.order_details.no_images') }}</span>
+              </div>
+
+              <div class="image-upload-section">
+                <div class="selected-previews" *ngIf="selectedFiles.length > 0">
+                  <div class="preview-item" *ngFor="let preview of selectedPreviews; let i = index">
+                    <img [src]="preview" alt="Preview">
+                    <button class="preview-remove-btn" (click)="removeSelectedFile(i)">&times;</button>
+                  </div>
+                </div>
+
+                <div class="upload-controls" *ngIf="!isUploadingImage">
+                  <input
+                    #imageInput
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    (change)="onImagesSelected($event)"
+                    class="file-input"
+                    [disabled]="isUploadingImage"
+                  >
+                  <button
+                    class="btn-select-image"
+                    (click)="imageInput.click()"
+                    [disabled]="isUploadingImage"
+                  >
+                    <span class="icon">&#128247;</span>
+                    {{ t('service_calendar.order_details.select_image') }}
+                  </button>
+                  <button
+                    class="btn-upload-image"
+                    *ngIf="selectedFiles.length > 0"
+                    (click)="uploadAllImages()"
+                    [disabled]="isUploadingImage"
+                  >
+                    {{ t('service_calendar.order_details.upload_image') }} ({{ selectedFiles.length }})
+                  </button>
+                </div>
+
+                <div class="upload-progress" *ngIf="isUploadingImage">
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+                  </div>
+                  <span class="progress-text">
+                    {{ isCompressingImage ? t('service_calendar.order_details.compressing') : t('service_calendar.order_details.uploading') }}
+                    {{ uploadCurrentIndex + 1 }}/{{ uploadTotalCount }}
+                    ({{ uploadProgress | number:'1.0-0' }}%)
+                  </span>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Notatka serwisowa dla klienta -->
+            <div class="client-note" [class.client-note--separated]="canShowImages">
+              <label class="field-label">
+                Notatka dla klienta
+                <span class="field-label-hint">· widoczna po zakończeniu serwisu</span>
+              </label>
               <textarea
                 #noteTextarea
                 [(ngModel)]="notes"
-                placeholder="Widoczna dla klienta po zakończeniu serwisu..."
-                rows="6"
+                placeholder="Np. zalecenia po naprawie..."
+                rows="4"
               ></textarea>
             </div>
-            <div class="notes-col">
-              <label class="notes-label notes-label--internal">Notatka dla serwisu <span class="notes-label-hint">(niewidoczna dla klienta)</span></label>
-              <textarea
-                #noteTextarea
-                [(ngModel)]="maintenanceAdvice"
-                placeholder="Notatki wewnętrzne, uwagi dla mechanika..."
-                rows="6"
-              ></textarea>
-            </div>
-          </div>
+          </section>
         </div>
-
-        <!-- Metadane -->
-        <div class="detail-section metadata" *ngIf="!isPendingConfirmation">
-          <div class="meta-item">
-            <span class="meta-label">{{ t('service_calendar.order_details.created') }}:</span>
-            <span class="meta-value">{{ fullOrder.createdAt | date:'short' }}</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">{{ t('service_calendar.order_details.updated') }}:</span>
-            <span class="meta-value">{{ fullOrder.updatedAt | date:'short' }}</span>
-          </div>
-        </div>
-
-      </div><!-- /tab-content details -->
-
-      <!-- Tab: Korespondencja -->
-      <div class="tab-content" *ngIf="activeTab === 'messages'">
-
-        <!-- Zdjecia (podglad) -->
-        <div class="detail-section" *ngIf="canShowImages && images.length > 0">
-          <div class="section-header">
-            <h3 class="section-title">{{ t('service_calendar.order_details.images') }}</h3>
-            <span class="images-count">({{ images.length }})</span>
-          </div>
-          <div class="images-grid">
-            <div class="image-item" *ngFor="let image of images; let i = index">
-              <img
-                [src]="image.thumbnailUrl || image.url"
-                [alt]="t('service_calendar.order_details.order_image')"
-                (click)="openLightbox(i)"
-                class="image-clickable"
-              >
-            </div>
-          </div>
-        </div>
-
-        <!-- Wiadomości -->
-        <div class="detail-section">
-          <h3 class="section-title">Korespondencja z klientem</h3>
-
-          <div class="messages-loading" *ngIf="isLoadingMessages">
-            <div class="spinner-small"></div>
-          </div>
-
-          <ng-container *ngIf="!isLoadingMessages">
-            <div class="messages-thread">
-              <div
-                *ngFor="let msg of messages"
-                class="message-item"
-                [class.message-service]="msg.senderType === 'SERVICE'"
-                [class.message-client]="msg.senderType === 'CLIENT'"
-              >
-                <span class="message-meta">
-                  {{ msg.senderType === 'SERVICE' ? 'Ty (serwis)' : 'Klient' }} · {{ msg.createdAt | date:'dd.MM HH:mm' }}
-                </span>
-                <p class="message-content">{{ msg.content }}</p>
-              </div>
-              <div class="no-messages" *ngIf="messages.length === 0">
-                Brak wiadomości
-              </div>
-            </div>
-
-            <div class="message-input-row">
-              <input
-                type="text"
-                class="message-input"
-                [(ngModel)]="newMessageContent"
-                placeholder="Napisz wiadomość do klienta..."
-                [disabled]="isSendingMessage"
-                (keydown.enter)="sendMessage()"
-              >
-              <button
-                class="message-send-btn"
-                (click)="sendMessage()"
-                [disabled]="!newMessageContent.trim() || isSendingMessage"
-              >
-                {{ isSendingMessage ? '...' : 'Wyślij' }}
-              </button>
-            </div>
-          </ng-container>
-        </div>
-
-      </div><!-- /tab-content messages -->
+      </div><!-- /order-layout -->
 
       <!-- Tab: Sposób zwrotu -->
       <div class="tab-content" *ngIf="activeTab === 'return'">
+        <section class="panel panel--wide">
 
-        <!-- Ładowanie -->
-        <div class="return-loading" *ngIf="isLoadingReturnTransport">
-          <div class="spinner-small"></div>
-        </div>
+          <!-- Ładowanie -->
+          <div class="return-loading" *ngIf="isLoadingReturnTransport">
+            <div class="spinner-small"></div>
+          </div>
 
-        <ng-container *ngIf="!isLoadingReturnTransport">
+          <ng-container *ngIf="!isLoadingReturnTransport">
 
-        <!-- Transport już przypisany — pokaż szczegóły -->
-        <div *ngIf="hasReturnTransport; else returnTransportForm">
-          <div class="detail-section">
-            <div class="return-transport-assigned">
-              <div class="return-transport-icon">🚚</div>
-              <h3 class="return-transport-title">Transport zwrotny zlecony</h3>
-              <p class="return-transport-subtitle">Rower zostanie dostarczony pod wskazany adres</p>
-            </div>
-            <div class="detail-grid detail-grid--cols">
-              <div class="detail-item">
-                <span class="detail-label">Ulica</span>
-                <span class="detail-value">{{ transportAddress!.street }}</span>
+          <!-- Transport już przypisany — pokaż szczegóły -->
+          <div *ngIf="hasReturnTransport; else returnTransportForm">
+            <div class="detail-section">
+              <div class="return-transport-assigned">
+                <div class="return-transport-icon">🚚</div>
+                <h3 class="return-transport-title">Transport zwrotny zlecony</h3>
+                <p class="return-transport-subtitle">Rower zostanie dostarczony pod wskazany adres</p>
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Nr budynku</span>
-                <span class="detail-value">{{ transportAddress!.building }}</span>
-              </div>
-              <div class="detail-item" *ngIf="transportAddress!.city">
-                <span class="detail-label">Miasto</span>
-                <span class="detail-value">{{ transportAddress!.city }}</span>
-              </div>
-              <div class="detail-item detail-item--full" *ngIf="transportAddress!.transportNotes">
-                <span class="detail-label">Uwagi</span>
-                <span class="detail-value">{{ transportAddress!.transportNotes }}</span>
+              <div class="detail-grid detail-grid--cols">
+                <div class="detail-item">
+                  <span class="detail-label">Ulica</span>
+                  <span class="detail-value">{{ transportAddress!.street }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Nr budynku</span>
+                  <span class="detail-value">{{ transportAddress!.building }}</span>
+                </div>
+                <div class="detail-item" *ngIf="transportAddress!.city">
+                  <span class="detail-label">Miasto</span>
+                  <span class="detail-value">{{ transportAddress!.city }}</span>
+                </div>
+                <div class="detail-item detail-item--full" *ngIf="transportAddress!.transportNotes">
+                  <span class="detail-label">Uwagi</span>
+                  <span class="detail-value">{{ transportAddress!.transportNotes }}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Formularz wyboru sposobu zwrotu -->
-        <ng-template #returnTransportForm>
-          <div class="detail-section">
-            <p class="section-hint">Wybierz w jaki sposób klient odbierze rower po zakończeniu serwisu.</p>
+          <!-- Formularz wyboru sposobu zwrotu -->
+          <ng-template #returnTransportForm>
+            <div class="detail-section">
+              <p class="section-hint">Wybierz w jaki sposób klient odbierze rower po zakończeniu serwisu.</p>
 
-            <div class="pickup-options">
-              <label class="pickup-option" [class.active]="returnPickupMethod === 'self'">
-                <input type="radio" name="returnPickupMethod" value="self" [(ngModel)]="returnPickupMethod" />
-                <span class="pickup-icon">🚴</span>
-                <span>Odbiór osobisty</span>
-              </label>
-              <label class="pickup-option" [class.active]="returnPickupMethod === 'delivery'">
-                <input type="radio" name="returnPickupMethod" value="delivery" [(ngModel)]="returnPickupMethod" />
-                <span class="pickup-icon">🚚</span>
-                <span>Podwózka pod dom</span>
-              </label>
-            </div>
+              <div class="pickup-options">
+                <label class="pickup-option" [class.active]="returnPickupMethod === 'self'">
+                  <input type="radio" name="returnPickupMethod" value="self" [(ngModel)]="returnPickupMethod" />
+                  <span class="pickup-icon">🚴</span>
+                  <span>Odbiór osobisty</span>
+                </label>
+                <label class="pickup-option" [class.active]="returnPickupMethod === 'delivery'">
+                  <input type="radio" name="returnPickupMethod" value="delivery" [(ngModel)]="returnPickupMethod" />
+                  <span class="pickup-icon">🚚</span>
+                  <span>Podwózka pod dom</span>
+                </label>
+              </div>
 
-            <div class="self-pickup-info" *ngIf="returnPickupMethod === 'self'">
-              <p>Klient odbierze rower osobiście w warsztacie. Żadne dodatkowe działania nie są wymagane.</p>
-            </div>
+              <div class="self-pickup-info" *ngIf="returnPickupMethod === 'self'">
+                <p>Klient odbierze rower osobiście w warsztacie. Żadne dodatkowe działania nie są wymagane.</p>
+              </div>
 
-            <div class="delivery-fields" *ngIf="returnPickupMethod === 'delivery'">
-              <div class="form-row delivery-address-row">
-                <div class="form-group">
-                  <label for="retDeliveryStreet">Ulica *</label>
-                  <input
-                    type="text"
-                    id="retDeliveryStreet"
-                    [(ngModel)]="returnDeliveryStreet"
-                    name="retDeliveryStreet"
-                    placeholder="np. Długa"
-                  />
+              <div class="delivery-fields" *ngIf="returnPickupMethod === 'delivery'">
+                <div class="form-row delivery-address-row">
+                  <div class="form-group">
+                    <label for="retDeliveryStreet">Ulica *</label>
+                    <input
+                      type="text"
+                      id="retDeliveryStreet"
+                      [(ngModel)]="returnDeliveryStreet"
+                      name="retDeliveryStreet"
+                      placeholder="np. Długa"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="retDeliveryBuilding">Nr budynku *</label>
+                    <input
+                      type="text"
+                      id="retDeliveryBuilding"
+                      [(ngModel)]="returnDeliveryBuilding"
+                      name="retDeliveryBuilding"
+                      placeholder="np. 12A"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="retDeliveryCity">Miasto *</label>
+                    <select
+                      id="retDeliveryCity"
+                      [(ngModel)]="returnDeliveryCity"
+                      name="retDeliveryCity"
+                    >
+                      <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label for="retDeliveryBuilding">Nr budynku *</label>
-                  <input
-                    type="text"
-                    id="retDeliveryBuilding"
-                    [(ngModel)]="returnDeliveryBuilding"
-                    name="retDeliveryBuilding"
-                    placeholder="np. 12A"
-                  />
-                </div>
-                <div class="form-group">
-                  <label for="retDeliveryCity">Miasto *</label>
-                  <select
-                    id="retDeliveryCity"
-                    [(ngModel)]="returnDeliveryCity"
-                    name="retDeliveryCity"
-                  >
-                    <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
-                  </select>
+                  <label for="retTransportNotes">Uwagi do transportu</label>
+                  <textarea
+                    id="retTransportNotes"
+                    [(ngModel)]="returnTransportNotes"
+                    name="retTransportNotes"
+                    rows="2"
+                    placeholder="Dodatkowe informacje dla kuriera..."
+                  ></textarea>
                 </div>
               </div>
-              <div class="form-group">
-                <label for="retTransportNotes">Uwagi do transportu</label>
-                <textarea
-                  id="retTransportNotes"
-                  [(ngModel)]="returnTransportNotes"
-                  name="retTransportNotes"
-                  rows="2"
-                  placeholder="Dodatkowe informacje dla kuriera..."
-                ></textarea>
+
+              <div class="return-save-action" *ngIf="returnPickupMethod === 'delivery'">
+                <button
+                  class="btn-save-return"
+                  (click)="onSaveReturnTransport()"
+                  [disabled]="!isReturnDeliveryFormValid || isSavingReturnTransport"
+                >
+                  {{ isSavingReturnTransport ? 'Zlecanie...' : 'Zlec transport zwrotny' }}
+                </button>
               </div>
             </div>
+          </ng-template>
 
-            <div class="return-save-action" *ngIf="returnPickupMethod === 'delivery'">
-              <button
-                class="btn-save-return"
-                (click)="onSaveReturnTransport()"
-                [disabled]="!isReturnDeliveryFormValid || isSavingReturnTransport"
-              >
-                {{ isSavingReturnTransport ? 'Zlecanie...' : 'Zlec transport zwrotny' }}
-              </button>
-            </div>
-          </div>
-        </ng-template>
-
-        </ng-container>
-
+          </ng-container>
+        </section>
       </div><!-- /tab-content return -->
-
-      <!-- Tab: Plan naprawy -->
-      <div class="tab-content" *ngIf="activeTab === 'repair-plan'">
-        <app-repair-plan-tab [order]="fullOrder" [serviceId]="serviceId" />
-      </div>
 
       <!-- Tab: Historia roweru (tylko w tym serwisie) -->
       <div class="tab-content" *ngIf="activeTab === 'historia'">
-        <div class="detail-section">
-          <h3 class="section-title">Historia tego roweru w Twoim serwisie</h3>
+        <section class="panel panel--wide">
+          <h3 class="panel-title">Historia roweru w Twoim serwisie</h3>
 
           <div class="messages-loading" *ngIf="isLoadingHistory">
             <div class="spinner-small"></div>
           </div>
 
           <ng-container *ngIf="!isLoadingHistory">
-            <div class="no-messages" *ngIf="historyRecords.length === 0">
-              Brak wcześniejszej historii tego roweru w tym serwisie.
+            <div class="no-messages no-messages--box" *ngIf="historyRecords.length === 0">
+              Brak wcześniejszych zleceń tego roweru w Twoim serwisie.
             </div>
 
             <div class="history-list" *ngIf="historyRecords.length > 0">
@@ -697,16 +744,28 @@
               </div>
             </div>
           </ng-container>
-        </div>
+        </section>
       </div>
 
     </div>
 
     <div class="modal-footer">
-      <button class="btn-cancel" (click)="onCancelAndClose()" [disabled]="isUpdating">Anuluj</button>
-      <button class="btn-save" (click)="onSaveAndClose()" [disabled]="isUpdating">
-        {{ isUpdating ? 'Zapisywanie...' : 'Zapisz' }}
-      </button>
+      <p class="footer-note">
+        Zmiany zapisują się po kliknięciu „Zapisz i zamknij”. „Anuluj” cofa zmiany z tego otwarcia okna.
+        <ng-container *ngIf="fullOrder">
+          · {{ t('service_calendar.order_details.created') }} {{ fullOrder.createdAt | date:'d.M.yyyy, HH:mm' }}
+          · {{ t('service_calendar.order_details.updated') }} {{ fullOrder.updatedAt | date:'d.M.yyyy, HH:mm' }}
+        </ng-container>
+      </p>
+      <div class="footer-actions">
+        <span class="save-state" [class.save-state--dirty]="isDirty">
+          {{ isDirty ? '● Niezapisane zmiany' : '✓ Zapisano' }}
+        </span>
+        <button class="btn-cancel" (click)="onCancelAndClose()" [disabled]="isUpdating">Anuluj</button>
+        <button class="btn-save" (click)="onSaveAndClose()" [disabled]="isUpdating">
+          {{ isUpdating ? 'Zapisywanie...' : 'Zapisz i zamknij' }}
+        </button>
+      </div>
     </div>
 
   </div>

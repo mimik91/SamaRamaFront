@@ -326,6 +326,96 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     return this.filteredPackages.find(p => p.packageLevel === level) || null;
   }
 
+  /** Pakiety widoczne dla wybranego typu roweru — od 0 do 3 (po jednym na poziom) */
+  get visiblePackages(): ServicePackageDto[] {
+    return this.packageLevels
+      .map(level => this.getPackageForLevel(level))
+      .filter((pkg): pkg is ServicePackageDto => pkg !== null);
+  }
+
+  /** Opis pakietu rozbity na linie — kilka linii wyświetlamy jako listę z ptaszkami */
+  getPackageLines(pkg: ServicePackageDto): string[] {
+    return (pkg.description || '')
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
+  }
+
+  /** Najniższa cena aktywnego pakietu — "Przegląd od" w nagłówku profilu */
+  get cheapestPackagePrice(): number | null {
+    if (!this.activeStatus?.packagesActive) return null;
+    const prices = this.packages
+      .filter(pkg => pkg.active && pkg.price > 0)
+      .map(pkg => pkg.price);
+    return prices.length > 0 ? Math.min(...prices) : null;
+  }
+
+  // ===== NAGŁÓWEK PROFILU (hero) =====
+
+  /** Czy opis serwisu jest na tyle długi, że zwijamy go z przyciskiem "Czytaj więcej" */
+  descriptionExpanded = false;
+
+  get isLongDescription(): boolean {
+    return (this.publicInfo?.description?.length ?? 0) > 420;
+  }
+
+  /** Ocena do pokazania w nagłówku: z sekcji opinii, a gdy jej nie ma — ze statystyk serwisu */
+  get heroRating(): { value: number; count: number } | null {
+    const fromReviews = this.scoreToStars(this.reviews?.avgOverallScore);
+    if (fromReviews != null && this.reviews && this.reviews.reviewCount > 0) {
+      return { value: fromReviews, count: this.reviews.reviewCount };
+    }
+    if (this.publicInfo?.reviewCount && this.publicInfo.averageRating != null) {
+      return { value: this.publicInfo.averageRating, count: this.publicInfo.reviewCount };
+    }
+    return null;
+  }
+
+  /** "★★★★☆" — zaokrąglone do pełnych gwiazdek */
+  starString(value: number | null | undefined): string {
+    const full = Math.max(0, Math.min(5, Math.round(value ?? 0)));
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
+  /** "1 opinia" / "2 opinie" / "5 opinii" */
+  reviewCountLabel(count: number): string {
+    if (count === 1) return '1 opinia';
+    const lastDigit = count % 10;
+    const lastTwo = count % 100;
+    if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return `${count} opinie`;
+    return `${count} opinii`;
+  }
+
+  /** Dzisiejszy dzień tygodnia w Polsce (serwer SSR i przeglądarka liczą to tak samo) */
+  private get todayKey(): DayOfWeek {
+    const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Europe/Warsaw' });
+    return weekday.toLowerCase() as DayOfWeek;
+  }
+
+  isToday(dayKey: DayOfWeek): boolean {
+    return dayKey === this.todayKey;
+  }
+
+  /** "Dziś otwarte 11:00–18:30" / "Dziś zamknięte" — null, gdy serwis nie podaje godzin otwarcia */
+  get todayHoursLabel(): string | null {
+    if (!this.activeStatus?.openingHoursActive || !this.openingHours) return null;
+    const interval = this.getDayInterval(this.todayKey);
+    return interval ? `Dziś otwarte ${interval.openTime}–${interval.closeTime}` : 'Dziś zamknięte';
+  }
+
+  get isOpenToday(): boolean {
+    return !!this.getDayInterval(this.todayKey);
+  }
+
+  /** Ulica i numer — do nagłówka profilu */
+  get shortAddress(): string {
+    if (!this.publicInfo?.street) return '';
+    const number = [this.publicInfo.building, this.publicInfo.flat ? `/${this.publicInfo.flat}` : '']
+      .filter(Boolean)
+      .join('');
+    return `${this.publicInfo.street} ${number}`.trim();
+  }
+
   // Zwraca nazwę wyświetlaną pakietu
   getPackageDisplayName(pkg: ServicePackageDto): string {
     return pkg.customName || pkg.packageLevelDisplayName;

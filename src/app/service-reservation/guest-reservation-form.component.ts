@@ -102,6 +102,10 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   serviceSuffix: string | null = null;
 
   serviceInfo: ServiceInfo | null = null;
+  /** Serwis bez rezerwacji online i bez transportu - pokazujemy kontakt telefoniczny. */
+  reservationUnavailable = false;
+  unavailableServiceName = '';
+  servicePhone: string | null = null;
   reservationSettings: ReservationSettings | null = null;
   isFormActive = true;
   formInactiveMessage = '';
@@ -681,7 +685,14 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     this.http.get<any>(url).subscribe({
       next: (d) => {
         if (d.reservationAvailable === false) {
-          this.router.navigate(['/', this.serviceSuffix, 'zamow-transport'], { replaceUrl: true });
+          if (d.transportAvailable) {
+            this.router.navigate(['/', this.serviceSuffix, 'zamow-transport'], { replaceUrl: true });
+            return;
+          }
+          this.reservationUnavailable = true;
+          this.unavailableServiceName = d.name ?? '';
+          this.servicePhone = d.phoneNumber || null;
+          this.loading = false;
           return;
         }
 

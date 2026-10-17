@@ -2,32 +2,56 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-5);
-  padding: var(--spacing-5);
 }
 
-/* === STATUS PLANU === */
+/* === NAGŁÓWEK PLANU + STATUS === */
 
-.rp-status-banner {
+.rp-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+.rp-head-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.rp-head-title h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.rp-status-chip {
+  display: inline-flex;
+  align-items: center;
   gap: var(--spacing-2);
-  padding: var(--spacing-3) var(--spacing-4);
-  border-radius: var(--radius-card);
-  font-size: var(--font-size-sm);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-slate-100);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
   font-weight: 600;
 }
 
-.rp-status-banner--sent_to_client {
+.rp-status-chip--sent_to_client {
   background: var(--color-warning-bg);
   color: var(--color-warning-orange);
 }
 
-.rp-status-banner--accepted {
+.rp-status-chip--accepted {
   background: var(--color-success-bg);
   color: var(--color-primary);
 }
 
-.rp-status-banner--rejected {
+.rp-status-chip--rejected {
   background: var(--color-danger-bg);
   color: var(--color-danger-dark);
 }
@@ -41,10 +65,7 @@
 /* === SEKCJE === */
 
 .rp-section {
-  background: var(--color-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-card);
-  padding: var(--spacing-4) var(--spacing-5);
+  padding: 0;
 }
 
 .rp-section h4 {
@@ -58,7 +79,8 @@
 
 .rp-section-header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  justify-content: space-between;
   gap: var(--spacing-2);
   margin-bottom: var(--spacing-3);
 }
@@ -94,8 +116,8 @@
 /* === PAKIETY === */
 
 .rp-packages {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--spacing-2);
 }
 
@@ -110,8 +132,7 @@
   cursor: pointer;
   text-align: left;
   transition: border-color 0.2s, background 0.2s;
-  min-width: 140px;
-  max-width: 220px;
+  min-width: 0;
 }
 
 .rp-package-btn:hover {
@@ -124,10 +145,8 @@
 }
 
 .rp-package-btn.rp-package-none {
-  min-width: auto;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
-  align-self: flex-start;
 }
 
 .rp-pkg-name {
@@ -163,28 +182,34 @@
   flex: 1;
 }
 
-/* Rząd dodawania części: nazwa (rozciąga się) + cena (wąska) + przycisk */
-.rp-add-item .rp-item-name-input {
+/* Rząd dodawania: pole rozciągnięte niemal do przycisku "Dodaj" */
+.rp-add-item .rp-autocomplete-wrapper {
   flex: 1;
-  width: auto;
+  min-width: 0;
+}
+
+.rp-add-item .rp-item-name-input {
+  width: 100%;
 }
 
 .btn-rp-add {
   flex-shrink: 0;
-  padding: 8px 14px;
+  min-height: 40px;
+  padding: 8px 18px;
   background: var(--color-white);
-  border: 1px dashed var(--color-primary);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-btn);
   font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-primary);
+  font-weight: 700;
+  color: var(--text-primary);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .btn-rp-add:hover:not(:disabled) {
-  background: var(--color-primary-alpha-08);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .btn-rp-add:disabled {
@@ -194,6 +219,7 @@
 
 .rp-item-name-input {
   width: 100%;
+  min-height: 40px;
   border: 2px solid var(--border-color);
   border-radius: var(--radius-input);
   padding: 8px 12px;
@@ -498,19 +524,8 @@ input[type='number'] {
 
 /* === AKCJE === */
 
-.rp-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-3);
-  padding: var(--spacing-3) var(--spacing-5);
-  background: var(--color-slate-50);
-  border-top: 1px solid var(--border-color);
-  margin: 0 calc(-1 * var(--spacing-5)) calc(-1 * var(--spacing-5));
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
-}
-
 .rp-autosave-hint {
+  margin: 0;
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   font-style: italic;
@@ -526,19 +541,19 @@ input[type='number'] {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: linear-gradient(135deg, #0369a1 0%, #0c4a6e 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   color: var(--color-white);
   border: none;
   border-radius: var(--radius-btn);
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
+  box-shadow: 0 2px 8px var(--color-primary-alpha-30);
   transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
 }
 
 .btn-rp-send:hover:not(:disabled) {
-  box-shadow: 0 4px 16px rgba(3, 105, 161, 0.4);
+  box-shadow: 0 4px 16px var(--color-primary-alpha-40);
   transform: translateY(-1px);
 }
 
@@ -657,20 +672,19 @@ input[type='number'] {
 
 .btn-rp-print {
   padding: 8px 16px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: var(--color-white);
-  border: none;
+  background: var(--color-white);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-btn);
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px var(--color-primary-alpha-30);
-  transition: box-shadow 0.2s, transform 0.15s;
+  transition: border-color 0.2s, color 0.2s;
 }
 
 .btn-rp-print:hover {
-  box-shadow: 0 4px 16px var(--color-primary-alpha-40);
-  transform: translateY(-1px);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* === LOADING / ERROR === */
@@ -707,10 +721,6 @@ input[type='number'] {
 /* === RESPONSYWNOŚĆ === */
 
 @media (max-width: 640px) {
-  .repair-plan-container {
-    padding: var(--spacing-3);
-  }
-
   .rp-add-item {
     flex-wrap: wrap;
   }
@@ -720,27 +730,22 @@ input[type='number'] {
   }
 
   .rp-packages {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
-  .rp-package-btn {
-    max-width: 100%;
-  }
-
-  .rp-actions {
-    flex-direction: column;
-    align-items: stretch;
+  .rp-head,
+  .rp-action-buttons {
+    width: 100%;
   }
 
   .rp-action-buttons {
-    flex-direction: column;
+    flex-wrap: wrap;
   }
 
-  .btn-rp-save,
   .btn-rp-send,
   .btn-rp-print {
-    width: 100%;
-    text-align: center;
+    flex: 1;
     justify-content: center;
+    text-align: center;
   }
 }

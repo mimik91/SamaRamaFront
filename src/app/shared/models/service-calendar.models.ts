@@ -301,6 +301,7 @@ export interface CalendarOrder {
   id: number;
 
   // Dane klienta (plaska struktura z backendu)
+  clientId?: number;
   clientName: string;
   clientEmail?: string;
   clientPhone?: string;
@@ -319,6 +320,8 @@ export interface CalendarOrder {
   status: CalendarOrderStatus;
   statusDisplayName?: string;
   description?: string;
+  /** Ten sam opis zlecenia co `description` — backend wysyła oba pola */
+  orderNotes?: string;
   serviceNotes?: string;
   maintenanceAdvice?: string;
   recommendedRepairs?: string;

@@ -64,6 +64,9 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
 
   savedAt: Date | null = null;
 
+  /** Zserializowany stan planu tuż po wczytaniu — pozwala wykryć, czy serwis cokolwiek zmienił */
+  private baselineRequest: string | null = null;
+
   showSendPopup = false;
   isSaving = false;
   isSending = false;
@@ -121,6 +124,7 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
         }
 
         this.isLoading = false;
+        this.baselineRequest = JSON.stringify(this.buildRequest());
       },
       error: () => {
         this.isLoading = false;
@@ -390,8 +394,11 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
     // Po wysłaniu do klienta plan przestaje być swobodnym szkicem — ciche zamknięcie zakładki
     // nie powinno nadpisywać decyzji klienta (przekreślone pozycje, wyczyszczona cena niestandardowa).
     // Świadoma zmiana planu po tym momencie idzie przez jawny przycisk "Wyślij do klienta".
+    // Zakładka jest renderowana od razu razem z modalem (widok desktopowy), więc zapisujemy tylko
+    // wtedy, gdy serwis faktycznie coś zmienił — inaczej każde otwarcie zlecenia tworzyłoby pusty szkic.
     const isEditableDraft = this.planStatus === null || this.planStatus === 'DRAFT';
-    if (!this.isLoading && !this.loadError && isEditableDraft) {
+    const changed = JSON.stringify(this.buildRequest()) !== this.baselineRequest;
+    if (!this.isLoading && !this.loadError && isEditableDraft && changed) {
       this.calendarService.saveRepairPlan(this.serviceId, this.order.id, this.buildRequest())
         .subscribe();
     }

@@ -44,69 +44,62 @@
 
     <app-breadcrumb class="profile-breadcrumb" [items]="breadcrumbItems"></app-breadcrumb>
 
-    <!-- INFO -->
-    <section class="main-content" id="info">
-      <div class="content-left">
-        <h1>{{ publicInfo.name }} – serwis rowerowy {{ publicInfo.city }}{{ publicInfo.district ? ' ' + publicInfo.district : '' }}</h1>
-
-        <div class="service-stats-row">
-          <span class="stat-chip">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <ng-container *ngIf="publicInfo.reviewCount; else noRating">{{ publicInfo.averageRating | number:'1.1-1' }} ({{ publicInfo.reviewCount }})</ng-container>
-            <ng-template #noRating>N/A</ng-template>
-          </span>
-          <span class="stat-chip">
-            śr. czas realizacji: {{ formatWaitingTime(publicInfo.medianServiceDurationHours) }}
-          </span>
-        </div>
-
-        <!-- Logo z skeleton -->
-        <div class="logo-container">
-          <div *ngIf="!logoUrl" class="skeleton skeleton-logo"></div>
-          <img
-            *ngIf="logoUrl"
-            [src]="logoUrl"
-            [alt]="publicInfo.name"
-            class="service-logo"
-            width="150"
-            height="150"
-            fetchpriority="high">
-        </div>
-        <p *ngIf="publicInfo.description" class="service-description">{{ publicInfo.description }}</p>
-
-        <div class="service-features"
-             *ngIf="publicInfo.transportAvailable || publicInfo.reservationAvailable">
-
-          <div class="feature-item" *ngIf="publicInfo.transportAvailable">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-              <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
-            </svg>
-            <div class="feature-text">
-              <h3>Odbiór roweru z domu</h3>
-              <p>Odbieramy rower spod Twoich drzwi i dowozimy po naprawie.</p>
-            </div>
+    <!-- INFO / HERO -->
+    <section class="hero" id="info">
+      <div class="hero-main">
+        <div class="hero-head">
+          <!-- Logo z skeleton -->
+          <div class="logo-container">
+            <div *ngIf="!logoUrl" class="skeleton skeleton-logo"></div>
+            <img
+              *ngIf="logoUrl"
+              [src]="logoUrl"
+              [alt]="publicInfo.name"
+              class="service-logo"
+              width="150"
+              height="150"
+              fetchpriority="high">
           </div>
 
-          <div class="feature-item" *ngIf="publicInfo.reservationAvailable">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            <div class="feature-text">
-              <h3>Rezerwacja online</h3>
-              <p>Zarezerwuj termin wizyty w kilka sekund – bez dzwonienia.</p>
-            </div>
+          <div class="hero-title">
+            <h1>{{ publicInfo.name }} – serwis rowerowy {{ publicInfo.city }}{{ publicInfo.district ? ' ' + publicInfo.district : '' }}</h1>
+
+            <a class="hero-rating" href="#opinie" *ngIf="heroRating as rating; else noRating">
+              <span class="hero-stars" aria-hidden="true">{{ starString(rating.value) }}</span>
+              <strong>{{ rating.value | number:'1.1-1' }}</strong>
+              <span class="hero-rating-count">{{ reviewCountLabel(rating.count) }}</span>
+            </a>
+            <ng-template #noRating>
+              <span class="hero-rating hero-rating--empty">Brak opinii</span>
+            </ng-template>
           </div>
         </div>
 
-        <div class="service-cta"
-             *ngIf="publicInfo.reservationAvailable || publicInfo.transportAvailable">
+        <div class="hero-chips"
+             *ngIf="todayHoursLabel || publicInfo.transportAvailable || publicInfo.reservationAvailable">
+          <span class="hero-chip hero-chip--hours" *ngIf="todayHoursLabel" [class.hero-chip--closed]="!isOpenToday">
+            <span class="hero-chip-dot" aria-hidden="true"></span>{{ todayHoursLabel }}
+          </span>
+          <span class="hero-chip" *ngIf="publicInfo.transportAvailable">Odbiór roweru z domu</span>
+          <span class="hero-chip" *ngIf="publicInfo.reservationAvailable">Rezerwacja online</span>
+        </div>
+
+        <dl class="hero-facts">
+          <div class="hero-fact" *ngIf="shortAddress">
+            <dt>Adres</dt>
+            <dd>{{ shortAddress }}</dd>
+          </div>
+          <div class="hero-fact" *ngIf="cheapestPackagePrice !== null">
+            <dt>Przegląd</dt>
+            <dd>od {{ cheapestPackagePrice | number:'1.0-2' }} zł</dd>
+          </div>
+          <div class="hero-fact">
+            <dt>Śr. czas realizacji</dt>
+            <dd>{{ formatWaitingTime(publicInfo.medianServiceDurationHours) }}</dd>
+          </div>
+        </dl>
+
+        <div class="hero-cta">
           <a *ngIf="publicInfo.reservationAvailable"
              [routerLink]="['/', suffix, 'zarezerwuj']"
              class="cta-link btn-cta-primary">
@@ -117,10 +110,15 @@
              class="cta-link btn-cta-primary">
             Zamów transport
           </a>
+          <a *ngIf="publicInfo.phoneNumber"
+             [href]="'tel:' + publicInfo.phoneNumber"
+             class="cta-link btn-cta-secondary">
+            Zadzwoń: {{ publicInfo.phoneNumber }}
+          </a>
         </div>
       </div>
-      
-      <div class="content-right">
+
+      <div class="hero-image">
         <!-- About Us image z skeleton -->
         <div *ngIf="!aboutUsImageUrl" class="skeleton skeleton-content-image"></div>
         <img
@@ -128,6 +126,50 @@
           [src]="aboutUsImageUrl"
           [alt]="t('service_profile.images.about_us')"
           class="content-image fade-in">
+      </div>
+    </section>
+
+    <!-- O SERWISIE -->
+    <section class="about-section" id="o-serwisie"
+             *ngIf="publicInfo.description || publicInfo.transportAvailable || publicInfo.reservationAvailable">
+      <div class="about-text" *ngIf="publicInfo.description">
+        <h2>O serwisie</h2>
+        <p class="service-description" [class.is-clamped]="isLongDescription && !descriptionExpanded">{{ publicInfo.description }}</p>
+        <button type="button" class="read-more-btn" *ngIf="isLongDescription"
+                (click)="descriptionExpanded = !descriptionExpanded">
+          {{ descriptionExpanded ? 'Zwiń' : 'Czytaj więcej' }}
+        </button>
+      </div>
+
+      <div class="service-features"
+           *ngIf="publicInfo.transportAvailable || publicInfo.reservationAvailable">
+
+        <div class="feature-item" *ngIf="publicInfo.transportAvailable">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+          <div class="feature-text">
+            <h3>Odbiór roweru z domu</h3>
+            <p>Odbieramy rower spod Twoich drzwi i dowozimy po naprawie.</p>
+          </div>
+        </div>
+
+        <div class="feature-item" *ngIf="publicInfo.reservationAvailable">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <div class="feature-text">
+            <h3>Rezerwacja online</h3>
+            <p>Zarezerwuj termin wizyty w kilka sekund – bez dzwonienia.</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -152,10 +194,10 @@
       <!-- Bike Type Selector -->
       <div class="bike-type-selector" *ngIf="bikeTypes && bikeTypes.length > 0">
         <label for="bikeTypeSelect">Wybierz typ roweru:</label>
-        <select 
-          id="bikeTypeSelect" 
+        <select
+          id="bikeTypeSelect"
           class="bike-type-dropdown"
-          [ngModel]="selectedBikeType" 
+          [ngModel]="selectedBikeType"
           (ngModelChange)="onBikeTypeChange($event)">
           <option *ngFor="let type of bikeTypes" [value]="type">
             {{ type }}
@@ -163,29 +205,33 @@
         </select>
       </div>
 
-      <!-- Packages Display -->
-      <div class="packages-container" *ngIf="selectedBikeType">
-        <ng-container *ngFor="let level of packageLevels">
-          <div
-            *ngIf="getPackageForLevel(level) as pkg"
-            class="package-card">
-
-            <div class="package-content">
-              <div class="package-header">
-                <h3 class="package-title">{{ getPackageDisplayName(pkg) }}</h3>
-              </div>
-
-              <div class="package-description" *ngIf="pkg.description">
-                <p>{{ pkg.description }}</p>
-              </div>
-
-              <div class="package-price">
-                <span class="price-amount">{{ pkg.price }}</span>
-                <span class="price-currency">zł</span>
-              </div>
+      <!-- Packages Display (0–3 pakiety, układ dopasowany do ich liczby) -->
+      <div class="packages-container" *ngIf="selectedBikeType && visiblePackages.length > 0"
+           [attr.data-count]="visiblePackages.length">
+        <div *ngFor="let pkg of visiblePackages" class="package-card">
+          <div class="package-header">
+            <h3 class="package-title">{{ getPackageDisplayName(pkg) }}</h3>
+            <div class="package-price">
+              <span class="price-amount">{{ pkg.price }}</span>
+              <span class="price-currency">zł</span>
             </div>
           </div>
-        </ng-container>
+
+          <div class="package-description" *ngIf="pkg.description">
+            <ul class="package-checklist" *ngIf="getPackageLines(pkg).length > 1; else singleLineDescription">
+              <li *ngFor="let line of getPackageLines(pkg)">{{ line }}</li>
+            </ul>
+            <ng-template #singleLineDescription>
+              <p>{{ pkg.description }}</p>
+            </ng-template>
+          </div>
+
+          <a *ngIf="publicInfo.reservationAvailable"
+             [routerLink]="['/', suffix, 'zarezerwuj']"
+             class="cta-link btn-cta-primary package-cta">
+            Zarezerwuj wizytę
+          </a>
+        </div>
       </div>
 
       <!-- Comment -->
@@ -243,8 +289,8 @@
         </div>
         
         <div class="hours-list">
-          <div *ngFor="let day of daysOfWeek" class="day-row">
-            <span class="day-name">{{ day.label }}</span>
+          <div *ngFor="let day of daysOfWeek" class="day-row" [class.day-row--today]="isToday(day.key)">
+            <span class="day-name">{{ day.label }}<span class="day-today-tag" *ngIf="isToday(day.key)"> · dziś</span></span>
             <span class="day-hours" *ngIf="getDayInterval(day.key)">
               {{ getDayInterval(day.key)!.openTime }} - {{ getDayInterval(day.key)!.closeTime }}
             </span>
@@ -391,28 +437,36 @@
 
       <div *ngIf="reviews && reviews.reviewCount > 0" class="reviews-content">
         <div class="reviews-averages">
-          <div class="review-average-item">
-            <span class="review-average-label">Ocena ogólna</span>
-            <span class="review-average-value">{{ scoreToStars(reviews.avgOverallScore) }} / 5</span>
+          <div class="reviews-overall">
+            <span class="reviews-overall-value">{{ scoreToStars(reviews.avgOverallScore) | number:'1.1-1' }}</span>
+            <span class="reviews-overall-stars" aria-hidden="true">{{ starString(scoreToStars(reviews.avgOverallScore)) }}</span>
+            <span class="reviews-overall-count">na podstawie {{ reviewCountLabel(reviews.reviewCount) }}</span>
+            <span class="visually-hidden">Ocena ogólna {{ scoreToStars(reviews.avgOverallScore) }} / 5</span>
           </div>
+
           <div class="review-average-item">
             <span class="review-average-label">Uprzejmość obsługi</span>
+            <span class="review-bar"><span class="review-bar-fill" [style.width.%]="scoreToPercent(reviews.avgCourtesyScore, 0.5) ?? 0"></span></span>
             <span class="review-average-value">{{ scoreToPercent(reviews.avgCourtesyScore, 0.5) }}%</span>
           </div>
           <div class="review-average-item">
             <span class="review-average-label">Przejrzystość cen</span>
+            <span class="review-bar"><span class="review-bar-fill" [style.width.%]="scoreToPercent(reviews.avgPriceTransparencyScore, 0.5) ?? 0"></span></span>
             <span class="review-average-value">{{ scoreToPercent(reviews.avgPriceTransparencyScore, 0.5) }}%</span>
           </div>
           <div class="review-average-item">
             <span class="review-average-label">Czas realizacji</span>
+            <span class="review-bar"><span class="review-bar-fill" [style.width.%]="scoreToPercent(reviews.avgTurnaroundScore, 0.5) ?? 0"></span></span>
             <span class="review-average-value">{{ scoreToPercent(reviews.avgTurnaroundScore, 0.5) }}%</span>
           </div>
           <div class="review-average-item">
             <span class="review-average-label">Jakość naprawy</span>
+            <span class="review-bar"><span class="review-bar-fill" [style.width.%]="scoreToPercent(reviews.avgRepairQualityScore, 0.5) ?? 0"></span></span>
             <span class="review-average-value">{{ scoreToPercent(reviews.avgRepairQualityScore, 0.5) }}%</span>
           </div>
           <div class="review-average-item">
             <span class="review-average-label">Komunikacja</span>
+            <span class="review-bar"><span class="review-bar-fill" [style.width.%]="scoreToPercent(reviews.avgCommunicationScore, 0.5) ?? 0"></span></span>
             <span class="review-average-value">{{ scoreToPercent(reviews.avgCommunicationScore, 0.5) }}%</span>
           </div>
         </div>
@@ -420,7 +474,10 @@
         <ul class="reviews-list">
           <li *ngFor="let review of reviews.reviews" class="review-item">
             <div class="review-item-header">
-              <span class="review-item-score">{{ scoreToStars(review.overallScore) }} / 5</span>
+              <span class="review-item-score">
+                <span class="review-item-stars" aria-hidden="true">{{ starString(scoreToStars(review.overallScore)) }}</span>
+                <span class="visually-hidden">{{ scoreToStars(review.overallScore) }} / 5</span>
+              </span>
               <span class="review-item-date">{{ formatReviewDate(review.createdAt) }}</span>
             </div>
             <p *ngIf="review.comment" class="review-item-comment">{{ review.comment }}</p>

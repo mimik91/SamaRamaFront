@@ -57,12 +57,14 @@ export const routes: Routes = [
       title: 'Znajdź i zarezerwuj serwis rowerowy w Polsce | CycloPick'
     },
 
-    // Publiczna baza skradzionych rowerów — wyszukiwarka + kontakt + rejestracja klucza API
+    // Rejestr rowerów — rejestracja własnego roweru + publiczna baza skradzionych (wyszukiwarka, kontakt, klucz API)
     {
-      path: 'skradzione-rowery',
+      path: 'rejestr-rowerow',
       component: StolenBikesSearchPageComponent,
-      title: 'Baza skradzionych rowerów | CycloPick'
+      title: 'Rejestr rowerów i baza skradzionych rowerów | CycloPick'
     },
+    // Stary adres — na serwerze obsługuje go 301 w server.ts, tu fallback dla nawigacji po stronie klienta
+    { path: 'skradzione-rowery', redirectTo: (info: any) => { const qs = new URLSearchParams(info.queryParams).toString(); return qs ? `rejestr-rowerow?${qs}` : 'rejestr-rowerow'; }, pathMatch: 'full' },
 
     // Podstrony oferty dla rowerzystów (linki z sekcji "Więcej niż rezerwacja") — na razie "w przygotowaniu"
     {

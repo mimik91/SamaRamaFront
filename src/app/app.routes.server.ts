@@ -91,7 +91,12 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
 
-  // Baza skradzionych rowerów - server render (SEO ważne, treść zależy od wyszukiwania klienta)
+  // Rejestr rowerów / baza skradzionych - server render (SEO ważne, treść zależy od wyszukiwania klienta)
+  {
+    path: 'rejestr-rowerow',
+    renderMode: RenderMode.Server
+  },
+  // Stary adres (301 w server.ts, fallback przekierowania w app.routes.ts)
   {
     path: 'skradzione-rowery',
     renderMode: RenderMode.Server

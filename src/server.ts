@@ -62,6 +62,16 @@ app.get('/reserve-service/:suffix', (req, res) => {
 });
 
 /**
+ * Zmiana adresu (301) - /skradzione-rowery -> /rejestr-rowerow (z zachowaniem query stringa).
+ * Robimy to w Expressie, żeby crawlery dostały prawdziwe 301, a nie przekierowanie po stronie Angulara.
+ */
+app.get(['/skradzione-rowery', '/skradzione-rowery/'], (req, res) => {
+  const queryIndex = req.originalUrl.indexOf('?');
+  const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : '';
+  res.redirect(301, `/rejestr-rowerow${query}`);
+});
+
+/**
  * Proxy /sitemap.xml do backendu (dynamicznie generowany z bazy)
  * Musi być PRZED express.static, żeby statyczny plik nie wygrał
  */

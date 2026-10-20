@@ -100,6 +100,8 @@
         Zarezerwuj wizytę
       </a>
 
+      <a *ngIf="!authService.isService()" routerLink="/rejestr-rowerow" routerLinkActive="active" (click)="closeMobileMenu()">Rejestr rowerów</a>
+
       <a routerLink="/poradnik" routerLinkActive="active" (click)="closeMobileMenu()">Poradnik</a>
 
       <ng-container *ngIf="!authService.isLoggedIn()">

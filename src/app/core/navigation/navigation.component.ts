@@ -43,7 +43,7 @@ export class NavigationComponent implements OnInit {
     'admin-service-edit', 'admin-register-service', 'admin-enumerations', 'admin-service-slots', 'admin-bike-services',
     'admin-office-addresses', 'admin-coupons', 'mistrzauta', 'order-transport', 'reserve-service',
     'ulotka', 'sukces', 'opinia', 'moje-zlecenie',
-    'skradzione-rowery', 'dokumenty-roweru', 'historia-serwisowa-roweru'
+    'skradzione-rowery', 'rejestr-rowerow', 'dokumenty-roweru', 'historia-serwisowa-roweru'
   ]);
 
   getViewedSuffix(): string | null {

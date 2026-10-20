@@ -7,5 +7,5 @@ export const RIDER_LINKS = {
   pickup: '/transport-rowerow-krakow',
   documents: '/dokumenty-roweru',
   history: '/historia-serwisowa-roweru',
-  theft: '/skradzione-rowery'
+  theft: '/rejestr-rowerow'
 } as const;

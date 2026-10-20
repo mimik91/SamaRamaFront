@@ -8,6 +8,7 @@ CycloPick umożliwia właścicielom serwisów rowerowych prowadzenie profilu war
 
 - [Strona główna](https://www.cyclopick.pl/) — opis platformy, jak działa transport rowerów
 - [Mapa serwisów](https://www.cyclopick.pl/mapa-serwisow) — interaktywna mapa wszystkich serwisów w Polsce
+- [Rejestr rowerów](https://www.cyclopick.pl/rejestr-rowerow) — rejestracja roweru z numerem ramy oraz bezpłatna baza skradzionych rowerów (sprawdzenie numeru ramy)
 - [Jak działamy](https://www.cyclopick.pl/jak-dzialamy) — szczegółowy opis usługi transportu rowerów door-to-door
 - [Serwisy w Krakowie](https://www.cyclopick.pl/serwisy/krakow)
 - [Serwisy w Warszawie](https://www.cyclopick.pl/serwisy/warszawa)

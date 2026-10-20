@@ -103,6 +103,10 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
       answer: 'Nikt go nie zgłosił w naszej bazie ani w dostępnych zewnętrznych źródłach. To nie potwierdza legalnego pochodzenia roweru.'
     },
     {
+      question: 'Po co rejestrować rower, zanim zostanie skradziony?',
+      answer: 'Po kradzieży numer ramy, zdjęcia i dowód zakupu są zwykle trudne do znalezienia, a liczy się czas. Rower zapisany wcześniej w CycloPick zgłosisz jako skradziony jednym kliknięciem, a dokumenty dla Policji i ubezpieczyciela masz pod ręką.'
+    },
+    {
       question: 'Jak zgłosić skradziony rower?',
       answer: 'Załóż konto lub zaloguj się, dodaj rower (marka, model, numer ramy, zdjęcie) i oznacz go jako skradziony w panelu klienta.'
     },
@@ -139,8 +143,8 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
   }
 
   private setMetaTags(): void {
-    const pageTitle = 'Baza skradzionych rowerów - sprawdź numer ramy | CycloPick';
-    const pageDescription = 'Sprawdź bezpłatnie, czy rower jest zgłoszony jako skradziony. Wpisz numer ramy albo markę i model bez konta, w ogólnopolskiej bazie CycloPick.';
+    const pageTitle = 'Rejestr rowerów - baza skradzionych rowerów, sprawdź numer ramy | CycloPick';
+    const pageDescription = 'Zarejestruj rower, zanim zostanie skradziony, i zgłoś kradzież jednym kliknięciem. Sprawdź bezpłatnie numer ramy w ogólnopolskiej bazie skradzionych rowerów CycloPick.';
 
     this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: pageDescription });
@@ -149,14 +153,14 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:title', content: pageTitle });
     this.meta.updateTag({ property: 'og:description', content: pageDescription });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
-    this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/skradzione-rowery' });
+    this.meta.updateTag({ property: 'og:url', content: 'https://www.cyclopick.pl/rejestr-rowerow' });
     this.meta.updateTag({ property: 'og:image', content: 'https://www.cyclopick.pl/assets/images/og-image-cyclopick.jpg' });
     this.meta.updateTag({ property: 'og:locale', content: 'pl_PL' });
     this.meta.updateTag({ property: 'og:site_name', content: 'CycloPick' });
   }
 
   private setCanonicalUrl(): void {
-    const canonicalUrl = 'https://www.cyclopick.pl/skradzione-rowery';
+    const canonicalUrl = 'https://www.cyclopick.pl/rejestr-rowerow';
     const existingLink = this.document.querySelector('link[rel="canonical"]');
     if (existingLink) existingLink.remove();
     const link = this.document.createElement('link');
@@ -168,7 +172,7 @@ export class StolenBikesSearchPageComponent implements OnInit, OnDestroy {
   private generateSchemaMarkup(): void {
     const breadcrumb = SchemaOrgHelper.generateBreadcrumb([
       { name: 'Strona główna', url: 'https://www.cyclopick.pl/' },
-      { name: 'Baza skradzionych rowerów', url: 'https://www.cyclopick.pl/skradzione-rowery' }
+      { name: 'Rejestr rowerów', url: 'https://www.cyclopick.pl/rejestr-rowerow' }
     ]);
 
     const faqPage = SchemaOrgHelper.generateFAQPage(this.faqData);

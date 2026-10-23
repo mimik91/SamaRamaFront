@@ -149,8 +149,8 @@ export class TransportOrderService {
   /**
    * Pobiera podsumowanie zamówień na podstawie ich ID
    */
-  getOrdersSummary(orderIds: number[]): Observable<TransportOrderSummaryDto[]> {
-    const requestBody = { orderIds };
+  getOrdersSummary(orderIds: number[], token: string): Observable<TransportOrderSummaryDto[]> {
+    const requestBody = { orderIds, token };
     return this.http.post<TransportOrderSummaryDto[] | TransportOrderSummaryDto>(`${this.apiUrl}/summary`, requestBody).pipe(
       map(response => Array.isArray(response) ? response : [response]),
       catchError(error => {

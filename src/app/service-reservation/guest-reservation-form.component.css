@@ -1,5 +1,5 @@
 .back-to-service {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: var(--spacing-4) var(--spacing-5) 0;
 }
@@ -20,14 +20,14 @@
 }
 
 .reservation-container {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: var(--spacing-8) var(--spacing-5);
   box-sizing: border-box;
 }
 
 *, h1, h2, h3, h4 { box-sizing: border-box; color: var(--text-primary); }
-h1 { text-align: center; margin-bottom: var(--spacing-8); font-size: var(--font-size-h2); }
+h1 { text-align: left; margin: 0 0 var(--spacing-5); font-size: var(--font-size-h2); }
 
 /* ===== Loading ===== */
 .loading-message {
@@ -1473,4 +1473,495 @@ h1 { text-align: center; margin-bottom: var(--spacing-8); font-size: var(--font-
   .reservation-unavailable-image { max-height: 200px; }
   .reservation-unavailable h2 { font-size: var(--font-size-h4); }
   .reservation-unavailable-call { width: 100%; }
+}
+
+/* =====================================================================
+   Nowy wygląd formularza (makieta: rezerwacja-formularz desktop/mobile)
+   ===================================================================== */
+
+/* ----- Layout: formularz + panel boczny ----- */
+.reservation-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--spacing-6);
+  align-items: start;
+}
+
+.reservation-main { min-width: 0; }
+
+.step2-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.reservation-aside {
+  position: sticky;
+  top: var(--spacing-4);
+}
+
+.aside-card {
+  background: var(--color-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-5);
+}
+
+.aside-title {
+  margin: 0 0 var(--spacing-3);
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.aside-list { margin: 0; }
+
+.aside-row {
+  padding: var(--spacing-3) 0;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.aside-row:first-child { padding-top: 0; }
+
+.aside-row dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.aside-row dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.aside-row dd small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.aside-row dd.aside-placeholder {
+  font-weight: 400;
+  color: var(--text-lighter);
+}
+
+.aside-card .pricing-info-banner {
+  margin: var(--spacing-4) 0;
+  padding: var(--spacing-3);
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning);
+  color: var(--color-warning-orange);
+}
+
+.aside-submit {
+  width: 100%;
+  justify-content: center;
+  margin-left: 0;
+}
+
+.aside-note {
+  margin: var(--spacing-3) 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ----- Karta serwisu ----- */
+.service-info-card {
+  border-left: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-4);
+}
+
+.service-logo {
+  width: 52px;
+  height: 52px;
+}
+
+.packages-panel { margin-bottom: var(--spacing-5); }
+
+/* ----- Stepper: poziomy, wyrównany do lewej ----- */
+.steps-container {
+  max-width: none;
+  justify-content: flex-start;
+  margin: 0 0 var(--spacing-5);
+  padding: 0;
+  gap: var(--spacing-3);
+}
+
+.step {
+  flex-direction: row;
+  flex: 0 0 auto;
+  min-width: 0;
+  gap: var(--spacing-2);
+}
+
+.step:nth-child(1) { order: 1; }
+.step:nth-child(2) { order: 3; }
+
+.step-number {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 0;
+  border-width: 0;
+  font-size: 0.8rem;
+}
+
+.step.active .step-number { box-shadow: none; }
+.step.completed .step-number { background-color: var(--color-primary); }
+
+.step-label { font-size: 0.85rem; }
+.step.completed .step-label { color: var(--color-primary); }
+
+.step-connectors {
+  position: static;
+  order: 2;
+  flex: 0 0 56px;
+  height: 2px;
+  padding: 0;
+  transform: none;
+}
+
+.step-connector { height: 2px; }
+.step-connector.completed { background-color: var(--color-primary); }
+
+/* ----- Karty sekcji z numerem ----- */
+.form-card {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-5);
+  margin-bottom: var(--spacing-4);
+}
+
+.card-title {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: var(--spacing-4);
+  font-size: 1.15rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.card-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.card-title-aside {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.transport-section { border-left: 1px solid var(--border-color); }
+
+.form-input,
+.form-textarea { border-width: 1px; }
+
+.form-label { font-size: 0.85rem; }
+
+.field-hint-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+}
+
+.field-counter {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ----- Dodaj kolejny rower ----- */
+.add-bike-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  background: var(--color-success-mint);
+  border: 4px solid var(--color-primary);
+  border-radius: var(--radius-card);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.add-bike-btn:hover:not(:disabled) { background: var(--color-success-bg); }
+
+.add-bike-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+
+/* ----- Termin: datepicker + wybrany dzień ----- */
+.selected-day-card {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-success-mint);
+  border: 1px solid var(--color-success-border);
+  border-radius: var(--radius-input);
+}
+
+.selected-day-label { font-size: 0.8rem; color: var(--text-secondary); }
+.selected-day-value { font-size: 1.05rem; color: var(--color-primary); }
+
+.availability-ok {
+  background: var(--color-success-mint);
+  border-color: var(--color-success-border);
+  color: var(--color-primary);
+}
+
+.availability-error {
+  background: var(--color-danger-bg-light);
+  border-color: var(--color-danger-red-light);
+}
+
+/* ----- Transport: kafelki ----- */
+.delivery-cards { gap: var(--spacing-3); margin-top: var(--spacing-4); }
+
+.delivery-card {
+  border-width: 1px;
+  border-radius: var(--radius-card);
+  padding: var(--spacing-5) var(--spacing-3) var(--spacing-3);
+  gap: var(--spacing-2);
+}
+
+.delivery-card:hover { border-color: var(--color-primary); }
+
+.delivery-card.selected {
+  border-width: 2px;
+  border-color: var(--color-primary);
+  background: var(--color-success-mint);
+  box-shadow: none;
+}
+
+.delivery-card--transport,
+.delivery-card--office { border-color: var(--border-color); }
+
+.delivery-card--office:hover { border-color: var(--color-primary); box-shadow: 0 2px 12px var(--color-primary-alpha-10); }
+
+.delivery-card--office.selected {
+  border-color: var(--color-primary);
+  background: var(--color-success-mint);
+  box-shadow: none;
+}
+
+.delivery-card--office.selected svg { color: var(--color-primary); }
+
+.delivery-card-title { flex-direction: column; gap: var(--spacing-1); font-size: 0.9rem; }
+
+.delivery-card-desc { font-size: 0.78rem; }
+
+.delivery-card-badge {
+  background: var(--color-accent-orange);
+  font-size: 0.7rem;
+  border-radius: var(--radius-full);
+  padding: 2px 10px;
+}
+
+.delivery-card-badge--office { background: var(--color-slate-600); }
+
+.transport-cost-badge {
+  background: var(--color-success-bg);
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 1px 10px;
+}
+
+.transport-toggle-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  margin: var(--spacing-3) 0 0;
+  padding: 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.transport-toggle-hint svg { flex-shrink: 0; margin-top: 3px; color: var(--text-muted); }
+.transport-toggle-hint strong { color: var(--text-primary); }
+
+.transport-address-section { border-top: 1px solid var(--border-color); }
+
+.transport-notes-section,
+.coupon-section { border-top: none; padding-top: 0; }
+
+.address-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "street nr post"
+    "city . .";
+  gap: var(--spacing-3);
+}
+
+.addr-street { grid-area: street; }
+.addr-nr { grid-area: nr; }
+.addr-post { grid-area: post; }
+.addr-city { grid-area: city; }
+
+/* ----- Akcje ----- */
+.form-actions { border-top: none; padding-top: 0; }
+
+/* ----- Responsywność ----- */
+@media (max-width: 900px) {
+  .reservation-layout { grid-template-columns: 1fr; }
+  .reservation-aside { position: static; }
+  .aside-summary { display: none; }
+  .aside-card { padding: 0; background: none; border: none; box-shadow: none; }
+  .form-actions-next { display: none; }
+  .form-actions { margin-top: 0; }
+}
+
+@media (max-width: 640px) {
+  h1 { font-size: 1.5rem; }
+
+  .delivery-card {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+
+  .delivery-card-content { flex: 1; min-width: 0; }
+
+  .delivery-card-title { flex-direction: row; justify-content: space-between; }
+
+  .address-grid {
+    display: flex;
+    flex-wrap: wrap;
+    grid-template-areas: none;
+  }
+
+  .address-grid > .form-group { min-width: 0; }
+  .addr-street { flex: 0 0 calc((100% - var(--spacing-3)) * 5 / 7); }
+  .addr-nr { flex: 0 0 calc((100% - var(--spacing-3)) * 2 / 7); }
+  .addr-city { flex: 0 0 calc((100% - var(--spacing-3)) * 3 / 5); order: 3; }
+  .addr-post { flex: 0 0 calc((100% - var(--spacing-3)) * 2 / 5); order: 4; }
+
+  .card-title-aside { display: none; }
+}
+
+/* ----- Kalendarz zawsze widoczny ----- */
+.form-label--static { margin-bottom: var(--spacing-2); }
+
+.calendar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--spacing-4);
+}
+
+.calendar-row.invalid .reservation-calendar { border-color: var(--color-danger); }
+
+.reservation-calendar {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  background: var(--color-white);
+}
+
+.reservation-calendar ::ng-deep .mat-calendar-body-selected {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.reservation-calendar ::ng-deep .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background-color: var(--color-primary-alpha-15);
+}
+
+.reservation-calendar ::ng-deep .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: var(--color-primary);
+}
+
+.calendar-row .selected-day-card { margin-top: 0; min-width: 200px; }
+
+/* ----- Pływające etykiety pól ----- */
+.form-group:has(.form-input, .form-textarea) { position: relative; }
+
+.form-group:has(.form-input, .form-textarea) > .form-label {
+  position: absolute;
+  z-index: 1;
+  top: 13px;
+  left: 15px;
+  max-width: calc(100% - 52px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: top 0.15s, font-size 0.15s, font-weight 0.15s;
+}
+
+.form-group:has(.form-input, .form-textarea) .form-input,
+.form-group:has(.form-input, .form-textarea) .form-textarea {
+  padding-top: 22px;
+  padding-bottom: 6px;
+}
+
+.form-group:has(.form-input, .form-textarea) .form-input::placeholder,
+.form-group:has(.form-input, .form-textarea) .form-textarea::placeholder { color: transparent; }
+
+.form-group:has(.form-input, .form-textarea) .form-input:focus::placeholder,
+.form-group:has(.form-input, .form-textarea) .form-textarea:focus::placeholder { color: var(--text-lighter); }
+
+.form-group:has(.form-input:not(:placeholder-shown), .form-textarea:not(:placeholder-shown), .form-input:focus, .form-textarea:focus) > .form-label {
+  top: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.form-group:has(.form-input:focus, .form-textarea:focus) > .form-label { color: var(--color-primary); }
+
+/* Odstęp między kolejnymi wierszami pól (model → opis problemu, nazwisko → e-mail) */
+.form-card .form-row + .form-group,
+.form-card .form-row + .form-row { margin-top: var(--spacing-4); }
+
+/* Przycisk „Przejdź do podsumowania”: wyższy (x1,5) i biała strzałka */
+.form-actions-next,
+.aside-submit {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.form-actions-next svg,
+.aside-submit svg {
+  color: var(--color-white);
+  stroke: var(--color-white);
 }

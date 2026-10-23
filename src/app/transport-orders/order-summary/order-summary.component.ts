@@ -21,6 +21,7 @@ export class OrderSummaryComponent implements OnInit, OnDestroy {
   private i18n = inject(I18nService);
 
   orderIds: number[] = [];
+  private summaryToken = '';
   orderSummary: TransportOrderSummaryDto[] = [];
   loading = true;
   error: string | null = null;
@@ -33,6 +34,7 @@ export class OrderSummaryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       const ids = params['orderIds'];
+      this.summaryToken = typeof params['token'] === 'string' ? params['token'] : '';
       if (ids) {
         if (typeof ids === 'string') {
           this.orderIds = ids.split(',').map(Number);
@@ -51,7 +53,7 @@ export class OrderSummaryComponent implements OnInit, OnDestroy {
 
   fetchOrderSummary(): void {
     if (this.orderIds.length > 0) {
-      this.transportOrderService.getOrdersSummary(this.orderIds).subscribe({
+      this.transportOrderService.getOrdersSummary(this.orderIds, this.summaryToken).subscribe({
         next: (summary) => {
           this.orderSummary = summary;
           this.loading = false;

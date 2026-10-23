@@ -1,18 +1,125 @@
-<div class="success-container">
-  <div class="success-card">
-    <div class="checkmark">
-      <svg viewBox="0 0 52 52" class="checkmark-svg">
-        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
-        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+<div class="rs-page">
+  <div class="rs-card">
+    <ng-container *ngIf="data">
+      <a *ngIf="data.suffix; else heroStatic" class="rs-hero-logo" [routerLink]="['/', data.suffix]" [attr.aria-label]="data.serviceName">
+        <ng-container *ngTemplateOutlet="heroBody"></ng-container>
+      </a>
+      <ng-template #heroStatic>
+        <span class="rs-hero-logo">
+          <ng-container *ngTemplateOutlet="heroBody"></ng-container>
+        </span>
+      </ng-template>
+      <ng-template #heroBody>
+        <img *ngIf="data.logoUrl; else heroDefault" [src]="data.logoUrl" [alt]="data.serviceName">
+        <ng-template #heroDefault><app-cyclopick-logo height="48px"></app-cyclopick-logo></ng-template>
+      </ng-template>
+    </ng-container>
+
+    <div class="rs-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polyline points="12 7 12 12 15.5 14"/>
       </svg>
     </div>
 
-    <h1>Rezerwacja złożona!</h1>
-    <p class="subtitle">Serwis skontaktuje się z Tobą wkrótce w celu potwierdzenia terminu.</p>
+    <span class="rs-badge"><span class="rs-badge-dot"></span>Czeka na potwierdzenie serwisu</span>
+    <h1 class="rs-title">Prośba o rezerwację wysłana</h1>
+    <p class="rs-lead rs-hide-mobile">
+      To jeszcze <strong>nie jest potwierdzona wizyta</strong>. Serwis sprawdzi, czy termin jest wolny, i odpowie
+      <ng-container *ngIf="data?.email; else byEmail">na <strong class="rs-email">{{ data?.email }}</strong></ng-container>
+      <ng-template #byEmail>e-mailem</ng-template>.
+    </p>
 
-    <div class="actions">
-      <button class="btn-primary" (click)="goToHomepage()">Strona główna</button>
-      <button *ngIf="serviceSuffix" class="btn-secondary" (click)="goToServiceProfile()">Wróć do profilu serwisu</button>
+    <div class="rs-details" *ngIf="data">
+      <div class="rs-row">
+        <span class="rs-label">Serwis</span>
+        <div class="rs-value">
+          <a *ngIf="data.suffix; else serviceStatic" class="rs-service-link" [routerLink]="['/', data.suffix]">
+            <ng-container *ngTemplateOutlet="serviceBody"></ng-container>
+          </a>
+          <ng-template #serviceStatic>
+            <div class="rs-service-link rs-service-link--static">
+              <ng-container *ngTemplateOutlet="serviceBody"></ng-container>
+            </div>
+          </ng-template>
+          <ng-template #serviceBody>
+            <span class="rs-logo">
+              <img *ngIf="data.logoUrl; else defaultLogo" [src]="data.logoUrl" [alt]="data.serviceName" loading="lazy">
+              <ng-template #defaultLogo><app-cyclopick-logo height="36px"></app-cyclopick-logo></ng-template>
+            </span>
+            <span class="rs-service-text">
+              <strong>{{ data.serviceName }}</strong>
+              <small class="rs-hide-mobile" *ngIf="data.serviceAddress">{{ data.serviceAddress }}</small>
+            </span>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="rs-row" *ngIf="plannedDateLabel">
+        <span class="rs-label">Termin</span>
+        <div class="rs-value">
+          <strong>{{ plannedDateLabel }}</strong>
+          <small class="rs-hide-mobile">wybrany przez Ciebie – serwis może zaproponować inny</small>
+        </div>
+      </div>
+
+      <div class="rs-row" *ngIf="data.bikes.length">
+        <span class="rs-label">{{ data.bikes.length > 1 ? 'Rowery' : 'Rower' }}</span>
+        <div class="rs-value">
+          <strong *ngFor="let bike of data.bikes">{{ bike.brand }} {{ bike.model }}</strong>
+        </div>
+      </div>
+
+      <div class="rs-row" *ngIf="data.workDescription">
+        <span class="rs-label">Zakres prac</span>
+        <div class="rs-value"><span class="rs-work">{{ data.workDescription }}</span></div>
+      </div>
+    </div>
+
+    <div class="rs-next">
+    <h2 class="rs-subtitle">Co dalej?</h2>
+    <ol class="rs-steps">
+      <li class="rs-step rs-step--active">
+        <span class="rs-step-no">1</span>
+        <div>
+          <strong>Serwis sprawdza termin</strong>
+          <p>Możesz zamknąć tę stronę – nic więcej nie musisz robić.</p>
+        </div>
+      </li>
+      <li class="rs-step">
+        <span class="rs-step-no">2</span>
+        <div>
+          <strong>Dostajesz e-mail z odpowiedzią</strong>
+          <p>Potwierdzenie terminu albo propozycja innego.</p>
+        </div>
+      </li>
+      <li class="rs-step">
+        <span class="rs-step-no">3</span>
+        <div>
+          <strong>Przywozisz rower w potwierdzonym terminie</strong>
+          <p>Dopiero po potwierdzeniu wizyta jest umówiona.</p>
+        </div>
+      </li>
+    </ol>
+    </div>
+
+    <div class="rs-note">
+      <span aria-hidden="true">✉</span>
+      <span>Nie widzisz e-maila? Sprawdź folder <strong>Spam</strong> lub <strong>Oferty</strong>.</span>
+    </div>
+
+    <div class="rs-actions">
+      <a *ngIf="isClient" class="rs-btn rs-btn--primary" routerLink="/bicycles">Moje rowery</a>
+      <button type="button" class="rs-btn rs-btn--primary" (click)="goHome()">Strona główna</button>
+    </div>
+
+    <div class="rs-account" *ngIf="!isClient">
+      <h3>Śledź status bez szukania maila</h3>
+      <p>
+        W wiadomości, którą wysłaliśmy, znajdziesz przycisk <strong>„Ustaw hasło i aktywuj konto”</strong>.
+        Wystarczy podać hasło – rezerwacja i historia serwisowa roweru będą w jednym miejscu.
+      </p>
     </div>
   </div>
 </div>

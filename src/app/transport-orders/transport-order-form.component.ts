@@ -708,7 +708,9 @@ export class TransportOrderFormComponent implements OnInit, OnDestroy {
         next: (response) => {
           this.submitting = false;
           const ids = response.orderIds ?? (response.id ? [response.id] : []);
-          this.router.navigate(['/ordersummary'], { queryParams: { orderIds: ids.join(',') } });
+          this.router.navigate(['/ordersummary'], {
+            queryParams: { orderIds: ids.join(','), token: response.summaryToken }
+          });
         },
         error: () => {
           this.submitting = false;

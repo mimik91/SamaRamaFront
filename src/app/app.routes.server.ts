@@ -307,7 +307,7 @@ export const serverRoutes: ServerRoute[] = [
     path: 'ulotka',
     renderMode: RenderMode.Client
   },
-  // Strona sukcesu — renderowana po stronie klienta (countdown + GA4)
+  // Strona sukcesu — renderowana po stronie klienta (dane z router state / sessionStorage + GA4)
   {
     path: 'sukces',
     renderMode: RenderMode.Client

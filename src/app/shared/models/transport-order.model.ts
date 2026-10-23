@@ -64,5 +64,7 @@ export interface TransportOrderSummaryDto {
 export interface TransportOrderCreateResponse {
   id?: number;
   orderIds?: number[];
+  /** Podpis dostępu do podsumowania zamówień (/ordersummary) - wydawany tylko przy tworzeniu zamówienia. */
+  summaryToken?: string;
   message?: string;
 }

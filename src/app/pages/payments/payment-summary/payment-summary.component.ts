@@ -81,6 +81,12 @@ export class PaymentSummaryComponent implements OnInit {
         if (isPlatformBrowser(this.platformId)) {
           sessionStorage.removeItem(PENDING_ORDER_KEY);
           sessionStorage.setItem('pendingPaymentOrderType', this.orderType);
+          // Płatny transport z formularza rezerwacji (ma plannedDate) → po płatności ekran /sukces.
+          if (this.orderType === 'TRANSPORT' && this.orderData['plannedDate']) {
+            sessionStorage.setItem('pendingReservationSuccess', '1');
+          } else {
+            sessionStorage.removeItem('pendingReservationSuccess');
+          }
           if (response.payuOrderId) {
             sessionStorage.setItem('pendingPayuOrderId', response.payuOrderId);
           }

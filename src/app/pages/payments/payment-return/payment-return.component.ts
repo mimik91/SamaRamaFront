@@ -51,6 +51,12 @@ export class PaymentReturnComponent implements OnInit, OnDestroy {
       this.isChecking = true;
       const orderType = sessionStorage.getItem('pendingPaymentOrderType');
       sessionStorage.removeItem('pendingPaymentOrderType');
+      const isReservation = sessionStorage.getItem('pendingReservationSuccess') === '1';
+      sessionStorage.removeItem('pendingReservationSuccess');
+      if (isReservation && orderType !== 'SERVICE_ORDER') {
+        this.router.navigate(['/sukces'], { replaceUrl: true });
+        return;
+      }
       const successPath = orderType === 'SERVICE_ORDER' ? 'serwis-ekspresowy' : 'transport';
       this.router.navigate(['/platnosc/sukces', successPath], { replaceUrl: true });
       return;

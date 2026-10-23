@@ -46,6 +46,7 @@ import { FlyerRedirectComponent } from './pages/flyer-redirect/flyer-redirect.co
 import { PaymentReturnComponent } from './pages/payments/payment-return/payment-return.component';
 import { PaymentSummaryComponent } from './pages/payments/payment-summary/payment-summary.component';
 import { TransactionSuccessComponent } from './pages/transaction-success/transaction-success.component';
+import { ReservationSuccessComponent } from './pages/reservation-success/reservation-success.component';
 
 export const routes: Routes = [
     // === PUBLICZNE TRASY (BEZ GUARD) ===
@@ -531,16 +532,11 @@ export const routes: Routes = [
       title: 'CycloPick'
     },
 
-    // Strona sukcesu po złożeniu rezerwacji lub zamówienia transportu
+    // Strona sukcesu po złożeniu rezerwacji (dane z router state / sessionStorage)
     {
       path: 'sukces',
-      component: TransactionSuccessComponent,
-      title: 'Dziękujemy! | CycloPick',
-      data: {
-        heading: 'Rezerwacja złożona!',
-        message: 'Twoja rezerwacja została przyjęta. Serwis skontaktuje się z Tobą wkrótce.',
-        eventLabel: 'rezerwacja'
-      }
+      component: ReservationSuccessComponent,
+      title: 'Dziękujemy! | CycloPick'
     },
 
     // Podsumowanie zamówienia przed płatnością — wybór "opłać" lub "opłacę później"

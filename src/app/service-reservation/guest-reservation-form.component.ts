@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener, ViewChild } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import {
@@ -26,7 +26,7 @@ import { SessionSyncService } from '../core/session-sync.service';
 import { SeoService } from '../core/seo.service';
 import { SchemaOrgHelper, BikeRepairShopData } from '../core/schema-org.helper';
 import { SSR_RESPONSE } from '../core/ssr-tokens';
-import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatCalendar, MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { NotificationService } from '../core/notification.service';
 import { EnumerationService } from '../core/enumeration.service';
@@ -38,6 +38,7 @@ import { formatServiceDurationBucket, getServiceDurationBucket, ServiceDurationB
 import { AuthService } from '../auth/auth.service';
 import { BicycleService } from '../pages/client-panel/bicycle.service';
 import { Bicycle } from '../shared/models/bicycle.model';
+import { ReservationSuccessData, storeReservationSuccess } from '../pages/reservation-success/reservation-success.model';
 
 interface ServiceInfo {
   id: number;
@@ -126,6 +127,42 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     if (accepted && accepted.length > 0) return accepted.includes(dayKey);
     return true;
   };
+
+  /** Nowa referencja wymusza przerysowanie dni w kalendarzu (np. po zmianie typu transportu). */
+  calendarFilter: (date: Date | null) => boolean = (d) => this.dateFilter(d);
+
+  @ViewChild(MatCalendar) private calendar?: MatCalendar<Date>;
+
+  /** Zaznacza w kalendarzu najbliższy dostępny dzień (o ile klient nie wybrał jeszcze żadnego). */
+  private preselectNearestAvailableDate(): void {
+    const ctrl = this.reservationForm.get('plannedDate');
+    if (!ctrl || ctrl.value) return;
+    const d = new Date(this.minDateObj);
+    d.setHours(0, 0, 0, 0);
+    const max = new Date(this.maxDateObj);
+    max.setHours(0, 0, 0, 0);
+    while (d <= max) {
+      if (this.dateFilter(d)) {
+        const picked = new Date(d);
+        ctrl.setValue(picked);
+        Promise.resolve().then(() => { if (this.calendar) this.calendar.activeDate = picked; });
+        return;
+      }
+      d.setDate(d.getDate() + 1);
+    }
+  }
+
+  get selectedDateObj(): Date | null {
+    return this.toDate(this.reservationForm.get('plannedDate')?.value);
+  }
+
+  onCalendarDateSelected(date: Date | null): void {
+    if (!date) return;
+    const ctrl = this.reservationForm.get('plannedDate');
+    ctrl?.setValue(date);
+    ctrl?.markAsDirty();
+    ctrl?.markAsTouched();
+  }
 
   brands: string[] = [];
   cities: string[] = [];
@@ -507,6 +544,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     }
     this.weekendTransportError = null;
     this.reservationForm.get('deliveryType')?.setValue(type);
+    this.calendarFilter = (d) => this.dateFilter(d);
     // Reset office selection and clear address when switching type
     this.selectedOffice = null;
     this.officeNameControl.setValue('');
@@ -767,6 +805,8 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         this.reservationSettings = settings;
         this.computeFormAvailability(settings);
         this.updateMinDate(settings);
+        this.calendarFilter = (d) => this.dateFilter(d);
+        this.preselectNearestAvailableDate();
         this.reservationForm.get('plannedDate')?.updateValueAndValidity();
       },
       error: () => {}
@@ -905,6 +945,11 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     if (this.withTransport && this.effectiveTransportPrice > 0) {
       this.submitting = false;
       const orderData = this.buildTransportPayload(rv, []);
+      // Po powrocie z PayU pokazujemy ekran /sukces (podsumowanie rezerwacji) zamiast ogólnego
+      // "transport opłacony" — dane czekają w sessionStorage (patrz PaymentReturnComponent).
+      if (isPlatformBrowser(this.platformId)) {
+        storeReservationSuccess(this.buildReservationSuccessData());
+      }
       this.router.navigate(['/platnosc/podsumowanie'], {
         state: {
           orderType: 'TRANSPORT',
@@ -1090,7 +1135,30 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   private onSuccess(): void {
     this.submitting = false;
-    this.router.navigate(['/sukces'], { replaceUrl: true });
+    const reservation = this.buildReservationSuccessData();
+    if (isPlatformBrowser(this.platformId)) {
+      storeReservationSuccess(reservation);
+    }
+    this.router.navigate(['/sukces'], { replaceUrl: true, state: { reservation } });
+  }
+
+  /** Dane do ekranu /sukces. Wołane po udanym wysłaniu, gdy formularz nadal ma wartości. */
+  private buildReservationSuccessData(): ReservationSuccessData {
+    const rawDate = this.reservationForm.get('plannedDate')?.value;
+    const bikes = this.bikesArray.getRawValue() as { brand: string; model: string; additionalInfo: string }[];
+    const typedEmail = (this.reservationForm.get('email')?.value ?? '').trim();
+
+    return {
+      serviceName: this.serviceInfo?.name ?? '',
+      serviceAddress: this.serviceInfo?.address ?? '',
+      logoUrl: this.serviceInfo?.logoUrl ?? null,
+      suffix: this.serviceSuffix,
+      plannedDate: rawDate instanceof Date ? this.dateToStr(rawDate) : (rawDate || null),
+      bikes: bikes.map(b => ({ brand: (b.brand ?? '').trim(), model: (b.model ?? '').trim() })),
+      workDescription: bikes[0]?.additionalInfo?.trim() || null,
+      // zalogowany klient ma pole e-mail wyłączone - bierzemy adres z sesji
+      email: typedEmail || this.authService.getCurrentUserEmail() || null
+    };
   }
 
   goBack(): void {
@@ -1139,6 +1207,45 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         this.filteredPackages = filterPackagesByBikeType(this.packages, this.selectedBikeType);
       }
     });
+  }
+
+  private toDate(val: string | Date): Date | null {
+    if (!val) return null;
+    const d = val instanceof Date ? val : new Date(val + 'T00:00:00');
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /** "czwartek, 29.10.2026" (withYear) lub "środa, 28.10" */
+  formatWeekdayDate(val: string | Date, withYear: boolean): string {
+    const d = this.toDate(val);
+    if (!d) return '';
+    const weekday = d.toLocaleDateString('pl-PL', { weekday: 'long' });
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${weekday}, ${dd}.${mm}${withYear ? '.' + d.getFullYear() : ''}`;
+  }
+
+  /** "śr. 28.10" */
+  formatWeekdayShort(val: string | Date): string {
+    const d = this.toDate(val);
+    if (!d) return '';
+    const weekday = d.toLocaleDateString('pl-PL', { weekday: 'short' });
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${weekday} ${dd}.${mm}`;
+  }
+
+  /** Rowery do panelu bocznego "Twoja rezerwacja" (marka + model). */
+  get summaryBikes(): string[] {
+    return this.bikesArray.getRawValue()
+      .map((b: { brand: string | null; model: string | null }) =>
+        [b.brand?.trim(), b.model?.trim()].filter(Boolean).join(' '))
+      .filter((s: string) => !!s);
+  }
+
+  get summaryContactName(): string {
+    const v = this.reservationForm.getRawValue();
+    return [v.firstName?.trim(), v.lastName?.trim()].filter(Boolean).join(' ');
   }
 
   formatDatePL(val: string | Date): string {

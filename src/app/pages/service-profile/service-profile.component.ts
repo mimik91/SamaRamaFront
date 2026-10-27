@@ -298,6 +298,14 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     return new Date(dateStr).toLocaleDateString('pl-PL', { year: 'numeric', month: 'long', day: 'numeric' });
   }
 
+  // Zwykły href="#opinie" nawigowałby do "/" + hash (<base href="/"> rozstrzyga bare fragment
+  // względem base, nie bieżącej ścieżki) — dlatego scrollujemy ręcznie
+  scrollToReviews(event: Event): void {
+    event.preventDefault();
+    if (!this.isBrowser) return;
+    document.getElementById('opinie')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   // Parametry opinii (courtesy/priceTransparency/turnaround/repairQuality) to średnia z odpowiedzi
   // tak/nie o różnej maksymalnej wadze (0.5 albo 1) — przeliczamy na % pozytywnych odpowiedzi.
   scoreToPercent(avgScore: number | null | undefined, maxScore: number): number | null {
@@ -305,10 +313,11 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     return Math.round((avgScore / maxScore) * 100);
   }
 
-  // overallScore = gwiazdki(0-5) * 0.5, więc odwrotność to gwiazdki
-  scoreToStars(overallScore: number | null | undefined): number | null {
-    if (overallScore == null) return null;
-    return Math.round((overallScore / 0.5) * 10) / 10;
+  // totalScore (suma 5 odpowiedzi tak/nie po 0.5 i oceny końcowej) to już skala gwiazdek 0-5 —
+  // zaokrąglamy tylko do jednego miejsca po przecinku
+  scoreToStars(totalScore: number | null | undefined): number | null {
+    if (totalScore == null) return null;
+    return Math.round(totalScore * 10) / 10;
   }
 
   // Metoda do zmiany typu roweru w pakietach
@@ -361,7 +370,7 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
 
   /** Ocena do pokazania w nagłówku: z sekcji opinii, a gdy jej nie ma — ze statystyk serwisu */
   get heroRating(): { value: number; count: number } | null {
-    const fromReviews = this.scoreToStars(this.reviews?.avgOverallScore);
+    const fromReviews = this.scoreToStars(this.reviews?.avgTotalScore);
     if (fromReviews != null && this.reviews && this.reviews.reviewCount > 0) {
       return { value: fromReviews, count: this.reviews.reviewCount };
     }
@@ -594,10 +603,10 @@ export class ServiceProfilePageComponent implements OnInit, OnDestroy {
     bikeShopData.priceRange = this.estimatePriceRange();
 
     // 5. Dodaj ocenę (jeśli dostępna) — te same dane co w widocznej sekcji opinii na stronie
-    const overallScore = this.reviews?.avgOverallScore;
-    if (overallScore != null && this.reviews && this.reviews.reviewCount > 0) {
+    const totalScore = this.reviews?.avgTotalScore;
+    if (totalScore != null && this.reviews && this.reviews.reviewCount > 0) {
       bikeShopData.aggregateRating = {
-        ratingValue: this.scoreToStars(overallScore)!,
+        ratingValue: this.scoreToStars(totalScore)!,
         reviewCount: this.reviews.reviewCount
       };
     }

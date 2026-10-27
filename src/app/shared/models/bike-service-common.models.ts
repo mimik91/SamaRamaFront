@@ -111,6 +111,8 @@ export interface ServiceActiveStatus {
 /** Pojedyncza opinia — widok publiczny (profil serwisu) */
 export interface ServiceReviewDto {
   overallScore: number;
+  /** Ocena w gwiazdkach (0-5) — suma 5 odpowiedzi tak/nie i oceny końcowej */
+  totalScore: number;
   comment: string | null;
   createdAt: string;
 }
@@ -123,6 +125,8 @@ export interface ServiceReviewsOverviewDto {
   avgRepairQualityScore: number | null;
   avgCommunicationScore: number | null;
   avgOverallScore: number | null;
+  /** Średnia ocena w gwiazdkach (0-5) — średnia z totalScore */
+  avgTotalScore: number | null;
   reviewCount: number;
   reviews: ServiceReviewDto[];
 }

@@ -64,7 +64,7 @@
           <div class="hero-title">
             <h1>{{ publicInfo.name }} – serwis rowerowy {{ publicInfo.city }}{{ publicInfo.district ? ' ' + publicInfo.district : '' }}</h1>
 
-            <a class="hero-rating" href="#opinie" *ngIf="heroRating as rating; else noRating">
+            <a class="hero-rating" href="#opinie" (click)="scrollToReviews($event)" *ngIf="heroRating as rating; else noRating">
               <span class="hero-stars" aria-hidden="true">{{ starString(rating.value) }}</span>
               <strong>{{ rating.value | number:'1.1-1' }}</strong>
               <span class="hero-rating-count">{{ reviewCountLabel(rating.count) }}</span>
@@ -438,10 +438,10 @@
       <div *ngIf="reviews && reviews.reviewCount > 0" class="reviews-content">
         <div class="reviews-averages">
           <div class="reviews-overall">
-            <span class="reviews-overall-value">{{ scoreToStars(reviews.avgOverallScore) | number:'1.1-1' }}</span>
-            <span class="reviews-overall-stars" aria-hidden="true">{{ starString(scoreToStars(reviews.avgOverallScore)) }}</span>
+            <span class="reviews-overall-value">{{ scoreToStars(reviews.avgTotalScore) | number:'1.1-1' }}</span>
+            <span class="reviews-overall-stars" aria-hidden="true">{{ starString(scoreToStars(reviews.avgTotalScore)) }}</span>
             <span class="reviews-overall-count">na podstawie {{ reviewCountLabel(reviews.reviewCount) }}</span>
-            <span class="visually-hidden">Ocena ogólna {{ scoreToStars(reviews.avgOverallScore) }} / 5</span>
+            <span class="visually-hidden">Ocena ogólna {{ scoreToStars(reviews.avgTotalScore) }} / 5</span>
           </div>
 
           <div class="review-average-item">
@@ -475,8 +475,8 @@
           <li *ngFor="let review of reviews.reviews" class="review-item">
             <div class="review-item-header">
               <span class="review-item-score">
-                <span class="review-item-stars" aria-hidden="true">{{ starString(scoreToStars(review.overallScore)) }}</span>
-                <span class="visually-hidden">{{ scoreToStars(review.overallScore) }} / 5</span>
+                <span class="review-item-stars" aria-hidden="true">{{ starString(scoreToStars(review.totalScore)) }}</span>
+                <span class="visually-hidden">{{ scoreToStars(review.totalScore) }} / 5</span>
               </span>
               <span class="review-item-date">{{ formatReviewDate(review.createdAt) }}</span>
             </div>

@@ -794,6 +794,7 @@ export class ClientPanelDetailsComponent implements OnInit {
         width: dimensions.width,
         height: dimensions.height,
         weight: Math.round(compressedFile.size / 1024),
+        sizeBytes: compressedFile.size,
         displayOrder: order
       })
     );
@@ -914,6 +915,7 @@ export class ClientPanelDetailsComponent implements OnInit {
         width: dimensions.width,
         height: dimensions.height,
         weight: Math.round(compressedFile.size / 1024),
+        sizeBytes: compressedFile.size,
         displayOrder: 0
       })
     );

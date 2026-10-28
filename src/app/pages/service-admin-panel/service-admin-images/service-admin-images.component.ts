@@ -300,6 +300,7 @@ export class ServiceAdminImagesComponent implements OnInit, OnDestroy {
             width: dimensions.width,
             height: dimensions.height,
             weight: Math.round(compressedFile.size / 1024),
+            sizeBytes: compressedFile.size,
             provider: 'R2'
           }
         ).pipe(

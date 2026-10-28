@@ -40,6 +40,7 @@ export interface InitiateImageUploadRequest {
   width?: number;
   height?: number;
   description?: string;
+  sizeBytes: number;
 }
 
 export interface InitiateImageUploadResponse {

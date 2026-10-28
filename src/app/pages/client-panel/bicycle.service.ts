@@ -13,6 +13,7 @@ export interface BicycleImageUploadRequest {
   width: number;
   height: number;
   weight: number;
+  sizeBytes: number;
   caption?: string;
   displayOrder?: number;
 }

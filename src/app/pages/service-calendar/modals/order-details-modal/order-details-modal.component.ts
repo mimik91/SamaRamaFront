@@ -918,7 +918,8 @@ export class OrderDetailsModalComponent implements OnDestroy {
         fileName: `order_${this.fullOrder.id}_${Date.now()}_${index}.webp`,
         mimeType: compressedFile.type,
         width: dimensions.width,
-        height: dimensions.height
+        height: dimensions.height,
+        sizeBytes: compressedFile.size
       })
     );
 

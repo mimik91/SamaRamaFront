@@ -28,6 +28,7 @@ export interface ImageDimensions {
 export class ImageUtilsService {
   private readonly ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   private readonly MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  private readonly MAX_OUTPUT_SIZE = 4 * 1024 * 1024; // 4MB po kompresji (limit backendu)
   private readonly DEFAULT_MAX_DIMENSION = 1920;
   private readonly DEFAULT_QUALITY = 0.85;
 
@@ -161,6 +162,13 @@ export class ImageUtilsService {
         size: `${(blob.size / 1024 / 1024).toFixed(2)}MB`,
         reduction: `${(((file.size - blob.size) / file.size) * 100).toFixed(1)}%`
       });
+
+      // Backend odrzuca zdjęcia większe niż 4MB - lepiej pokazać czytelny błąd zanim zażądamy URL-a
+      if (blob.size > this.MAX_OUTPUT_SIZE) {
+        throw new Error(
+          `Zdjęcie po kompresji jest za duże (${(blob.size / 1024 / 1024).toFixed(1)}MB). Maksymalny rozmiar: 4MB`
+        );
+      }
 
       // Determine output format
       const mimeTypes: Record<OutputFormat, string> = {

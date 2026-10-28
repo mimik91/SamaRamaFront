@@ -148,6 +148,7 @@ export class AdminServiceRegistrationService {
           width: dimensions.width,
           height: dimensions.height,
           weight: Math.round(compressed.size / 1024),
+          sizeBytes: compressed.size,
           provider: 'R2'
         })
         .pipe(timeout(this.HTTP_TIMEOUT))

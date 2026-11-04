@@ -88,6 +88,11 @@ export class OrderBarComponent {
     return `Zlecenie #${this.order?.id || '?'}`;
   }
 
+  /** Zlecenia odrzucone i zakończone — wąski kafelek (marka, model, klient) */
+  get slim(): boolean {
+    return this.order.status === 'COMPLETED' || this.order.status === 'REJECTED';
+  }
+
   get customerName(): string {
     return this.order.clientName || '';
   }

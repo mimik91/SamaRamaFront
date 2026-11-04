@@ -342,9 +342,55 @@ export interface CalendarOrder {
   // Zlecenie ma już przypisany transport (powiązany lub oczekujący na zgodę klienta)
   hasTransport?: boolean;
 
+  // Data pierwotnego przyjęcia (YYYY-MM-DD) — do licznika "dni w serwisie"
+  serviceStartDate?: string | null;
+
+  // Kwota z planu naprawy; priceConfirmed = klient potwierdził plan (lub plan nie wymaga potwierdzenia)
+  estimatedPrice?: number | null;
+  priceConfirmed?: boolean;
+
   // Metadane
   createdAt?: string;
   updatedAt?: string;
+}
+
+// ============================================
+// ETAPY ZLECENIA (widok kalendarza dnia i statusów)
+// ============================================
+
+export type OrderStage = 'RESPOND' | 'IN_PROGRESS' | 'IN_QUEUE' | 'ON_HOLD' | 'WAITING_BIKE' | 'READY';
+
+export const ORDER_STAGES: { id: OrderStage; label: string; colorVar: string }[] = [
+  { id: 'RESPOND',      label: 'Do odpowiedzi', colorVar: '--color-accent-orange' },
+  { id: 'IN_PROGRESS',  label: 'W trakcie',     colorVar: '--color-success' },
+  { id: 'IN_QUEUE',     label: 'W kolejce',     colorVar: '--color-teal-400' },
+  { id: 'ON_HOLD',      label: 'Wstrzymane',    colorVar: '--color-warning' },
+  { id: 'WAITING_BIKE', label: 'Czeka na rower', colorVar: '--status-waiting-bike' },
+  { id: 'READY',        label: 'Gotowe',        colorVar: '--color-primary' }
+];
+
+/** Zwraca etap dla statusu zlecenia; null dla statusów nieaktywnych (zakończone, anulowane...) */
+export function getOrderStage(status: CalendarOrderStatus): OrderStage | null {
+  switch (status) {
+    case 'PENDING_CONFIRMATION':
+    case 'AWAITING_CLIENT_DATE_CONFIRMATION': return 'RESPOND';
+    case 'IN_PROGRESS': return 'IN_PROGRESS';
+    case 'IN_QUEUE': return 'IN_QUEUE';
+    case 'WAITING_FOR_PARTS':
+    case 'AWAITING_CLIENT_DECISION': return 'ON_HOLD';
+    case 'CONFIRMED':
+    case 'WAITING_FOR_BIKE': return 'WAITING_BIKE';
+    case 'READY_FOR_PICKUP': return 'READY';
+    default: return null;
+  }
+}
+
+/** Liczba pełnych dni od daty (YYYY-MM-DD) do dziś; null gdy brak daty */
+export function daysSince(date?: string | null, today: Date = new Date()): number | null {
+  if (!date) return null;
+  const start = new Date(date.substring(0, 10) + 'T00:00:00');
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return Math.max(0, Math.round((end.getTime() - start.getTime()) / 86400000));
 }
 
 // ============================================
@@ -633,4 +679,13 @@ export function isSameDay(date1: Date, date2: Date): boolean {
  */
 export function isToday(date: Date): boolean {
   return isSameDay(date, new Date());
+}
+
+/** Wartość filtra serwisanta oznaczająca zlecenia bez przypisanego serwisanta */
+export const UNASSIGNED_TECHNICIAN_FILTER = -1;
+
+export function matchesTechnicianFilter(order: CalendarOrder, filterId: number | null): boolean {
+  if (filterId === null) return true;
+  if (filterId === UNASSIGNED_TECHNICIAN_FILTER) return !order.assignedTechnicianId;
+  return order.assignedTechnicianId === filterId;
 }

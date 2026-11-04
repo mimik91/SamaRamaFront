@@ -1,14 +1,15 @@
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { BikeServiceVerificationService } from '../../auth/bike-service-verification.service';
 import { ServiceCalendarService } from '../service-calendar/services/service-calendar.service';
 import { NotificationService } from '../../core/notification.service';
 import { OrderDetailsModalComponent } from '../service-calendar/modals/order-details-modal/order-details-modal.component';
 import { AcceptBikeModalComponent } from '../service-calendar/modals/accept-bike-modal/accept-bike-modal.component';
 import { MarkReadyModalComponent } from '../service-calendar/modals/mark-ready-modal/mark-ready-modal.component';
+import { CreateOrderModalComponent } from '../service-calendar/modals/create-order-modal/create-order-modal.component';
 import { BikeServiceNameIdDto } from '../../shared/models/bike-service-common.models';
 import {
   CalendarOrder,
@@ -17,152 +18,152 @@ import {
   getWeekStart,
   formatCalendarDate,
   getOrderClientKey,
+  daysSince,
   OrderSearchFilter,
   EMPTY_ORDER_SEARCH_FILTER,
   matchesOrderFilter,
-  hasActiveFilter
+  hasActiveFilter,
+  matchesTechnicianFilter
 } from '../../shared/models/service-calendar.models';
+import { CalendarHeaderComponent } from '../service-calendar/components/calendar-header/calendar-header.component';
+import { OrdersMobileToolbarComponent, OrdersView } from '../service-calendar/components/orders-mobile-toolbar/orders-mobile-toolbar.component';
 import { OrderSearchComponent } from '../../shared/components/order-search/order-search.component';
 
-interface KanbanColumn {
-  id: string;
-  statuses: CalendarOrderStatus[];
-  dropStatus: CalendarOrderStatus;
+interface KanbanSection {
   label: string;
-  color: string;
-  bgColor: string;
-  orders: CalendarOrder[];
+  colorVar: string;
+  statuses: CalendarOrderStatus[];
 }
 
-const STATUS_COLORS: Record<string, { color: string; bgColor: string }> = {
-  PENDING_CONFIRMATION:     { color: '#d97706', bgColor: '#fef3c7' },
-  CONFIRMED:                { color: '#2563eb', bgColor: '#eff6ff' },
-  WAITING_FOR_BIKE:         { color: '#2563eb', bgColor: '#eff6ff' },
-  IN_QUEUE:                 { color: '#7c3aed', bgColor: '#f5f3ff' },
-  IN_PROGRESS:              { color: '#ea580c', bgColor: '#fff7ed' },
-  WAITING_FOR_PARTS:        { color: '#7c3aed', bgColor: '#f5f3ff' },
-  AWAITING_CLIENT_DECISION: { color: '#4f46e5', bgColor: '#eef2ff' },
-  READY_FOR_PICKUP:         { color: '#16a34a', bgColor: '#f0fdf4' },
-  COMPLETED:                { color: '#64748b', bgColor: '#f8fafc' },
-  REJECTED:                 { color: '#dc2626', bgColor: '#fef2f2' },
-};
+interface KanbanColumnDef {
+  id: string;
+  label: string;
+  mobileLabel: string;
+  colorVar: string;
+  statuses: CalendarOrderStatus[];
+  /** Status ustawiany po upuszczeniu karty w kolumnie (brak = upuszczanie niedozwolone) */
+  dropStatus?: CalendarOrderStatus;
+  /** Sekcje z nagłówkiem wewnątrz kolumny — gdy brak, kolumna jest płaska */
+  sections?: KanbanSection[];
+}
 
-const STATUS_LABELS: Record<string, string> = {
-  PENDING_CONFIRMATION:     'Nowa rezerwacja',
-  CONFIRMED:                'Potwierdzona',
-  WAITING_FOR_BIKE:         'Oczekuje na rower',
-  IN_QUEUE:                 'W kolejce',
-  IN_PROGRESS:              'W trakcie naprawy',
-  WAITING_FOR_PARTS:        'Oczekuje na części',
-  AWAITING_CLIENT_DECISION: 'Decyzja klienta',
-  READY_FOR_PICKUP:         'Gotowe do odbioru',
-  COMPLETED:                'Zakończone',
-  REJECTED:                 'Odrzucone',
-};
+interface KanbanColumn extends KanbanColumnDef {
+  orders: CalendarOrder[];
+  /** Są zlecenia wymagające reakcji (nowe rezerwacje, nieprzeczytane wiadomości) */
+  needsAttention: boolean;
+}
 
-const COLUMN_DEFS: Omit<KanbanColumn, 'orders'>[] = [
+interface CardAction {
+  label: string;
+  cls: 'respond' | 'accept' | 'start' | 'ready' | 'resume' | 'done';
+  status: CalendarOrderStatus | null;
+}
+
+const COLUMN_DEFS: KanbanColumnDef[] = [
   {
     id: 'reservations',
-    statuses: ['PENDING_CONFIRMATION', 'WAITING_FOR_BIKE'],
-    dropStatus: 'PENDING_CONFIRMATION',
     label: 'Rezerwacje',
-    color: '#d97706',
-    bgColor: '#fef3c7',
+    mobileLabel: 'Rezerwacje',
+    colorVar: '--color-accent-orange',
+    statuses: ['PENDING_CONFIRMATION', 'AWAITING_CLIENT_DATE_CONFIRMATION', 'CONFIRMED', 'WAITING_FOR_BIKE'],
+    sections: [
+      { label: 'Do odpowiedzi', colorVar: '--color-accent-orange', statuses: ['PENDING_CONFIRMATION', 'AWAITING_CLIENT_DATE_CONFIRMATION'] },
+      { label: 'Potwierdzone · czekają na rower', colorVar: '--status-waiting-bike', statuses: ['CONFIRMED', 'WAITING_FOR_BIKE'] }
+    ]
   },
   {
-    id: 'paused',
+    id: 'queue',
+    label: 'W kolejce',
+    mobileLabel: 'W kolejce',
+    colorVar: '--color-teal-400',
     statuses: ['IN_QUEUE', 'WAITING_FOR_PARTS', 'AWAITING_CLIENT_DECISION'],
-    dropStatus: 'WAITING_FOR_PARTS',
-    label: 'Wstrzymana naprawa',
-    color: '#7c3aed',
-    bgColor: '#f5f3ff',
+    dropStatus: 'IN_QUEUE'
   },
   {
     id: 'in_progress',
+    label: 'W trakcie',
+    mobileLabel: 'W trakcie',
+    colorVar: '--color-success',
     statuses: ['IN_PROGRESS'],
-    dropStatus: 'IN_PROGRESS',
-    label: 'W trakcie naprawy',
-    color: '#ea580c',
-    bgColor: '#fff7ed',
+    dropStatus: 'IN_PROGRESS'
   },
   {
-    id: 'done',
-    statuses: ['READY_FOR_PICKUP', 'COMPLETED'],
-    dropStatus: 'READY_FOR_PICKUP',
-    label: 'Zakończone / Do odbioru',
-    color: '#16a34a',
-    bgColor: '#f0fdf4',
-  },
+    id: 'ready',
+    label: 'Gotowe do odbioru',
+    mobileLabel: 'Do odbioru',
+    colorVar: '--color-primary',
+    statuses: ['READY_FOR_PICKUP'],
+    dropStatus: 'READY_FOR_PICKUP'
+  }
 ];
+
+const RESERVATION_STATUSES: CalendarOrderStatus[] =
+  ['PENDING_CONFIRMATION', 'AWAITING_CLIENT_DATE_CONFIRMATION', 'CONFIRMED', 'WAITING_FOR_BIKE'];
 
 @Component({
   selector: 'app-service-kanban',
   standalone: true,
-  imports: [CommonModule, DragDropModule, OrderDetailsModalComponent, AcceptBikeModalComponent, MarkReadyModalComponent, OrderSearchComponent],
+  imports: [
+    CommonModule,
+    DragDropModule,
+    OrderDetailsModalComponent,
+    AcceptBikeModalComponent,
+    MarkReadyModalComponent,
+    CreateOrderModalComponent,
+    OrderSearchComponent,
+    CalendarHeaderComponent,
+    OrdersMobileToolbarComponent
+  ],
   templateUrl: './service-kanban.component.html',
   styleUrls: ['./service-kanban.component.css']
 })
 export class ServiceKanbanComponent implements OnInit, OnDestroy {
+  private platformId = inject(PLATFORM_ID);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private verificationService = inject(BikeServiceVerificationService);
   private calendarService = inject(ServiceCalendarService);
   private notificationService = inject(NotificationService);
-  private platformId = inject(PLATFORM_ID);
+
+  /** Telefon: wspólny pasek mobilny zamiast górnego paska i nagłówka */
+  isMobile = false;
+  private readonly resizeHandler = (): void => { this.isMobile = window.innerWidth < 768; };
 
   currentSuffix = '';
   myServices: BikeServiceNameIdDto[] = [];
   selectedServiceId: number | null = null;
 
   loading = false;
-  columns: KanbanColumn[] = COLUMN_DEFS.map(d => ({ ...d, orders: [] }));
+  columns: KanbanColumn[] = COLUMN_DEFS.map(d => ({ ...d, orders: [], needsAttention: false }));
   allOrders: CalendarOrder[] = [];
   technicians: Technician[] = [];
   hasAnyTechnician = false;
+  maxBikesPerDay: number | null = null;
   searchFilter: OrderSearchFilter = { ...EMPTY_ORDER_SEARCH_FILTER };
 
   currentWeekStart: Date = getWeekStart(new Date());
 
-  // Mobile: jedna kolumna na raz, przełączana zakładkami; drag&drop wyłączony
-  isMobileView = false;
-  activeMobileColumnId: string | null = null;
-  private mobileMql: MediaQueryList | null = null;
-  private readonly onMobileMqlChange = (e: MediaQueryListEvent): void => { this.isMobileView = e.matches; };
+  // Mobile: jedna kolumna na raz, przełączana zakładkami
+  activeMobileColumnId: string = COLUMN_DEFS[0].id;
 
-  // Modal
+  // Modale
   selectedOrder: CalendarOrder | null = null;
   showOrderDetails = false;
   showAcceptBike = false;
   preselectedOrderForAccept: CalendarOrder | null = null;
+  showCreateOrder = false;
 
   showMarkReadyModal = false;
   markReadyOrder: CalendarOrder | null = null;
   markReadySiblings: CalendarOrder[] = [];
-  private markReadyDragRevert: { fromContainer: CalendarOrder[]; toContainer: CalendarOrder[]; fromIndex: number; toIndex: number } | null = null;
-
-  private updateScrollbarWidth(): void {}
-
-  // Undo move
-  pendingMove: {
-    order: CalendarOrder;
-    fromContainer: CalendarOrder[];
-    fromIndex: number;
-    toContainer: CalendarOrder[];
-    toIndex: number;
-    targetLabel: string;
-    newStatus: CalendarOrderStatus;
-    timer: ReturnType<typeof setTimeout>;
-  } | null = null;
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.isMobile = window.innerWidth < 768;
+      window.addEventListener('resize', this.resizeHandler);
+    }
     this.currentSuffix = this.route.snapshot.paramMap.get('suffix') || '';
     this.loadServices();
-
-    if (isPlatformBrowser(this.platformId)) {
-      this.mobileMql = window.matchMedia('(max-width: 768px)');
-      this.isMobileView = this.mobileMql.matches;
-      this.mobileMql.addEventListener('change', this.onMobileMqlChange);
-    }
   }
 
   private loadServices(): void {
@@ -180,6 +181,7 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   onServiceChange(serviceId: number): void {
     this.selectedServiceId = serviceId;
     this.loadTechnicians(serviceId);
+    this.loadLimit(serviceId);
     this.loadKanbanData();
   }
 
@@ -189,6 +191,13 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
         this.technicians = t.filter(x => x.isActive);
         this.hasAnyTechnician = t.length > 0;
       },
+      error: () => {}
+    });
+  }
+
+  private loadLimit(serviceId: number): void {
+    this.calendarService.getConfig(serviceId).subscribe({
+      next: (config) => this.maxBikesPerDay = config.maxBikesPerDay,
       error: () => {}
     });
   }
@@ -209,8 +218,7 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
       this.calendarService.getWeekView(sid, formatCalendarDate(nextStart)),
     ]).subscribe({
       next: ([prev, curr, next]) => {
-        const allOrders = this.mergeWeekOrders([prev, curr, next]);
-        this.fillColumns(allOrders);
+        this.fillColumns(this.mergeWeekOrders([prev, curr, next]));
         this.loading = false;
       },
       error: () => {
@@ -247,131 +255,114 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
   }
 
   private fillColumns(orders: CalendarOrder[]): void {
-    const cols = COLUMN_DEFS.map(d => ({ ...d, orders: [] as CalendarOrder[] }));
+    const cols: KanbanColumn[] = COLUMN_DEFS.map(d => ({ ...d, orders: [], needsAttention: false }));
     for (const order of orders) {
-      const status: CalendarOrderStatus = order.status === 'CONFIRMED' ? 'WAITING_FOR_BIKE' : order.status;
-      const col = cols.find(c => (c.statuses as string[]).includes(status));
+      const col = cols.find(c => c.statuses.includes(order.status));
       if (col) col.orders.push(order);
     }
     for (const col of cols) {
-      col.orders.sort((a, b) => {
-        const aPrio = a.status === 'PENDING_CONFIRMATION' ? 0 : 1;
-        const bPrio = b.status === 'PENDING_CONFIRMATION' ? 0 : 1;
-        if (aPrio !== bPrio) return aPrio - bPrio;
-        return a.plannedDate.localeCompare(b.plannedDate);
-      });
+      col.orders.sort((a, b) => (a.plannedDate ?? '').localeCompare(b.plannedDate ?? '') || a.id - b.id);
+      col.needsAttention = col.orders.some(o =>
+        o.status === 'PENDING_CONFIRMATION' || (o.unreadMessageCount ?? 0) > 0);
     }
     this.columns = cols;
     this.allOrders = cols.flatMap(c => c.orders);
-    if (!this.activeMobileColumnId) {
-      this.activeMobileColumnId = cols[0]?.id ?? null;
-    }
-    this.updateScrollbarWidth();
+  }
+
+  get filteredColumns(): KanbanColumn[] {
+    if (!hasActiveFilter(this.searchFilter) && this.selectedTechnicianId === null) return this.columns;
+    const f = this.searchFilter;
+    const techId = this.selectedTechnicianId;
+    return this.columns.map(col => ({
+      ...col,
+      orders: col.orders.filter(o => matchesOrderFilter(o, f) && matchesTechnicianFilter(o, techId))
+    }));
+  }
+
+  sectionOrders(col: KanbanColumn, section: KanbanSection): CalendarOrder[] {
+    return col.orders.filter(o => section.statuses.includes(o.status));
+  }
+
+  selectedTechnicianId: number | null = null;
+
+  ngOnDestroy(): void {
+    if (isPlatformBrowser(this.platformId)) window.removeEventListener('resize', this.resizeHandler);
+  }
+
+  onTechnicianFilterChange(id: number | null): void {
+    this.selectedTechnicianId = id;
+  }
+
+  onSearchFilterChange(filter: OrderSearchFilter): void {
+    this.searchFilter = filter;
   }
 
   selectMobileColumn(columnId: string): void {
     this.activeMobileColumnId = columnId;
   }
 
+  // ===== Akcje na kartach =====
+
+  action(order: CalendarOrder): CardAction | null {
+    switch (order.status) {
+      case 'PENDING_CONFIRMATION':
+      case 'AWAITING_CLIENT_DATE_CONFIRMATION':
+        return { label: 'Odpowiedz', cls: 'respond', status: null };
+      case 'CONFIRMED':
+      case 'WAITING_FOR_BIKE':
+        return { label: 'Przyjmij rower', cls: 'accept', status: null };
+      case 'IN_QUEUE':
+        return { label: 'Zacznij', cls: 'start', status: 'IN_PROGRESS' };
+      case 'IN_PROGRESS':
+        return { label: 'Gotowy', cls: 'ready', status: 'READY_FOR_PICKUP' };
+      case 'WAITING_FOR_PARTS':
+      case 'AWAITING_CLIENT_DECISION':
+        return { label: 'Wznów', cls: 'resume', status: 'IN_PROGRESS' };
+      case 'READY_FOR_PICKUP':
+        return { label: '✓ Odebrany', cls: 'done', status: 'COMPLETED' };
+      default:
+        return null;
+    }
+  }
+
   // ===== Drag & Drop =====
 
-  get columnIds(): string[] {
-    return this.columns.map(c => 'col-' + c.id);
+  /** Na telefonie przeciąganie jest wyłączone — zmiany statusu idą przyciskami na kartach */
+  get isMobileView(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth < 768;
   }
 
-  onCardDrop(event: CdkDragDrop<CalendarOrder[]>, targetColumn: KanbanColumn): void {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-      return;
+  /** Rezerwacje przyjmuje się przyciskiem „Przyjmij rower", nie przeciąganiem */
+  canDrag(order: CalendarOrder): boolean {
+    return !RESERVATION_STATUSES.includes(order.status);
+  }
+
+  canDropIn(col: KanbanColumn): () => boolean {
+    return () => !!col.dropStatus;
+  }
+
+  onCardDrop(event: CdkDragDrop<string>, targetColumn: KanbanColumn): void {
+    if (event.previousContainer === event.container || !targetColumn.dropStatus) return;
+    const order: CalendarOrder = event.item.data;
+    if (targetColumn.statuses.includes(order.status)) return;
+    this.changeStatus(order, targetColumn.dropStatus);
+  }
+
+  runAction(order: CalendarOrder, event: Event): void {
+    event.stopPropagation();
+    const a = this.action(order);
+    if (!a) return;
+    if (a.cls === 'respond') {
+      this.openOrderDetails(order);
+    } else if (a.cls === 'accept') {
+      this.preselectedOrderForAccept = order;
+      this.showAcceptBike = true;
+    } else if (a.status) {
+      this.changeStatus(order, a.status);
     }
-
-    if (this.pendingMove) this.commitMove();
-
-    const order: CalendarOrder = event.previousContainer.data[event.previousIndex];
-    const newStatus = targetColumn.dropStatus;
-
-    transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
-
-    const timer = setTimeout(() => this.commitMove(), 6000);
-    this.pendingMove = {
-      order,
-      fromContainer: event.previousContainer.data,
-      fromIndex: event.previousIndex,
-      toContainer: event.container.data,
-      toIndex: event.currentIndex,
-      targetLabel: targetColumn.label,
-      newStatus,
-      timer,
-    };
   }
 
-  commitMove(): void {
-    if (!this.pendingMove || !this.selectedServiceId) { this.pendingMove = null; return; }
-    const move = this.pendingMove;
-    this.pendingMove = null;
-    clearTimeout(move.timer);
-
-    if (move.newStatus === 'READY_FOR_PICKUP') {
-      this.markReadyDragRevert = {
-        fromContainer: move.fromContainer,
-        toContainer: move.toContainer,
-        fromIndex: move.fromIndex,
-        toIndex: move.toIndex
-      };
-      this.markReadyOrder = move.order;
-      this.markReadySiblings = this.findEligibleSiblings(move.order);
-      this.showMarkReadyModal = true;
-      return;
-    }
-
-    this.calendarService.updateOrderStatus(this.selectedServiceId, move.order.id, move.newStatus).subscribe({
-      next: () => { move.order.status = move.newStatus; },
-      error: (err: any) => {
-        transferArrayItem(move.toContainer, move.fromContainer, move.toIndex, move.fromIndex);
-        const msg = err?.error?.message ?? 'Nie udało się zmienić statusu zlecenia.';
-        this.notificationService.error(msg);
-      }
-    });
-  }
-
-  undoMove(): void {
-    if (!this.pendingMove) return;
-    const move = this.pendingMove;
-    clearTimeout(move.timer);
-    this.pendingMove = null;
-    transferArrayItem(move.toContainer, move.fromContainer, move.toIndex, move.fromIndex);
-  }
-
-  ngOnDestroy(): void {
-    if (this.pendingMove) this.commitMove();
-    this.mobileMql?.removeEventListener('change', this.onMobileMqlChange);
-  }
-
-  // ===== Quick actions =====
-
-  onQuickConfirm(order: CalendarOrder, event: Event): void {
-    event.stopPropagation();
-    if (!this.selectedServiceId) return;
-    const sid = this.selectedServiceId;
-    this.calendarService.updateOrderStatus(sid, order.id, 'CONFIRMED').subscribe({
-      next: () => {
-        this.calendarService.updateOrderStatus(sid, order.id, 'WAITING_FOR_BIKE').subscribe({
-          next: () => { this.notificationService.success('Rezerwacja potwierdzona.'); this.loadKanbanData(); },
-          error: () => this.notificationService.error('Błąd podczas potwierdzania.')
-        });
-      },
-      error: () => this.notificationService.error('Błąd podczas potwierdzania.')
-    });
-  }
-
-  onQuickAcceptBike(order: CalendarOrder, event: Event): void {
-    event.stopPropagation();
-    this.preselectedOrderForAccept = order;
-    this.showAcceptBike = true;
-  }
-
-  onQuickStatusChange(order: CalendarOrder, status: CalendarOrderStatus, event: Event): void {
-    event.stopPropagation();
+  private changeStatus(order: CalendarOrder, status: CalendarOrderStatus): void {
     if (!this.selectedServiceId) return;
     if (status === 'READY_FOR_PICKUP') {
       this.markReadyOrder = order;
@@ -380,7 +371,7 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
       return;
     }
     this.calendarService.updateOrderStatus(this.selectedServiceId, order.id, status).subscribe({
-      next: () => { this.loadKanbanData(); },
+      next: () => this.loadKanbanData(),
       error: (err: any) => this.notificationService.error(err?.error?.message ?? 'Nie udało się zmienić statusu.')
     });
   }
@@ -389,32 +380,22 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     this.showMarkReadyModal = false;
     this.markReadyOrder = null;
     this.markReadySiblings = [];
-    if (this.markReadyDragRevert) {
-      const r = this.markReadyDragRevert;
-      transferArrayItem(r.toContainer, r.fromContainer, r.toIndex, r.fromIndex);
-      this.markReadyDragRevert = null;
-    }
   }
 
   onMarkReadyCompleted(_processedIds: number[]): void {
-    this.showMarkReadyModal = false;
-    this.markReadyOrder = null;
-    this.markReadySiblings = [];
-    this.markReadyDragRevert = null;
+    this.onMarkReadyClose();
     this.loadKanbanData();
   }
 
   private findEligibleSiblings(order: CalendarOrder): CalendarOrder[] {
     const key = getOrderClientKey(order);
     const eligible: CalendarOrderStatus[] = ['IN_PROGRESS', 'WAITING_FOR_PARTS', 'AWAITING_CLIENT_DECISION'];
-    return this.columns.flatMap(c => c.orders).filter(o =>
-      o.id !== order.id &&
-      getOrderClientKey(o) === key &&
-      eligible.includes(o.status)
+    return this.allOrders.filter(o =>
+      o.id !== order.id && getOrderClientKey(o) === key && eligible.includes(o.status)
     );
   }
 
-  // ===== Card click → OrderDetailsModal =====
+  // ===== Modale =====
 
   openOrderDetails(order: CalendarOrder): void {
     this.selectedOrder = order;
@@ -437,62 +418,98 @@ export class ServiceKanbanComponent implements OnInit, OnDestroy {
     this.showAcceptBike = true;
   }
 
+  onAcceptBikeClick(): void {
+    this.preselectedOrderForAccept = null;
+    this.showAcceptBike = true;
+  }
+
   onAcceptBikeClose(): void {
     this.showAcceptBike = false;
     this.preselectedOrderForAccept = null;
     this.loadKanbanData();
   }
 
-  // ===== Status helpers =====
-
-  getStatusInfo(status: CalendarOrderStatus): { color: string; bgColor: string } {
-    return STATUS_COLORS[status] ?? { color: '#94a3b8', bgColor: '#f8fafc' };
+  onAcceptReservationClick(): void {
+    this.showCreateOrder = true;
   }
 
-  getStatusLabel(status: CalendarOrderStatus): string {
-    return STATUS_LABELS[status] ?? status;
+  onCreateOrderClose(): void {
+    this.showCreateOrder = false;
   }
 
-  // ===== Navigation helpers =====
+  onOrderCreated(): void {
+    this.showCreateOrder = false;
+    this.loadKanbanData();
+  }
 
   get waitingForBikeOrders(): CalendarOrder[] {
-    return this.columns.flatMap(c =>
-      c.orders.filter(o => o.status === 'WAITING_FOR_BIKE' || o.status === 'CONFIRMED')
-    );
+    return this.allOrders.filter(o => o.status === 'WAITING_FOR_BIKE' || o.status === 'CONFIRMED');
   }
 
-  get filteredColumns(): KanbanColumn[] {
-    if (!hasActiveFilter(this.searchFilter)) return this.columns;
-    const f = this.searchFilter;
-    return this.columns.map(col => ({
-      ...col,
-      orders: col.orders.filter(o => matchesOrderFilter(o, f))
-    }));
-  }
-
-  onSearchFilterChange(filter: OrderSearchFilter): void {
-    this.searchFilter = filter;
-  }
+  // ===== Nawigacja =====
 
   goToCalendar(): void {
-    const encodedSuffix = encodeURIComponent(this.currentSuffix);
-    this.router.navigateByUrl(`/${encodedSuffix}/panel-administratora`);
+    this.router.navigateByUrl(`/${encodeURIComponent(this.currentSuffix)}/panel-administratora`);
   }
 
-  formatDate(dateStr: string): string {
+  onMobileViewChange(view: OrdersView): void {
+    if (view !== 'statuses') this.goToCalendarView(view);
+  }
+
+  onViewChange(view: 'day' | 'week' | 'month'): void {
+    this.goToCalendarView(view === 'day' ? 'list' : 'calendar');
+  }
+
+  goToCalendarView(view: 'list' | 'calendar'): void {
+    this.router.navigate([`/${encodeURIComponent(this.currentSuffix)}/panel-administratora`], { queryParams: { view } });
+  }
+
+  goToCalendarSettings(): void {
+    this.router.navigate([`/${this.currentSuffix}/panel-administratora/profil`], { queryParams: { tab: 'reservations' } });
+  }
+
+  // ===== Helpery szablonu =====
+
+  /** "wt., 3.11" */
+  formatDate(dateStr: string | undefined): string {
     if (!dateStr) return '';
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', weekday: 'short' });
+    const d = new Date(dateStr.substring(0, 10) + 'T00:00:00');
+    const weekday = d.toLocaleDateString('pl-PL', { weekday: 'short' });
+    return `${weekday}, ${d.getDate()}.${d.getMonth() + 1}`;
   }
 
-  getTechnicianName(technicianId?: number | null): string {
-    if (!technicianId) return '';
-    return this.technicians.find(t => t.id === technicianId)?.nickname ?? '';
+  /** "27.10" */
+  formatShort(dateStr: string | undefined | null): string {
+    if (!dateStr) return '';
+    return `${dateStr.substring(8, 10)}.${dateStr.substring(5, 7)}`;
+  }
+
+  /** Rezerwacje: dzień wizyty; zlecenia w serwisie: data przyjęcia */
+  cardDate(order: CalendarOrder): string {
+    if (RESERVATION_STATUSES.includes(order.status)) return this.formatDate(order.plannedDate);
+    return this.formatShort(order.serviceStartDate ?? order.plannedDate);
+  }
+
+  holdReason(order: CalendarOrder): string {
+    if (order.status === 'WAITING_FOR_PARTS') return 'czeka na części';
+    if (order.status === 'AWAITING_CLIENT_DECISION') return 'czeka na decyzję klienta';
+    return '';
+  }
+
+  longStayDays(order: CalendarOrder): number | null {
+    const days = daysSince(order.serviceStartDate);
+    return days !== null && days >= 30 ? days : null;
+  }
+
+  hasName(order: CalendarOrder): boolean {
+    return !!order.clientName?.trim();
   }
 
   totalActiveOrders(): number {
-    return this.columns.reduce((sum, c) =>
-      sum + c.orders.filter(o => o.status !== 'COMPLETED').length, 0
-    );
+    return this.columns.reduce((sum, c) => sum + c.orders.length, 0);
+  }
+
+  trackById(_: number, order: CalendarOrder): number {
+    return order.id;
   }
 }

@@ -80,6 +80,24 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* ── Wąski kafelek (odrzucone / zakończone): dwa wiersze ── */
+.order-bar.slim {
+  min-height: 0;
+  padding: 4px 10px;
+  opacity: 0.75;
+}
+
+.order-bar.slim .order-main {
+  gap: 0;
+}
+
+.order-bar.slim .order-bike-line {
+  flex-wrap: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* ── Treść ── */
 .order-main {
   display: flex;
@@ -175,6 +193,11 @@
   .order-bar {
     min-height: 80px;
     padding: 6px 8px;
+  }
+
+  .order-bar.slim {
+    min-height: 0;
+    padding: 4px 8px;
   }
 
   .order-brand {

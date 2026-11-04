@@ -1,6 +1,6 @@
-<div class="calendar-container">
+<div class="calendar-container" [class.has-bottom-bar]="isMobile">
   <!-- Naglowek z wyborem serwisu -->
-  <div class="calendar-top-bar">
+  <div class="calendar-top-bar" *ngIf="!isMobile || myServices.length > 1">
     <div class="top-bar-left">
       <div class="service-selector" *ngIf="myServices.length > 1">
         <label for="service-select">{{ t('service_calendar.select_service') }}</label>
@@ -17,21 +17,12 @@
       </div>
     </div>
 
-    <div class="top-bar-center">
+    <div class="top-bar-center" *ngIf="!isMobile">
       <app-order-search
         *ngIf="selectedServiceId"
         [allOrders]="allOrdersForSearch"
         (filterChange)="onSearchFilterChange($event)"
       ></app-order-search>
-    </div>
-
-    <div class="top-bar-actions">
-      <button
-        class="btn-gear"
-        (click)="showSettingsModal = true"
-        [disabled]="isLoadingServices || !selectedServiceId"
-        title="Ustawienia kalendarza"
-      >⚙</button>
     </div>
 
   </div>
@@ -53,13 +44,45 @@
   <!-- Glowna zawartosc kalendarza -->
   <div class="calendar-content" *ngIf="!isLoadingServices && !servicesError && selectedServiceId">
 
-    <!-- Header kalendarza -->
+    <!-- Telefon: wspólny pasek (widoki, daty, filtry, akcje) -->
+    <app-orders-mobile-toolbar
+      *ngIf="isMobile"
+      [view]="mobileView"
+      [date]="selectedDate"
+      [bikesCount]="dayData?.bikesCount ?? null"
+      [maxBikesPerDay]="calendarConfig?.maxBikesPerDay || 10"
+      [technicians]="technicians"
+      [selectedTechnicianId]="selectedTechnicianId"
+      [stage]="stageFilter"
+      [stageOrders]="filteredDayData?.orders ?? []"
+      [allOrders]="allOrdersForSearch"
+      (viewChange)="onMobileViewChange($event)"
+      (settingsClick)="goToCalendarSettings()"
+      (previous)="onMobileStep(-1)"
+      (next)="onMobileStep(1)"
+      (today)="onMobileToday()"
+      (searchChange)="onSearchFilterChange($event)"
+      (technicianChange)="onTechnicianFilterChange($event)"
+      (stageChange)="stageFilter = $event"
+      (reservationClick)="onAcceptReservationClick()"
+      (bikeClick)="onAcceptBikeClick()"
+    ></app-orders-mobile-toolbar>
+
+    <!-- Header kalendarza (desktop) -->
     <app-calendar-header
+      *ngIf="!isMobile"
       [currentView]="currentView"
       [calendarMode]="calendarMode"
       [selectedDate]="selectedDate"
       [maxBikesPerDay]="calendarConfig?.maxBikesPerDay || 10"
+      [bikesCount]="dayData?.bikesCount ?? null"
       [loading]="isLoadingData"
+      [monthScope]="!isMobile"
+      [technicians]="technicians"
+      [selectedTechnicianId]="selectedTechnicianId"
+      (technicianFilterChange)="onTechnicianFilterChange($event)"
+      (limitClick)="goToCalendarSettings()"
+      (statusesClick)="goToStatuses()"
       (viewChange)="onViewChange($event)"
       (dateChange)="onDateChange($event)"
       (acceptReservationClick)="onAcceptReservationClick()"
@@ -72,25 +95,43 @@
       <div class="spinner"></div>
     </div>
 
+    <!-- Telefon: siatka miesiąca + zlecenia wybranego dnia -->
+    <ng-container *ngIf="isMobile && currentView !== 'day' && filteredWeekData">
+      <app-calendar-month-grid
+        [month]="selectedDate"
+        [selected]="selectedDate"
+        [maxBikesPerDay]="calendarConfig?.maxBikesPerDay || 10"
+        [ordersByDay]="filteredWeekData!.ordersByDay"
+        (dayClick)="onMonthDayClick($event)"
+      ></app-calendar-month-grid>
+      <div class="day-panel-head" *ngIf="dayData">
+        <strong class="day-panel-title">{{ selectedDate | date:'EEEE, d MMMM' }}</strong>
+        <span class="day-panel-count" [class.over]="dayData.bikesCount > (calendarConfig?.maxBikesPerDay || 10)">{{ dayData.bikesCount }} / {{ calendarConfig?.maxBikesPerDay || 10 }}</span>
+        <button type="button" class="day-panel-link" (click)="showDayList()">Lista dnia &#8250;</button>
+      </div>
+    </ng-container>
+
     <!-- Widok dnia -->
     <app-calendar-day-view
-      *ngIf="currentView === 'day' && dayData"
-      [data]="dayData"
-      [calendarMode]="calendarMode"
+      *ngIf="(currentView === 'day' || isMobile) && filteredDayData"
+      [stage]="stageFilter"
+      [showStageFilter]="!isMobile"
+      [showGroupTitles]="currentView === 'day' || !isMobile"
+      [data]="filteredDayData!"
       [technicians]="technicians"
+      [showDate]="!isMobile"
       (orderClick)="onOrderClick($event)"
-      (cancelOrder)="onCancelOrder($event)"
-      (confirmOrder)="onConfirmOrder($event)"
       (acceptBike)="onAcceptBike($event)"
       (startProgress)="onStartProgress($event)"
       (markReadyForPickup)="onMarkReadyForPickup($event)"
       (markCompleted)="onMarkCompleted($event)"
       (backToProgress)="onBackToProgress($event)"
+      (technicianChange)="onTechnicianChange($event)"
     ></app-calendar-day-view>
 
     <!-- Widok tygodnia -->
     <app-calendar-week-view
-      *ngIf="currentView === 'week' && filteredWeekData"
+      *ngIf="currentView === 'week' && !isMobile && filteredWeekData"
       [data]="filteredWeekData!"
       [selectedDate]="selectedDate"
       [calendarMode]="calendarMode"
@@ -162,13 +203,3 @@
   (close)="onMarkReadyClose()"
   (completed)="onMarkReadyCompleted($event)"
 ></app-mark-ready-modal>
-
-<!-- Modal ustawień kalendarza -->
-<app-calendar-settings-modal
-  *ngIf="showSettingsModal && selectedServiceId && calendarConfig"
-  [serviceId]="selectedServiceId"
-  [config]="calendarConfig"
-  [transportAvailable]="transportAvailable"
-  (close)="showSettingsModal = false"
-  (configUpdated)="onSettingsUpdated($event)"
-></app-calendar-settings-modal>

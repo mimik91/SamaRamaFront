@@ -205,3 +205,45 @@
     justify-content: center;
   }
 }
+
+/* Telefon: miejsce na dolny pasek akcji */
+.calendar-container.has-bottom-bar {
+  padding-bottom: 88px;
+}
+
+.day-panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-3) 0;
+  background: var(--color-slate-50);
+}
+
+.day-panel-title {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.day-panel-title::first-letter {
+  text-transform: uppercase;
+}
+
+.day-panel-count {
+  font-weight: var(--font-weight-bold);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.day-panel-count.over {
+  color: var(--color-danger-dark);
+}
+
+.day-panel-link {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font: inherit;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}

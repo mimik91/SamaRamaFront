@@ -1,0 +1,13 @@
+<div class="grid" role="grid">
+  <div class="weekdays">
+    <span *ngFor="let w of weekdays">{{ w }}</span>
+  </div>
+  <div class="week" *ngFor="let week of weeks">
+    <button type="button" class="day" *ngFor="let d of week"
+            [class.outside]="!d.inMonth" [class.today]="d.isToday" [class.selected]="isSelected(d)"
+            (click)="dayClick.emit(d.date)">
+      <span class="num">{{ d.day }}<span class="dot" *ngIf="d.needsReply"></span></span>
+      <span class="count" *ngIf="d.count > 0" [ngClass]="'count--' + load(d)">{{ d.count }}</span>
+    </button>
+  </div>
+</div>

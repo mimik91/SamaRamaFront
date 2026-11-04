@@ -1,142 +1,150 @@
 <div class="reservations-container">
 
-  <!-- Sekcja: Włącznik rezerwacji online -->
-  <div class="detail-card">
-    <h2>Rezerwacja online</h2>
-    <div class="detail-item">
-      <span class="label">Status rezerwacji:</span>
-      <label class="toggle-label">
-        <input type="checkbox" [(ngModel)]="reservationAvailable" class="toggle-input" style="display:none">
-        <span class="toggle-slider"></span>
-        <span class="toggle-text">{{ reservationAvailable ? 'Włączona' : 'Wyłączona' }}</span>
-      </label>
-    </div>
-    <div *ngIf="availabilitySuccess" class="success-message">✓ Zapisano pomyślnie</div>
-    <div *ngIf="availabilityError" class="error-message">{{ availabilityError }}</div>
-  </div>
-
-  <!-- Ładowanie ustawień -->
-  <div *ngIf="isLoadingSettings" class="loading-state">
+  <div *ngIf="isLoading" class="loading-state">
     <div class="spinner"></div>
-    <p>Ładowanie ustawień rezerwacji...</p>
+    <p>Ładowanie ustawień...</p>
   </div>
 
-  <div *ngIf="settingsLoadError && !isLoadingSettings" class="error-state">
-    <p>{{ settingsLoadError }}</p>
-    <button (click)="loadSettings()" class="retry-btn">Spróbuj ponownie</button>
+  <div *ngIf="loadError && !isLoading" class="error-state">
+    <p>{{ loadError }}</p>
+    <button type="button" (click)="load()" class="retry-btn">Spróbuj ponownie</button>
   </div>
 
-  <!-- Ustawienia rezerwacji -->
-  <ng-container *ngIf="!isLoadingSettings && !settingsLoadError">
+  <ng-container *ngIf="!isLoading && !loadError">
 
-    <div *ngIf="settingsSuccess" class="success-message">✓ Ustawienia zapisane pomyślnie</div>
-    <div *ngIf="settingsError" class="error-message">{{ settingsError }}</div>
-
-    <!-- Szacowana data rezerwacji -->
-    <div class="detail-card">
-      <h2>Szacowana data realizacji</h2>
-      <p class="description-hint">
-        Orientacyjna data, na którą klienci mogą zarezerwować wizytę.
-      </p>
-
-      <div *ngIf="!isEditMode" class="date-field-group">
-        <span class="date-field-label">Data:</span>
-        <span class="date-field-value">{{ estimatedReservationDay ? (estimatedReservationDay | date:'dd.MM.yyyy') : 'Nie ustawiono' }}</span>
-      </div>
-
-      <div *ngIf="isEditMode" class="date-field-group">
-        <label class="date-field-label">Data:</label>
-        <input
-          type="date"
-          [(ngModel)]="estimatedReservationDay"
-          [min]="todayDate"
-          class="date-input"
-        >
-      </div>
-    </div>
-
-    <!-- Akceptowane dni -->
-    <div class="detail-card">
-      <h2>Akceptowane dni rezerwacji</h2>
-      <p class="description-hint">
-        Zaznacz dni, na które klienci mogą składać rezerwacje. Brak zaznaczenia = codziennie można przyprowadzić rower.
-      </p>
-
-      <!-- Tryb podglądu -->
-      <div *ngIf="!isEditMode" class="detail-item">
-        <span class="label">Dozwolone dni:</span>
-        <span class="value">{{ getDisplayDays() }}</span>
-      </div>
-
-      <!-- Tryb edycji -->
-      <div *ngIf="isEditMode" class="days-grid">
-        <label *ngFor="let day of daysOfWeek" class="day-checkbox-label">
-          <input type="checkbox" [(ngModel)]="acceptedDays[day.key]" class="edit-checkbox">
-          <span>{{ day.label }}</span>
+    <!-- Rezerwacja online -->
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>Rezerwacja online</h2>
+          <p class="hint">Klienci mogą rezerwować wizyty przez Twój profil na CycloPick.</p>
+        </div>
+        <label class="toggle-label">
+          <input type="checkbox" [(ngModel)]="reservationAvailable" class="toggle-input">
+          <span class="toggle-slider"></span>
+          <span class="toggle-text">{{ reservationAvailable ? 'Włączona' : 'Wyłączona' }}</span>
         </label>
       </div>
-    </div>
+      <div *ngIf="reservationAvailable" class="summary-bar">
+        <span>
+          ✓ Formularz przyjmuje rezerwacje: <strong>{{ summaryDays }}</strong>,
+          max <strong>{{ maxBikesPerDay }} {{ maxBikesPerDay === 1 ? 'rower' : 'rowerów' }}</strong> dziennie.
+        </span>
+        <a *ngIf="serviceDetails?.suffix" class="summary-link" [href]="'/' + serviceDetails.suffix + '/zarezerwuj'" target="_blank" rel="noopener">
+          Zobacz formularz jak klient ↗
+        </a>
+      </div>
+    </section>
 
-    <!-- Harmonogram formularza -->
-    <div class="detail-card">
-      <h2>Harmonogram formularza rezerwacji</h2>
-      <p class="description-hint">
-        Określ godziny, w których formularz rezerwacji jest aktywny. Dzień bez zaznaczenia = formularz nieaktywny tego dnia. Brak aktywnych dni = formularz aktywny 24/7.
-      </p>
+    <!-- Dostępność -->
+    <section class="card">
+      <h2>Dostępność</h2>
+      <p class="hint">Decyduje, które dni klient widzi jako wolne w formularzu i jak liczy się „13 / {{ maxBikesPerDay }}" w kalendarzu.</p>
 
-      <!-- Tryb podglądu -->
-      <div *ngIf="!isEditMode">
-        <div *ngIf="isFormScheduleEmpty()" class="empty-hint">
-          Brak ograniczeń — formularz aktywny całą dobę
+      <div class="field-row">
+        <div class="field-label">
+          <strong>Szacowana data realizacji</strong>
+          <span>Ustaw, gdy masz dużo pracy</span>
         </div>
-        <div *ngIf="!isFormScheduleEmpty()">
-          <div *ngFor="let day of daysOfWeek" class="detail-item">
-            <span class="label">{{ day.label }}:</span>
-            <span class="value">{{ getScheduleDisplay(day.key) }}</span>
+        <div class="field-control">
+          <div class="inline-controls">
+            <input type="date" class="date-input" [(ngModel)]="estimatedReservationDay">
+            <span *ngIf="estimatedPassed" class="pill-muted">minęła – nic nie blokuje</span>
+            <button *ngIf="estimatedReservationDay" type="button" class="link-btn" (click)="clearEstimatedDate()">Wyczyść</button>
           </div>
+          <p class="field-hint">Klienci zobaczą wolne dni dopiero od tej daty.</p>
         </div>
       </div>
 
-      <!-- Tryb edycji -->
-      <div *ngIf="isEditMode" class="schedule-table">
-        <div *ngFor="let day of daysOfWeek" class="schedule-row">
-          <div class="schedule-day">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="daySchedules[day.key].active" class="edit-checkbox">
-              <span class="day-name">{{ day.label }}</span>
-            </label>
-          </div>
-          <div class="schedule-times" *ngIf="daySchedules[day.key].active">
-            <div class="time-input-group">
-              <span class="time-label">Od:</span>
-              <input type="time" [(ngModel)]="daySchedules[day.key].fromTime" class="time-input">
-              <span class="time-hint">puste = od początku dnia</span>
+      <div class="field-row">
+        <div class="field-label">
+          <strong>Limit rowerów na dzień</strong>
+          <span>Wspólny dla rezerwacji online i rowerów przyjętych na miejscu</span>
+        </div>
+        <div class="field-control">
+          <div class="inline-controls">
+            <div class="stepper">
+              <button type="button" (click)="changeLimit(-1)" [disabled]="maxBikesPerDay <= 1" aria-label="Zmniejsz limit">−</button>
+              <input type="number" min="1" [(ngModel)]="maxBikesPerDay" aria-label="Limit rowerów na dzień">
+              <button type="button" (click)="changeLimit(1)" aria-label="Zwiększ limit">+</button>
             </div>
-            <div class="time-input-group">
-              <span class="time-label">Do:</span>
-              <input type="time" [(ngModel)]="daySchedules[day.key].toTime" class="time-input">
-              <span class="time-hint">puste = do końca dnia</span>
-            </div>
-            <button (click)="copyToAllDays(day.key)" class="copy-btn">
-              Kopiuj do wszystkich
-            </button>
+            <span>rowerów</span>
           </div>
-          <div class="schedule-inactive" *ngIf="!daySchedules[day.key].active">
-            <span class="inactive-text">Formularz nieaktywny</span>
+          <p class="field-hint">
+            Gdy dzień jest pełny, formularz online go blokuje. Na miejscu możesz przyjąć więcej – kalendarz pokaże wtedy np. 7 / {{ maxBikesPerDay }} na czerwono.
+          </p>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">
+          <strong>Dni przyjmowania rowerów</strong>
+          <span>W te dni klient może zarezerwować przyprowadzenie roweru</span>
+        </div>
+        <div class="field-control">
+          <div class="day-chips">
+            <button *ngFor="let day of daysOfWeek" type="button" class="day-chip"
+                    [class.active]="acceptedDays[day.key]" [attr.aria-pressed]="acceptedDays[day.key]"
+                    (click)="toggleDay(day.key)">{{ day.short }}</button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- Serwisanci -->
+    <section class="card">
+      <h2>Serwisanci</h2>
+      <p class="hint">Osoby, które możesz przypisać do zlecenia. Strzałkami zmienisz kolejność na listach wyboru.</p>
+
+      <div *ngIf="technicianError" class="error-message">{{ technicianError }}</div>
+
+      <ul class="tech-list">
+        <li *ngFor="let t of activeTechnicians; let first = first; let last = last" class="tech-row">
+          <div class="tech-arrows">
+            <button type="button" (click)="moveTechnician(t, -1)" [disabled]="first || technicianActionId === t.id" aria-label="W górę">▲</button>
+            <button type="button" (click)="moveTechnician(t, 1)" [disabled]="last || technicianActionId === t.id" aria-label="W dół">▼</button>
+          </div>
+          <span class="avatar">{{ initials(t.nickname) }}</span>
+          <div class="tech-name">
+            <ng-container *ngIf="renamingId !== t.id; else renameForm">
+              <strong>{{ t.nickname }}</strong>
+            </ng-container>
+            <ng-template #renameForm>
+              <input class="text-input" [(ngModel)]="renameValue" (keyup.enter)="confirmRename(t)" (keyup.escape)="cancelRename()" maxlength="50">
+            </ng-template>
+          </div>
+          <div class="tech-actions">
+            <ng-container *ngIf="renamingId !== t.id; else renameActions">
+              <button type="button" class="link-btn" (click)="startRename(t)">Zmień nazwę</button>
+              <button type="button" class="link-btn danger" (click)="removeTechnician(t)" [disabled]="technicianActionId === t.id">Usuń</button>
+            </ng-container>
+            <ng-template #renameActions>
+              <button type="button" class="link-btn" (click)="confirmRename(t)">Zapisz</button>
+              <button type="button" class="link-btn" (click)="cancelRename()">Anuluj</button>
+            </ng-template>
+          </div>
+        </li>
+        <li *ngIf="activeTechnicians.length === 0" class="empty-hint">Brak serwisantów.</li>
+      </ul>
+
+      <div class="add-row">
+        <input class="text-input" placeholder="Imię nowego serwisanta" maxlength="50"
+               [(ngModel)]="newTechnicianName" (keyup.enter)="addTechnician()">
+        <button type="button" class="outline-btn" (click)="addTechnician()" [disabled]="!newTechnicianName.trim() || savingTechnician">+ Dodaj</button>
+      </div>
+    </section>
 
   </ng-container>
 
-  <!-- Unsaved changes bar -->
+  <div *ngIf="saveSuccess" class="success-message">✓ Zmiany zapisane</div>
+  <div *ngIf="saveError" class="error-message">{{ saveError }}</div>
+
   <div *ngIf="isDirty" class="sticky-save-bar" role="region" aria-label="Niezapisane zmiany">
     <div class="sticky-save-inner">
-      <span class="sticky-save-hint">Masz niezapisane zmiany</span>
+      <span class="sticky-save-hint">● Masz niezapisane zmiany</span>
       <div class="sticky-save-actions">
         <button type="button" class="cancel-btn" (click)="cancelEdit()" [disabled]="isSaving">Anuluj</button>
-        <button type="button" class="save-btn" (click)="saveAll()" [disabled]="isSaving">
+        <button type="button" class="save-btn" (click)="saveAll()" [disabled]="isSaving || maxBikesPerDay < 1">
           {{ isSaving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
         </button>
       </div>

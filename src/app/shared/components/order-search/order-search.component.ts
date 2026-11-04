@@ -35,6 +35,8 @@ export class OrderSearchComponent implements OnChanges {
   private el = inject(ElementRef);
 
   @Input() allOrders: CalendarOrder[] = [];
+  /** Pola w siatce 2 kolumn, bez etykiety i przycisku czyszczenia (panel filtrów na telefonie) */
+  @Input() stacked = false;
   @Output() filterChange = new EventEmitter<OrderSearchFilter>();
 
   readonly fields = SEARCH_FIELDS;
@@ -49,6 +51,11 @@ export class OrderSearchComponent implements OnChanges {
     if (this.openField) {
       this.suggestions[this.openField] = this.buildSuggestions(this.openField, this.filter[this.openField]);
     }
+  }
+
+  /** Czyści wszystkie pola (wywoływane z zewnątrz, np. z panelu filtrów na telefonie) */
+  reset(): void {
+    this.clearAll(new Event('reset'));
   }
 
   get hasActive(): boolean {

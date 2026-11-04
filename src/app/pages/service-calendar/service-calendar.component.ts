@@ -8,12 +8,13 @@ import { BikeServiceVerificationService } from '../../auth/bike-service-verifica
 import { AuthService } from '../../auth/auth.service';
 import { ServiceCalendarService } from './services/service-calendar.service';
 import { CalendarHeaderComponent } from './components/calendar-header/calendar-header.component';
-import { CalendarDayViewComponent } from './components/calendar-day-view/calendar-day-view.component';
+import { OrdersMobileToolbarComponent, OrdersView } from './components/orders-mobile-toolbar/orders-mobile-toolbar.component';
+import { CalendarMonthGridComponent } from './components/calendar-month-grid/calendar-month-grid.component';
+import { CalendarDayViewComponent, TechnicianChange } from './components/calendar-day-view/calendar-day-view.component';
 import { CalendarWeekViewComponent } from './components/calendar-week-view/calendar-week-view.component';
 import { CreateOrderModalComponent } from './modals/create-order-modal/create-order-modal.component';
 import { OrderDetailsModalComponent } from './modals/order-details-modal/order-details-modal.component';
 import { AcceptBikeModalComponent } from './modals/accept-bike-modal/accept-bike-modal.component';
-import { CalendarSettingsModalComponent } from './modals/calendar-settings-modal/calendar-settings-modal.component';
 import { MarkReadyModalComponent } from './modals/mark-ready-modal/mark-ready-modal.component';
 import {
   BikeServiceNameIdDto,
@@ -37,6 +38,8 @@ import {
   OrderSearchFilter,
   EMPTY_ORDER_SEARCH_FILTER,
   matchesOrderFilter,
+  matchesTechnicianFilter,
+  OrderStage,
   hasActiveFilter
 } from '../../shared/models/service-calendar.models';
 import { OrderSearchComponent } from '../../shared/components/order-search/order-search.component';
@@ -47,12 +50,13 @@ import { OrderSearchComponent } from '../../shared/components/order-search/order
   imports: [
     CommonModule,
     CalendarHeaderComponent,
+    OrdersMobileToolbarComponent,
+    CalendarMonthGridComponent,
     CalendarDayViewComponent,
     CalendarWeekViewComponent,
     CreateOrderModalComponent,
     OrderDetailsModalComponent,
     AcceptBikeModalComponent,
-    CalendarSettingsModalComponent,
     MarkReadyModalComponent,
     OrderSearchComponent
   ],
@@ -119,7 +123,6 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
   showCreateOrderModal = false;
   showOrderDetailsModal = false;
   showAcceptBikeModal = false;
-  showSettingsModal = false;
   showMarkReadyModal = false;
   selectedOrder: CalendarOrder | null = null;
   preselectedDate: string | null = null;
@@ -144,16 +147,36 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
     return this.getAllOrders().filter(o => o.status === 'WAITING_FOR_BIKE');
   }
 
+  selectedTechnicianId: number | null = null;
+
+  onTechnicianFilterChange(id: number | null): void {
+    this.selectedTechnicianId = id;
+  }
+
+  private matchesFilters(o: CalendarOrder): boolean {
+    return matchesOrderFilter(o, this.searchFilter)
+      && matchesTechnicianFilter(o, this.selectedTechnicianId);
+  }
+
+  private get hasAnyFilter(): boolean {
+    return hasActiveFilter(this.searchFilter) || this.selectedTechnicianId !== null;
+  }
+
+  get filteredDayData(): CalendarDayData | null {
+    if (!this.dayData) return null;
+    if (!this.hasAnyFilter) return this.dayData;
+    return { ...this.dayData, orders: this.dayData.orders.filter(o => this.matchesFilters(o)) };
+  }
+
   get filteredWeekData(): CalendarWeekData | null {
     if (!this.weekData) return null;
-    if (!hasActiveFilter(this.searchFilter)) return this.weekData;
-    const f = this.searchFilter;
+    if (!this.hasAnyFilter) return this.weekData;
     return {
       ...this.weekData,
       ordersByDay: Object.fromEntries(
         Object.entries(this.weekData.ordersByDay).map(([day, orders]) => [
           day,
-          orders.filter(o => matchesOrderFilter(o, f))
+          orders.filter(o => this.matchesFilters(o))
         ])
       )
     };
@@ -172,6 +195,9 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.currentSuffix = this.route.snapshot.paramMap.get('suffix') || '';
+    const viewParam = this.route.snapshot.queryParamMap.get('view');
+    if (viewParam === 'list') this.currentView = 'day';
+    if (viewParam === 'calendar') this.currentView = 'week';
     this.reservationAvailable = this.authService.getActiveServiceReservationAvailable();
     this.transportAvailable = this.authService.getActiveServiceTransportAvailable();
     if (isPlatformBrowser(this.platformId)) {
@@ -300,8 +326,8 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
 
     this.loadingState.isLoadingOrders = true;
 
-    if (this.currentView === 'week' && this.isMobile) {
-      this.initMobileDays();
+    if (this.isMobile) {
+      this.loadDayView();
       return;
     }
 
@@ -327,13 +353,7 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
       next: (data: CalendarWeekData) => {
         this.weekData = data;
 
-        const orders = sortOrdersByStatus(data.ordersByDay[selectedDateStr] || []);
-        this.dayData = {
-          date: selectedDateStr,
-          orders: orders,
-          bikesCount: countBikesForLimit(orders),
-          maxBikesPerDay: data.maxBikesPerDay || this.calendarConfig?.maxBikesPerDay || 10
-        };
+        this.dayData = this.buildDayData(data);
         this.refreshAllOrdersForSearch();
         this.loadingState.isLoadingOrders = false;
       },
@@ -342,6 +362,24 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
         console.error('Error loading day view:', err);
       }
     });
+  }
+
+  /** Dane wybranego dnia (mobile) lub całego miesiąca (desktop) z danych siatki miesiąca */
+  private buildDayData(data: CalendarWeekData): CalendarDayData {
+    const selectedDateStr = formatCalendarDate(this.selectedDate);
+    const dayOrders = sortOrdersByStatus(data.ordersByDay[selectedDateStr] || []);
+    const monthPrefix = selectedDateStr.substring(0, 7);
+    const orders = this.isMobile
+      ? dayOrders
+      : Object.entries(data.ordersByDay)
+          .filter(([day]) => day.startsWith(monthPrefix))
+          .flatMap(([, list]) => list);
+    return {
+      date: selectedDateStr,
+      orders,
+      bikesCount: countBikesForLimit(dayOrders),
+      maxBikesPerDay: data.maxBikesPerDay || this.calendarConfig?.maxBikesPerDay || 10
+    };
   }
 
   private loadWeekView(): void {
@@ -724,8 +762,92 @@ export class ServiceCalendarComponent implements OnInit, OnDestroy {
   // NAWIGACJA
   // ============================================
 
-  onSettingsUpdated(updated: CalendarConfig): void {
-    this.calendarConfig = updated;
+  /** Przenosi do ustawień "Kalendarz i rezerwacje" (limit rowerów, dostępność, serwisanci) */
+  // ============================================
+  // PASEK MOBILNY (Lista / Kalendarz / Statusy)
+  // ============================================
+
+  stageFilter: OrderStage | null = null;
+
+  get mobileView(): OrdersView {
+    return this.currentView === 'day' ? 'list' : 'calendar';
+  }
+
+  onMobileViewChange(view: OrdersView): void {
+    if (view === 'statuses') {
+      this.goToStatuses();
+    } else {
+      this.currentView = view === 'list' ? 'day' : 'week';
+    }
+  }
+
+  onMobileStep(direction: -1 | 1): void {
+    const d = new Date(this.selectedDate);
+    if (this.mobileView === 'list') {
+      d.setDate(d.getDate() + direction);
+    } else {
+      d.setDate(1);
+      d.setMonth(d.getMonth() + direction);
+    }
+    this.onDateChange(d);
+  }
+
+  onMobileToday(): void {
+    this.onDateChange(new Date());
+  }
+
+  onMonthDayClick(date: Date): void {
+    if (date.getMonth() !== this.selectedDate.getMonth()) {
+      this.onDateChange(date);
+      return;
+    }
+    this.selectedDate = date;
+    if (this.weekData) this.dayData = this.buildDayData(this.weekData);
+  }
+
+  showDayList(): void {
+    this.currentView = 'day';
+  }
+
+  goToStatuses(): void {
+    this.router.navigateByUrl(`/${encodeURIComponent(this.currentSuffix)}/panel-administratora/kanban`);
+  }
+
+  goToCalendarSettings(): void {
+    if (this.currentSuffix) {
+      this.router.navigate([`/${this.currentSuffix}/panel-administratora/profil`], { queryParams: { tab: 'reservations' } });
+    }
+  }
+
+  onTechnicianChange(change: TechnicianChange): void {
+    const { order, technicianId } = change;
+    this.calendarService.updateOrder(this.selectedServiceId!, order.id, { assignedTechnicianId: technicianId }).subscribe({
+      next: () => this.updateOrderTechnicianLocally(order.id, technicianId),
+      error: (err: any) => {
+        this.notificationService.error(this.t('service_calendar.errors.update_status_failed'));
+        console.error('Error assigning technician:', err);
+        this.loadCalendarData();
+      }
+    });
+  }
+
+  private updateOrderTechnicianLocally(orderId: number, technicianId: number | null): void {
+    const nickname = this.technicians.find(t => t.id === technicianId)?.nickname;
+    const apply = (orders: CalendarOrder[]): CalendarOrder[] =>
+      orders.map(o => o.id === orderId
+        ? { ...o, assignedTechnicianId: technicianId, assignedTechnicianNickname: nickname }
+        : o);
+    if (this.dayData) {
+      this.dayData = { ...this.dayData, orders: apply(this.dayData.orders) };
+    }
+    if (this.weekData) {
+      this.weekData = {
+        ...this.weekData,
+        ordersByDay: Object.fromEntries(
+          Object.entries(this.weekData.ordersByDay).map(([day, orders]) => [day, apply(orders)])
+        )
+      };
+    }
   }
 
   goToProfileSettings(): void {

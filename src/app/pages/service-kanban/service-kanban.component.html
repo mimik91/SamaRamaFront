@@ -1,266 +1,151 @@
-<div class="kanban-page">
+<div class="kanban-page" [class.has-bottom-bar]="isMobile">
 
-  <!-- Header -->
-  <div class="kanban-header">
-    <div class="kanban-header-left">
-      <button class="btn-back" (click)="goToCalendar()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        Kalendarz
-      </button>
-      <div class="kanban-title-group">
-        <h1 class="kanban-title">Kanban – zlecenia serwisu</h1>
-        <span class="kanban-subtitle" *ngIf="!loading && selectedServiceId">
-          {{ totalActiveOrders() }} aktywnych zleceń (poprzedni / bieżący / następny tydzień)
-        </span>
+  <!-- Pasek górny: serwis + wyszukiwarka (jak w kalendarzu) -->
+  <div class="kanban-top-bar" *ngIf="!isMobile || myServices.length > 1">
+    <div class="top-bar-left" *ngIf="myServices.length > 1">
+      <div class="service-selector">
+      <label>Wybierz serwis:</label>
+      <select class="service-select" aria-label="Serwis" (change)="onServiceChange(+$any($event.target).value)">
+        <option value="" disabled [selected]="!selectedServiceId">-- Wybierz serwis --</option>
+        <option *ngFor="let s of myServices" [value]="s.id" [selected]="s.id === selectedServiceId">{{ s.name }}</option>
+      </select>
       </div>
     </div>
-
-    <div class="kanban-header-center">
-      <app-order-search
-        *ngIf="selectedServiceId"
-        [allOrders]="allOrders"
-        (filterChange)="onSearchFilterChange($event)"
-      ></app-order-search>
-    </div>
-
-    <div class="kanban-header-right">
-      <div class="service-selector-wrapper" *ngIf="myServices.length > 1">
-        <label class="selector-label">Serwis:</label>
-        <select class="service-select" (change)="onServiceChange(+$any($event.target).value)">
-          <option value="" disabled [selected]="!selectedServiceId">-- Wybierz serwis --</option>
-          <option *ngFor="let s of myServices" [value]="s.id" [selected]="s.id === selectedServiceId">
-            {{ s.name }}
-          </option>
-        </select>
-      </div>
-
-      <button class="btn-refresh" (click)="loadKanbanData()" [disabled]="loading" title="Odśwież">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.spinning]="loading"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg>
-      </button>
+    <div class="top-bar-center" *ngIf="selectedServiceId && !isMobile">
+      <app-order-search [allOrders]="allOrders" (filterChange)="onSearchFilterChange($event)"></app-order-search>
     </div>
   </div>
 
-  <!-- Loading -->
+  <div class="kanban-content">
+  <app-orders-mobile-toolbar
+    *ngIf="isMobile && selectedServiceId"
+    view="statuses"
+    [maxBikesPerDay]="maxBikesPerDay ?? 10"
+    [technicians]="technicians"
+    [selectedTechnicianId]="selectedTechnicianId"
+    [allOrders]="allOrders"
+    (viewChange)="onMobileViewChange($event)"
+    (settingsClick)="goToCalendarSettings()"
+    (searchChange)="onSearchFilterChange($event)"
+    (technicianChange)="onTechnicianFilterChange($event)"
+    (reservationClick)="onAcceptReservationClick()"
+    (bikeClick)="onAcceptBikeClick()"
+  ></app-orders-mobile-toolbar>
+
+  <app-calendar-header
+    *ngIf="!isMobile && selectedServiceId"
+    [statusesMode]="true"
+    [statusesSubtitle]="loading ? '' : totalActiveOrders() + ' aktywnych zleceń'"
+    [maxBikesPerDay]="maxBikesPerDay ?? 10"
+    [technicians]="technicians"
+    [selectedTechnicianId]="selectedTechnicianId"
+    [loading]="loading"
+    (technicianFilterChange)="onTechnicianFilterChange($event)"
+    (viewChange)="onViewChange($event)"
+    (limitClick)="goToCalendarSettings()"
+    (acceptReservationClick)="onAcceptReservationClick()"
+    (acceptBikeClick)="onAcceptBikeClick()"
+    (refreshClick)="loadKanbanData()"
+  ></app-calendar-header>
+
   <div class="kanban-loading" *ngIf="loading">
     <div class="spinner"></div>
     <span>Ładowanie zleceń...</span>
   </div>
 
-  <!-- No service selected -->
   <div class="kanban-empty-state" *ngIf="!loading && !selectedServiceId">
-    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-    <p>Wybierz serwis, aby załadować tablicę kanban</p>
+    <p>Wybierz serwis, aby załadować zlecenia</p>
     <select class="service-select service-select--large" (change)="onServiceChange(+$any($event.target).value)">
       <option value="" disabled selected>-- Wybierz serwis --</option>
       <option *ngFor="let s of myServices" [value]="s.id">{{ s.name }}</option>
     </select>
   </div>
 
-  <!-- Mobile column tabs: 1 kolumna widoczna na raz na telefonie -->
-  <div class="mobile-col-tabs" *ngIf="!loading && selectedServiceId">
-    <button
-      *ngFor="let col of filteredColumns"
-      type="button"
-      class="mobile-col-tab"
-      [class.active]="col.id === activeMobileColumnId"
-      [style.--tab-color]="col.color"
-      (click)="selectMobileColumn(col.id)"
-    >
-      {{ col.label }}
-      <span class="mobile-col-tab-count">{{ col.orders.length }}</span>
+  <!-- Mobile: zakładki kolumn -->
+  <div class="mobile-col-tabs" *ngIf="!loading && selectedServiceId" role="tablist">
+    <button *ngFor="let col of filteredColumns" type="button" role="tab" class="mobile-col-tab"
+            [class.active]="col.id === activeMobileColumnId" [attr.aria-selected]="col.id === activeMobileColumnId"
+            [style.--col-color]="'var(' + col.colorVar + ')'" (click)="selectMobileColumn(col.id)">
+      <span class="tab-count">{{ col.orders.length }}<span class="tab-alert" *ngIf="col.needsAttention"></span></span>
+      <span class="tab-label">{{ col.mobileLabel }}</span>
     </button>
   </div>
 
-  <!-- Kanban Board -->
-  <div class="kanban-board" *ngIf="!loading && selectedServiceId">
-  <div class="kanban-board-inner">
-    <div
-      class="kanban-column"
-      *ngFor="let col of filteredColumns"
-      [class.mobile-active]="col.id === activeMobileColumnId"
-      [style.--col-color]="col.color"
-      [style.--col-bg]="col.bgColor"
-    >
-      <!-- Column header -->
-      <div class="col-header" [style.border-color]="col.color">
-        <span class="col-dot" [style.background]="col.color"></span>
+  <!-- Tablica -->
+  <div class="kanban-board" *ngIf="!loading && selectedServiceId" cdkDropListGroup>
+    <div class="kanban-column" *ngFor="let col of filteredColumns"
+         [class.mobile-active]="col.id === activeMobileColumnId"
+         [style.--col-color]="'var(' + col.colorVar + ')'">
+
+      <div class="col-header">
+        <span class="col-dot"></span>
         <span class="col-label">{{ col.label }}</span>
-        <span class="col-count" [style.background]="col.color">{{ col.orders.length }}</span>
+        <span class="col-count">{{ col.orders.length }}</span>
       </div>
 
-      <!-- Cards -->
-      <div
-        class="col-cards"
-        cdkDropList
-        [id]="'col-' + col.id"
-        [cdkDropListData]="col.orders"
-        [cdkDropListConnectedTo]="columnIds"
-        [cdkDropListDisabled]="isMobileView"
-        (cdkDropListDropped)="onCardDrop($event, col)"
-      >
-        <div
-          class="kanban-card"
-          *ngFor="let order of col.orders"
-          cdkDrag
-          [cdkDragDisabled]="isMobileView"
-          [cdkDragData]="order"
-          (click)="openOrderDetails(order)"
-          [class.card--completed]="order.status === 'COMPLETED'"
-          [style.--col-color]="getStatusInfo(order.status).color"
-          [style.--col-bg]="getStatusInfo(order.status).bgColor"
-        >
-          <!-- Drag handle placeholder shown while dragging -->
-          <div class="kanban-card-placeholder" *cdkDragPlaceholder></div>
-
-          <!-- Unread messages badge -->
-          <div class="card-unread-badge" *ngIf="order.unreadMessageCount">{{ order.unreadMessageCount }}</div>
-
-          <!-- Card top: date + technician -->
-          <div class="card-meta">
-            <span class="card-date">{{ formatDate(order.plannedDate) }}</span>
-            <span class="card-technician" *ngIf="getTechnicianName(order.assignedTechnicianId)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              {{ getTechnicianName(order.assignedTechnicianId) }}
-            </span>
-          </div>
-
-          <!-- Status badge -->
-          <div class="card-status-badge"
-               [style.color]="getStatusInfo(order.status).color"
-               [style.background]="getStatusInfo(order.status).bgColor">
-            <span class="card-status-dot" [style.background]="getStatusInfo(order.status).color"></span>
-            {{ getStatusLabel(order.status) }}
-          </div>
-
-          <!-- Status potwierdzenia planu naprawy -->
-          <div class="repair-plan-badge" *ngIf="order.repairPlanStatus" [class]="'repair-plan-badge--' + order.repairPlanStatus.toLowerCase()">
-            <svg *ngIf="order.repairPlanStatus === 'SENT_TO_CLIENT'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <svg *ngIf="order.repairPlanStatus === 'ACCEPTED'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-            <svg *ngIf="order.repairPlanStatus === 'REJECTED'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            <span *ngIf="order.repairPlanStatus === 'SENT_TO_CLIENT'">Plan: czeka na klienta</span>
-            <span *ngIf="order.repairPlanStatus === 'ACCEPTED'">Plan potwierdzony</span>
-            <span *ngIf="order.repairPlanStatus === 'REJECTED'">Plan odrzucony</span>
-          </div>
-
-          <!-- Bike info -->
-          <div class="card-bike">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1 1v5.5H5.5l3-5.5m7.5 0H17m-5 0H9"/></svg>
-            <strong>{{ order.bicycleBrand }}</strong>
-            <span *ngIf="order.bicycleModel" class="card-model"> {{ order.bicycleModel }}</span>
-          </div>
-
-          <!-- Client info -->
-          <div class="card-client">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            {{ order.clientName }}
-          </div>
-          <div class="card-contact" *ngIf="order.clientPhone || order.clientEmail">
-            <span *ngIf="order.clientPhone" class="card-phone">{{ order.clientPhone }}</span>
-            <span *ngIf="order.clientEmail" class="card-email">{{ order.clientEmail }}</span>
-          </div>
-
-          <!-- Description snippet -->
-          <div class="card-desc" *ngIf="order.description">{{ order.description }}</div>
-
-          <!-- Quick action buttons -->
-          <div class="card-actions" (click)="$event.stopPropagation()">
-
-            <!-- PENDING_CONFIRMATION: Potwierdź -->
-            <button
-              *ngIf="order.status === 'PENDING_CONFIRMATION'"
-              class="btn-action btn-action--confirm"
-              (click)="onQuickConfirm(order, $event)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Potwierdź
+      <div class="col-cards" cdkDropList [cdkDropListData]="col.id" cdkDropListSortingDisabled
+           [cdkDropListDisabled]="isMobileView" [cdkDropListEnterPredicate]="canDropIn(col)"
+           (cdkDropListDropped)="onCardDrop($event, col)">
+        <!-- Karta zlecenia -->
+        <ng-template #card let-order let-col="col">
+          <article class="kanban-card" [class.held]="holdReason(order)" (click)="openOrderDetails(order)"
+            cdkDrag [cdkDragData]="order" [cdkDragDisabled]="isMobileView || !canDrag(order)">
+            <div class="kanban-card-placeholder" *cdkDragPlaceholder></div>
+            <div class="card-meta">
+              <strong class="card-date">{{ cardDate(order) }}</strong>
+              <span class="card-tech" [class.none]="!order.assignedTechnicianNickname">
+                {{ order.assignedTechnicianNickname || 'bez serwisanta' }}
+              </span>
+              <span class="card-unread" *ngIf="order.unreadMessageCount" title="Nowe wiadomości">{{ order.unreadMessageCount }}</span>
+            </div>
+            <div class="card-bike"><strong>{{ order.bicycleBrand }}</strong> {{ order.bicycleModel }}</div>
+            <div class="card-client">
+              <span *ngIf="hasName(order); else noName">{{ order.clientName }}</span>
+              <ng-template #noName><em class="no-name">Bez nazwiska</em></ng-template>
+              <ng-container *ngIf="order.clientPhone"> · <a class="phone" [href]="'tel:' + order.clientPhone" (click)="$event.stopPropagation()">{{ order.clientPhone }}</a></ng-container>
+            </div>
+            <div class="card-chips" *ngIf="order.estimatedPrice || holdReason(order) || longStayDays(order) !== null">
+              <span class="chip hold" *ngIf="holdReason(order)">&#8987; {{ holdReason(order) }}</span>
+              <span class="chip price" *ngIf="order.estimatedPrice" [class.unconfirmed]="!order.priceConfirmed">
+                {{ order.estimatedPrice | number:'1.0-2' }} zł<ng-container *ngIf="order.priceConfirmed"> ✓</ng-container>
+              </span>
+              <span class="chip long" *ngIf="longStayDays(order) !== null">{{ longStayDays(order) }} dni w serwisie</span>
+            </div>
+            <button *ngIf="action(order) as a" type="button" class="card-action" [ngClass]="a.cls" (click)="runAction(order, $event)">
+              {{ a.label }} <span aria-hidden="true" *ngIf="a.cls !== 'done'">&#8594;</span>
             </button>
-
-            <!-- WAITING_FOR_BIKE / CONFIRMED: Przyjmij rower -->
-            <button
-              *ngIf="order.status === 'WAITING_FOR_BIKE' || order.status === 'CONFIRMED'"
-              class="btn-action btn-action--accept"
-              (click)="onQuickAcceptBike(order, $event)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1 1v5.5H5.5l3-5.5m7.5 0H17m-5 0H9"/></svg>
-              Przyjmij rower
-            </button>
-
-            <!-- IN_QUEUE: Rozpocznij pracę -->
-            <button
-              *ngIf="order.status === 'IN_QUEUE'"
-              class="btn-action btn-action--start"
-              (click)="onQuickStatusChange(order, 'IN_PROGRESS', $event)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Rozpocznij pracę
-            </button>
-
-            <!-- IN_PROGRESS: Gotowe do odbioru -->
-            <button
-              *ngIf="order.status === 'IN_PROGRESS'"
-              class="btn-action btn-action--ready"
-              (click)="onQuickStatusChange(order, 'READY_FOR_PICKUP', $event)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
-              Gotowe do odbioru
-            </button>
-
-            <!-- WAITING_FOR_PARTS / AWAITING_CLIENT_DECISION: Do kolejki / Wznów -->
-            <ng-container *ngIf="order.status === 'WAITING_FOR_PARTS' || order.status === 'AWAITING_CLIENT_DECISION'">
-              <button
-                class="btn-action btn-action--queue"
-                (click)="onQuickStatusChange(order, 'IN_QUEUE', $event)"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                Do kolejki
-              </button>
-              <button
-                class="btn-action btn-action--resume"
-                (click)="onQuickStatusChange(order, 'IN_PROGRESS', $event)"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                Wznów naprawę
-              </button>
+          </article>
+        </ng-template>
+        <!-- Kolumna z sekcjami (Rezerwacje) -->
+        <ng-container *ngIf="col.sections; else flatCards">
+          <ng-container *ngFor="let section of col.sections">
+            <ng-container *ngIf="sectionOrders(col, section) as sectionList">
+              <div class="section" *ngIf="sectionList.length > 0" [style.--section-color]="'var(' + section.colorVar + ')'">
+                <h3 class="section-title"><span class="dot"></span>{{ section.label }} <span class="count">{{ sectionList.length }}</span></h3>
+                <ng-container *ngFor="let order of sectionList; trackBy: trackById">
+                  <ng-container *ngTemplateOutlet="card; context: { $implicit: order, col: col }"></ng-container>
+                </ng-container>
+              </div>
             </ng-container>
+          </ng-container>
+        </ng-container>
 
-            <!-- READY_FOR_PICKUP: Zakończ -->
-            <button
-              *ngIf="order.status === 'READY_FOR_PICKUP'"
-              class="btn-action btn-action--complete"
-              (click)="onQuickStatusChange(order, 'COMPLETED', $event)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Zakończ zlecenie
-            </button>
+        <ng-template #flatCards>
+          <ng-container *ngFor="let order of col.orders; trackBy: trackById">
+            <ng-container *ngTemplateOutlet="card; context: { $implicit: order, col: col }"></ng-container>
+          </ng-container>
+        </ng-template>
 
-          </div>
-        </div>
-
-        <!-- Empty column placeholder -->
-        <div class="col-empty" *ngIf="col.orders.length === 0">
-          <span>Brak zleceń</span>
-        </div>
+        <div class="col-empty" *ngIf="col.orders.length === 0">Brak zleceń</div>
       </div>
     </div>
   </div>
+
   </div>
 
 </div>
 
-<!-- Undo move toast -->
-<div class="undo-bar" *ngIf="pendingMove">
-  <div class="undo-bar-content">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 14-4-4 4-4"/><path d="M5 10h11a4 4 0 0 1 0 8h-1"/></svg>
-    <span>Przeniesiono do: <strong>{{ pendingMove.targetLabel }}</strong></span>
-  </div>
-  <div class="undo-bar-actions">
-    <div class="undo-progress"></div>
-    <button class="btn-undo" (click)="undoMove()">Cofnij</button>
-    <button class="btn-undo-confirm" (click)="commitMove()">Zatwierdź</button>
-  </div>
-</div>
-
-<!-- Order Details Modal -->
+<!-- Modale -->
 <app-order-details-modal
   *ngIf="showOrderDetails && selectedOrder && selectedServiceId"
   [order]="selectedOrder"
@@ -275,7 +160,6 @@
   (acceptBike)="onAcceptBikeFromDetails($event)"
 ></app-order-details-modal>
 
-<!-- Accept Bike Modal -->
 <app-accept-bike-modal
   *ngIf="showAcceptBike && selectedServiceId"
   [serviceId]="selectedServiceId!"
@@ -287,7 +171,16 @@
   (bikeAccepted)="onAcceptBikeClose()"
 ></app-accept-bike-modal>
 
-<!-- Mark Ready Modal -->
+<app-create-order-modal
+  *ngIf="showCreateOrder && selectedServiceId"
+  [serviceId]="selectedServiceId!"
+  [technicians]="technicians"
+  calendarMode="SIMPLE"
+  mode="reservation"
+  (close)="onCreateOrderClose()"
+  (orderCreated)="onOrderCreated()"
+></app-create-order-modal>
+
 <app-mark-ready-modal
   *ngIf="showMarkReadyModal && markReadyOrder && selectedServiceId"
   [serviceId]="selectedServiceId!"

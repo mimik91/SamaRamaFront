@@ -193,6 +193,10 @@
   background: var(--color-success-bg);
 }
 
+.tab-short {
+  display: none;
+}
+
 .tab-btn:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
@@ -230,14 +234,30 @@
     width: 100%;
   }
 
+  /* Mobile: ikona z krótką etykietą pod spodem, wszystkie zakładki w jednym rzędzie */
   .tabs-container {
     flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    gap: 2px;
   }
 
   .tab-btn {
-    flex: 0 0 auto;
-    white-space: nowrap;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: var(--spacing-2) 2px;
+    min-height: 56px;
+  }
+
+  .tab-btn .tab-label {
+    display: none;
+  }
+
+  .tab-btn .tab-short {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.1;
   }
 }

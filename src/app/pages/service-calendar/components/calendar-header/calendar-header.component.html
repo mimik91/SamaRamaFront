@@ -1,6 +1,10 @@
 <div class="calendar-header">
-  <!-- Lewa strona: nawigacja dat -->
-  <div class="header-left">
+  <!-- Lewa strona: nawigacja dat + licznik rowerów -->
+  <div class="header-left" *ngIf="statusesMode">
+    <h2 class="date-label">Statusy zleceń</h2>
+    <span class="status-subtitle" *ngIf="statusesSubtitle">{{ statusesSubtitle }}</span>
+  </div>
+  <div class="header-left" *ngIf="!statusesMode">
     <div class="date-navigation">
       <button class="nav-btn" (click)="goToPrevious()" [attr.aria-label]="t('service_calendar.previous')">
         <span class="arrow">&#8249;</span>
@@ -13,44 +17,49 @@
       </button>
     </div>
     <h2 class="date-label">{{ dateLabel }}</h2>
+    <span *ngIf="showLoadPill" class="load-pill" [class.over]="isOverLimit" [class.full]="isFull">
+      {{ bikesCount }} / {{ maxBikesPerDay }} rowerów<ng-container *ngIf="isOverLimit"> · ponad limit</ng-container>
+    </span>
   </div>
 
-  <!-- Srodek: przelacznik widokow -->
-  <div class="header-center">
-    <div class="view-toggle">
-      <button
-        class="view-btn"
-        [class.active]="currentView === 'day'"
-        (click)="setView('day')"
-      >
-        {{ t('service_calendar.views.day') }}
-      </button>
-      <button
-        class="view-btn"
-        [class.active]="currentView === 'week'"
-        (click)="setView('week')"
-      >
-        {{ t('service_calendar.views.month') }}
-      </button>
-    </div>
-  </div>
-
-  <!-- Prawa strona: akcje -->
+  <!-- Prawa strona: przełącznik widoków, limit, akcje -->
   <div class="header-right">
+    <select *ngIf="technicians.length > 0" class="tech-filter" aria-label="Serwisant"
+            (change)="onTechnicianFilter($any($event.target).value)">
+      <option value="" [selected]="selectedTechnicianId === null">Wszyscy serwisanci</option>
+      <option value="-1" [selected]="selectedTechnicianId === -1">Nieprzypisany serwisant</option>
+      <option *ngFor="let tech of technicians" [value]="tech.id" [selected]="selectedTechnicianId === tech.id">{{ tech.nickname }}</option>
+    </select>
+
+    <div class="view-toggle">
+      <button class="view-btn" [class.active]="!statusesMode && currentView === 'day'" (click)="setView('day')">Lista</button>
+      <button class="view-btn" [class.active]="!statusesMode && currentView !== 'day'" (click)="setView('week')">Kalendarz</button>
+      <button class="view-btn" [class.active]="statusesMode" (click)="onStatuses()">Statusy</button>
+    </div>
+
+    <button class="limit-btn" [class.always]="statusesMode" (click)="onLimitClick()" title="Ustawienia kalendarza i rezerwacji">
+      <span aria-hidden="true">&#9881;</span>
+      <span class="limit-label">Limit: <strong>{{ maxBikesPerDay }} / dzień</strong></span>
+    </button>
+
     <button class="nav-btn btn-refresh" (click)="onRefresh()" [disabled]="loading" title="Odśwież">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.spinning]="loading"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg>
     </button>
 
-    <!-- Przyciski akcji -->
     <div class="action-buttons">
       <button class="action-btn reservation-btn" (click)="onAcceptReservation()">
-        <span class="icon">&#128197;</span>
-        {{ t('service_calendar.buttons.accept_reservation') }}
+        + Przyjmij rezerwację
       </button>
       <button class="action-btn bike-btn" (click)="onAcceptBike()">
-        <span class="icon">&#128690;</span>
-        {{ t('service_calendar.buttons.accept_bike') }}
+        + Przyjmij rower
       </button>
     </div>
+  </div>
+
+  <!-- Mobile: pasek postępu limitu -->
+  <div *ngIf="showLoadPill" class="limit-progress">
+    <span class="limit-progress-count" [class.over]="isOverLimit">{{ bikesCount }} / {{ maxBikesPerDay }}</span>
+    <div class="limit-progress-bar"><div class="limit-progress-fill" [class.over]="isOverLimit" [style.width.%]="progressPercent"></div></div>
+    <button class="limit-progress-link" (click)="onLimitClick()">&#9881; Limit</button>
   </div>
 </div>

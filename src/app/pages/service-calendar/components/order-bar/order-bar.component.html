@@ -1,6 +1,7 @@
 <div
   class="order-bar"
   [class.compact]="compact"
+  [class.slim]="slim"
   [class.has-action]="actionButton !== null"
   [class]="order.repairPlanStatus ? 'order-bar--plan-' + order.repairPlanStatus.toLowerCase() : ''"
   [style.border-left-color]="barStatusColor"
@@ -15,7 +16,7 @@
       <span class="order-model" *ngIf="bikeModel">&nbsp;{{ bikeModel }}</span>
     </div>
 
-    <div class="order-plan-status-line" *ngIf="order.repairPlanStatus" [class]="'order-plan-status-line--' + order.repairPlanStatus.toLowerCase()">
+    <div class="order-plan-status-line" *ngIf="order.repairPlanStatus && !slim" [class]="'order-plan-status-line--' + order.repairPlanStatus.toLowerCase()">
       <svg *ngIf="order.repairPlanStatus === 'SENT_TO_CLIENT'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <svg *ngIf="order.repairPlanStatus === 'ACCEPTED'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
       <svg *ngIf="order.repairPlanStatus === 'REJECTED'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -23,7 +24,7 @@
     </div>
 
     <span class="order-customer" *ngIf="customerName">{{ customerName }}</span>
-    <span class="order-time" *ngIf="showTime">{{ order.plannedTime }}</span>
+    <span class="order-time" *ngIf="showTime && !slim">{{ order.plannedTime }}</span>
   </div>
 
   <button

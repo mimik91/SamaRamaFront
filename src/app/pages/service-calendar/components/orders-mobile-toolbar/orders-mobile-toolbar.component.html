@@ -1,0 +1,79 @@
+<div class="toolbar">
+  <!-- Przełącznik widoków + ustawienia -->
+  <div class="row">
+    <div class="segmented" role="tablist">
+      <button type="button" role="tab" [class.active]="view === 'list'" (click)="setView('list')">Lista</button>
+      <button type="button" role="tab" [class.active]="view === 'calendar'" (click)="setView('calendar')">Kalendarz</button>
+      <button type="button" role="tab" [class.active]="view === 'statuses'" (click)="setView('statuses')">Statusy</button>
+    </div>
+    <button type="button" class="gear" (click)="settingsClick.emit()" aria-label="Ustawienia kalendarza i rezerwacji">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
+  </div>
+
+  <!-- Nawigacja dat (poza Statusami) -->
+  <div class="row date-row" *ngIf="view !== 'statuses'">
+    <button type="button" class="square" (click)="previous.emit()" aria-label="Poprzedni">&#8249;</button>
+    <div class="date-center">
+      <strong class="date-label">{{ view === 'list' ? (date | date:'EEEE, d MMMM') : (date | date:'LLLL y') }}</strong>
+      <div class="load" *ngIf="view === 'list' && bikesCount !== null" [class.over]="isOverLimit">
+        <span class="load-bar"><span class="load-fill" [style.width.%]="progressPercent"></span></span>
+        <span class="load-text">{{ bikesCount }} / {{ maxBikesPerDay }}<ng-container *ngIf="isOverLimit"> · ponad limit</ng-container></span>
+      </div>
+    </div>
+    <button type="button" class="square" (click)="next.emit()" aria-label="Następny">&#8250;</button>
+    <button type="button" class="today" (click)="today.emit()">Dziś</button>
+  </div>
+
+  <!-- Wyszukiwarka i filtry -->
+  <div class="filters" [class.open]="open" [class.active]="chips.length > 0">
+    <button type="button" class="filters-toggle" (click)="open = !open" [attr.aria-expanded]="open">
+      <span aria-hidden="true">&#9906;</span>
+      <span class="filters-label" *ngIf="chips.length === 0">{{ placeholder }}</span>
+      <span class="filters-label" *ngIf="chips.length > 0">Filtry <span class="badge">{{ chips.length }}</span></span>
+      <span class="caret" aria-hidden="true">{{ open ? '▲' : '▼' }}</span>
+    </button>
+
+    <div class="filters-panel" [hidden]="!open">
+      <label class="field" *ngIf="showStageFilter">
+        <span class="field-label">Etap</span>
+        <select class="select" (change)="onStage($any($event.target).value)">
+          <option value="" [selected]="stage === null">Wszystkie etapy ({{ activeStageOrders.length }})</option>
+          <ng-container *ngFor="let s of stages">
+            <option *ngIf="stageCount(s.id) > 0 || stage === s.id" [value]="s.id" [selected]="stage === s.id">{{ s.label }} ({{ stageCount(s.id) }})</option>
+          </ng-container>
+        </select>
+      </label>
+
+      <label class="field" *ngIf="technicians.length > 0">
+        <span class="field-label">Serwisant</span>
+        <select class="select" (change)="onTechnician($any($event.target).value)">
+          <option value="" [selected]="selectedTechnicianId === null">Wszyscy serwisanci</option>
+          <option [value]="unassigned" [selected]="selectedTechnicianId === unassigned">Nieprzypisany serwisant</option>
+          <option *ngFor="let t of technicians" [value]="t.id" [selected]="selectedTechnicianId === t.id">{{ t.nickname }}</option>
+        </select>
+      </label>
+
+      <div class="field">
+        <span class="field-label">Szukaj klienta</span>
+        <app-order-search [allOrders]="allOrders" [stacked]="true" (filterChange)="onSearch($event)"></app-order-search>
+      </div>
+
+      <div class="panel-actions">
+        <button type="button" class="link" (click)="clearAll()">Wyczyść</button>
+        <button type="button" class="primary" (click)="open = false">Pokaż wyniki</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chips" *ngIf="chips.length > 0 && !open">
+    <button type="button" class="chip" *ngFor="let c of chips" (click)="removeChip(c)">{{ c.label }} <span aria-hidden="true">&#10005;</span></button>
+    <button type="button" class="link" (click)="clearAll()">Wyczyść</button>
+  </div>
+</div>
+
+<!-- Dolny pasek akcji -->
+<div class="bottom-bar">
+  <button type="button" class="outline" (click)="reservationClick.emit()">+ Rezerwacja</button>
+  <button type="button" class="solid" (click)="bikeClick.emit()">+ Przyjmij rower</button>
+</div>

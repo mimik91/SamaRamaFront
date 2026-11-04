@@ -54,7 +54,6 @@ interface ServiceInfo {
 
 interface ReservationSettings {
   acceptedDays: string[];
-  formSchedule: { [key: string]: { fromTime: string | null; toTime: string | null } };
   estimatedReservationDay?: string | null;
   maxBikesPerDay?: number | null;
   fullyBookedDates?: string[];
@@ -108,8 +107,6 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   unavailableServiceName = '';
   servicePhone: string | null = null;
   reservationSettings: ReservationSettings | null = null;
-  isFormActive = true;
-  formInactiveMessage = '';
 
   minDate: string;
   maxDate: string;
@@ -803,7 +800,6 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     this.http.get<ReservationSettings>(url).subscribe({
       next: (settings) => {
         this.reservationSettings = settings;
-        this.computeFormAvailability(settings);
         this.updateMinDate(settings);
         this.calendarFilter = (d) => this.dateFilter(d);
         this.preselectNearestAvailableDate();
@@ -811,63 +807,6 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       },
       error: () => {}
     });
-  }
-
-  private computeFormAvailability(settings: ReservationSettings): void {
-    if (!settings.formSchedule || Object.keys(settings.formSchedule).length === 0) {
-      this.isFormActive = true;
-      return;
-    }
-
-    const now = new Date();
-    const currentDayKey = DAY_KEYS[now.getDay()];
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const schedule = settings.formSchedule[currentDayKey];
-
-    if (schedule) {
-      const fromMinutes = schedule.fromTime ? this.timeToMinutes(schedule.fromTime) : 1;
-      const toMinutes = schedule.toTime ? this.timeToMinutes(schedule.toTime) : 23 * 60 + 59;
-      if (currentMinutes >= fromMinutes && currentMinutes <= toMinutes) {
-        this.isFormActive = true;
-        return;
-      }
-    }
-
-    this.isFormActive = false;
-    this.formInactiveMessage = this.findNextAvailableMessage(settings, now);
-  }
-
-  private timeToMinutes(time: string): number {
-    const [h, m] = time.split(':').map(Number);
-    return h * 60 + m;
-  }
-
-  private findNextAvailableMessage(settings: ReservationSettings, now: Date): string {
-    const currentDayIndex = now.getDay();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-    const todayKey = DAY_KEYS[currentDayIndex];
-    const todaySchedule = settings.formSchedule[todayKey];
-    if (todaySchedule) {
-      const fromMinutes = todaySchedule.fromTime ? this.timeToMinutes(todaySchedule.fromTime) : 1;
-      if (fromMinutes > currentMinutes) {
-        const fromStr = todaySchedule.fromTime ? todaySchedule.fromTime.substring(0, 5) : '00:01';
-        return `Rezerwacja jest aktualnie wyłączona. Zapraszamy dzisiaj od ${fromStr}.`;
-      }
-    }
-
-    for (let i = 1; i <= 6; i++) {
-      const nextDayIndex = (currentDayIndex + i) % 7;
-      const nextDayKey = DAY_KEYS[nextDayIndex];
-      const nextSchedule = settings.formSchedule[nextDayKey];
-      if (nextSchedule) {
-        const dayName = DAY_LABELS[nextDayKey];
-        const fromStr = nextSchedule.fromTime ? nextSchedule.fromTime.substring(0, 5) : '00:01';
-        return `Rezerwacja jest aktualnie wyłączona. Zapraszamy w ${dayName} od ${fromStr}.`;
-      }
-    }
-
-    return 'Rezerwacja jest aktualnie wyłączona.';
   }
 
   private updateMinDate(settings: ReservationSettings): void {

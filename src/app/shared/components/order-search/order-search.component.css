@@ -170,3 +170,31 @@
     min-width: 70px;
   }
 }
+
+/* Panel filtrów na telefonie: siatka 2 kolumn */
+.order-search.stacked {
+  display: block;
+}
+
+.order-search.stacked .search-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.order-search.stacked .search-field-wrap {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+}
+
+.order-search.stacked .search-input {
+  height: 44px;
+  font-size: 15px;
+  padding: 0 28px 0 12px;
+  border-radius: var(--radius-md);
+}
+
+.order-search.stacked .search-input::placeholder {
+  font-size: 15px;
+}

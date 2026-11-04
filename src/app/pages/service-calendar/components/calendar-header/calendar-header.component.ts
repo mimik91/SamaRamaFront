@@ -4,6 +4,7 @@ import { I18nService } from '../../../../core/i18n.service';
 import {
   CalendarViewMode,
   CalendarMode,
+  Technician,
   getMonthNameKey
 } from '../../../../shared/models/service-calendar.models';
 
@@ -22,6 +23,16 @@ export class CalendarHeaderComponent {
   @Input() selectedDate: Date = new Date();
   @Input() maxBikesPerDay: number = 10;
   @Input() loading: boolean = false;
+  /** Liczba rowerów w wybranym dniu (null poza widokiem dnia) */
+  @Input() bikesCount: number | null = null;
+  /** Lista obejmuje cały miesiąc (desktop) — nawigacja i etykieta miesięczne */
+  @Input() monthScope = false;
+  /** Tryb strony „Statusy zleceń": zamiast nawigacji dat tytuł */
+  @Input() statusesMode = false;
+  @Input() statusesSubtitle = '';
+  @Input() technicians: Technician[] = [];
+  /** null = wszyscy, -1 = nieprzypisani (UNASSIGNED_TECHNICIAN_FILTER), inaczej id serwisanta */
+  @Input() selectedTechnicianId: number | null = null;
 
   @Output() viewChange = new EventEmitter<CalendarViewMode>();
   @Output() modeChange = new EventEmitter<CalendarMode>();
@@ -29,6 +40,31 @@ export class CalendarHeaderComponent {
   @Output() acceptReservationClick = new EventEmitter<void>();
   @Output() acceptBikeClick = new EventEmitter<void>();
   @Output() refreshClick = new EventEmitter<void>();
+  @Output() limitClick = new EventEmitter<void>();
+  @Output() statusesClick = new EventEmitter<void>();
+  @Output() technicianFilterChange = new EventEmitter<number | null>();
+
+  private get byMonth(): boolean {
+    return this.currentView !== 'day' || this.monthScope;
+  }
+
+  get showLoadPill(): boolean {
+    return this.currentView === 'day' && !this.monthScope && this.bikesCount !== null;
+  }
+
+  get isOverLimit(): boolean {
+    return this.bikesCount !== null && this.bikesCount > this.maxBikesPerDay;
+  }
+
+  get isFull(): boolean {
+    return this.bikesCount !== null && this.bikesCount === this.maxBikesPerDay;
+  }
+
+  get progressPercent(): number {
+    if (this.bikesCount === null || !this.maxBikesPerDay) return 0;
+    return Math.min(100, (this.bikesCount / this.maxBikesPerDay) * 100);
+  }
+
   t(key: string, params?: Record<string, any>): string {
     return this.i18nService.translate(key, params);
   }
@@ -37,15 +73,7 @@ export class CalendarHeaderComponent {
    * Zwraca etykiete daty dla aktualnego widoku
    */
   get dateLabel(): string {
-    switch (this.currentView) {
-      case 'day':
-        return this.formatDayLabel(this.selectedDate);
-      case 'week':
-      case 'month':
-        return this.formatMonthLabel(this.selectedDate);
-      default:
-        return '';
-    }
+    return this.byMonth ? this.formatMonthLabel(this.selectedDate) : this.formatDayLabel(this.selectedDate);
   }
 
   private formatDayLabel(date: Date): string {
@@ -67,7 +95,8 @@ export class CalendarHeaderComponent {
   // ============================================
 
   setView(view: CalendarViewMode): void {
-    if (view !== this.currentView) {
+    // W trybie Statusów currentView nie odzwierciedla aktywnego widoku, więc zawsze emitujemy
+    if (this.statusesMode || view !== this.currentView) {
       this.viewChange.emit(view);
     }
   }
@@ -93,14 +122,11 @@ export class CalendarHeaderComponent {
   goToPrevious(): void {
     const newDate = new Date(this.selectedDate);
 
-    switch (this.currentView) {
-      case 'day':
-        newDate.setDate(newDate.getDate() - 1);
-        break;
-      case 'week':
-      case 'month':
-        newDate.setMonth(newDate.getMonth() - 1);
-        break;
+    if (this.byMonth) {
+      newDate.setDate(1);
+      newDate.setMonth(newDate.getMonth() - 1);
+    } else {
+      newDate.setDate(newDate.getDate() - 1);
     }
 
     this.dateChange.emit(newDate);
@@ -109,14 +135,11 @@ export class CalendarHeaderComponent {
   goToNext(): void {
     const newDate = new Date(this.selectedDate);
 
-    switch (this.currentView) {
-      case 'day':
-        newDate.setDate(newDate.getDate() + 1);
-        break;
-      case 'week':
-      case 'month':
-        newDate.setMonth(newDate.getMonth() + 1);
-        break;
+    if (this.byMonth) {
+      newDate.setDate(1);
+      newDate.setMonth(newDate.getMonth() + 1);
+    } else {
+      newDate.setDate(newDate.getDate() + 1);
     }
 
     this.dateChange.emit(newDate);
@@ -132,6 +155,18 @@ export class CalendarHeaderComponent {
 
   onAcceptBike(): void {
     this.acceptBikeClick.emit();
+  }
+
+  onTechnicianFilter(value: string): void {
+    this.technicianFilterChange.emit(value === '' ? null : Number(value));
+  }
+
+  onStatuses(): void {
+    this.statusesClick.emit();
+  }
+
+  onLimitClick(): void {
+    this.limitClick.emit();
   }
 
   onRefresh(): void {

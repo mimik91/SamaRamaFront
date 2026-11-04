@@ -1,94 +1,113 @@
 <div class="day-view">
-  <!-- Tryb prosty -->
-  <div class="simple-mode" *ngIf="calendarMode === 'SIMPLE'">
-    <!-- Wskaznik pojemnosci -->
-    <div class="capacity-header">
-      <div class="capacity-info">
-        <span class="capacity-count">{{ data.bikesCount }} / {{ data.maxBikesPerDay }}</span>
-        <span class="capacity-label">{{ t('service_calendar.bikes_today') }}</span>
-      </div>
-      <div class="capacity-bar">
-        <div
-          class="capacity-fill"
-          [class]="capacityClass"
-          [style.width.%]="capacityPercent"
-        ></div>
-      </div>
-    </div>
 
-    <!-- Lista zlecen -->
-    <div class="orders-list">
-      <div class="orders-empty" *ngIf="data.orders.length === 0">
-        <p>{{ t('service_calendar.no_orders') }}</p>
-      </div>
-
-      <app-order-bar
-        *ngFor="let order of data.orders"
-        [order]="order"
-        [showTechnician]="false"
-        (orderClick)="onOrderClick($event)"
-        (acceptBike)="onAcceptBike($event)"
-        (startProgress)="onStartProgress($event)"
-        (markReadyForPickup)="onMarkReadyForPickup($event)"
-        (markCompleted)="onMarkCompleted($event)"
-        (backToProgress)="onBackToProgress($event)"
-      ></app-order-bar>
-    </div>
+  <!-- Filtr etapów -->
+  <div class="stage-filter" *ngIf="showStageFilter" role="group" aria-label="Etap zlecenia">
+    <span class="stage-filter-label">Etap:</span>
+    <button type="button" class="stage-pill all" [class.active]="activeStage() === null" (click)="setStage(null)">
+      Wszystkie <span class="count">{{ totalCount() }}</span>
+    </button>
+    <ng-container *ngFor="let stage of stages">
+      <button *ngIf="(stageCounts().get(stage.id) ?? 0) > 0 || activeStage() === stage.id"
+              type="button" class="stage-pill" [class.active]="activeStage() === stage.id"
+              [style.--stage-color]="'var(' + stage.colorVar + ')'" (click)="setStage(stage.id)">
+        <span class="dot"></span>{{ stage.label }} <span class="count">{{ stageCounts().get(stage.id) ?? 0 }}</span>
+      </button>
+    </ng-container>
   </div>
 
-  <!-- Tryb zaawansowany -->
-  <div class="advanced-mode" *ngIf="calendarMode === 'ADVANCED'">
-    <!-- Wskaznik pojemnosci -->
-    <div class="capacity-header">
-      <div class="capacity-info">
-        <span class="capacity-count">{{ data.bikesCount }} / {{ data.maxBikesPerDay }}</span>
-        <span class="capacity-label">{{ t('service_calendar.bikes_today') }}</span>
-      </div>
-    </div>
+  <div class="orders-empty" *ngIf="visibleOrders().length === 0">
+    <p>Brak zleceń w tym dniu.</p>
+  </div>
 
-    <div class="technicians-grid">
-      <!-- Kolumna nieprzypisanych -->
-      <div class="technician-column unassigned">
-        <div class="column-header">
-          <span class="column-title">{{ t('service_calendar.unassigned') }}</span>
-          <span class="column-count">{{ unassignedOrders.length }}</span>
+  <!-- Desktop: tabela -->
+  <div class="table-wrap" *ngIf="visibleOrders().length > 0">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th *ngIf="dateColumn()"><button type="button" class="th-btn" (click)="sortBy('date')">Data <span class="sort">{{ sortIcon('date') }}</span></button></th>
+          <th><button type="button" class="th-btn" (click)="sortBy('stage')">Etap <span class="sort">{{ sortIcon('stage') }}</span></button></th>
+          <th><button type="button" class="th-btn" (click)="sortBy('bike')">Rower <span class="sort">{{ sortIcon('bike') }}</span></button></th>
+          <th><button type="button" class="th-btn" (click)="sortBy('client')">Klient <span class="sort">{{ sortIcon('client') }}</span></button></th>
+          <th><button type="button" class="th-btn" (click)="sortBy('technician')">Serwisant <span class="sort">{{ sortIcon('technician') }}</span></button></th>
+          <th>Opis zlecenia</th>
+          <th><button type="button" class="th-btn" (click)="sortBy('since')">W serwisie od <span class="sort">{{ sortIcon('since') }}</span></button></th>
+          <th><button type="button" class="th-btn" (click)="sortBy('price')">Kwota <span class="sort">{{ sortIcon('price') }}</span></button></th>
+          <th>Wiad.</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of visibleOrders(); trackBy: trackById" class="order-row"
+            [style.--stage-color]="'var(' + stageOf(order).colorVar + ')'" (click)="orderClick.emit(order)">
+          <td class="cell-date" *ngIf="dateColumn()">{{ order.plannedDate | date:'EEE d MMM' }}</td>
+          <td class="cell-stage">
+            <span class="stage-badge"><span class="dot"></span>{{ stageOf(order).label }}</span>
+            <span class="stage-note" *ngIf="onHoldReason(order)">{{ onHoldReason(order) }}</span>
+          </td>
+          <td class="cell-bike"><strong>{{ order.bicycleBrand }}</strong> {{ order.bicycleModel }}</td>
+          <td class="cell-client">
+            <span *ngIf="clientHasName(order); else noName">{{ order.clientName }}</span>
+            <ng-template #noName><em class="no-name">Bez nazwiska</em></ng-template>
+            <a *ngIf="order.clientPhone" class="phone" [href]="'tel:' + order.clientPhone" (click)="stop($event)">{{ order.clientPhone }}</a>
+          </td>
+          <td (click)="stop($event)">
+            <select class="tech-select" [class.empty]="!order.assignedTechnicianId"
+                    [value]="order.assignedTechnicianId ?? ''" (change)="onTechnicianSelect($event, order)"
+                    aria-label="Serwisant">
+              <option value="">wybierz</option>
+              <option *ngFor="let t of technicians" [value]="t.id" [selected]="t.id === order.assignedTechnicianId">{{ t.nickname }}</option>
+            </select>
+          </td>
+          <td class="cell-desc">{{ order.description || order.orderNotes }}</td>
+          <td class="cell-since">
+            <span>{{ sinceLabel(order) }}</span>
+            <span class="days" [class.long]="isLongStay(order)">{{ daysLabel(order) }}</span>
+          </td>
+          <td class="cell-price">
+            <ng-container *ngIf="order.estimatedPrice; else noPrice">
+              <strong [class.unconfirmed]="!order.priceConfirmed">{{ order.estimatedPrice | number:'1.0-2' }} zł</strong>
+              <span *ngIf="order.priceConfirmed" class="check" title="Potwierdzona przez klienta">✓</span>
+            </ng-container>
+            <ng-template #noPrice><span class="dash">—</span></ng-template>
+          </td>
+          <td class="cell-msg">
+            <button type="button" class="msg-btn" [class.unread]="order.unreadMessageCount" (click)="stop($event); orderClick.emit(order)" aria-label="Wiadomości">
+              &#128172;<span class="msg-count" *ngIf="order.unreadMessageCount">{{ order.unreadMessageCount }}</span>
+            </button>
+          </td>
+          <td class="cell-action">
+            <button *ngIf="action(order) as a" type="button" class="action-btn" [ngClass]="a.cls" (click)="runAction($event, order)">{{ a.label }}</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mobile: karty grupowane etapami -->
+  <div class="cards" *ngIf="visibleOrders().length > 0">
+    <section *ngFor="let group of stageGroups()" class="card-group" [style.--stage-color]="'var(' + group.stage.colorVar + ')'">
+      <h3 class="group-title" *ngIf="showGroupTitles"><span class="dot"></span>{{ group.stage.label }} <span class="count">{{ group.orders.length }}</span></h3>
+      <article *ngFor="let order of group.orders; trackBy: trackById" class="order-card" (click)="orderClick.emit(order)">
+        <div class="card-top">
+          <div class="card-bike"><strong>{{ order.bicycleBrand }}</strong> {{ order.bicycleModel }}</div>
+          <span *ngIf="order.unreadMessageCount" class="chip unread" title="Nowe wiadomości">&#128172; {{ order.unreadMessageCount }}</span>
         </div>
-        <div class="column-content">
-          <app-order-bar
-            *ngFor="let order of unassignedOrders"
-            [order]="order"
-            [showTechnician]="false"
-            (orderClick)="onOrderClick($event)"
-          ></app-order-bar>
-
-          <div class="column-empty" *ngIf="unassignedOrders.length === 0">
-            {{ t('service_calendar.no_orders') }}
+        <div class="card-client">
+          <span *ngIf="clientHasName(order); else noName2">{{ order.clientName }}</span>
+          <ng-template #noName2><em class="no-name">Bez nazwiska</em></ng-template>
+          <ng-container *ngIf="order.clientPhone"> · <a class="phone" [href]="'tel:' + order.clientPhone" (click)="stop($event)">{{ order.clientPhone }}</a></ng-container>
+        </div>
+        <div class="card-meta">
+          <span>{{ sinceLabel(order) === 'dziś' ? 'dziś' : 'od ' + sinceLabel(order) }}<ng-container *ngIf="onHoldReason(order)"> · {{ onHoldReason(order) }}</ng-container> · <em *ngIf="!order.assignedTechnicianNickname">bez serwisanta</em><ng-container *ngIf="order.assignedTechnicianNickname">{{ order.assignedTechnicianNickname }}</ng-container></span>
+        </div>
+        <div class="card-footer">
+          <div class="card-chips">
+            <span *ngIf="order.estimatedPrice" class="chip price" [class.unconfirmed]="!order.priceConfirmed">{{ order.estimatedPrice | number:'1.0-2' }} zł<ng-container *ngIf="order.priceConfirmed"> ✓</ng-container></span>
+            <span *ngIf="isLongStay(order)" class="chip long">{{ inServiceDays(order) }} dni w serwisie</span>
           </div>
+          <button *ngIf="action(order) as a" type="button" class="action-btn card-action" [ngClass]="a.cls" (click)="runAction($event, order)">{{ a.label }} &#8594;</button>
         </div>
-      </div>
-
-      <!-- Kolumny serwisantow -->
-      <div
-        class="technician-column"
-        *ngFor="let technician of technicians"
-      >
-        <div class="column-header">
-          <span class="column-title">{{ technician.nickname }}</span>
-          <span class="column-count">{{ getOrdersForTechnician(technician.id).length }}</span>
-        </div>
-        <div class="column-content">
-          <app-order-bar
-            *ngFor="let order of getOrdersForTechnician(technician.id)"
-            [order]="order"
-            [showTechnician]="false"
-            (orderClick)="onOrderClick($event)"
-          ></app-order-bar>
-
-          <div class="column-empty" *ngIf="getOrdersForTechnician(technician.id).length === 0">
-            {{ t('service_calendar.no_orders') }}
-          </div>
-        </div>
-      </div>
-    </div>
+      </article>
+    </section>
   </div>
 </div>

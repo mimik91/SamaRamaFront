@@ -19,6 +19,7 @@ import {
   DEFAULT_LOADING_STATE,
   ADMIN_PANEL_TABS,
   getDefaultTab,
+  isValidTab,
   formatErrorMessage
 } from '../../shared/models/service-admin.models';
 
@@ -87,6 +88,10 @@ export class ServiceAdminPanelComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentSuffix = this.route.snapshot.paramMap.get('suffix') || '';
+    const requestedTab = this.route.snapshot.queryParamMap.get('tab');
+    if (requestedTab && isValidTab(requestedTab)) {
+      this.activeTab = requestedTab;
+    }
     this.loadMyServices();
   }
 
@@ -165,6 +170,15 @@ export class ServiceAdminPanelComponent implements OnInit {
   /**
    * Sprawdza czy zakładka jest aktywna
    */
+  /** Krótkie etykiety zakładek pod ikonami na telefonie */
+  shortLabel(tab: AdminPanelTab): string {
+    const labels: Record<string, string> = {
+      basic: 'Dane', services: 'Usługi', pricelist: 'Cennik',
+      hours: 'Godziny', images: 'Zdjęcia', reservations: 'Rezerwacje'
+    };
+    return labels[tab] ?? '';
+  }
+
   isTabActive(tab: AdminPanelTab): boolean {
     return this.activeTab === tab;
   }

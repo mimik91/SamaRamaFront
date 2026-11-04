@@ -1,5 +1,5 @@
-<div class="order-search">
-  <span class="search-label">Szukaj klienta</span>
+<div class="order-search" [class.stacked]="stacked">
+  <span class="search-label" *ngIf="!stacked">Szukaj klienta</span>
   <div class="search-fields">
     <div class="search-field-wrap" *ngFor="let field of fields">
       <div class="search-input-wrap">
@@ -30,7 +30,7 @@
   </div>
 
   <button
-    *ngIf="hasActive"
+    *ngIf="hasActive && !stacked"
     class="search-clear-all"
     (click)="clearAll($event)"
     title="Wyczyść filtry"

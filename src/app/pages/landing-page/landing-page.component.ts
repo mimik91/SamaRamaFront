@@ -472,16 +472,17 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     return suffix.replace(/-/g, ' ').toUpperCase();
   }
 
-  // Odmiana "zweryfikowany warsztat" przez liczbę (1 / 2-4 / 5+) do etykiety paska partnerów
+  // Etykieta paska partnerów. Od 10 serwisów: "Ponad {zaokrąglone w dół do dziesiątek}" (żeby
+  // "Ponad 80" nie padło przy 80), poniżej 10 dokładna liczba z odmianą (1 / 2-4 / 5+).
   get partnersBarLabel(): string {
     const n = this.partnerLogos.length;
-    const mod10 = n % 10;
-    const mod100 = n % 100;
-    const isFew = mod10 >= 2 && mod10 <= 4 && !(mod100 >= 12 && mod100 <= 14);
+    if (n >= 10) {
+      return `Ponad ${Math.floor(n / 10) * 10} zweryfikowanych serwisów rowerowych przyjmuje rezerwacje online przez CycloPick`;
+    }
 
-    if (n === 1) return '1 zweryfikowany warsztat już rezerwuje się online przez CycloPick';
-    if (isFew) return `${n} zweryfikowane warsztaty już rezerwują się online przez CycloPick`;
-    return `${n} zweryfikowanych warsztatów już rezerwuje się online przez CycloPick`;
+    if (n === 1) return '1 zweryfikowany serwis rowerowy przyjmuje rezerwacje online przez CycloPick';
+    if (n >= 2 && n <= 4) return `${n} zweryfikowane serwisy rowerowe przyjmują rezerwacje online przez CycloPick`;
+    return `${n} zweryfikowanych serwisów rowerowych przyjmuje rezerwacje online przez CycloPick`;
   }
 
   private setMetaTags(): void {

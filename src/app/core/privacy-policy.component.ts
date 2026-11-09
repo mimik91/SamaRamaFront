@@ -80,6 +80,7 @@ import { SeoService } from './seo.service';
         <h2>VI. Odbiorcy danych</h2>
         <p>Dane osobowe mog&#261; by&cacute; przekazywane podmiotom wsp&oacute;&lstrok;pracuj&#261;cym z Administratorem, w szczeg&oacute;lno&sacute;ci:</p>
         <ul>
+          <li>serwisom rowerowym, do kt&oacute;rych U&#380;ytkownik sk&lstrok;ada rezerwacj&#281; lub zlecenie (w zakresie niezb&#281;dnym do realizacji rezerwacji: imi&#281;, numer telefonu, adres e-mail, dane roweru oraz tre&sacute;&cacute; zg&lstrok;oszenia),</li>
           <li>dostawcom us&lstrok;ug IT,</li>
           <li>dostawcom infrastruktury chmurowej,</li>
           <li>biurom rachunkowym,</li>

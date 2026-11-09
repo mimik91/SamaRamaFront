@@ -722,7 +722,8 @@
             {{ t('transport_order.terms.accept_label') }} 
             <a [href]="links.termsOfService" target="_blank" class="terms-link">{{ t('transport_order.terms.terms_link') }}</a> 
             {{ t('transport_order.terms.and') }} 
-            <a [href]="links.privacyPolicy" target="_blank" class="terms-link">{{ t('transport_order.terms.privacy_link') }}</a>
+            <a [href]="links.privacyPolicy" target="_blank" class="terms-link">{{ t('transport_order.terms.privacy_link') }}</a>.
+            {{ t('transport_order.terms.data_sharing') }}
           </label>
         </div>
         <div *ngIf="termsAcceptedControl.invalid && termsAcceptedControl.touched" class="error-message">

@@ -1060,6 +1060,7 @@
 .seo-content p:last-child { margin-bottom: 0; }
 
 .seo-content strong { color: var(--color-primary); }
+.seo-content a { color: var(--color-primary); text-decoration: underline; }
 
 /* ===== CITIES FOOTER ===== */
 .cities-footer {

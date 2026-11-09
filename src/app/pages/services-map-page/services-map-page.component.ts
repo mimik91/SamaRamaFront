@@ -4,7 +4,7 @@ import { Component, OnInit, OnDestroy, ViewChild, Inject, PLATFORM_ID, HostListe
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
-import { debounceTime, Subject, takeUntil } from 'rxjs';
+import { debounceTime, Subject, switchMap, takeUntil } from 'rxjs';
 
 // Services
 import { MapService } from './services/map.service';
@@ -65,6 +65,8 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   private citySearchSubject = new Subject<string>();
   private serviceSearchSubject = new Subject<string>();
   private mapMoveSubject = new Subject<MapViewState>();
+  // Żądania pinów przechodzą przez switchMap – odpowiedź starszego widoku nie nadpisze nowszej
+  private pinsRequest$ = new Subject<{ zoom: number; bounds?: string }>();
   private resizeSubject = new Subject<void>();
   private mapInvalidateTimeoutId?: number;
 
@@ -265,8 +267,27 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
       .subscribe(query => this.performServiceSearch(query));
 
     this.mapMoveSubject
-      .pipe(debounceTime(500), takeUntil(this.destroy$))
+      .pipe(debounceTime(250), takeUntil(this.destroy$))
       .subscribe(viewState => this.handleMapMove(viewState));
+
+    this.pinsRequest$
+      .pipe(
+        switchMap(({ zoom, bounds }) => this.mapService.getClusteredPins(
+          zoom,
+          bounds,
+          this.filtersState.cityQuery || undefined,
+          this.filtersState.selectedCoverageIds.length > 0
+            ? this.filtersState.selectedCoverageIds
+            : undefined
+        )),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(response => {
+        if (response?.data) {
+          this.mapPins = response.data;
+          this.cdr.markForCheck();
+        }
+      });
 
     this.resizeSubject
       .pipe(debounceTime(150), takeUntil(this.destroy$))
@@ -346,24 +367,7 @@ export class ServicesMapPageComponent implements OnInit, OnDestroy {
   // ============ MAP PINS (CLUSTERED) ============
 
   private loadMapPins(zoom: number, bounds?: string): void {
-    this.mapService.getClusteredPins(
-      zoom,
-      bounds,
-      this.filtersState.cityQuery || undefined,
-      this.filtersState.selectedCoverageIds.length > 0
-      ? this.filtersState.selectedCoverageIds
-      : undefined
-    )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          if (response?.data) {
-            this.mapPins = response.data;
-            this.cdr.markForCheck();
-          }
-        },
-        error: (error) => console.error('Error loading map pins:', error)
-      });
+    this.pinsRequest$.next({ zoom, bounds });
   }
 
   // ============ SERVICES LIST ============
@@ -652,9 +656,9 @@ onCitySelected(city: CitySuggestion): void {
   }
 
   private handleMapMove(viewState: MapViewState): void {
+    // Lista serwisów nie jest renderowana na tej stronie – przy ruchu mapy pobieramy tylko piny
     const boundsStr = this.getBoundsString(viewState.bounds);
     this.loadMapPins(viewState.zoom, boundsStr);
-    this.loadServicesForList(0);
   }
 
   onPinClicked(pin: MapPin): void {
@@ -685,6 +689,9 @@ onCitySelected(city: CitySuggestion): void {
           if (serviceDetails && this.mapComponent) {
             this.selectedServiceId = serviceId;
             this.mapComponent.showServicePopup(serviceDetails);
+            // Popup otwarty – oczekujące otwarcie jest jednorazowe, inaczej każdy ruch mapy odtwarzałby popup
+            this.pendingPopup = null;
+            this.cdr.markForCheck();
           }
         },
         error: (error) => {

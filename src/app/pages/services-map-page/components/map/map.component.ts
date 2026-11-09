@@ -28,6 +28,7 @@ declare var L: any;
 interface LeafletMarkerWithListeners {
   getElement(): HTMLElement;
   openPopup(): this;
+  isPopupOpen(): boolean;
   bindPopup(content: string | HTMLElement, options?: any): this;
   addTo(map: any): this;
   on(event: string, handler: (e: any) => void): this;
@@ -75,10 +76,12 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
 
   // Internal state
   private map: any;
-  private markers: Map<number, LeafletMarkerWithListeners> = new Map();
+  // Klucz: numeryczne id serwisu albo tekstowe id klastra ("cluster_…")
+  private markers: Map<number | string, LeafletMarkerWithListeners> = new Map();
   private isMapInitialized = false;
   private initializationPromise: Promise<void> | null = null;
   private popupListeners = new Map<number, Array<{ element: HTMLElement, event: string, handler: EventListener }>>();
+  private openPopupServiceId: number | null = null;
   private destroy$ = new Subject<void>();
 
   // Color cache from CSS variables
@@ -331,13 +334,20 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     }
 
     // Create sets for efficient comparison
-    const newPinIds = new Set(validPins.map(p => p.id));
+    // Backend zwraca id pinu jako String (ServicePinDto.id), a markery są kluczowane liczbą –
+    // bez normalizacji porównanie nigdy się nie zgadzało i każda aktualizacja odtwarzała wszystkie piny
+    const newPinIds = new Set(validPins.map(p => this.pinKey(p)));
     const existingPinIds = new Set(this.markers.keys());
 
     // Remove markers that no longer exist
     existingPinIds.forEach(id => {
       if (!newPinIds.has(id)) {
         const marker = this.markers.get(id);
+        // Marker z otwartym popupem zostaje do jego zamknięcia – usunięcie warstwy zamyka popup
+        // (np. gdy po przesunięciu mapy pin trafił do innego klastra)
+        if (marker?.isPopupOpen()) {
+          return;
+        }
         if (marker && this.map) {
           this.removeMarkerWithCleanup(marker, id);
           this.markers.delete(id);
@@ -347,7 +357,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
 
     // Add new pins (existing pins stay as-is, no recreation)
     validPins.forEach(pin => {
-      if (!existingPinIds.has(pin.id)) {
+      if (!existingPinIds.has(this.pinKey(pin))) {
         try {
           this.addPinToMap(pin);
         } catch (error) {
@@ -359,7 +369,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     // Handle pending popup
     if (this.pendingPopupServiceId !== null) {
       const serviceIdToOpen = this.pendingPopupServiceId;
-      const pinToOpen = validPins.find(p => p.id === serviceIdToOpen);
+      const pinToOpen = validPins.find(p => p.category !== 'cluster' && Number(p.id) === serviceIdToOpen);
 
       if (pinToOpen) {
         setTimeout(() => {
@@ -374,8 +384,12 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges
     }
   }
 
+  private pinKey(pin: MapPin): number | string {
+    return pin.category === 'cluster' ? String(pin.id) : parseInt(String(pin.id), 10);
+  }
+
   // Helper method to cleanly remove marker with event listeners
-  private removeMarkerWithCleanup(marker: any, id: number): void {
+  private removeMarkerWithCleanup(marker: any, id: number | string): void {
     try {
       const markerElement = marker.getElement();
       if (markerElement && marker._hoverListeners) {
@@ -504,8 +518,9 @@ if (markerElement) {
   };
 }
 
-  const pinId = isCluster ? pin.id : parseInt(pin.id.toString());
-  this.markers.set(pinId, marker);
+  const pinKey = this.pinKey(pin);
+  const pinId = pinKey as number;
+  this.markers.set(pinKey, marker);
 
   marker.on('click', () => {
     if (isCluster) {
@@ -541,6 +556,12 @@ if (markerElement) {
     return;
   }
 
+  // Popup tego serwisu jest już otwarty – nie przebudowuj go (unbind/bind powodowałoby mignięcie)
+  if (this.openPopupServiceId === serviceDetails.id && marker.isPopupOpen?.()) {
+    this.highlightSelectedPin(serviceDetails.id);
+    return;
+  }
+
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const popupContent = this.buildPopupContent(serviceDetails, isMobile);
   const popupMaxWidth = isMobile ? 280 : 400;
@@ -560,8 +581,13 @@ if (markerElement) {
 
   // Listener PRZED otwarciem
   marker.on('popupclose', () => {
+    this.openPopupServiceId = null;
     this.popupClosed.emit(serviceDetails.id);
+    // Marker mógł zostać zachowany tylko ze względu na otwarty popup – uzgodnij piny po jego zamknięciu
+    setTimeout(() => this.updateMapPins(this.pins), 0);
   });
+
+  this.openPopupServiceId = serviceDetails.id;
 
   // Defer openPopup poza bieżący event loop (po ewentualnym toggle Leafleta)
   setTimeout(() => marker.openPopup(), 0);
@@ -576,7 +602,37 @@ if (markerElement) {
   this.highlightSelectedPin(serviceDetails.id);
 }
 
-  private buildPopupContent(serviceDetails: ServiceDetails, isMobile: boolean = false): string {
+  private escapeHtml(value: string | null | undefined): string {
+    return (value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // Pola tekstowe pochodzą od właścicieli serwisów, a popup trafia do innerHTML – escapujemy je wszystkie
+  private escapeServiceDetails(details: ServiceDetails): ServiceDetails {
+    return {
+      ...details,
+      name: this.escapeHtml(details.name),
+      street: this.escapeHtml(details.street),
+      building: this.escapeHtml(details.building),
+      flat: details.flat ? this.escapeHtml(details.flat) : details.flat,
+      city: this.escapeHtml(details.city),
+      phoneNumber: this.escapeHtml(details.phoneNumber),
+      description: details.description ? this.escapeHtml(details.description) : details.description,
+      transportCost: details.transportCost != null ? Number(details.transportCost) : details.transportCost
+    };
+  }
+
+  // Dopuszczamy tylko http(s) i ścieżki względne (bez javascript:/data:)
+  private safeImageUrl(url: string): string {
+    return /^\s*(javascript|data|vbscript):/i.test(url) ? 'assets/images/cyclopick-logo.svg' : url;
+  }
+
+  private buildPopupContent(rawDetails: ServiceDetails, isMobile: boolean = false): string {
+    const serviceDetails = this.escapeServiceDetails(rawDetails);
     const addressParts = [];
     if (serviceDetails.street) addressParts.push(serviceDetails.street);
     if (serviceDetails.building) addressParts.push(serviceDetails.building);
@@ -587,10 +643,11 @@ if (markerElement) {
       fullAddress += fullAddress ? `, ${serviceDetails.city}` : serviceDetails.city;
     }
 
-    const logoUrl = this.logoCacheService.getLogoUrl(
-    serviceDetails.id,
-    serviceDetails.logoUrl
-  );
+    // Cache logo działa na surowym URL-u; escapujemy dopiero wynik wstawiany do atrybutu src
+    const logoUrl = this.escapeHtml(this.safeImageUrl(this.logoCacheService.getLogoUrl(
+      rawDetails.id,
+      rawDetails.logoUrl
+    )));
 
     const isVerified = Boolean(serviceDetails.registered);
     const hasTransport = serviceDetails.transportAvailable &&

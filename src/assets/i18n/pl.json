@@ -514,6 +514,7 @@
       "terms_link": "regulamin serwisu",
       "and": "oraz",
       "privacy_link": "politykę prywatności",
+      "data_sharing": "Rozumiem, że moje dane (imię, numer telefonu, adres e-mail, adres odbioru oraz dane roweru) zostaną przekazane wybranemu serwisowi rowerowemu, aby mógł mnie obsłużyć.",
       "required": "Musisz zaakceptować regulamin, aby złożyć zamówienie"
     },
     "navigation": {

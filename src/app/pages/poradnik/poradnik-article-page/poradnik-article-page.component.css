@@ -10,36 +10,31 @@
 @media (min-width: 1024px) {
   .poradnik-article-container {
     max-width: 1080px;
+  }
+
+  /* Treść + spis w osobnym gridzie (bez sekcji "Powiązane porady"), żeby sticky spis
+     kończył się razem z treścią i nie zjeżdżał na karty poniżej */
+  .poradnik-article-body {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 260px;
     column-gap: var(--spacing-10);
-    grid-template-areas:
-      'top      top'
-      'content  toc'
-      'related  related';
-  }
-
-  .poradnik-layout-top {
-    grid-area: top;
+    align-items: start;
   }
 
   .poradnik-article-content {
-    grid-area: content;
+    grid-column: 1;
+    grid-row: 1;
     max-width: 760px;
   }
 
   .poradnik-toc {
-    grid-area: toc;
-    align-self: start;
+    grid-column: 2;
+    grid-row: 1;
     position: sticky;
     top: 90px;
     max-height: calc(100vh - 110px);
     overflow-y: auto;
     margin-bottom: 0;
-  }
-
-  .poradnik-related-section {
-    grid-area: related;
   }
 }
 

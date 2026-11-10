@@ -35,6 +35,7 @@
     </div>
   </div>
 
+  <div class="poradnik-article-body">
   <nav class="poradnik-toc" *ngIf="tocItems.length > 1" aria-label="Spis treści">
     <p class="poradnik-toc-label">Spis treści</p>
     <ol>
@@ -45,6 +46,7 @@
   </nav>
 
   <div class="poradnik-article-content" [innerHTML]="safeContentHtml" (click)="onContentClick($event)"></div>
+  </div>
 
   <section class="poradnik-related-section" *ngIf="relatedArticles.length > 0">
     <h2>Powiązane porady</h2>

@@ -17,16 +17,14 @@ export class ServiceProfileTitleResolver implements Resolve<string> {
   }
 
   private getFallbackTitle(suffix: string, section?: string): string {
-    const baseName = suffix.split('-').map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-
+    // Tytuł tymczasowy (zanim komponent ustawi właściwy po załadowaniu danych).
+    // Nie budujemy go ze sluga – wyglądało to jak "Nartyrowerykrakow - Serwis Rowerowy".
     if (section === 'pricelist') {
-      return `${baseName} - Cennik | CycloPick`;
+      return 'Cennik serwisu rowerowego | CycloPick';
     } else if (section === 'hours') {
-      return `${baseName} - Godziny otwarcia | CycloPick`;
+      return 'Godziny otwarcia serwisu rowerowego | CycloPick';
     } else {
-      return `${baseName} - Serwis Rowerowy | CycloPick`;
+      return 'Serwis rowerowy | CycloPick';
     }
   }
 }

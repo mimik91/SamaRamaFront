@@ -8,7 +8,7 @@
 </div>
 
 <div class="reservation-container">
-  <h1>Zarezerwuj serwis rowerowy</h1>
+  <h1>Zarezerwuj wizytę{{ serviceInfo?.name ? ' – ' + serviceInfo?.name : '' }}</h1>
 
   <!-- Loading -->
   <div *ngIf="loading" class="loading-message">

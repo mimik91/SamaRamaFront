@@ -578,6 +578,40 @@
     </p>
   </section>
 
+  <!-- Treść generowana z danych serwisów (liczby, FAQ) – dotyczy każdego miasta -->
+  <section class="seo-content city-facts" *ngIf="currentCity && !cityNotFound && cityStats" aria-labelledby="city-facts-heading">
+    <h2 id="city-facts-heading">Serwisy rowerowe {{ currentCity.name }} w liczbach</h2>
+    <p>
+      Na liście znajduje się <strong>{{ cityStats.total }} warsztatów rowerowych</strong> w {{ currentCity.name }} i okolicy
+      <ng-container *ngIf="cityStats.reservable > 0">
+        – <strong>{{ cityStats.reservable }}</strong> z nich przyjmuje rezerwacje online
+      </ng-container><ng-container *ngIf="cityStats.withTransport > 0">
+        , a <strong>{{ cityStats.withTransport }}</strong> oferuje transport roweru
+      </ng-container>.
+      <ng-container *ngIf="cityStats.avgRating !== null">
+        Średnia ocena serwisów, które mają opinie klientów ({{ cityStats.rated }}): <strong>{{ cityStats.avgRating | number:'1.1-1' }}/5</strong>.
+      </ng-container>
+    </p>
+
+    <ng-container *ngIf="topServices.length > 0">
+      <h2>Najwyżej oceniane serwisy w {{ currentCity.name }}</h2>
+      <ul class="city-top-services">
+        <li *ngFor="let s of topServices">
+          <a [routerLink]="['/', s.suffix]">{{ s.name }}</a>
+          – {{ s.averageRating | number:'1.1-1' }}/5 ({{ s.reviewCount }} opinii)
+        </li>
+      </ul>
+    </ng-container>
+
+    <h2>Najczęstsze pytania – serwis rowerowy {{ currentCity.name }}</h2>
+    <div class="city-faq">
+      <details *ngFor="let item of cityFaq">
+        <summary>{{ item.question }}</summary>
+        <p>{{ item.answer }}</p>
+      </details>
+    </div>
+  </section>
+
   <!-- Footer links to other cities -->
   <footer class="cities-footer">
     <h2>Serwisy rowerowe w innych miastach Polski</h2>

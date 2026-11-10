@@ -1194,3 +1194,10 @@
     margin-bottom: var(--spacing-2);
   }
 }
+
+
+/* ===== CITY FACTS / FAQ ===== */
+.city-top-services { margin: 0 0 var(--spacing-3) 0; padding-left: var(--spacing-5); color: var(--text-secondary); line-height: var(--line-height-relaxed); }
+.city-faq details { padding: var(--spacing-2) 0; border-top: 1px solid var(--border-color); }
+.city-faq summary { cursor: pointer; font-weight: var(--font-weight-semibold); color: var(--text-primary); }
+.city-faq details p { margin: var(--spacing-2) 0 0 0; }

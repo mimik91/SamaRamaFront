@@ -45,6 +45,20 @@ export class SeoService {
 
 
   /**
+   * Czy ścieżka należy do prywatnej części aplikacji (panele, konto, admin).
+   * Dopasowanie po segmentach, a nie przez includes(), żeby slug serwisu
+   * zawierający np. "admin" lub "panel" nie dostał noindex.
+   */
+  private isPrivatePath(path: string): boolean {
+    const segments = path.split('?')[0].split('/').filter(Boolean);
+    if (segments.length === 0) return false;
+    const first = segments[0];
+    const privateTopLevel = /^(login|register|account|verify-account|courier-panel|password-reset|admin(-(dashboard|orders|users|services-verification|register-service|service-edit|enumerations|service-slots|bike-services|office-addresses|part-catalog|pricelist|pricelist-suggestions|coupons|express-service))?)$/;
+    if (privateTopLevel.test(first)) return true;
+    return segments.slice(1).some(seg => seg === 'panel-administratora' || seg === 'zamow-transport');
+  }
+
+  /**
 
    * Podstawowa metoda aktualizacji SEO - używana w app.component.ts
 
@@ -66,12 +80,7 @@ export class SeoService {
 
 
 
-    if (
-      path.includes('admin') || path.includes('panel') ||
-      path.includes('account') || path.includes('login') ||
-      path.includes('register') ||
-      path.includes('zamow-transport')
-    ) {
+    if (path && this.isPrivatePath(path)) {
 
       this.metaService.updateTag({ name: 'robots', content: 'noindex, nofollow' });
 
@@ -169,12 +178,7 @@ export class SeoService {
 
     // 7. Robots - KRYTYCZNE: Sprawdź czy to nie strona administracyjna
     // Centralna logika blokowania indeksacji dla paneli admina/konta
-    if (path && (
-      path.includes('admin') || path.includes('panel') ||
-      path.includes('account') || path.includes('login') ||
-      path.includes('register') ||
-      path.includes('zamow-transport')
-    )) {
+    if (path && this.isPrivatePath(path)) {
       this.metaService.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     } else {
       this.metaService.updateTag({ name: 'robots', content: 'index, follow' });

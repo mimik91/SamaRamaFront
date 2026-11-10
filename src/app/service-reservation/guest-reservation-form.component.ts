@@ -1224,7 +1224,8 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         type: 'website',
         keywords: ['rezerwacja serwis rowerowy', serviceName, city, 'umów wizytę rowerowy', 'serwis rowerowy online']
       },
-      `/${this.serviceSuffix}/zarezerwuj`
+      // Canonical wskazuje na profil serwisu – strona rezerwacji nie konkuruje z nim w wynikach.
+      `/${this.serviceSuffix}`
     );
   }
 

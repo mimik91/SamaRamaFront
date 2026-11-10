@@ -26,6 +26,13 @@ Disallow: /account
 Disallow: /admin
 Disallow: /courier-panel
 Disallow: /password-reset
+Disallow: /ulotka
+Disallow: /sukces
+Disallow: /platnosc/
+Disallow: /moje-zlecenie
+Disallow: /ordersummary
+Disallow: /order-transport
+Disallow: /client-dashboard
 Disallow: /cdn-cgi/
 
 # === Bingbot — standardowy crawler wyszukiwarki Bing ===
@@ -53,6 +60,13 @@ Disallow: /account
 Disallow: /admin
 Disallow: /courier-panel
 Disallow: /password-reset
+Disallow: /ulotka
+Disallow: /sukces
+Disallow: /platnosc/
+Disallow: /moje-zlecenie
+Disallow: /ordersummary
+Disallow: /order-transport
+Disallow: /client-dashboard
 Disallow: /cdn-cgi/
 
 # === AI/LLM Crawlers ===
@@ -95,6 +109,13 @@ Disallow: /account
 Disallow: /admin
 Disallow: /courier-panel
 Disallow: /password-reset
+Disallow: /ulotka
+Disallow: /sukces
+Disallow: /platnosc/
+Disallow: /moje-zlecenie
+Disallow: /ordersummary
+Disallow: /order-transport
+Disallow: /client-dashboard
 Disallow: /cdn-cgi/
 
 # Sitemap

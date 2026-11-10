@@ -59,6 +59,11 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   loading = true;
   error = false;
   totalServices = 0;
+
+  /** Treść generowana z danych API (bez wymyślonych faktów i cen) – patrz computeCityContent(). */
+  cityStats: { total: number; reservable: number; withTransport: number; rated: number; avgRating: number | null } | null = null;
+  topServices: MapPin[] = [];
+  cityFaq: Array<{ question: string; answer: string }> = [];
   cityNotFound = false;
 
   // Paginacja "Załaduj więcej" — dotyczy tylko trybu bez miasta (currentCity === null),
@@ -172,6 +177,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
         this.cityNotFound = false;
         this.loading = false;
 
+        this.computeCityContent();
         this.updateMetaTags();
         this.updateStructuredData();
 
@@ -527,11 +533,19 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   }
 
   private updateMetaTags(): void {
+    // Liczba warsztatów pochodzi z API (total). Pokazujemy ją tylko, gdy jest wiarygodna
+    // (>= 3), żeby nie obiecywać "1 warsztatu" ani nie podawać zera przy błędzie pobierania.
+    const count = this.currentCity ? this.totalServices : 0;
+    const countLabel = count >= 3 ? `${count} ${this.pluralizeWorkshops(count)}` : null;
     const titleText = this.currentCity
-      ? this.t('city_services.meta_title', { city: this.currentCity.name })
+      ? (countLabel
+          ? `Serwis rowerowy ${this.currentCity.name} – ${countLabel} i opinie | CycloPick`
+          : this.t('city_services.meta_title', { city: this.currentCity.name }))
       : 'Serwisy rowerowe w Polsce – pełna lista warsztatów | CycloPick';
     const description = this.currentCity
-      ? this.t('city_services.meta_description', { city: this.currentCity.name })
+      ? (countLabel
+          ? `${countLabel} rowerowych w ${this.currentCity.name} i okolicy: adresy, godziny otwarcia, opinie i cennik. Umów wizytę online bez telefonu.`
+          : this.t('city_services.meta_description', { city: this.currentCity.name }))
       : 'Przeglądaj pełną listę serwisów rowerowych w całej Polsce. Znajdź warsztat rowerowy blisko Ciebie, zarezerwuj wizytę lub zamów transport roweru.';
 
     this.title.setTitle(titleText);
@@ -550,6 +564,78 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
     // Canonical URL
     this.updateCanonicalTag(this.currentCity?.slug);
+  }
+
+  /**
+   * Buduje unikalną dla miasta treść wyłącznie z danych z API: liczba warsztatów,
+   * ile przyjmuje rezerwacje online, ile ma transport, najlepiej oceniane serwisy.
+   * Brak cen i opisów miasta – nie wymyślamy faktów, których nie mamy.
+   */
+  private computeCityContent(): void {
+    this.cityStats = null;
+    this.topServices = [];
+    this.cityFaq = [];
+    if (!this.currentCity || this.services.length === 0) return;
+
+    const city = this.currentCity.name;
+    const list = this.services;
+    const total = Math.max(this.totalServices, list.length);
+    const reservable = list.filter(s => s.reservationAvailable).length;
+    const withTransport = list.filter(s => (s.transportCost ?? 0) > 0).length;
+    const ratedList = list.filter(s => (s.reviewCount ?? 0) > 0 && s.averageRating != null);
+    const avgRating = ratedList.length >= 3
+      ? Math.round((ratedList.reduce((sum, s) => sum + (s.averageRating as number), 0) / ratedList.length) * 10) / 10
+      : null;
+
+    this.cityStats = { total, reservable, withTransport, rated: ratedList.length, avgRating };
+
+    // Najlepiej oceniane serwisy z profilem – wewnętrzne linki z sensownym anchorem
+    this.topServices = list
+      .filter(s => !!s.suffix && (s.reviewCount ?? 0) > 0 && s.averageRating != null)
+      .sort((a, b) => (b.averageRating! - a.averageRating!) || ((b.reviewCount ?? 0) - (a.reviewCount ?? 0)))
+      .slice(0, 5);
+
+    const faq: Array<{ question: string; answer: string }> = [
+      {
+        question: `Jak umówić wizytę w serwisie rowerowym w ${city}?`,
+        answer: `Wybierz serwis z listy, otwórz jego profil i sprawdź godziny otwarcia. ` +
+          (reservable > 0
+            ? `Serwisy z przyciskiem „Zarezerwuj" pozwalają wybrać termin online, bez dzwonienia. `
+            : `Do serwisu możesz zadzwonić lub napisać – dane kontaktowe są w profilu. `) +
+          `Jeśli nie wiesz, którego warsztatu szukasz, użyj mapy, aby znaleźć najbliższy.`
+      },
+      {
+        question: `Ile kosztuje naprawa roweru w ${city}?`,
+        answer: `Ceny ustala każdy serwis samodzielnie. Jeśli warsztat opublikował cennik, znajdziesz go w jego profilu. ` +
+          `Gdy cennika nie ma, zapytaj o wstępną wycenę telefonicznie lub przy rezerwacji – rzetelny mechanik oszacuje koszt ` +
+          `po opisie usterki albo po oględzinach roweru.`
+      }
+    ];
+    if (reservable > 0) {
+      faq.push({
+        question: `Czy w ${city} mogę zarezerwować serwis roweru online?`,
+        answer: `Tak. Na tej liście ${reservable} z ${total} ${this.pluralizeWorkshops(total)} ` +
+          `przyjmuje rezerwacje online. Wybierz serwis z przyciskiem „Zarezerwuj", wskaż termin i opisz, co jest do zrobienia.`
+      });
+    }
+    if (withTransport > 0) {
+      faq.push({
+        question: `Czy w ${city} ktoś odbierze rower do serwisu?`,
+        answer: `Część serwisów z tej listy oferuje transport roweru. Informacja o możliwości i koszcie odbioru ` +
+          `znajduje się w profilu serwisu lub przy jego pozycji na liście.`
+      });
+    }
+    this.cityFaq = faq;
+  }
+
+  /** Odmiana: 3 warsztaty, 5 warsztatów, 12 warsztatów, 22 warsztaty. */
+  private pluralizeWorkshops(n: number): string {
+    const lastTwo = n % 100;
+    const last = n % 10;
+    if (n === 1) return 'warsztat';
+    if (lastTwo >= 12 && lastTwo <= 14) return 'warsztatów';
+    if (last >= 2 && last <= 4) return 'warsztaty';
+    return 'warsztatów';
   }
 
   private update404MetaTags(citySlug: string): void {
@@ -684,7 +770,8 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
         : { name: 'Serwisy rowerowe w Polsce', url: `${environment.siteUrl}/serwisy` }
     ]);
 
-    const schemas = [itemList, breadcrumb].filter(Boolean);
+    const faqSchema = this.cityFaq.length > 0 ? SchemaOrgHelper.generateFAQPage(this.cityFaq) : null;
+    const schemas = [itemList, breadcrumb, faqSchema].filter(Boolean);
     if (schemas.length === 0) return;
 
     this.seoService.addMultipleStructuredData(schemas);

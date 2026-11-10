@@ -61,7 +61,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
   totalServices = 0;
 
   /** Treść generowana z danych API (bez wymyślonych faktów i cen) – patrz computeCityContent(). */
-  cityStats: { total: number; reservable: number; withTransport: number; rated: number; avgRating: number | null } | null = null;
+  cityStats: { total: number; reservable: number; rated: number; avgRating: number | null } | null = null;
   topServices: MapPin[] = [];
   cityFaq: Array<{ question: string; answer: string }> = [];
   cityNotFound = false;
@@ -568,7 +568,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
 
   /**
    * Buduje unikalną dla miasta treść wyłącznie z danych z API: liczba warsztatów,
-   * ile przyjmuje rezerwacje online, ile ma transport, najlepiej oceniane serwisy.
+   * ile przyjmuje rezerwacje online, najlepiej oceniane serwisy.
    * Brak cen i opisów miasta – nie wymyślamy faktów, których nie mamy.
    */
   private computeCityContent(): void {
@@ -581,13 +581,12 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     const list = this.services;
     const total = Math.max(this.totalServices, list.length);
     const reservable = list.filter(s => s.reservationAvailable).length;
-    const withTransport = list.filter(s => (s.transportCost ?? 0) > 0).length;
     const ratedList = list.filter(s => (s.reviewCount ?? 0) > 0 && s.averageRating != null);
     const avgRating = ratedList.length >= 3
       ? Math.round((ratedList.reduce((sum, s) => sum + (s.averageRating as number), 0) / ratedList.length) * 10) / 10
       : null;
 
-    this.cityStats = { total, reservable, withTransport, rated: ratedList.length, avgRating };
+    this.cityStats = { total, reservable, rated: ratedList.length, avgRating };
 
     // Najlepiej oceniane serwisy z profilem – wewnętrzne linki z sensownym anchorem
     this.topServices = list
@@ -616,13 +615,6 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
         question: `Czy w ${city} mogę zarezerwować serwis roweru online?`,
         answer: `Tak. Na tej liście ${reservable} z ${total} ${this.pluralizeWorkshops(total)} ` +
           `przyjmuje rezerwacje online. Wybierz serwis z przyciskiem „Zarezerwuj", wskaż termin i opisz, co jest do zrobienia.`
-      });
-    }
-    if (withTransport > 0) {
-      faq.push({
-        question: `Czy w ${city} ktoś odbierze rower do serwisu?`,
-        answer: `Część serwisów z tej listy oferuje transport roweru. Informacja o możliwości i koszcie odbioru ` +
-          `znajduje się w profilu serwisu lub przy jego pozycji na liście.`
       });
     }
     this.cityFaq = faq;

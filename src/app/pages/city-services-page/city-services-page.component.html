@@ -585,8 +585,6 @@
       Na liście znajduje się <strong>{{ cityStats.total }} warsztatów rowerowych</strong> w {{ currentCity.name }} i okolicy
       <ng-container *ngIf="cityStats.reservable > 0">
         – <strong>{{ cityStats.reservable }}</strong> z nich przyjmuje rezerwacje online
-      </ng-container><ng-container *ngIf="cityStats.withTransport > 0">
-        , a <strong>{{ cityStats.withTransport }}</strong> oferuje transport roweru
       </ng-container>.
       <ng-container *ngIf="cityStats.avgRating !== null">
         Średnia ocena serwisów, które mają opinie klientów ({{ cityStats.rated }}): <strong>{{ cityStats.avgRating | number:'1.1-1' }}/5</strong>.

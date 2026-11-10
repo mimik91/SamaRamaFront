@@ -28,7 +28,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
           <li><strong><a href="#savoir-vivre-wizyty">Czy trzeba stać nad mechanikiem</a>:</strong> nie, to wizyta fachowca jak u hydraulika.</li>
           <li><strong><a href="#ile-kosztuje">Ile kosztuje</a>:</strong> zależy od naprawy i od tego, czy dojazd jest w cenie. O to warto zapytać przed wizytą.</li>
           <li><strong><a href="#serwisy-mobilne-w-krakowie">Kto jeździ w Krakowie</a>:</strong> od dłuższego czasu m.in. <a href="/dr-albin-radziwillowska">dr Albin</a> i <a href="/przerzutka">Przerzutka z Zielonek</a>.</li>
-          <li><strong><a href="#mobilny-serwis-czy-transport">Gdy mechanik nie może przyjechać</a>:</strong> odbierzemy rower i zawieziemy do dowolnego serwisu w Krakowie.</li>
+          <li><strong><a href="#mobilny-serwis-czy-transport">Gdy mechanik nie może przyjechać</a>:</strong> <a href="/transport-rowerow-krakow">odbierzemy rower</a> i zawieziemy do dowolnego serwisu w Krakowie.</li>
         </ul>
       </div>
 
@@ -59,7 +59,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
       <p>W tych przypadkach warsztat stacjonarny daje po prostu więcej: pracę przy dobrym świetle i na stole, komplet narzędzi i części pod ręką zamiast dojeżdżania po brakujący element.</p>
 
       <h2 id="rower-elektryczny">Mobilny serwis roweru elektrycznego</h2>
-      <p>Właściciele e-bike'ów szukają mobilnego mechanika z prostego powodu: roweru ważącego ponad 20 kg nie wniesiesz do tramwaju ani nie wrzucisz na zwykły bagażnik. Mechanicznie e-bike serwisuje się jak każdy inny rower: hamulce, przerzutki, klocki, opony, łańcuch. Problem zaczyna się przy baterii, sterowniku albo silniku. Tu zwykle potrzebne jest oprogramowanie producenta podpięte do komputera, którego nikt nie wozi w bagażniku. Opisując usterkę przy umawianiu wizyty, powiedz wprost, czy chodzi o mechanikę, czy o „prąd". Mechanik od razu oceni, czy przyjazd ma sens.</p>
+      <p>Właściciele e-bike'ów szukają mobilnego mechanika z prostego powodu: roweru ważącego ponad 20 kg nie wniesiesz do tramwaju ani nie wrzucisz na zwykły bagażnik (jeśli mechanik nie może przyjechać, możesz <a href="/transport-rowerow-krakow">zamówić odbiór roweru spod domu</a>). Mechanicznie e-bike serwisuje się jak każdy inny rower: hamulce, przerzutki, klocki, opony, łańcuch. Problem zaczyna się przy baterii, sterowniku albo silniku. Tu zwykle potrzebne jest oprogramowanie producenta podpięte do komputera, którego nikt nie wozi w bagażniku. Opisując usterkę przy umawianiu wizyty, powiedz wprost, czy chodzi o mechanikę, czy o „prąd". Mechanik od razu oceni, czy przyjazd ma sens.</p>
 
       <h2 id="savoir-vivre-wizyty">Savoir-vivre wizyty: stać nad mechanikiem czy zaproponować kawę?</h2>
       <p>To pytanie zadaje sobie prawie każdy przy pierwszej wizycie: zostawić mechanika samego z rowerem czy stać obok i patrzeć? Potraktuj to jak wizytę hydraulika albo elektryka. Nie musisz stać nad ręką przez całą naprawę. Wystarczy być w zasięgu, gdyby mechanik zauważył dodatkową usterkę albo potrzebował dostępu do bramy czy piwnicy.</p>
@@ -92,7 +92,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
       </ul>
 
       <h2 id="mobilny-serwis-czy-transport">Mobilny serwis czy transport roweru do warsztatu</h2>
-      <p>Różnica jest prosta. W serwisie mobilnym mechanik jedzie do roweru. W transporcie door-to-door rower jedzie do mechanika, ale nie Ty go wieziesz. Oba rozwiązania załatwiają to samo: nie musisz sam przewozić roweru przez miasto. Drugie działa jednak także wtedy, gdy naprawa wymaga pełnego warsztatu albo gdy Twój dotychczasowy mobilny mechanik przestał jeździć.</p>
+      <p>Różnica jest prosta. W serwisie mobilnym mechanik jedzie do roweru. W <a href="/transport-rowerow-krakow">transporcie roweru do warsztatu</a> (door-to-door) rower jedzie do mechanika, ale nie Ty go wieziesz. Oba rozwiązania załatwiają to samo: nie musisz sam przewozić roweru przez miasto. Drugie działa jednak także wtedy, gdy naprawa wymaga pełnego warsztatu albo gdy Twój dotychczasowy mobilny mechanik przestał jeździć.</p>
       <p>W takiej sytuacji odbierzemy rower spod Twoich drzwi, zawieziemy do wybranego warsztatu i przywieziemy z powrotem po naprawie. Transport w Krakowie do partnerskich serwisów kosztuje od ${TRANSPORT_PRICING.partnerCost} zł w obie strony. Pełną listę warsztatów, do których dowozimy rowery, znajdziesz w <a href="/serwisy/krakow">katalogu serwisów rowerowych w Krakowie</a>. Jeśli dopiero szukasz nowego, stacjonarnego serwisu, sprawdź <a href="/poradnik/jak-wybrac-serwis-rowerowy-krakow">poradnik, jak go wybrać</a>.</p>
       <p><a href="/transport-rowerow-krakow" class="poradnik-service-btn">Zamów odbiór roweru z domu</a></p>
 
@@ -101,7 +101,7 @@ export const PORADNIK_ARTICLES: PoradnikArticle[] = [
       <p><strong>Czy dojazd mechanika jest płatny?</strong><br>Zależy od serwisu: część nie liczy dojazdu w granicach miasta, inni doliczają stawkę za kilometr poza określony promień. Ustal to przy umawianiu, nie po fakcie.</p>
       <p><strong>Czy rower elektryczny da się naprawić mobilnie?</strong><br>Jeśli chodzi o mechanikę, tak. Baterię, sterownik i silnik zwykle diagnozuje się w warsztacie, z oprogramowaniem producenta.</p>
       <p><strong>Czy mobilny serwis obejmuje też okolice Krakowa?</strong><br>Zależy od serwisu: Przerzutka z Zielonek obsługuje okoliczne gminy. Jeśli mieszkasz na obrzeżach aglomeracji, sprawdź to przy rezerwacji.</p>
-      <p><strong>Co zrobić, gdy usterki nie da się naprawić na miejscu?</strong><br>Rower musi trafić do warsztatu. Jeśli nie masz jak go przewieźć, zamów transport door-to-door: odbierzemy go spod domu i przywieziemy po naprawie.</p>
+      <p><strong>Co zrobić, gdy usterki nie da się naprawić na miejscu?</strong><br>Rower musi trafić do warsztatu. Jeśli nie masz jak go przewieźć, zamów <a href="/transport-rowerow-krakow">transport roweru do warsztatu</a>: odbierzemy go spod domu i przywieziemy po naprawie.</p>
 
       <p>Mobilny serwis wygrywa wygodą przy typowych usterkach i regulacjach. Warsztat stacjonarny wygrywa zapleczem przy wszystkim, co wymaga stołu, prasy albo komputera. A gdy rower musi jechać do warsztatu, nie musisz wieźć go sam.</p>
       <p><em>Artykuł przygotował zespół CycloPick na podstawie doświadczeń z transportem rowerów do krakowskich serwisów.</em></p>

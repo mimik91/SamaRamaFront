@@ -22,9 +22,18 @@ import { isKrakowCity } from '../../shared/utils/city.util';
 export interface CityConfig {
   slug: string;
   name: string;
+  /** Miejscownik z przyimkiem ("w Krakowie", "we Wrocławiu") – do zdań w meta description. */
+  locative: string;
   latitude: number;
   longitude: number;
 }
+
+/**
+ * Pilotaż nowego szablonu title/description (rezerwacja online jako wyróżnik) – tylko te miasta.
+ * Pozostałe miasta mają dotychczasowy szablon (grupa kontrolna do porównania CTR w GSC).
+ * Plan oceny i ewentualnego wdrożenia na wszystkie miasta: PLANNED_CHANGES.md → „Poprawa SEO", pkt 4.
+ */
+const META_PILOT_CITY_SLUGS: ReadonlySet<string> = new Set(['lodz', 'poznan', 'wroclaw', 'opole', 'krakow']);
 
 /** Ile serwisów na stronę w trybie "wszystkie miasta" (paginacja przez "Załaduj więcej") */
 const NATIONWIDE_PER_PAGE = 20;
@@ -537,14 +546,23 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     // (>= 3), żeby nie obiecywać "1 warsztatu" ani nie podawać zera przy błędzie pobierania.
     const count = this.currentCity ? this.totalServices : 0;
     const countLabel = count >= 3 ? `${count} ${this.pluralizeWorkshops(count)}` : null;
+    const isPilot = !!this.currentCity && META_PILOT_CITY_SLUGS.has(this.currentCity.slug);
+    const reservable = this.cityStats?.reservable ?? 0;
     const titleText = this.currentCity
       ? (countLabel
-          ? `Serwis rowerowy ${this.currentCity.name} – ${countLabel} i opinie | CycloPick`
+          ? (isPilot
+              ? `Serwis rowerowy ${this.currentCity.name}: ${countLabel}, rezerwacja online`
+              : `Serwis rowerowy ${this.currentCity.name} – ${countLabel} i opinie | CycloPick`)
           : this.t('city_services.meta_title', { city: this.currentCity.name }))
       : 'Serwisy rowerowe w Polsce – pełna lista warsztatów | CycloPick';
     const description = this.currentCity
       ? (countLabel
-          ? `${countLabel} rowerowych w ${this.currentCity.name} i okolicy: adresy, godziny otwarcia, opinie i cennik. Umów wizytę online bez telefonu.`
+          ? (isPilot
+              ? `${count} ${this.workshopsWithAdjective(count)} ${this.currentCity.locative}: adresy, godziny otwarcia i opinie klientów. ` +
+                (reservable > 0
+                  ? `${this.reservableSentence(reservable)} rezerwacje online – wybierz termin bez dzwonienia.`
+                  : 'Sprawdź kontakt i godziny otwarcia w profilach serwisów.')
+              : `${count} ${this.workshopsWithAdjective(count)} ${this.currentCity.locative} i okolicy: adresy, godziny otwarcia, opinie i cennik. Umów wizytę online bez telefonu.`)
           : this.t('city_services.meta_description', { city: this.currentCity.name }))
       : 'Przeglądaj pełną listę serwisów rowerowych w całej Polsce. Znajdź warsztat rowerowy blisko Ciebie, zarezerwuj wizytę lub zamów transport roweru.';
 
@@ -613,11 +631,27 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
     if (reservable > 0) {
       faq.push({
         question: `Czy w ${city} mogę zarezerwować serwis roweru online?`,
-        answer: `Tak. Na tej liście ${reservable} z ${total} ${this.pluralizeWorkshops(total)} ` +
+        answer: `Tak. Na tej liście ${reservable} z ${total} ${total === 1 ? 'warsztatu' : 'warsztatów'} ` +
           `przyjmuje rezerwacje online. Wybierz serwis z przyciskiem „Zarezerwuj", wskaż termin i opisz, co jest do zrobienia.`
       });
     }
     this.cityFaq = faq;
+  }
+
+  /** Odmiana z przymiotnikiem: 3 warsztaty rowerowe, 5 warsztatów rowerowych, 22 warsztaty rowerowe. */
+  private workshopsWithAdjective(n: number): string {
+    return this.pluralizeWorkshops(n) === 'warsztaty' ? 'warsztaty rowerowe' : n === 1 ? 'warsztat rowerowy' : 'warsztatów rowerowych';
+  }
+
+  /** „27 serwisów przyjmuje", „3 serwisy przyjmują", „1 serwis przyjmuje" (bez „rezerwacje online"). */
+  private reservableSentence(n: number): string {
+    const lastTwo = n % 100;
+    const last = n % 10;
+    if (n === 1) return '1 serwis przyjmuje';
+    if (lastTwo < 12 || lastTwo > 14) {
+      if (last >= 2 && last <= 4) return `${n} serwisy przyjmują`;
+    }
+    return `${n} serwisów przyjmuje`;
   }
 
   /** Odmiana: 3 warsztaty, 5 warsztatów, 12 warsztatów, 22 warsztaty. */

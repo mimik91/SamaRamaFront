@@ -77,13 +77,35 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   /** Klient przy potwierdzaniu zrezygnował z całego pakietu — tylko do odczytu, ustawiane przez klienta */
   planPackageExcluded = false;
 
+  /**
+   * Plan serwisu ekspresowego: pakiet opłacony przy rezerwacji. Serwis widzi tylko zakres prac z pakietu (bez ceny)
+   * i dodaje części/usługi ponad pakiet — tylko za nie klient płaci dopłatę. Pakiet nie pochodzi z cennika tego serwisu.
+   */
+  expressPlan = false;
+  expressPackageName: string | null = null;
+  expressPackageDescription: string | null = null;
+  /** Dodatki zaakceptowane przez klienta, dotychczasowe wpłaty i kwota „do zapłaty" (plan ekspresowy) */
+  planAcceptedTotal = 0;
+  planAmountPaid = 0;
+  planAmountDue = 0;
+
   readonly planStatusLabels: Record<string, string> = {
     SENT_TO_CLIENT: 'Wysłany — czeka na klienta',
     ACCEPTED: 'Zaakceptowany przez klienta',
     REJECTED: 'Odrzucony przez klienta'
   };
 
-  get packageCost(): number { return this.planPackageExcluded ? 0 : (this.packagePriceOverride ?? this.selectedPackage?.price ?? 0); }
+  get packageCost(): number {
+    // w planie ekspresowym cena pakietu jest tajna dla serwisu i nie wchodzi do jego sum
+    return (this.expressPlan || this.planPackageExcluded) ? 0 : (this.packagePriceOverride ?? this.selectedPackage?.price ?? 0);
+  }
+  /** Zakres prac z pakietu ekspresowego — kolejne linie opisu pakietu */
+  get expressScopeLines(): string[] {
+    return (this.expressPackageDescription ?? '')
+      .split('\n')
+      .map(line => line.replace(/^[-–•]\s*/, '').trim())
+      .filter(line => line.length > 0);
+  }
   get itemsCost(): number { return this.allLineItems.filter(i => !i.excluded).reduce((s, i) => s + i.price, 0); }
   get allLineItems(): RepairPlanLineItem[] { return [...this.partItems, ...this.serviceItems]; }
   get lineItemsCount(): number { return this.partItems.length + this.serviceItems.length; }
@@ -134,7 +156,14 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   }
 
   private applyPlanFromResponse(plan: RepairPlanResponse): void {
-    if (plan.packageId !== null) {
+    this.expressPlan = plan.expressPlan === true;
+    this.planAcceptedTotal = plan.acceptedTotal ?? 0;
+    this.planAmountPaid = plan.amountPaid ?? 0;
+    this.planAmountDue = plan.amountDue ?? 0;
+    if (this.expressPlan) {
+      this.expressPackageName = plan.packageName;
+      this.expressPackageDescription = plan.packageDescription;
+    } else if (plan.packageId !== null) {
       this.selectedPackage = this.packagesForBikeType.find(p => p.id === plan.packageId) ?? null;
       this.packagePriceOverride = plan.packagePriceSnapshot;
     }
@@ -406,8 +435,8 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
 
   private buildRequest(): SaveRepairPlanRequest {
     return {
-      packageId: this.selectedPackage?.id ?? null,
-      packagePriceSnapshot: this.selectedPackage ? (this.packagePriceOverride ?? this.selectedPackage.price) : null,
+      packageId: this.expressPlan ? null : (this.selectedPackage?.id ?? null),
+      packagePriceSnapshot: (!this.expressPlan && this.selectedPackage) ? (this.packagePriceOverride ?? this.selectedPackage.price) : null,
       items: this.allLineItems.map(item => ({
         name: item.name,
         price: item.price,
@@ -438,9 +467,9 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   }
 
   private buildPrintHtml(): string {
-    const packageRows = this.selectedPackage
-      ? this.buildPackageRows(this.selectedPackage, this.packageCost)
-      : '';
+    const packageRows = this.expressPlan
+      ? this.buildExpressScopeRows()
+      : (this.selectedPackage ? this.buildPackageRows(this.selectedPackage, this.packageCost) : '');
 
     const itemRows = this.buildItemGroupRows('Usługi', this.serviceItems)
       + this.buildItemGroupRows('Części', this.partItems);
@@ -529,10 +558,10 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
   <table>
     ${packageRows}
     ${itemRows}
-    ${(this.selectedPackage || this.lineItemsCount > 0) ? `
+    ${(this.selectedPackage || this.expressPlan || this.lineItemsCount > 0) ? `
     <tr class="total-row">
       <td></td>
-      <td>Łączny koszt</td>
+      <td>${this.expressPlan ? 'Dodatkowe prace (poza pakietem)' : 'Łączny koszt'}</td>
       <td class="price">${totalCell}</td>
     </tr>` : '<tr><td colspan="3" style="color:#999;padding:10px 8px">Brak pozycji</td></tr>'}
   </table>
@@ -566,6 +595,23 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
     return headerRow + rows;
   }
 
+  /** Wydruk zakresu pakietu ekspresowego — bez ceny, bo pakiet jest już opłacony przez klienta. */
+  private buildExpressScopeRows(): string {
+    const headerRow = `
+      <tr class="pkg-header">
+        <td class="cb-cell"><span class="cb"></span></td>
+        <td>${this.esc(this.expressPackageName ?? 'Pakiet ekspresowy')}<span class="badge">pakiet opłacony</span></td>
+        <td class="price-empty"></td>
+      </tr>`;
+    const subRows = this.expressScopeLines.map(line => `
+      <tr class="pkg-item">
+        <td class="cb-cell"><span class="cb"></span></td>
+        <td>${this.esc(line)}</td>
+        <td class="price-empty"></td>
+      </tr>`).join('');
+    return headerRow + subRows;
+  }
+
   private buildPackageRows(pkg: ServicePackageDto, effectivePrice: number): string {
     const descItems = (pkg.description ?? '')
       .split('\n')
@@ -589,13 +635,35 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
     return headerRow + subRows;
   }
 
+  /** Odświeża status i dane o dopłacie (po wysłaniu planu ekspresowego) bez ruszania edytowanych pozycji. */
+  private reloadPlanState(): void {
+    this.calendarService.getRepairPlan(this.serviceId, this.order.id).subscribe({
+      next: (plan) => {
+        if (!plan) return;
+        this.planStatus = plan.status;
+        this.planRequiresConfirmation = plan.requiresConfirmation;
+        this.planAcceptedTotal = plan.acceptedTotal ?? 0;
+        this.planAmountPaid = plan.amountPaid ?? 0;
+        this.planAmountDue = plan.amountDue ?? 0;
+        this.savedAt = new Date(plan.updatedAt);
+        this.baselineRequest = JSON.stringify(this.buildRequest());
+      },
+      error: () => { /* status odświeży się przy ponownym otwarciu zlecenia */ }
+    });
+  }
+
   sendToClient(): void {
     if (this.isSaving || this.isSending) return;
     this.isSaving = true;
     this.calendarService.saveRepairPlan(this.serviceId, this.order.id, this.buildRequest()).subscribe({
       next: () => {
         this.isSaving = false;
-        this.showSendPopup = true;
+        if (this.expressPlan) {
+          // plan ekspresowy z dodatkami zawsze wymaga potwierdzenia i opłacenia przez klienta (backend wymusza), bez dodatków jest informacyjny
+          this.onConfirmSend(this.finalTotal > 0);
+        } else {
+          this.showSendPopup = true;
+        }
       },
       error: () => {
         this.isSaving = false;
@@ -615,6 +683,9 @@ export class RepairPlanTabComponent implements OnInit, OnDestroy {
             ? 'Plan naprawy wysłany. Oczekiwanie na potwierdzenie klienta.'
             : 'Plan naprawy wysłany do klienta.'
         );
+        if (this.expressPlan) {
+          this.reloadPlanState();
+        }
       },
       error: (err) => {
         this.isSending = false;

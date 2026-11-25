@@ -450,6 +450,14 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
 
   setDeliveryType(type: DeliveryType): void {
     this.reservationForm.get('deliveryType')?.setValue(type);
+    this.updateMinDate();
+    const planned = this.reservationForm.get('plannedDate')?.value;
+    if (planned) {
+      const plannedDate: Date = planned instanceof Date ? planned : new Date(planned + 'T00:00:00');
+      if (plannedDate < this.minDateObj) {
+        this.reservationForm.get('plannedDate')?.setValue(null);
+      }
+    }
     this.selectedOffice = null;
     this.officeNameControl.setValue('');
     this.showOfficeDropdown = false;
@@ -570,9 +578,15 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   private computeDefaultMinDate(): Date {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    if (now.getHours() < 22) return today;
-    today.setDate(today.getDate() + 1);
-    return today;
+    const min = new Date(today);
+    if (now.getHours() >= 22) min.setDate(min.getDate() + 1);
+
+    // Backend wymaga, by dzień odbioru był PO dzisiejszym. Odbiór spod domu wypada dzień przed terminem
+    // serwisu (termin = jutro → odbiór dziś → odrzucone), spod biura — w dniu terminu.
+    const home = this.reservationForm?.get('deliveryType')?.value === 'DOOR_TO_DOOR';
+    const earliestForPickup = new Date(today);
+    earliestForPickup.setDate(earliestForPickup.getDate() + (home ? 2 : 1));
+    return earliestForPickup > min ? earliestForPickup : min;
   }
 
   // ===== Navigation =====

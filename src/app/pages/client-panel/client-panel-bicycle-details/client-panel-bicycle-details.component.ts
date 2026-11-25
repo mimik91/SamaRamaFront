@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { BicycleService, GroupedImagesResponse, BicycleImage, ActiveTransportResponse, ActiveServiceOrderCard, ServiceOrderMessage, ServiceOrderDetail } from '../bicycle.service';
 import { Bicycle } from '../../../shared/models/bicycle.model';
 import { RepairPlanResponse, RepairPlanItemResponse } from '../../../shared/models/repair-plan.models';
+import { RepairPlanPaymentService } from '../../../shared/services/repair-plan-payment.service';
 import { NotificationService } from '../../../core/notification.service';
 import { ServiceRecord, RepairPlanItemDto } from '../../../service-records/service-record.model';
 import { ServiceRecordService } from '../../../service-records/service-record.service';
@@ -39,6 +40,7 @@ export class ClientPanelDetailsComponent implements OnInit {
   private enumerationService = inject(EnumerationService);
   private bicycleSelectionService = inject(BicycleSelectionService);
   private imageUtils = inject(ImageUtilsService);
+  private repairPlanPayment = inject(RepairPlanPaymentService);
 
   bicycle: Bicycle | null = null;
   bicycleForm: FormGroup;
@@ -93,6 +95,7 @@ export class ClientPanelDetailsComponent implements OnInit {
   // Repair plan (widoczny w rozwiniętych szczegółach zlecenia)
   repairPlan: RepairPlanResponse | null = null;
   isDecidingRepairPlan = false;
+  isPayingRepairPlan = false;
   excludedRepairPlanItemIds = new Set<number>();
   repairPlanPackageExcluded = false;
   showRejectReasonModal = false;
@@ -264,6 +267,11 @@ export class ClientPanelDetailsComponent implements OnInit {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('doplata') === 'ok') {
+      // dane karty ładują się już po zaksięgowaniu wpłaty; parametr zdejmujemy, by odświeżenie strony nie powtarzało komunikatu
+      this.notificationService.success('Dziękujemy! Wpłata została przyjęta.');
+      this.router.navigate([], { relativeTo: this.route, queryParams: { doplata: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    }
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadBicycle(+id);
@@ -394,6 +402,30 @@ export class ClientPanelDetailsComponent implements OnInit {
     return !!this.repairPlan && this.repairPlan.status === 'SENT_TO_CLIENT' && this.repairPlan.requiresConfirmation;
   }
 
+  /** Plan serwisu ekspresowego: pakiet jest opłacony przy rezerwacji, klient płaci tylko za dodatki. */
+  get isExpressRepairPlan(): boolean {
+    return !!this.repairPlan?.expressPlan;
+  }
+
+  /** Dodatki (bez pakietu) po wyborze klienta — to ich dotyczy dopłata. */
+  get repairPlanExtrasPreview(): number {
+    const plan = this.repairPlan;
+    if (!plan) return 0;
+    if (this.isEditingRepairPlanItems) {
+      const sum = plan.items
+        .filter(item => !this.excludedRepairPlanItemIds.has(item.id))
+        .reduce((acc, item) => acc + item.price, 0);
+      return Math.round(sum * 100) / 100;
+    }
+    const total = (plan.customTotal ?? plan.calculatedTotal) - (plan.packagePriceSnapshot ?? 0);
+    return Math.max(0, Math.round(total * 100) / 100);
+  }
+
+  /** Klient ma do wyboru „zapłać teraz / później" tylko, gdy po potwierdzeniu są dodatki do opłacenia. */
+  get repairPlanNeedsPayment(): boolean {
+    return this.isExpressRepairPlan && this.repairPlanAwaitingDecision && this.repairPlanExtrasPreview > 0;
+  }
+
   get isEditingRepairPlanItems(): boolean {
     return this.excludedRepairPlanItemIds.size > 0 || this.repairPlanPackageExcluded;
   }
@@ -453,16 +485,23 @@ export class ClientPanelDetailsComponent implements OnInit {
     this.repairPlanPackageExcluded = !this.repairPlanPackageExcluded;
   }
 
-  confirmRepairPlan(): void {
+  /**
+   * mode: 'plain' — zwykłe potwierdzenie; 'now' — plan ekspresowy: potwierdź i przejdź od razu do płatności dopłaty;
+   * 'later' — potwierdź, dopłatę opłacisz później (z tej karty albo z linku w mailu).
+   */
+  confirmRepairPlan(mode: 'plain' | 'now' | 'later' = 'plain'): void {
     if (!this.activeServiceOrder || this.isDecidingRepairPlan) return;
 
     this.isDecidingRepairPlan = true;
     const excludedItemIds = Array.from(this.excludedRepairPlanItemIds);
     const excludePackage = this.repairPlanPackageExcluded;
-    this.bicycleService.confirmRepairPlan(this.activeServiceOrder.id, excludedItemIds, excludePackage).subscribe({
-      next: () => {
+    this.bicycleService.confirmRepairPlan(this.activeServiceOrder.id, excludedItemIds, excludePackage, mode === 'later').subscribe({
+      next: (response) => {
         const plan = this.repairPlan;
-        if (plan) {
+        if (response?.plan) {
+          // odpowiedź serwera ma aktualne flagi wykreśleń, sumy i kwotę „do zapłaty"
+          this.repairPlan = response.plan;
+        } else if (plan) {
           plan.status = 'ACCEPTED';
           if (excludedItemIds.length > 0 || excludePackage) {
             plan.items.forEach(item => { item.excluded = excludedItemIds.includes(item.id); });
@@ -471,11 +510,37 @@ export class ClientPanelDetailsComponent implements OnInit {
           }
         }
         this.isDecidingRepairPlan = false;
-        this.notificationService.success('Plan naprawy potwierdzony.');
+        const amountDue = response?.amountDue ?? 0;
+        if (mode === 'now' && amountDue > 0) {
+          this.notificationService.success('Plan naprawy potwierdzony. Przechodzimy do płatności…');
+          this.payRepairPlanDue(true);
+        } else if (mode === 'later' && amountDue > 0) {
+          this.notificationService.success('Plan naprawy potwierdzony. Dopłatę możesz opłacić później z tej karty.');
+        } else {
+          this.notificationService.success('Plan naprawy potwierdzony.');
+        }
       },
       error: (err) => {
         this.isDecidingRepairPlan = false;
         this.notificationService.error(err.error?.message || 'Nie udało się potwierdzić planu naprawy.');
+      }
+    });
+  }
+
+  /** Przekierowanie do PayU z dopłatą do planu naprawy; kwotę wylicza backend z bazy. */
+  payRepairPlanDue(afterConfirm = false): void {
+    if (!this.activeServiceOrder || this.isPayingRepairPlan) return;
+
+    this.isPayingRepairPlan = true;
+    const returnUrl = this.router.url.split('?')[0];
+    this.repairPlanPayment.pay({ orderId: this.activeServiceOrder.id }, returnUrl).subscribe({
+      // po sukcesie przeglądarka przechodzi do PayU (strona się przeładowuje)
+      error: (err) => {
+        this.isPayingRepairPlan = false;
+        const reason = err.error?.message || 'Nie udało się uruchomić płatności.';
+        this.notificationService.error(afterConfirm
+          ? `Plan został potwierdzony, ale płatność się nie rozpoczęła: ${reason} Użyj przycisku „Zapłać teraz" poniżej.`
+          : `${reason} Spróbuj ponownie lub skontaktuj się z nami.`);
       }
     });
   }

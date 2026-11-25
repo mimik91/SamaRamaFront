@@ -49,6 +49,12 @@ export interface RepairPlanResponse {
   requiresConfirmation: boolean;
   createdAt: string;
   updatedAt: string;
+  /** Plan serwisu ekspresowego: pakiet opłacony przy rezerwacji, serwis nie widzi jego ceny */
+  expressPlan: boolean;
+  /** Plan ekspresowy: dodatki zaakceptowane przez klienta, dotychczasowe wpłaty i kwota „do zapłaty" (zwykłe plany: 0) */
+  acceptedTotal: number;
+  amountPaid: number;
+  amountDue: number;
 }
 
 export interface RepairPlanItemResponse {
@@ -64,4 +70,13 @@ export interface RepairPlanItemResponse {
 export interface ConfirmRepairPlanRequest {
   excludedItemIds: number[];
   excludePackage: boolean;
+  /** Plan ekspresowy z dopłatą: potwierdzam, ale zapłacę później */
+  payLater: boolean;
+}
+
+export interface ConfirmRepairPlanResponse {
+  message: string;
+  plan: RepairPlanResponse;
+  /** Kwota do zapłaty za dodatki po potwierdzeniu (0, gdy nic nie trzeba opłacać) */
+  amountDue: number;
 }

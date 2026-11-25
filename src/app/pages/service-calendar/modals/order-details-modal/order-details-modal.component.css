@@ -688,18 +688,18 @@
   gap: var(--spacing-2);
   padding: var(--spacing-2) var(--spacing-4);
   background: var(--color-slate-100);
-  border: 1px dashed var(--border-color);
+  border: 2px solid var(--color-primary);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: var(--color-primary);
   cursor: pointer;
   transition: var(--transition-all);
 }
 
 .btn-select-image:hover:not(:disabled) {
-  background: var(--color-slate-200);
-  border-color: var(--color-primary);
-  color: var(--text-primary);
+  background: var(--color-primary-alpha-08);
+  border-color: var(--color-primary-dark);
+  color: var(--color-primary-dark);
 }
 
 .btn-select-image:disabled {
@@ -708,7 +708,8 @@
 }
 
 .btn-select-image .icon {
-  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+  color: var(--color-primary);
 }
 
 .btn-upload-image {

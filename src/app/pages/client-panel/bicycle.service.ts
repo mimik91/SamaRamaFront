@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { Bicycle, BicycleForm } from '../../shared/models/bicycle.model';
-import { RepairPlanResponse } from '../../shared/models/repair-plan.models';
+import { ConfirmRepairPlanResponse, RepairPlanResponse } from '../../shared/models/repair-plan.models';
 import { environment } from '../../environments/environments';
 
 export interface BicycleImageUploadRequest {
@@ -318,10 +318,10 @@ export class BicycleService {
     );
   }
 
-  confirmRepairPlan(orderId: number, excludedItemIds: number[] = [], excludePackage = false): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
+  confirmRepairPlan(orderId: number, excludedItemIds: number[] = [], excludePackage = false, payLater = false): Observable<ConfirmRepairPlanResponse> {
+    return this.http.post<ConfirmRepairPlanResponse>(
       `${environment.apiUrl}/user/service-orders/${orderId}/repair-plan/confirm`,
-      { excludedItemIds, excludePackage }
+      { excludedItemIds, excludePackage, payLater }
     ).pipe(
       catchError(error => {
         console.error('Error confirming repair plan:', error);

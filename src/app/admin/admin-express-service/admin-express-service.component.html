@@ -43,6 +43,14 @@
       </svg>
       Cennik
     </button>
+    <button class="tab-btn" [class.active]="activeTab === 'surcharges'" (click)="selectTab('surcharges')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+        <line x1="1" y1="10" x2="23" y2="10"></line>
+      </svg>
+      Dopłaty
+      <span class="tab-badge" *ngIf="surchargesNeedingAttention > 0">{{ surchargesNeedingAttention }}</span>
+    </button>
   </div>
 
   <!-- ===== TAB: ORDERS ===== -->
@@ -110,6 +118,85 @@
               <button class="assign-btn" (click)="openAssignModal(order)">
                 Przypisz do serwisu
               </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== TAB: DOPŁATY DO PLANÓW NAPRAWY ===== -->
+  <div class="tab-panel" *ngIf="activeTab === 'surcharges'">
+    <div class="panel-toolbar">
+      <h2>Dopłaty do planów naprawy</h2>
+      <div class="surcharge-toolbar-actions">
+        <label class="surcharge-toggle">
+          <input type="checkbox" [checked]="showSettledSurcharges" (change)="toggleSettledSurcharges()">
+          Pokaż także rozliczone
+        </label>
+        <button class="refresh-btn" (click)="loadSurcharges()" [disabled]="loadingSurcharges">Odśwież</button>
+      </div>
+    </div>
+    <p class="surcharge-hint">
+      Klient płaci dopłatę za dodatkowe prace ponad opłacony pakiet. Dopóki jest do zapłaty, serwis nie może oznaczyć roweru jako gotowego do odbioru.
+      Nadpłaty zwracasz ręcznie w PayU.
+    </p>
+
+    <div *ngIf="loadingSurcharges" class="loading-row">Ładowanie…</div>
+    <div *ngIf="!loadingSurcharges && surcharges.length === 0" class="empty-state">
+      Brak dopłat wymagających uwagi.
+    </div>
+
+    <div *ngIf="!loadingSurcharges && surcharges.length > 0" class="orders-table-wrapper">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Zlecenie</th>
+            <th>Klient</th>
+            <th>Serwis / rower</th>
+            <th>Zaakceptowane</th>
+            <th>Zapłacone</th>
+            <th>Do zapłaty / nadpłata</th>
+            <th>Blokada wydania</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of surcharges">
+            <td>
+              #{{ row.serviceOrderId }}
+              <div class="muted">{{ row.orderStatusLabel || row.orderStatus }}</div>
+              <div class="muted" *ngIf="row.payLaterAt">płatność odłożona</div>
+            </td>
+            <td>
+              {{ row.clientName || '—' }}
+              <div class="muted">{{ row.clientEmail }}</div>
+            </td>
+            <td>
+              {{ row.serviceName || '—' }}
+              <div class="muted">{{ row.bike }}</div>
+            </td>
+            <td>{{ row.acceptedTotal | number:'1.2-2' }} zł</td>
+            <td>{{ row.amountPaid | number:'1.2-2' }} zł</td>
+            <td>
+              <span class="surcharge-due" *ngIf="row.amountDue > 0">do zapłaty {{ row.amountDue | number:'1.2-2' }} zł</span>
+              <span class="surcharge-over" *ngIf="row.overpaid > 0">nadpłata {{ row.overpaid | number:'1.2-2' }} zł</span>
+              <span class="muted" *ngIf="row.amountDue === 0 && row.overpaid === 0">rozliczone</span>
+            </td>
+            <td>
+              <ng-container *ngIf="row.blockReleased; else blockActive">
+                <span class="status-badge status-confirmed">zdjęta</span>
+                <div class="muted">{{ row.blockReleasedBy }} · {{ row.blockReleasedAt | date:'dd.MM.yyyy HH:mm' }}</div>
+                <div class="muted">{{ row.blockReleaseReason }}</div>
+              </ng-container>
+              <ng-template #blockActive>
+                <span class="status-badge" [class.status-cancelled]="row.amountDue > 0">{{ row.amountDue > 0 ? 'aktywna' : 'brak' }}</span>
+              </ng-template>
+            </td>
+            <td class="action-cell">
+              <button class="assign-btn" *ngIf="row.amountDue > 0" (click)="openPaymentModal(row)">Zaksięguj wpłatę</button>
+              <button class="assign-btn" *ngIf="row.amountDue > 0 && !row.blockReleased" (click)="openReleaseModal(row)">Zdejmij blokadę</button>
+              <button class="assign-btn" *ngIf="row.blockReleased" (click)="restoreBlock(row)">Przywróć blokadę</button>
             </td>
           </tr>
         </tbody>
@@ -357,6 +444,49 @@
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
         Dodaj nowy pakiet
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: DOPŁATA (odblokowanie / wpłata ręczna) ===== -->
+<div class="modal-overlay" *ngIf="surchargeModal" (click)="closeSurchargeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ surchargeModal.type === 'release' ? 'Zdejmij blokadę wydania' : 'Zaksięguj wpłatę ręczną' }}</h2>
+      <button class="modal-close" (click)="closeSurchargeModal()" aria-label="Zamknij">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="order-summary">
+        <div class="order-summary-row">
+          <span class="summary-label">Zlecenie:</span>
+          <span>#{{ surchargeModal.row.serviceOrderId }} · {{ surchargeModal.row.bike }}</span>
+        </div>
+        <div class="order-summary-row">
+          <span class="summary-label">Do zapłaty:</span>
+          <span>{{ surchargeModal.row.amountDue | number:'1.2-2' }} zł</span>
+        </div>
+      </div>
+
+      <ng-container *ngIf="surchargeModal.type === 'release'">
+        <label class="form-label" for="surchargeReason">Powód (zapisujemy kto i dlaczego zdjął blokadę)</label>
+        <textarea id="surchargeReason" class="form-input" rows="3" [(ngModel)]="surchargeReason"
+                  placeholder="np. klient zapłacił przelewem, awaria płatności…"></textarea>
+        <p class="surcharge-hint">Po zdjęciu blokady serwis może oznaczyć rower jako gotowy do odbioru mimo niezapłaconej dopłaty.</p>
+      </ng-container>
+
+      <ng-container *ngIf="surchargeModal.type === 'payment'">
+        <label class="form-label" for="surchargeAmount">Kwota wpłaty (zł)</label>
+        <input id="surchargeAmount" type="number" class="form-input" min="0.01" step="0.01" [(ngModel)]="surchargeAmount">
+        <p class="surcharge-hint">Kwota nie może przekraczać kwoty do zapłaty. Wpłata zostanie zapisana jako ręczna.</p>
+      </ng-container>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeSurchargeModal()" [disabled]="savingSurcharge">Anuluj</button>
+      <button class="btn-primary" (click)="confirmSurchargeAction()"
+              [disabled]="savingSurcharge || (surchargeModal.type === 'release' ? surchargeReason.trim().length < 3 : !surchargeAmount || surchargeAmount <= 0)">
+        <span *ngIf="savingSurcharge" class="spinner-inline"></span>
+        {{ savingSurcharge ? 'Zapisywanie...' : (surchargeModal.type === 'release' ? 'Zdejmij blokadę' : 'Zaksięguj') }}
       </button>
     </div>
   </div>

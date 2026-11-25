@@ -185,8 +185,9 @@
                             <div class="plan-item plan-item--package" [class.plan-item--excluded]="repairPlanAwaitingDecision ? repairPlanPackageExcluded : repairPlan.packageExcluded">
                               <span class="plan-item-name">{{ repairPlan.packageName }}</span>
                               <span class="plan-item-price">{{ repairPlan.packagePriceSnapshot | number:'1.2-2' }} zł</span>
+                              <span class="plan-paid-badge" *ngIf="repairPlan.expressPlan">opłacony</span>
                               <button
-                                *ngIf="repairPlanAwaitingDecision"
+                                *ngIf="repairPlanAwaitingDecision && !repairPlan.expressPlan"
                                 type="button"
                                 class="plan-item-toggle"
                                 (click)="toggleRepairPlanPackageExclusion()"
@@ -267,14 +268,37 @@
 
                         <div class="plan-decision-row" *ngIf="repairPlanAwaitingDecision">
                           <p class="plan-decision-hint">Możesz zrezygnować z wybranych pozycji (ikona obok), a potem potwierdzić lub odrzucić cały plan.</p>
-                          <div class="plan-decision-buttons">
+                          <p class="plan-pay-hint" *ngIf="repairPlanNeedsPayment">
+                            Pakiet jest już opłacony. Do zapłaty za dodatkowe prace: <strong>{{ repairPlanExtrasPreview | number:'1.2-2' }} zł</strong>.
+                          </p>
+                          <div class="plan-decision-buttons" [class.plan-decision-buttons--stacked]="repairPlanNeedsPayment">
                             <button class="btn-reject" [disabled]="isDecidingRepairPlan" (click)="openRejectReasonModal()">Odrzucam</button>
-                            <button class="btn-confirm" [disabled]="isDecidingRepairPlan" (click)="confirmRepairPlan()">Potwierdzam</button>
+                            <ng-container *ngIf="repairPlanNeedsPayment; else plainConfirmBtn">
+                              <button class="btn-confirm btn-confirm--secondary" [disabled]="isDecidingRepairPlan" (click)="confirmRepairPlan('later')">Potwierdzam, zapłacę później</button>
+                              <button class="btn-confirm" [disabled]="isDecidingRepairPlan" (click)="confirmRepairPlan('now')">Potwierdzam i płacę {{ repairPlanExtrasPreview | number:'1.2-2' }} zł</button>
+                            </ng-container>
+                            <ng-template #plainConfirmBtn>
+                              <button class="btn-confirm" [disabled]="isDecidingRepairPlan" (click)="confirmRepairPlan()">Potwierdzam</button>
+                            </ng-template>
                           </div>
                         </div>
 
                         <div class="plan-decision-done" *ngIf="repairPlan.status === 'ACCEPTED'">Plan naprawy potwierdzony.</div>
                         <div class="plan-decision-done plan-decision-done--rejected" *ngIf="repairPlan.status === 'REJECTED'">Plan naprawy odrzucony.</div>
+
+                        <!-- Plan ekspresowy: dopłata za dodatki ponad opłacony pakiet -->
+                        <div class="plan-pay-card" *ngIf="repairPlan.expressPlan && repairPlan.amountDue > 0 && !repairPlanAwaitingDecision">
+                          <div class="plan-pay-info">
+                            <span class="plan-pay-label">Do zapłaty za dodatkowe prace</span>
+                            <strong>{{ repairPlan.amountDue | number:'1.2-2' }} zł</strong>
+                          </div>
+                          <button type="button" class="btn-confirm" [disabled]="isPayingRepairPlan" (click)="payRepairPlanDue()">
+                            {{ isPayingRepairPlan ? 'Przekierowanie…' : 'Zapłać teraz' }}
+                          </button>
+                        </div>
+                        <div class="plan-decision-done" *ngIf="repairPlan.expressPlan && repairPlan.amountPaid > 0 && repairPlan.amountDue === 0">
+                          Dopłata opłacona ({{ repairPlan.amountPaid | number:'1.2-2' }} zł).
+                        </div>
                       </div>
           <p class="empty-hint" *ngIf="!repairPlan && !isLoadingServiceOrderDetail">Plan naprawy pojawi się, gdy serwis go przygotuje.</p>
                       <!-- Powód odrzucenia planu naprawy -->

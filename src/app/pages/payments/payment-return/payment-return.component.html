@@ -7,8 +7,15 @@
     <p class="subtitle">To może potrwać chwilę.</p>
   </div>
 
+  <!-- DOPŁATA OPŁACONA (brak zapisanego adresu powrotu) -->
+  <div *ngIf="repairPlanPaidWithoutReturn" class="status-card pending">
+    <h1>Dopłata została przyjęta</h1>
+    <p class="subtitle">Dziękujemy! Status dopłaty zobaczysz na karcie zlecenia — link do niej znajdziesz w wiadomości e-mail od serwisu.</p>
+    <button class="btn-primary" (click)="goHome()">Wróć na stronę główną</button>
+  </div>
+
   <!-- CANCELED -->
-  <div *ngIf="!isChecking && status === 'CANCELED'" class="status-card canceled">
+  <div *ngIf="!isChecking && !repairPlanPaidWithoutReturn && status === 'CANCELED'" class="status-card canceled">
     <div class="icon-wrapper canceled-icon">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -18,8 +25,10 @@
     <h1>Płatność anulowana</h1>
     <p class="subtitle">Nie dokończyłeś procesu płatności. Twoje zamówienie zostało zapisane — możesz wrócić i opłacić je później.</p>
     <div class="info-box warning">
-      <p>Jeśli chcesz dokonać płatności, złóż zamówienie ponownie lub skontaktuj się z nami.</p>
+      <p *ngIf="!returnUrl">Jeśli chcesz dokonać płatności, złóż zamówienie ponownie lub skontaktuj się z nami.</p>
+      <p *ngIf="returnUrl">Dopłatę możesz opłacić później — z karty roweru w swoim profilu albo z linku w wiadomości e-mail.</p>
     </div>
+    <button *ngIf="returnUrl" class="btn-primary" (click)="goBackToOrder()">Wróć do zlecenia</button>
     <button class="btn-primary" (click)="goHome()">Wróć na stronę główną</button>
   </div>
 
@@ -37,6 +46,7 @@
     <div class="info-box warning">
       <p>Spróbuj ponownie lub skontaktuj się z nami pod adresem <strong>kontakt&#64;cyclopick.pl</strong>.</p>
     </div>
+    <button *ngIf="returnUrl" class="btn-primary" (click)="goBackToOrder()">Wróć do zlecenia</button>
     <button class="btn-primary" (click)="goHome()">Wróć na stronę główną</button>
   </div>
 
@@ -61,6 +71,7 @@
       <span *ngIf="isRechecking">Sprawdzamy&hellip;</span>
       <span *ngIf="!isRechecking && !lastCheckedAt">Sprawdzamy automatycznie&hellip;</span>
     </div>
+    <button *ngIf="returnUrl" class="btn-primary" (click)="goBackToOrder()">Wróć do zlecenia</button>
     <button class="btn-primary" (click)="goHome()">Wróć na stronę główną</button>
   </div>
 

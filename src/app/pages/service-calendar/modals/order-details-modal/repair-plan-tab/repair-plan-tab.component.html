@@ -21,6 +21,8 @@
         {{ planStatusLabels[planStatus] }}
         <span *ngIf="planStatus === 'SENT_TO_CLIENT' && !planRequiresConfirmation" class="rp-status-note">(informacyjnie, bez wymaganego potwierdzenia)</span>
       </span>
+      <span class="rp-pay-chip rp-pay-chip--due" *ngIf="expressPlan && planAmountDue > 0">Do zapłaty przez klienta: {{ planAmountDue | number:'1.2-2' }} zł</span>
+      <span class="rp-pay-chip rp-pay-chip--paid" *ngIf="expressPlan && planAmountPaid > 0 && planAmountDue === 0">Dopłata opłacona: {{ planAmountPaid | number:'1.2-2' }} zł</span>
     </div>
     <div class="rp-action-buttons no-print">
       <button class="btn-rp-print" (click)="printPlan()">Drukuj</button>
@@ -31,8 +33,24 @@
     </div>
   </div>
 
+  <!-- Pakiet ekspresowy: zakres prac z pakietu (bez ceny — pakiet opłacony przy rezerwacji) -->
+  <div class="rp-section rp-express-scope" *ngIf="expressPlan">
+    <div class="rp-section-header">
+      <h4>Zakres prac z pakietu</h4>
+      <span class="rp-optional">serwis ekspresowy · pakiet opłacony przy rezerwacji</span>
+    </div>
+    <p class="rp-express-package-name" *ngIf="expressPackageName">{{ expressPackageName }}</p>
+    <ul class="rp-express-scope-list" *ngIf="expressScopeLines.length > 0">
+      <li *ngFor="let line of expressScopeLines">{{ line }}</li>
+    </ul>
+    <p class="rp-empty-hint" *ngIf="expressScopeLines.length === 0">Pakiet nie ma opisanego zakresu prac.</p>
+    <p class="rp-express-note">
+      Zakres z pakietu wykonujesz bez zatwierdzania przez klienta. Części i usługi dodane poniżej klient musi potwierdzić i opłacić.
+    </p>
+  </div>
+
   <!-- Pakiet serwisowy -->
-  <div class="rp-section">
+  <div class="rp-section" *ngIf="!expressPlan">
     <div class="rp-section-header">
       <h4>Pakiet serwisowy</h4>
       <span class="rp-optional">opcjonalny<ng-container *ngIf="order.bicycleType"> · dla typu: {{ order.bicycleType }}</ng-container></span>
@@ -169,7 +187,7 @@
   <!-- Podsumowanie -->
   <div class="rp-section rp-summary-section">
     <div class="rp-summary-rows">
-      <div class="rp-summary-row rp-summary-row--package" *ngIf="selectedPackage" [class.rp-summary-row--excluded]="planPackageExcluded">
+      <div class="rp-summary-row rp-summary-row--package" *ngIf="selectedPackage && !expressPlan" [class.rp-summary-row--excluded]="planPackageExcluded">
         <span>Pakiet &ndash; {{ selectedPackage.displayName }}
           <span class="rp-item-excluded-tag" *ngIf="planPackageExcluded">klient zrezygnował</span>
           <span class="rp-price-overridden-hint" *ngIf="!planPackageExcluded && packagePriceOverride !== null && packagePriceOverride !== selectedPackage.price">
@@ -195,7 +213,7 @@
       </div>
       <div class="rp-summary-divider"></div>
       <div class="rp-summary-total">
-        <span>Razem</span>
+        <span>{{ expressPlan ? 'Razem (dodatki)' : 'Razem' }}</span>
         <div class="rp-total-values">
           <del *ngIf="customTotalEnabled" class="rp-total-original">{{ calculatedTotal | number:'1.2-2' }} zł</del>
           <strong>{{ finalTotal | number:'1.2-2' }} zł</strong>
@@ -206,7 +224,7 @@
     <div class="rp-custom-total no-print">
       <label class="rp-checkbox-label">
         <input type="checkbox" [(ngModel)]="customTotalEnabled" (change)="onCustomTotalToggle()" />
-        Zmień łączną kwotę
+        {{ expressPlan ? 'Zmień łączną kwotę dodatków' : 'Zmień łączną kwotę' }}
       </label>
       <input
         *ngIf="customTotalEnabled"

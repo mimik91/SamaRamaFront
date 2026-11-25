@@ -42,7 +42,8 @@ export const environment = {
         assignOrder: '/admin/express-service/orders/:id/assign',
         packages: '/admin/express-service/packages',
         packagesConfig: '/admin/express-service/packages-config',
-        services: '/admin/express-service/services'
+        services: '/admin/express-service/services',
+        repairPlanPayments: '/admin/express-service/repair-plan-payments'
       }
     },
 

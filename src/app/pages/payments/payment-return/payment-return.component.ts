@@ -5,9 +5,14 @@ import { Subscription, of, timer } from 'rxjs';
 import { catchError, switchMap, takeWhile } from 'rxjs/operators';
 import { PaymentService } from '../../../core/payment.service';
 import { environment } from '../../../environments/environments';
-import { PaymentStatus } from '../../../shared/models/payment.models';
+import { PaymentOrderType, PaymentStatus, PaymentStatusResponse } from '../../../shared/models/payment.models';
 
 const POLL_INTERVAL_MS = 15_000;
+
+/** Adres powrotu przyjmujemy tylko wewnętrzny (ścieżka aplikacji) — wartość pochodzi z sessionStorage. */
+function toInternalUrl(url: string | null): string | null {
+  return url && url.startsWith('/') && !url.startsWith('//') && !url.includes('\\') ? url : null;
+}
 
 @Component({
   selector: 'app-payment-return',
@@ -27,11 +32,19 @@ export class PaymentReturnComponent implements OnInit, OnDestroy {
   isRechecking = false;
   lastCheckedAt: Date | null = null;
   readonly homepageLink = environment.links.homepage;
+  /** Adres zlecenia, z którego klient poszedł opłacić dopłatę do planu naprawy (null dla innych płatności) */
+  returnUrl: string | null = null;
+  /** Dopłata opłacona, ale nie znamy zlecenia, do którego wrócić (np. powrót z aplikacji banku w innej karcie) */
+  repairPlanPaidWithoutReturn = false;
 
   private pollSub: Subscription | null = null;
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+
+    if (sessionStorage.getItem('pendingPaymentOrderType') === 'REPAIR_PLAN') {
+      this.returnUrl = toInternalUrl(sessionStorage.getItem('pendingPaymentReturnUrl'));
+    }
 
     const payuOrderId =
       this.route.snapshot.queryParamMap.get('orderId') ??
@@ -46,11 +59,27 @@ export class PaymentReturnComponent implements OnInit, OnDestroy {
     }
   }
 
-  private applyStatus(status: PaymentStatus): void {
+  /** serverOrderType: rodzaj płatności z backendu — ma pierwszeństwo przed (możliwie nieaktualnym) zapisem w sessionStorage. */
+  private applyStatus(status: PaymentStatus, serverOrderType?: PaymentOrderType): void {
     if (status === 'SUCCESS') {
       this.isChecking = true;
-      const orderType = sessionStorage.getItem('pendingPaymentOrderType');
+      const orderType = serverOrderType ?? sessionStorage.getItem('pendingPaymentOrderType');
       sessionStorage.removeItem('pendingPaymentOrderType');
+      if (orderType === 'REPAIR_PLAN') {
+        // Dopłata do planu naprawy: wracamy na kartę zlecenia (zalogowany klient) albo stronę z linku (gość)
+        const returnUrl = toInternalUrl(sessionStorage.getItem('pendingPaymentReturnUrl'));
+        sessionStorage.removeItem('pendingPaymentReturnUrl');
+        if (!returnUrl) {
+          // Brak zapisu (inna karta/urządzenie): nie wiemy, dokąd wrócić — pokazujemy potwierdzenie dopłaty
+          this.isChecking = false;
+          this.repairPlanPaidWithoutReturn = true;
+          return;
+        }
+        const target = this.router.parseUrl(returnUrl);
+        target.queryParams = { ...target.queryParams, doplata: 'ok' };
+        this.router.navigateByUrl(target, { replaceUrl: true });
+        return;
+      }
       const isReservation = sessionStorage.getItem('pendingReservationSuccess') === '1';
       sessionStorage.removeItem('pendingReservationSuccess');
       if (isReservation && orderType !== 'SERVICE_ORDER') {
@@ -79,9 +108,9 @@ export class PaymentReturnComponent implements OnInit, OnDestroy {
             this.isRechecking = false;
             this.lastCheckedAt = new Date();
             if (consecutiveErrors >= MAX_ERRORS) {
-              return of({ status: 'ERROR' as const });
+              return of<PaymentStatusResponse>({ status: 'ERROR' });
             }
-            return of({ status: 'PENDING' as const });
+            return of<PaymentStatusResponse>({ status: 'PENDING' });
           })
         );
       }),
@@ -93,13 +122,20 @@ export class PaymentReturnComponent implements OnInit, OnDestroy {
         this.isRechecking = false;
         this.lastCheckedAt = new Date();
         isFirst = false;
-        this.applyStatus(response.status);
+        this.applyStatus(response.status, response.orderType);
       }
     });
   }
 
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
+  }
+
+  goBackToOrder(): void {
+    const url = toInternalUrl(this.returnUrl);
+    if (url) {
+      this.router.navigateByUrl(url);
+    }
   }
 
   goHome(): void {

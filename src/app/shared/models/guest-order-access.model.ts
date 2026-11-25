@@ -31,6 +31,16 @@ export interface GuestRepairPlan {
   sentAt: string | null;
   createdAt: string;
   updatedAt: string;
+  expressPlan: boolean;
+  acceptedTotal: number;
+  amountPaid: number;
+  amountDue: number;
+}
+
+export interface GuestConfirmRepairPlanResponse {
+  message: string;
+  plan: GuestRepairPlan;
+  amountDue: number;
 }
 
 export interface GuestOrderAccess {

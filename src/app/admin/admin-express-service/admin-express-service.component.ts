@@ -20,6 +20,27 @@ interface ExpressOrder {
   statusLabel: string;
 }
 
+/** Dopłata do planu naprawy serwisu ekspresowego: stan rozliczenia jednego zlecenia (widok admina). */
+interface RepairPlanPaymentRow {
+  planId: number;
+  serviceOrderId: number;
+  orderStatus: string | null;
+  orderStatusLabel: string | null;
+  bike: string | null;
+  clientName: string | null;
+  clientEmail: string | null;
+  serviceName: string | null;
+  acceptedTotal: number;
+  amountPaid: number;
+  amountDue: number;
+  overpaid: number;
+  blockReleased: boolean;
+  blockReleasedBy: string | null;
+  blockReleasedAt: string | null;
+  blockReleaseReason: string | null;
+  payLaterAt: string | null;
+}
+
 interface ExpressConfig {
   active: boolean;
   dailyBikeLimit: number | null;
@@ -73,7 +94,16 @@ export class AdminExpressServiceComponent implements OnInit {
   private fb = inject(FormBuilder);
   private notificationService = inject(NotificationService);
 
-  activeTab: 'orders' | 'config' | 'packages' = 'orders';
+  activeTab: 'orders' | 'config' | 'packages' | 'surcharges' = 'orders';
+
+  // Dopłaty do planów naprawy (zaległości, nadpłaty, odblokowanie wydania, wpłaty ręczne)
+  surcharges: RepairPlanPaymentRow[] = [];
+  loadingSurcharges = false;
+  showSettledSurcharges = false;
+  surchargeModal: { type: 'release' | 'payment'; row: RepairPlanPaymentRow } | null = null;
+  surchargeReason = '';
+  surchargeAmount: number | null = null;
+  savingSurcharge = false;
 
   // Orders
   orders: ExpressOrder[] = [];
@@ -133,10 +163,98 @@ export class AdminExpressServiceComponent implements OnInit {
     this.loadOrders();
     this.loadConfig();
     this.loadPackages();
+    // ładowane od razu dla znaczka na zakładce, ale bez komunikatu o błędzie, dopóki admin nie otworzy zakładki
+    this.loadSurcharges(true);
   }
 
-  selectTab(tab: 'orders' | 'config' | 'packages'): void {
+  selectTab(tab: 'orders' | 'config' | 'packages' | 'surcharges'): void {
     this.activeTab = tab;
+  }
+
+  // ===== DOPŁATY DO PLANÓW NAPRAWY =====
+
+  private surchargesUrl(path = ''): string {
+    return `${environment.apiUrl}${environment.endpoints.admin.expressService.repairPlanPayments}${path}`;
+  }
+
+  /** Liczba pozycji wymagających uwagi (do zapłaty lub nadpłata) — znaczek na zakładce */
+  get surchargesNeedingAttention(): number {
+    return this.surcharges.filter(r => r.amountDue > 0 || r.overpaid > 0).length;
+  }
+
+  loadSurcharges(silent = false): void {
+    this.loadingSurcharges = true;
+    this.http.get<RepairPlanPaymentRow[]>(this.surchargesUrl(), { params: { includeSettled: this.showSettledSurcharges } }).subscribe({
+      next: (rows) => {
+        this.surcharges = rows;
+        this.loadingSurcharges = false;
+      },
+      error: () => {
+        this.loadingSurcharges = false;
+        if (!silent || this.activeTab === 'surcharges') {
+          this.notificationService.error('Nie udało się pobrać listy dopłat.');
+        }
+      }
+    });
+  }
+
+  toggleSettledSurcharges(): void {
+    this.showSettledSurcharges = !this.showSettledSurcharges;
+    this.loadSurcharges();
+  }
+
+  openReleaseModal(row: RepairPlanPaymentRow): void {
+    this.surchargeModal = { type: 'release', row };
+    this.surchargeReason = '';
+  }
+
+  openPaymentModal(row: RepairPlanPaymentRow): void {
+    this.surchargeModal = { type: 'payment', row };
+    this.surchargeAmount = row.amountDue;
+  }
+
+  closeSurchargeModal(): void {
+    if (this.savingSurcharge) return;
+    this.surchargeModal = null;
+  }
+
+  confirmSurchargeAction(): void {
+    const modal = this.surchargeModal;
+    if (!modal || this.savingSurcharge) return;
+
+    const request = modal.type === 'release'
+      ? this.http.post<RepairPlanPaymentRow>(this.surchargesUrl(`/${modal.row.planId}/release-block`), { reason: this.surchargeReason.trim() })
+      : this.http.post<RepairPlanPaymentRow>(this.surchargesUrl(`/${modal.row.planId}/manual-payment`), { amount: this.surchargeAmount });
+
+    this.savingSurcharge = true;
+    request.subscribe({
+      next: () => {
+        this.savingSurcharge = false;
+        this.surchargeModal = null;
+        this.notificationService.success(modal.type === 'release' ? 'Blokada wydania zdjęta.' : 'Wpłata zaksięgowana.');
+        this.loadSurcharges();
+      },
+      error: (err) => {
+        this.savingSurcharge = false;
+        this.notificationService.error(err.error?.message || 'Nie udało się zapisać zmiany.');
+      }
+    });
+  }
+
+  restoreBlock(row: RepairPlanPaymentRow): void {
+    if (this.savingSurcharge) return;
+    this.savingSurcharge = true;
+    this.http.post<RepairPlanPaymentRow>(this.surchargesUrl(`/${row.planId}/restore-block`), {}).subscribe({
+      next: () => {
+        this.savingSurcharge = false;
+        this.notificationService.success('Blokada wydania przywrócona.');
+        this.loadSurcharges();
+      },
+      error: (err) => {
+        this.savingSurcharge = false;
+        this.notificationService.error(err.error?.message || 'Nie udało się przywrócić blokady.');
+      }
+    });
   }
 
   // ===== ORDERS =====

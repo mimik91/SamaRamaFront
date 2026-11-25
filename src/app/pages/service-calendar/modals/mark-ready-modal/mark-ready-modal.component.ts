@@ -119,9 +119,11 @@ export class MarkReadyModalComponent implements OnInit {
         this.notificationService.success('Rower gotowy do odbioru. Powiadomienie wysłane.');
         this.completed.emit(orderIds);
       },
-      error: () => {
+      error: (err) => {
         this.sending = false;
-        this.notificationService.error('Nie udało się wysłać powiadomienia. Spróbuj ponownie.');
+        // Backend zwraca konkretny powód (np. niezapłacona dopłata za dodatki) — pokazujemy go zamiast ogólnego komunikatu
+        const backendMessage: string | undefined = err?.error?.message;
+        this.notificationService.error(backendMessage || 'Nie udało się wysłać powiadomienia. Spróbuj ponownie.');
       }
     });
   }

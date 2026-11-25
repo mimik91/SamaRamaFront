@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environments';
-import { GuestOrderAccess, GuestOrderMessage } from '../models/guest-order-access.model';
+import { GuestConfirmRepairPlanResponse, GuestOrderAccess, GuestOrderMessage } from '../models/guest-order-access.model';
 
 @Injectable({ providedIn: 'root' })
 export class GuestOrderAccessService {
@@ -36,8 +36,8 @@ export class GuestOrderAccessService {
     );
   }
 
-  confirmRepairPlan(token: string, excludedItemIds: number[] = [], excludePackage = false): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.baseUrl}/${token}/repair-plan/confirm`, { excludedItemIds, excludePackage }).pipe(
+  confirmRepairPlan(token: string, excludedItemIds: number[] = [], excludePackage = false, payLater = false): Observable<GuestConfirmRepairPlanResponse> {
+    return this.http.post<GuestConfirmRepairPlanResponse>(`${this.baseUrl}/${token}/repair-plan/confirm`, { excludedItemIds, excludePackage, payLater }).pipe(
       catchError(error => {
         console.error('Error confirming repair plan:', error);
         return throwError(() => error);

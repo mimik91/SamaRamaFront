@@ -122,13 +122,8 @@ export class MapService {
             return null;
           }
 
-          // Validate required fields
-          if (details.id == null || typeof details.id !== 'number') {
-            console.error('MapService: Service details missing valid id for ID:', id);
-            return null;
-          }
-
-          return details;
+          // Backend nie zwraca już id w tej odpowiedzi — znamy je z żądania, więc dokładamy je po stronie frontu
+          return { ...details, id };
         }),
         // Share the result with all subscribers and cache it
         shareReplay({ bufferSize: 1, refCount: true }),

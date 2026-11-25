@@ -111,6 +111,8 @@ export class TransportOrderService {
    */
   getServiceDetails(serviceId: number): Observable<BikeService> {
     return this.http.get<BikeService>(`${environment.apiUrl}${environment.endpoints.bikeServices.base}/${serviceId}`).pipe(
+      // Backend nie zwraca już id w tej odpowiedzi — dokładamy je z żądania
+      map(service => ({ ...service, id: serviceId })),
       catchError(error => {
         console.error(`Error fetching service ${serviceId} details:`, error);
         return throwError(() => error);

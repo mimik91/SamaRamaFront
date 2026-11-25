@@ -739,7 +739,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         if (d.city) address += (address ? ', ' : '') + d.city;
 
         this.serviceInfo = {
-          id: d.id,
+          id: serviceId, // backend nie zwraca id w GET /bike-services/{id}
           name: d.name,
           address,
           logoUrl: d.logoUrl || null,

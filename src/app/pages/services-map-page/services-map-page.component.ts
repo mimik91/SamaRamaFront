@@ -714,8 +714,7 @@ onCitySelected(city: CitySuggestion): void {
         building: serviceDetails.building || '',
         flat: serviceDetails.flat || '',
         city: serviceDetails.city || '',
-        phoneNumber: serviceDetails.phoneNumber || '',
-        email: serviceDetails.email || ''
+        phoneNumber: serviceDetails.phoneNumber || ''
       }
     });
   }

@@ -766,8 +766,7 @@ export class CityServicesPageComponent implements OnInit, OnDestroy {
       queryParams: {
         serviceId: service.id,
         serviceName: service.name,
-        phoneNumber: service.phoneNumber || '',
-        email: service.email || ''
+        phoneNumber: service.phoneNumber || ''
       }
     });
   }

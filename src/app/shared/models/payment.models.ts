@@ -19,9 +19,21 @@ export interface InitiatePaymentResponse {
   payuOrderId?: string;
 }
 
+/** Dane tylko do wyświetlenia na ekranie potwierdzenia — kwotę i zawartość zamówienia i tak wylicza backend. */
+export interface PaymentSummaryDetails {
+  packageName?: string;
+  packagePrice?: number;
+  plannedDate?: string;
+  pickupDate?: string;
+  pickupPlace?: string;
+  bikes?: string[];
+  discountCoupon?: string;
+}
+
 export interface PaymentNavigationState {
   orderType: PaymentOrderType;
   orderData: Record<string, unknown>;
   totalPrice: number;
   bikeCount?: number;
+  details?: PaymentSummaryDetails;
 }

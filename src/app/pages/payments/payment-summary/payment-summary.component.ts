@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { PaymentService } from '../../../core/payment.service';
 import { NotificationService } from '../../../core/notification.service';
 import { environment } from '../../../environments/environments';
-import { PaymentNavigationState, PaymentOrderType } from '../../../shared/models/payment.models';
+import { PaymentNavigationState, PaymentOrderType, PaymentSummaryDetails } from '../../../shared/models/payment.models';
 
 const PENDING_ORDER_KEY = 'pendingOrderData';
 const VALID_ORDER_TYPES: PaymentOrderType[] = ['TRANSPORT', 'SERVICE_ORDER'];
@@ -25,6 +25,7 @@ export class PaymentSummaryComponent implements OnInit {
   orderType: PaymentOrderType = 'TRANSPORT';
   orderData: Record<string, unknown> = {};
   totalPrice: number = 0;
+  details: PaymentSummaryDetails | null = null;
   isRedirecting = false;
   hasData = false;
 
@@ -47,11 +48,13 @@ export class PaymentSummaryComponent implements OnInit {
       this.orderType = this.sanitizeOrderType(state.orderType);
       this.orderData = state.orderData;
       this.totalPrice = state.totalPrice ?? 0;
+      this.details = state.details ?? null;
       this.hasData = true;
       sessionStorage.setItem(PENDING_ORDER_KEY, JSON.stringify({
         orderType: this.orderType,
         orderData: this.orderData,
-        totalPrice: this.totalPrice
+        totalPrice: this.totalPrice,
+        details: this.details
       }));
     } else {
       const stored = sessionStorage.getItem(PENDING_ORDER_KEY);
@@ -61,6 +64,7 @@ export class PaymentSummaryComponent implements OnInit {
           this.orderType = this.sanitizeOrderType(parsed.orderType);
           this.orderData = parsed.orderData ?? {};
           this.totalPrice = parsed.totalPrice ?? 0;
+          this.details = parsed.details ?? null;
           this.hasData = true;
         } catch {
           // uszkodzony wpis — wyczyść
@@ -102,9 +106,15 @@ export class PaymentSummaryComponent implements OnInit {
           }
         }
       },
-      error: () => {
+      error: (err) => {
         this.isRedirecting = false;
-        this.notificationService.error('Nie udało się uruchomić płatności. Spróbuj ponownie lub skontaktuj się z nami.');
+        const reason: string | undefined = err?.error?.message;
+        this.notificationService.error(
+          reason && err.status === 400
+            ? reason
+            : (this.isFree
+              ? 'Nie udało się sfinalizować rezerwacji. Spróbuj ponownie lub skontaktuj się z nami.'
+              : 'Nie udało się uruchomić płatności. Spróbuj ponownie lub skontaktuj się z nami.'));
       }
     });
   }

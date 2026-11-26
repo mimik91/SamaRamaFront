@@ -33,6 +33,7 @@ import { OfficeAddressDto } from '../../shared/models/office-address.model';
 import { AuthService } from '../../auth/auth.service';
 import { BicycleService } from '../../pages/client-panel/bicycle.service';
 import { Bicycle } from '../../shared/models/bicycle.model';
+import { PaymentSummaryDetails } from '../../shared/models/payment.models';
 
 interface ReservationSettings {
   acceptedDays: string[];
@@ -663,7 +664,8 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
             orderType: 'SERVICE_ORDER',
             orderData: finalOrderData,
             totalPrice: res.totalPrice,
-            bikeCount: this.bikesArray.length
+            bikeCount: this.bikesArray.length,
+            details: this.buildSummaryDetails(orderData)
           }
         });
       },
@@ -673,6 +675,24 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
         this.notificationService.error(msg);
       }
     });
+  }
+
+  /** Podsumowanie wybranych opcji na ekran potwierdzenia (tylko do wyświetlenia). */
+  private buildSummaryDetails(orderData: Record<string, unknown>): PaymentSummaryDetails {
+    const bikes = (orderData['bicycles'] as { brand: string; model: string | null }[])
+      .map(b => [b.brand, b.model].filter(Boolean).join(' '));
+    const street = [orderData['pickupStreet'], orderData['pickupBuildingNumber']].filter(Boolean).join(' ');
+    const address = [street, orderData['pickupCity']].filter(Boolean).join(', ');
+    const office = orderData['pickupOfficeName'] as string | null;
+    return {
+      packageName: this.selectedPackage?.displayName,
+      packagePrice: this.selectedPackage?.price,
+      plannedDate: orderData['plannedDate'] as string,
+      pickupDate: orderData['pickupDate'] as string,
+      pickupPlace: office ? `${office}, ${address}` : address,
+      bikes,
+      discountCoupon: (orderData['discountCoupon'] as string | null) ?? undefined
+    };
   }
 
   /**

@@ -757,9 +757,10 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         this.injectReservationSchema(d);
         this.updateReservationSeo(d.name, d.city);
 
-        this.loadReservationSettings(d.id);
-        this.loadPackages(d.id);
-        this.loadServiceStats(d.id);
+        // id znamy z żądania — GET /bike-services/{id} go już nie zwraca
+        this.loadReservationSettings(serviceId);
+        this.loadPackages(serviceId);
+        this.loadServiceStats(serviceId);
         this.loading = false;
       },
       error: () => {

@@ -70,6 +70,12 @@
       </span>
     </button>
 
+    <p class="coupon-hint" *ngIf="canReturnToForm">
+      {{ details?.discountCoupon ? 'Chcesz zmienić kupon lub inne dane?' : 'Masz kupon rabatowy?' }}
+      <button type="button" class="btn-link" [disabled]="isRedirecting" (click)="returnToForm()">Wróć do zamówienia</button>
+      — pola będą uzupełnione.
+    </p>
+
     <p class="disclaimer" *ngIf="orderType === 'SERVICE_ORDER'; else transportDisclaimer">
       {{ isFree ? 'Twoja wizyta zostanie zarezerwowana od razu po potwierdzeniu. Otrzymasz potwierdzenie e-mail.' : 'Twoja wizyta zostanie zarezerwowana automatycznie po zaksięgowaniu płatności. Otrzymasz potwierdzenie e-mail.' }}
     </p>

@@ -43,6 +43,24 @@ interface ReservationSettings {
 
 type DeliveryType = 'DOOR_TO_DOOR' | 'OFFICE';
 
+/**
+ * Wypełniony formularz zapamiętany przy przejściu do podsumowania — pozwala wrócić z podsumowania
+ * (np. po kupon) bez ponownego wpisywania danych. Trzymany w sessionStorage, odczytywany jednorazowo.
+ */
+const DRAFT_KEY = 'expressReservationDraft';
+
+interface ExpressReservationDraft {
+  contact: { firstName: string; lastName: string; email: string; phone: string };
+  plannedDate: string;
+  deliveryType: DeliveryType;
+  bikes: { selectedBicycleId: number | null; brand: string; model: string; additionalInfo: string }[];
+  transport: { pickupStreet: string; pickupBuildingNumber: string; pickupCity: string; pickupPostalCode: string; transportNotes: string };
+  officeName: string;
+  packageId: number | null;
+  coupon: string;
+  termsAccepted: boolean;
+}
+
 const DAY_KEYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 const DAY_LABELS: { [key: string]: string } = {
   MONDAY: 'poniedziałek', TUESDAY: 'wtorek', WEDNESDAY: 'środa',
@@ -189,7 +207,11 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
       next: (bikes) => {
         this.myBicycles = bikes;
         this.loadingMyBicycles = false;
-        this.applyOriginatingBicycleDefault();
+        if (this.draft) {
+          this.applyDraftBikes(this.draft);
+        } else {
+          this.applyOriginatingBicycleDefault();
+        }
       },
       error: () => {
         this.myBicycles = [];
@@ -481,6 +503,8 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.draft = this.consumeDraft();
+
     this.loadBrands();
     this.loadOfficeAddresses();
     this.loadReservationSettings();
@@ -520,6 +544,99 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     });
 
     this.transportForm.enable();
+
+    if (this.draft) {
+      this.applyDraft(this.draft);
+    }
+  }
+
+  // ===== Powrót z podsumowania (zapamiętany formularz) =====
+
+  private draft: ExpressReservationDraft | null = null;
+
+  private saveDraft(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const rv = this.reservationForm.getRawValue();
+    const planned = rv.plannedDate;
+    const draft: ExpressReservationDraft = {
+      contact: { firstName: rv.firstName ?? '', lastName: rv.lastName ?? '', email: rv.email ?? '', phone: rv.phone ?? '' },
+      plannedDate: planned instanceof Date ? this.dateToStr(planned) : (planned ?? ''),
+      deliveryType: this.deliveryType,
+      bikes: this.bikesArray.getRawValue().map((b: { selectedBicycleId: number | null; brand: string; model: string; additionalInfo: string }) => ({
+        selectedBicycleId: b.selectedBicycleId ?? null,
+        brand: b.brand ?? '',
+        model: b.model ?? '',
+        additionalInfo: b.additionalInfo ?? ''
+      })),
+      transport: this.transportForm.getRawValue(),
+      officeName: this.officeNameControl.value ?? '',
+      packageId: this.selectedPackage?.id ?? null,
+      coupon: this.couponControl.value ?? '',
+      termsAccepted: !!this.termsControl.value
+    };
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch {
+      // brak miejsca/zablokowany storage — wtedy po prostu nie da się wrócić z wypełnionymi polami
+    }
+  }
+
+  /** Odczyt jednorazowy i tylko po wejściu z podsumowania (state.restoreDraft) — świeże wejście zawsze startuje z pustym formularzem. */
+  private consumeDraft(): ExpressReservationDraft | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    const wantsRestore = window.history.state?.restoreDraft === true;
+    let raw: string | null = null;
+    try {
+      raw = sessionStorage.getItem(DRAFT_KEY);
+      sessionStorage.removeItem(DRAFT_KEY);
+    } catch {
+      return null;
+    }
+    if (!wantsRestore || !raw) return null;
+    try {
+      return JSON.parse(raw) as ExpressReservationDraft;
+    } catch {
+      return null;
+    }
+  }
+
+  private applyDraft(draft: ExpressReservationDraft): void {
+    if (!this.clientMode) {
+      this.reservationForm.patchValue(draft.contact);
+    }
+
+    this.reservationForm.get('deliveryType')?.setValue(draft.deliveryType);
+    this.updateMinDate();
+    this.reservationForm.get('plannedDate')?.setValue(draft.plannedDate || '');
+
+    this.transportForm.patchValue(draft.transport);
+    this.officeNameControl.setValue(draft.officeName);
+    this.couponControl.setValue(draft.coupon);
+    this.termsControl.setValue(draft.termsAccepted);
+
+    // tryb klienta wybiera rowery z listy — uzupełniamy je dopiero po jej załadowaniu (loadMyBicycles)
+    if (!this.clientMode) {
+      this.applyDraftBikes(draft);
+    }
+
+    // wracamy od razu do kroku z kuponem i regulaminem
+    this.currentStep = 2;
+  }
+
+  private applyDraftBikes(draft: ExpressReservationDraft): void {
+    while (this.bikesArray.length < draft.bikes.length) {
+      this.bikesArray.push(this.createBikeGroup());
+      this.bikeBrandStates.push({ filtered: [], showDropdown: false });
+    }
+    draft.bikes.forEach((bike, i) => {
+      const group = this.bikesArray.at(i) as FormGroup;
+      if (this.clientMode && bike.selectedBicycleId) {
+        this.onBicycleSelected(i, bike.selectedBicycleId);
+      } else {
+        group.patchValue({ brand: bike.brand, model: bike.model });
+      }
+      group.patchValue({ additionalInfo: bike.additionalInfo });
+    });
   }
 
   private loadBrands(): void {
@@ -532,7 +649,13 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   private loadOfficeAddresses(): void {
     const url = `${environment.apiUrl}${environment.endpoints.guestOrders.officeAddresses}`;
     this.http.get<OfficeAddressDto[]>(url).subscribe({
-      next: (offices) => { this.officeAddresses = offices; },
+      next: (offices) => {
+        this.officeAddresses = offices;
+        // powrót z podsumowania: odtwórz wybrane biuro (pola adresu są już uzupełnione z zapamiętanego formularza)
+        if (this.draft?.officeName) {
+          this.selectedOffice = offices.find(o => o.name === this.draft!.officeName) ?? null;
+        }
+      },
       error: () => { this.officeAddresses = []; }
     });
   }
@@ -659,6 +782,7 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.submitting = false;
         const finalOrderData = { ...orderData, serviceId: res.expressServiceId };
+        this.saveDraft();
         this.router.navigate(['/platnosc/podsumowanie'], {
           state: {
             orderType: 'SERVICE_ORDER',
@@ -799,7 +923,11 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
         // Bez dopasowania — domyślnie najtańszy pakiet, klient może zmienić wybór ręcznie.
         const preselect = this.route.snapshot.queryParamMap.get('pakiet');
         const matched = preselect ? this.findPackageByHint(preselect) : null;
-        this.selectedPackage = matched
+        const fromDraft = this.draft?.packageId != null
+          ? this.packages.find(p => p.id === this.draft!.packageId) ?? null
+          : null;
+        this.selectedPackage = fromDraft
+          ?? matched
           ?? this.packages.reduce((cheapest, pkg) => pkg.price < cheapest.price ? pkg : cheapest);
       }
     });

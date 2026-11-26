@@ -29,6 +29,16 @@ export class PaymentSummaryComponent implements OnInit {
   isRedirecting = false;
   hasData = false;
 
+  /** Rezerwację ekspresową można poprawić (np. dopisać kupon) — formularz wraca z zapamiętanymi polami */
+  get canReturnToForm(): boolean {
+    return this.orderType === 'SERVICE_ORDER';
+  }
+
+  returnToForm(): void {
+    if (this.isRedirecting) return;
+    this.router.navigate(['/krakow/zarezerwuj'], { state: { restoreDraft: true } });
+  }
+
   /** Zamówienie w pełni pokryte kuponem — nie przechodzi przez PayU */
   get isFree(): boolean {
     return this.totalPrice <= 0;

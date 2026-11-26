@@ -16,6 +16,7 @@
   padding: 48px 40px;
   text-align: center;
   width: 100%;
+  position: relative;
 }
 
 /* Icon */
@@ -153,31 +154,92 @@ h1 {
   font-size: 0.95rem;
 }
 
-/* Powrót do formularza (np. żeby wpisać kupon) */
-.coupon-hint {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin: -8px 0 24px;
-}
-
-.btn-link {
+/* Powrót do formularza (np. żeby wpisać kupon) — lewy górny róg karty */
+.btn-back {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: none;
   border: none;
-  padding: 0;
+  padding: 6px 8px;
+  border-radius: var(--radius-btn);
   font: inherit;
-  color: var(--color-primary);
+  font-size: 0.875rem;
   font-weight: 600;
-  text-decoration: underline;
+  color: var(--color-primary);
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.btn-link:hover:not(:disabled) {
-  color: var(--color-primary-dark);
+.btn-back:hover:not(:disabled) {
+  background: var(--color-primary-alpha-08);
 }
 
-.btn-link:disabled {
+.btn-back:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.back-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Następne kroki po złożeniu zamówienia */
+.next-steps {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.next-steps h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px;
+}
+
+.next-steps ol {
+  list-style: none;
+  counter-reset: step;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.next-steps li {
+  counter-increment: step;
+  position: relative;
+  padding: 6px 0 6px 36px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.next-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary-alpha-10);
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-note {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 4px 0 0;
 }
 
 /* Disclaimer */

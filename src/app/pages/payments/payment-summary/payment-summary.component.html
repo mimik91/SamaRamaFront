@@ -1,18 +1,26 @@
 <div class="payment-summary-container">
   <div class="summary-card">
 
+    <button type="button" class="btn-back" *ngIf="canReturnToForm" [disabled]="isRedirecting" (click)="returnToForm()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="back-icon">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Wróć do zamówienia
+    </button>
+
     <div class="icon-wrapper">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="20 6 9 17 4 12"></polyline>
       </svg>
     </div>
 
-    <h1>Zamówienie złożone!</h1>
+    <h1 *ngIf="canReturnToForm; else transportTitle">Od dokończenia zamówienia dzieli Cię już tylko 1&nbsp;krok</h1>
+    <ng-template #transportTitle><h1>Zamówienie złożone!</h1></ng-template>
     <ng-container *ngIf="isFree; else paidSubtitle">
-      <p class="subtitle">Dzięki kuponowi to zamówienie jest bezpłatne — nie musisz nic płacić. Potwierdź rezerwację, aby ją sfinalizować.</p>
+      <p class="subtitle">Dzięki kuponowi to zamówienie jest bezpłatne — nie musisz nic płacić. Potwierdź je, aby je sfinalizować.</p>
     </ng-container>
     <ng-template #paidSubtitle>
-      <p class="subtitle" *ngIf="orderType === 'SERVICE_ORDER'; else transportSubtitle">Sprawdziliśmy dostępność terminu i wyceniliśmy Twój serwis ekspresowy CycloPick. Opłać go teraz online przez PayU, aby dokończyć rezerwację.</p>
+      <p class="subtitle" *ngIf="orderType === 'SERVICE_ORDER'; else transportSubtitle">Musisz je opłacić online przez PayU — termin został sprawdzony, a serwis ekspresowy CycloPick wyceniony.</p>
     </ng-template>
     <ng-template #transportSubtitle>
       <p class="subtitle">Twoje zamówienie transportu zostało zarejestrowane w systemie. Teraz możesz je opłacić online przez PayU.</p>
@@ -70,11 +78,19 @@
       </span>
     </button>
 
-    <p class="coupon-hint" *ngIf="canReturnToForm">
-      {{ details?.discountCoupon ? 'Chcesz zmienić kupon lub inne dane?' : 'Masz kupon rabatowy?' }}
-      <button type="button" class="btn-link" [disabled]="isRedirecting" (click)="returnToForm()">Wróć do zamówienia</button>
-      — pola będą uzupełnione.
-    </p>
+    <div class="next-steps" *ngIf="canReturnToForm">
+      <h2>Co dalej?</h2>
+      <ol>
+        <li>Czekaj na maila z potwierdzeniem Twojego zamówienia przez serwis.</li>
+        <li>Najpóźniej w dniu odbioru skontaktuje się z Tobą kierowca z przybliżonym czasem odbioru.</li>
+        <li>Odbiór roweru.</li>
+        <li>Dostarczenie roweru do serwisu.<sup>*</sup></li>
+        <li>Odbiór roweru z serwisu.<sup>**</sup></li>
+        <li>Zwrot roweru.</li>
+      </ol>
+      <p class="step-note"><sup>*</sup> Jeżeli będą jakieś dodatkowe rzeczy do naprawy, serwis skontaktuje się w celu ustalenia szczegółów.</p>
+      <p class="step-note"><sup>**</sup> Jeżeli jakiś dzień zwrotu Ci nie pasuje albo pasuje bardziej, daj nam o tym znać.</p>
+    </div>
 
     <p class="disclaimer" *ngIf="orderType === 'SERVICE_ORDER'; else transportDisclaimer">
       {{ isFree ? 'Twoja wizyta zostanie zarezerwowana od razu po potwierdzeniu. Otrzymasz potwierdzenie e-mail.' : 'Twoja wizyta zostanie zarezerwowana automatycznie po zaksięgowaniu płatności. Otrzymasz potwierdzenie e-mail.' }}

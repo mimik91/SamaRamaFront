@@ -15,7 +15,8 @@ export interface InitiatePaymentRequest {
 
 export interface InitiatePaymentResponse {
   redirectUrl: string;
-  payuOrderId: string;
+  /** Brak dla zamówienia za 0 zł (np. po kuponie) — kończy się bez PayU */
+  payuOrderId?: string;
 }
 
 export interface PaymentNavigationState {

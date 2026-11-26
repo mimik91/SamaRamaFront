@@ -28,6 +28,11 @@ export class PaymentSummaryComponent implements OnInit {
   isRedirecting = false;
   hasData = false;
 
+  /** Zamówienie w pełni pokryte kuponem — nie przechodzi przez PayU */
+  get isFree(): boolean {
+    return this.totalPrice <= 0;
+  }
+
   get bikeCount(): number {
     const bicycles = this.orderData['bicycles'];
     return Array.isArray(bicycles) ? bicycles.length : 1;
@@ -89,8 +94,12 @@ export class PaymentSummaryComponent implements OnInit {
           }
           if (response.payuOrderId) {
             sessionStorage.setItem('pendingPayuOrderId', response.payuOrderId);
+            window.location.href = response.redirectUrl;
+          } else {
+            // Zamówienie za 0 zł zostało już sfinalizowane przez backend — bez PayU, od razu ekran sukcesu
+            sessionStorage.removeItem('pendingPayuOrderId');
+            this.router.navigate(['/platnosc/powrot'], { queryParams: { status: 'SUCCESS' }, replaceUrl: true });
           }
-          window.location.href = response.redirectUrl;
         }
       },
       error: () => {

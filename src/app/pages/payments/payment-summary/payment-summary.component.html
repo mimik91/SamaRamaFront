@@ -8,7 +8,12 @@
     </div>
 
     <h1>Zamówienie złożone!</h1>
-    <p class="subtitle" *ngIf="orderType === 'SERVICE_ORDER'; else transportSubtitle">Sprawdziliśmy dostępność terminu i wyceniliśmy Twój serwis ekspresowy CycloPick. Opłać go teraz online przez PayU, aby dokończyć rezerwację.</p>
+    <ng-container *ngIf="isFree; else paidSubtitle">
+      <p class="subtitle">Dzięki kuponowi to zamówienie jest bezpłatne — nie musisz nic płacić. Potwierdź rezerwację, aby ją sfinalizować.</p>
+    </ng-container>
+    <ng-template #paidSubtitle>
+      <p class="subtitle" *ngIf="orderType === 'SERVICE_ORDER'; else transportSubtitle">Sprawdziliśmy dostępność terminu i wyceniliśmy Twój serwis ekspresowy CycloPick. Opłać go teraz online przez PayU, aby dokończyć rezerwację.</p>
+    </ng-template>
     <ng-template #transportSubtitle>
       <p class="subtitle">Twoje zamówienie transportu zostało zarejestrowane w systemie. Teraz możesz je opłacić online przez PayU.</p>
     </ng-template>
@@ -24,7 +29,7 @@
       </div>
     </div>
 
-    <div class="info-box">
+    <div class="info-box" *ngIf="!isFree">
       <p>Po kliknięciu "Opłać" zostaniesz przekierowany na bezpieczną stronę płatności PayU. Możesz zapłacić kartą, BLIK-iem lub przelewem.</p>
     </div>
 
@@ -34,15 +39,15 @@
           <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
           <line x1="1" y1="10" x2="23" y2="10"></line>
         </svg>
-        Opłać przez PayU
+        {{ isFree ? 'Potwierdź rezerwację' : 'Opłać przez PayU' }}
       </span>
       <span *ngIf="isRedirecting" class="loading-text">
-        Przekierowuję do PayU&hellip;
+        {{ isFree ? 'Finalizuję rezerwację…' : 'Przekierowuję do PayU…' }}
       </span>
     </button>
 
     <p class="disclaimer" *ngIf="orderType === 'SERVICE_ORDER'; else transportDisclaimer">
-      Twoja wizyta zostanie zarezerwowana automatycznie po zaksięgowaniu płatności. Otrzymasz potwierdzenie e-mail.
+      {{ isFree ? 'Twoja wizyta zostanie zarezerwowana od razu po potwierdzeniu. Otrzymasz potwierdzenie e-mail.' : 'Twoja wizyta zostanie zarezerwowana automatycznie po zaksięgowaniu płatności. Otrzymasz potwierdzenie e-mail.' }}
     </p>
     <ng-template #transportDisclaimer>
       <p class="disclaimer">

@@ -1,0 +1,39 @@
+<div class="delivery-cards" [style.--delivery-columns]="options.length" role="radiogroup" aria-label="Sposób dostarczenia roweru">
+  <button
+    type="button"
+    *ngFor="let opt of options"
+    class="delivery-card"
+    [class.selected]="store.deliveryType === opt.type"
+    [attr.aria-checked]="store.deliveryType === opt.type"
+    role="radio"
+    (click)="select(opt.type)"
+  >
+    <span class="delivery-card-badge" [class.delivery-card-badge--info]="opt.badgeTone === 'info'" *ngIf="opt.badge">{{ opt.badge }}</span>
+
+    <span class="delivery-card-icon" aria-hidden="true">{{ icon(opt.type) }}</span>
+
+    <span class="delivery-card-content">
+      <span class="delivery-card-title">
+        {{ opt.title }}
+        <span class="transport-cost-badge" *ngIf="opt.priceBadge">{{ opt.priceBadge }}</span>
+      </span>
+      <span class="delivery-card-desc">{{ opt.description }}</span>
+    </span>
+  </button>
+</div>
+
+<div *ngIf="store.weekendTransportError" class="availability-error weekend-transport-error">
+  {{ store.weekendTransportError }}
+</div>
+
+<ng-container *ngIf="store.withTransport">
+  <p class="transport-hint" *ngIf="areaNote">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>{{ areaNote }}</span>
+  </p>
+  <p class="transport-hint">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span *ngIf="!store.isOfficePick">Odbiór dzień przed serwisem<ng-container *ngIf="store.transportDate">: <strong>{{ pickupDay }}, {{ store.pickupWindow }}</strong></ng-container>. Zwrot w tych samych godzinach.</span>
+    <span *ngIf="store.isOfficePick">Odbiór w dniu serwisu<ng-container *ngIf="store.transportDate">: <strong>{{ pickupDay }}, {{ store.pickupWindow }}</strong></ng-container>. Zwrot w tych samych godzinach.</span>
+  </p>
+</ng-container>

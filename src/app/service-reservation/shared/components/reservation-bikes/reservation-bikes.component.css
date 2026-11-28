@@ -1,0 +1,122 @@
+.bike-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+.bike-card-header .card-title { margin-bottom: 0; }
+
+.bike-remove-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-secondary);
+  border: none;
+  border-radius: 50%;
+  color: var(--color-white);
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.bike-remove-btn:hover { opacity: 0.85; }
+
+.select-group { margin-bottom: var(--spacing-4); }
+
+/* ===== Autocomplete marki ===== */
+.brand-group { position: relative; }
+
+.brand-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.brand-input-wrapper .form-input { padding-right: 40px; }
+
+.brand-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.brand-toggle-btn:hover { color: var(--color-primary); }
+
+.brand-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--color-white);
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+}
+
+.brand-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+
+.brand-option:hover { background: var(--color-primary-alpha-08); color: var(--color-primary); }
+
+/* ===== Dodaj kolejny rower ===== */
+.add-bike-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  background: var(--color-success-mint);
+  border: 4px solid var(--color-primary);
+  border-radius: var(--radius-card);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.add-bike-btn:hover:not(:disabled) { background: var(--color-success-bg); }
+.add-bike-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.add-bike-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.bikes-limit-info {
+  margin: -12px 0 var(--spacing-4);
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+}

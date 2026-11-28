@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { PaymentService } from '../../../core/payment.service';
 import { NotificationService } from '../../../core/notification.service';
 import { environment } from '../../../environments/environments';
-import { PaymentNavigationState, PaymentOrderType, PaymentSummaryDetails } from '../../../shared/models/payment.models';
+import { PaymentNavigationState, PaymentOrderType, PaymentReturnTarget, PaymentSummaryDetails } from '../../../shared/models/payment.models';
 
 const PENDING_ORDER_KEY = 'pendingOrderData';
 const VALID_ORDER_TYPES: PaymentOrderType[] = ['TRANSPORT', 'SERVICE_ORDER'];
@@ -29,14 +29,31 @@ export class PaymentSummaryComponent implements OnInit {
   isRedirecting = false;
   hasData = false;
 
-  /** Rezerwację ekspresową można poprawić (np. dopisać kupon) — formularz wraca z zapamiętanymi polami */
-  get canReturnToForm(): boolean {
+  /** Dokąd wrócić z podsumowania, żeby poprawić dane lub dopisać kupon (formularz, z którego przyszliśmy). */
+  returnTo: PaymentReturnTarget | null = null;
+
+  /** Zamówienie ekspresowe — ma własny nagłówek i listę „Co dalej?". */
+  get isServiceOrder(): boolean {
     return this.orderType === 'SERVICE_ORDER';
   }
 
+  /**
+   * Rezerwacja wizyty w serwisie (ekspresowa albo zwykła z płatnym transportem) — zamówienie nie jest
+   * jeszcze złożone, dopóki nie zostanie opłacone; ma własne nagłówki i listę „Co dalej?".
+   * Samo zamówienie transportu (bez terminu serwisu) zostaje przy dawnych tekstach.
+   */
+  get isReservationFlow(): boolean {
+    return this.isServiceOrder || (this.orderType === 'TRANSPORT' && !!this.details?.plannedDate);
+  }
+
+  /** Zamówienie można poprawić — formularz wraca z zapamiętanymi polami. */
+  get canReturnToForm(): boolean {
+    return !!this.returnTo;
+  }
+
   returnToForm(): void {
-    if (this.isRedirecting) return;
-    this.router.navigate(['/krakow/zarezerwuj'], { state: { restoreDraft: true } });
+    if (this.isRedirecting || !this.returnTo) return;
+    this.router.navigate([this.returnTo.url], { state: { restoreDraft: true } });
   }
 
   /** Zamówienie w pełni pokryte kuponem — nie przechodzi przez PayU */
@@ -59,12 +76,14 @@ export class PaymentSummaryComponent implements OnInit {
       this.orderData = state.orderData;
       this.totalPrice = state.totalPrice ?? 0;
       this.details = state.details ?? null;
+      this.returnTo = this.sanitizeReturnTo(state.returnTo);
       this.hasData = true;
       sessionStorage.setItem(PENDING_ORDER_KEY, JSON.stringify({
         orderType: this.orderType,
         orderData: this.orderData,
         totalPrice: this.totalPrice,
-        details: this.details
+        details: this.details,
+        returnTo: this.returnTo
       }));
     } else {
       const stored = sessionStorage.getItem(PENDING_ORDER_KEY);
@@ -75,6 +94,7 @@ export class PaymentSummaryComponent implements OnInit {
           this.orderData = parsed.orderData ?? {};
           this.totalPrice = parsed.totalPrice ?? 0;
           this.details = parsed.details ?? null;
+          this.returnTo = this.sanitizeReturnTo(parsed.returnTo);
           this.hasData = true;
         } catch {
           // uszkodzony wpis — wyczyść
@@ -85,6 +105,13 @@ export class PaymentSummaryComponent implements OnInit {
     if (!this.hasData) {
       this.router.navigate([environment.links.homepage]);
     }
+  }
+
+  /** Tylko wewnętrzne ścieżki aplikacji (zaczynające się od pojedynczego „/") — nigdy zewnętrzny adres. */
+  private sanitizeReturnTo(target: PaymentReturnTarget | undefined): PaymentReturnTarget | null {
+    const url = target?.url;
+    if (typeof url !== 'string' || !url.startsWith('/') || url.startsWith('//')) return null;
+    return { url, label: target?.label };
   }
 
   private sanitizeOrderType(type: PaymentOrderType | undefined): PaymentOrderType {

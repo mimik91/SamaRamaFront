@@ -6,6 +6,7 @@ import { catchError, switchMap, takeWhile } from 'rxjs/operators';
 import { PaymentService } from '../../../core/payment.service';
 import { environment } from '../../../environments/environments';
 import { PaymentOrderType, PaymentStatus, PaymentStatusResponse } from '../../../shared/models/payment.models';
+import { loadReservationSuccess } from '../../reservation-success/reservation-success.model';
 
 const POLL_INTERVAL_MS = 15_000;
 
@@ -83,6 +84,12 @@ export class PaymentReturnComponent implements OnInit, OnDestroy {
       const isReservation = sessionStorage.getItem('pendingReservationSuccess') === '1';
       sessionStorage.removeItem('pendingReservationSuccess');
       if (isReservation && orderType !== 'SERVICE_ORDER') {
+        this.router.navigate(['/sukces'], { replaceUrl: true });
+        return;
+      }
+      // Serwis ekspresowy: formularz zapisał dane rezerwacji — pokazujemy wspólny ekran /sukces
+      // (bez danych, np. powrót w innej karcie, zostaje ogólna strona z potwierdzeniem płatności).
+      if (orderType === 'SERVICE_ORDER' && loadReservationSuccess()?.variant === 'paid-express') {
         this.router.navigate(['/sukces'], { replaceUrl: true });
         return;
       }

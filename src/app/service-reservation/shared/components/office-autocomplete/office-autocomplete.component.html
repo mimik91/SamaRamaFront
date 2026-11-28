@@ -1,0 +1,51 @@
+<div class="office-autocomplete-section">
+  <h4 class="card-sub-title">Nazwa kompleksu biurowego <span class="required">*</span></h4>
+  <div class="office-input-wrapper">
+    <input
+      type="text"
+      [formControl]="store.officeNameControl"
+      class="form-input office-input"
+      [class.invalid]="invalid"
+      [class.input-readonly]="!!store.selectedOffice"
+      [readonly]="!!store.selectedOffice"
+      placeholder="Wpisz lub wybierz kompleks biurowy..."
+      aria-label="Nazwa kompleksu biurowego"
+      (input)="onInput($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      autocomplete="off"
+    />
+    <button
+      *ngIf="!store.selectedOffice && store.officeAddresses.length > 0"
+      type="button"
+      class="office-toggle-btn"
+      (click)="expandAll()"
+      tabindex="-1"
+      title="Pokaż wszystkie kompleksy"
+      aria-label="Pokaż wszystkie kompleksy"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <button
+      *ngIf="store.selectedOffice"
+      type="button"
+      class="office-clear-btn"
+      (click)="clear()"
+      title="Zmień kompleks"
+      aria-label="Zmień kompleks"
+    >✕</button>
+    <div *ngIf="showDropdown" class="office-dropdown">
+      <div *ngFor="let office of filteredOffices" class="office-option" (mousedown)="select(office)">
+        <span class="office-option-name">{{ office.name }}</span>
+        <span class="office-option-addr">{{ office.street }} {{ office.building }}, {{ office.city }}</span>
+      </div>
+    </div>
+  </div>
+  <span class="field-hint">Wpisz min. 3 znaki lub kliknij ▾ aby zobaczyć wszystkie</span>
+  <p
+    *ngIf="!store.selectedOffice && store.officeNameControl.value?.trim() && !showDropdown"
+    class="field-hint not-found-hint"
+  >
+    Nie znaleziono biurowca na liście. Możesz wpisać adres ręcznie poniżej.
+  </p>
+</div>

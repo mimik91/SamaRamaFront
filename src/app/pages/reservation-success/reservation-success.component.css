@@ -380,3 +380,13 @@ a.rs-service-link:hover strong {
     width: 100%;
   }
 }
+/* ===== Wariant „serwis ekspresowy opłacony": rezerwacja potwierdzona — zielone akcenty zamiast pomarańczowych ===== */
+.rs-icon--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.rs-badge--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}

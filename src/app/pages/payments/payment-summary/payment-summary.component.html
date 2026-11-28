@@ -14,19 +14,26 @@
       </svg>
     </div>
 
-    <h1 *ngIf="canReturnToForm; else transportTitle">Od dokończenia zamówienia dzieli Cię już tylko 1&nbsp;krok</h1>
+    <h1 *ngIf="isReservationFlow; else transportTitle">Od dokończenia zamówienia dzieli Cię już tylko 1&nbsp;krok</h1>
     <ng-template #transportTitle><h1>Zamówienie złożone!</h1></ng-template>
     <ng-container *ngIf="isFree; else paidSubtitle">
       <p class="subtitle">Dzięki kuponowi to zamówienie jest bezpłatne — nie musisz nic płacić. Potwierdź je, aby je sfinalizować.</p>
     </ng-container>
     <ng-template #paidSubtitle>
-      <p class="subtitle" *ngIf="orderType === 'SERVICE_ORDER'; else transportSubtitle">Musisz je opłacić online przez PayU — termin został sprawdzony, a serwis ekspresowy CycloPick wyceniony.</p>
+      <p class="subtitle" *ngIf="isServiceOrder; else reservationOrTransportSubtitle">Musisz je opłacić online przez PayU — termin został sprawdzony, a serwis ekspresowy CycloPick wyceniony.</p>
+    </ng-template>
+    <ng-template #reservationOrTransportSubtitle>
+      <p class="subtitle" *ngIf="isReservationFlow; else transportSubtitle">Musisz je opłacić online przez PayU — rezerwacja w serwisie zostanie złożona po zaksięgowaniu płatności.</p>
     </ng-template>
     <ng-template #transportSubtitle>
       <p class="subtitle">Twoje zamówienie transportu zostało zarejestrowane w systemie. Teraz możesz je opłacić online przez PayU.</p>
     </ng-template>
 
     <div class="order-details">
+      <div class="detail-row" *ngIf="details?.serviceName">
+        <span class="detail-label">Serwis</span>
+        <span class="detail-value">{{ details?.serviceName }}</span>
+      </div>
       <div class="detail-row" *ngIf="details?.packageName">
         <span class="detail-label">Pakiet</span>
         <span class="detail-value">{{ details?.packageName }}</span>
@@ -78,7 +85,7 @@
       </span>
     </button>
 
-    <div class="next-steps" *ngIf="canReturnToForm">
+    <div class="next-steps" *ngIf="isReservationFlow">
       <h2>Co dalej?</h2>
       <ol>
         <li>Czekaj na maila z potwierdzeniem Twojego zamówienia przez serwis.</li>
@@ -92,7 +99,7 @@
       <p class="step-note"><sup>**</sup> Jeżeli jakiś dzień zwrotu Ci nie pasuje albo pasuje bardziej, daj nam o tym znać.</p>
     </div>
 
-    <p class="disclaimer" *ngIf="orderType === 'SERVICE_ORDER'; else transportDisclaimer">
+    <p class="disclaimer" *ngIf="isReservationFlow; else transportDisclaimer">
       {{ isFree ? 'Twoja wizyta zostanie zarezerwowana od razu po potwierdzeniu. Otrzymasz potwierdzenie e-mail.' : 'Twoja wizyta zostanie zarezerwowana automatycznie po zaksięgowaniu płatności. Otrzymasz potwierdzenie e-mail.' }}
     </p>
     <ng-template #transportDisclaimer>

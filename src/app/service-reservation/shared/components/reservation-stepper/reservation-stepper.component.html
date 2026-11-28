@@ -1,0 +1,21 @@
+<div class="steps-container">
+  <div
+    *ngFor="let step of steps"
+    class="step"
+    [class.active]="isActive(step)"
+    [class.completed]="isCompleted(step)"
+    [class.accessible]="isCompleted(step)"
+    (click)="select(step)"
+  >
+    <div class="step-number">
+      <span *ngIf="!isCompleted(step)">{{ step }}</span>
+      <svg *ngIf="isCompleted(step)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <span class="step-label">{{ labels[step - 1] }}</span>
+  </div>
+  <div class="step-connectors">
+    <div class="step-connector" [class.completed]="isCompleted(1)"></div>
+  </div>
+</div>

@@ -1,0 +1,25 @@
+<div class="coupon-section">
+  <h4 class="card-sub-title">Kupon rabatowy <span class="optional-label">(opcjonalnie)</span></h4>
+  <div class="coupon-row">
+    <input
+      type="text"
+      [formControl]="control"
+      class="form-input coupon-input"
+      placeholder="Wpisz kod kuponu..."
+      aria-label="Kod kuponu"
+      (keydown.enter)="$event.preventDefault(); apply.emit()"
+    />
+    <button type="button" class="coupon-apply-btn" (click)="apply.emit()" [disabled]="applying || !control.value">
+      <div *ngIf="applying" class="btn-spinner btn-spinner--sm"></div>
+      {{ applying ? '...' : 'Zastosuj' }}
+    </button>
+  </div>
+  <div
+    *ngIf="message"
+    class="coupon-message"
+    [class.coupon-message--error]="invalid"
+    [class.coupon-message--success]="!invalid"
+  >
+    {{ message }}
+  </div>
+</div>

@@ -1,0 +1,54 @@
+.package-card {
+  background: var(--color-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.package-card.selectable { cursor: pointer; }
+.package-card.selectable:hover { border-color: var(--color-primary); box-shadow: 0 2px 12px var(--color-primary-alpha-10); }
+.package-card.selectable:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.package-card.selected {
+  border: 2px solid var(--color-primary);
+  background: var(--color-success-mint);
+  padding: 15px;
+}
+
+.package-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.package-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.package-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: auto;
+  padding: 8px 12px;
+  background: var(--color-slate-100);
+  border-radius: var(--radius-input);
+}
+
+.package-card.selected .package-price { background: var(--color-white); }
+
+.price-amount { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+.price-currency { font-size: var(--font-size-sm); color: var(--text-secondary); }

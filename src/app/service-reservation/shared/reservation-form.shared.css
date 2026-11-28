@@ -1,0 +1,341 @@
+/*
+ * Wspólne style formularzy rezerwacji (guest + express) i ich klocków.
+ * Dołączane do każdego komponentu przez styleUrls (enkapsulacja Angulara jest per komponent).
+ */
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Karty sekcji ===== */
+.form-card {
+  position: relative;
+  background: var(--color-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-5);
+  margin-bottom: var(--spacing-4);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--spacing-4) 0;
+  color: var(--text-primary);
+}
+
+.card-title svg { color: var(--color-primary); flex-shrink: 0; }
+
+.card-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.card-title-aside {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* ===== Pola formularza ===== */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.required { color: var(--color-danger); }
+
+.optional-label {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.form-input,
+.form-textarea {
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: var(--color-white);
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-textarea { resize: vertical; }
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
+}
+
+.form-input.invalid,
+.form-textarea.invalid {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+}
+
+.form-input:disabled {
+  background: var(--color-slate-50);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.input-readonly {
+  background: var(--color-slate-50);
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.input-readonly:focus {
+  border-color: var(--border-color);
+  box-shadow: none;
+}
+
+.field-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.field-hint-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+}
+
+.field-counter {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.field-error {
+  font-size: 0.8rem;
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+.card-sub-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 14px 0;
+  color: var(--text-primary);
+}
+
+/* Odstęp między kolejnymi wierszami pól */
+.form-card .form-row + .form-group,
+.form-card .form-row + .form-row { margin-top: var(--spacing-4); }
+
+/* ----- Pływające etykiety pól ----- */
+.form-group:has(.form-input, .form-textarea) { position: relative; }
+
+.form-group:has(.form-input, .form-textarea) > .form-label {
+  position: absolute;
+  z-index: 1;
+  top: 13px;
+  left: 15px;
+  max-width: calc(100% - 52px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: top 0.15s, font-size 0.15s, font-weight 0.15s;
+}
+
+.form-group:has(.form-input, .form-textarea) .form-input,
+.form-group:has(.form-input, .form-textarea) .form-textarea {
+  padding-top: 22px;
+  padding-bottom: 6px;
+}
+
+.form-group:has(.form-input, .form-textarea) .form-input::placeholder,
+.form-group:has(.form-input, .form-textarea) .form-textarea::placeholder { color: transparent; }
+
+.form-group:has(.form-input, .form-textarea) .form-input:focus::placeholder,
+.form-group:has(.form-input, .form-textarea) .form-textarea:focus::placeholder { color: var(--text-lighter); }
+
+.form-group:has(.form-input:not(:placeholder-shown), .form-textarea:not(:placeholder-shown), .form-input:focus, .form-textarea:focus) > .form-label {
+  top: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.form-group:has(.form-input:focus, .form-textarea:focus) > .form-label { color: var(--color-primary); }
+
+/* ===== Informacja o cenie ===== */
+.pricing-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: var(--spacing-4) 0;
+  padding: var(--spacing-3);
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-card);
+  color: var(--color-warning-orange);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.pricing-info-banner svg { flex-shrink: 0; margin-top: 2px; }
+.pricing-info-banner p { margin: 0; }
+
+/* ===== Dostępność terminu ===== */
+.availability-checking {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.availability-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-primary-alpha-20);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.availability-error {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: var(--color-danger-bg-light);
+  border: 1px solid var(--color-danger-red-light);
+  border-radius: var(--radius-input);
+  font-size: 13px;
+  color: var(--color-danger);
+}
+
+.availability-ok {
+  margin-top: 6px;
+  padding: 6px 12px;
+  background: var(--color-success-mint);
+  border: 1px solid var(--color-success-border);
+  border-radius: var(--radius-input);
+  font-size: 13px;
+  color: var(--color-primary);
+}
+
+/* ===== Przyciski ===== */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.btn-primary,
+.btn-submit,
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary,
+.btn-submit {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white);
+  border: none;
+  box-shadow: 0 2px 8px var(--color-primary-alpha-30);
+  margin-left: auto;
+}
+
+.btn-submit { padding: 14px 28px; gap: 10px; font-size: 1rem; font-weight: 700; }
+
+.btn-primary:hover:not(:disabled),
+.btn-submit:hover:not(:disabled) {
+  box-shadow: 0 4px 16px var(--color-primary-alpha-40);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled,
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  padding: 12px 20px;
+  background: var(--color-white);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: var(--color-white);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-spinner--sm { width: 14px; height: 14px; border-width: 2px; }
+
+@media (max-width: 640px) {
+  .form-row { grid-template-columns: 1fr; }
+  .form-actions { flex-direction: column-reverse; }
+  .btn-primary, .btn-secondary, .btn-submit { width: 100%; justify-content: center; margin-left: 0; }
+}
+
+/* ===== Układ strony formularza (dla powłok) ===== */
+.reservation-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--spacing-6);
+  align-items: start;
+}
+
+.reservation-main { min-width: 0; }
+
+@media (max-width: 900px) {
+  .reservation-layout { grid-template-columns: 1fr; }
+}

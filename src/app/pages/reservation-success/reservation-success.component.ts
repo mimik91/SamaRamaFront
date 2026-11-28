@@ -52,8 +52,20 @@ export class ReservationSuccessComponent implements OnInit {
     this.fireGa4EventOnce();
   }
 
+  /** Serwis ekspresowy po opłaceniu: rezerwacja potwierdzona, serwis dobierze CycloPick. */
+  get isPaidExpress(): boolean {
+    return this.data?.variant === 'paid-express';
+  }
+
   get plannedDateLabel(): string | null {
-    const iso = this.data?.plannedDate;
+    return this.formatDate(this.data?.plannedDate);
+  }
+
+  get pickupDateLabel(): string | null {
+    return this.formatDate(this.data?.pickupDate);
+  }
+
+  private formatDate(iso: string | null | undefined): string | null {
     if (!iso) return null;
     const [y, m, d] = iso.split('-').map(Number);
     if (!y || !m || !d) return null;
@@ -78,10 +90,12 @@ export class ReservationSuccessComponent implements OnInit {
       // brak sessionStorage - w najgorszym razie konwersja policzy się ponownie po F5
     }
 
+    // Ekspres zachowuje dotychczasową etykietę (wcześniej liczył ją TransactionSuccessComponent).
+    const label = this.isPaidExpress ? 'serwis-ekspresowy' : 'rezerwacja';
     try {
       gtag('event', 'konwersja_sukces', {
         event_category: 'konwersja',
-        event_label: 'rezerwacja'
+        event_label: label
       });
       // Jawny obiekt {event: ...} - gtag() wysyła do dataLayer surowy obiekt arguments,
       // którego trigger Custom Event w GTM nie rozpoznaje.
@@ -89,7 +103,7 @@ export class ReservationSuccessComponent implements OnInit {
       window.dataLayer.push({
         event: 'konwersja_sukces',
         event_category: 'konwersja',
-        event_label: 'rezerwacja'
+        event_label: label
       });
     } catch {
       // gtag niedostępny

@@ -21,6 +21,8 @@ export interface InitiatePaymentResponse {
 
 /** Dane tylko do wyświetlenia na ekranie potwierdzenia — kwotę i zawartość zamówienia i tak wylicza backend. */
 export interface PaymentSummaryDetails {
+  /** Serwis, w którym zostanie zarezerwowana wizyta (zwykła rezerwacja z płatnym transportem). */
+  serviceName?: string;
   packageName?: string;
   packagePrice?: number;
   plannedDate?: string;
@@ -30,10 +32,18 @@ export interface PaymentSummaryDetails {
   discountCoupon?: string;
 }
 
+/** Formularz, do którego można wrócić z podsumowania płatności (z zapamiętanymi polami). */
+export interface PaymentReturnTarget {
+  /** Wewnętrzna ścieżka aplikacji, np. '/krakow/zarezerwuj'. */
+  url: string;
+  label?: string;
+}
+
 export interface PaymentNavigationState {
   orderType: PaymentOrderType;
   orderData: Record<string, unknown>;
   totalPrice: number;
   bikeCount?: number;
   details?: PaymentSummaryDetails;
+  returnTo?: PaymentReturnTarget;
 }

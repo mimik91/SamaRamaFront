@@ -76,7 +76,7 @@
 
     <!-- Cennik pakietów serwisowych -->
     <div *ngIf="packagesConfig && packages.length > 0" class="packages-panel">
-      <button class="packages-panel-toggle" type="button" (click)="togglePackages()">
+      <button class="packages-panel-toggle" type="button" (click)="togglePackages()" [attr.aria-expanded]="packagesExpanded">
         <span>Cennik pakietów serwisowych</span>
         <svg class="packages-chevron" [class.expanded]="packagesExpanded" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 12 15 18 9"></polyline>
@@ -97,14 +97,12 @@
 
         <div class="packages-grid" *ngIf="selectedBikeType">
           <ng-container *ngFor="let level of packageLevels">
-            <div *ngIf="getPackageForLevel(level) as pkg" class="package-card">
-              <h3 class="package-title">{{ getPackageDisplayName(pkg) }}</h3>
-              <p *ngIf="pkg.description" class="package-desc">{{ pkg.description }}</p>
-              <div class="package-price">
-                <span class="price-amount">{{ pkg.price }}</span>
-                <span class="price-currency">zł</span>
-              </div>
-            </div>
+            <app-package-card
+              *ngIf="getPackageForLevel(level) as pkg"
+              [title]="getPackageDisplayName(pkg)"
+              [description]="pkg.description"
+              [price]="pkg.price"
+            ></app-package-card>
           </ng-container>
         </div>
 
@@ -114,690 +112,93 @@
       </div>
     </div>
 
+    <app-reservation-stepper
+      [currentStep]="store.currentStep"
+      [labels]="['Dane rezerwacji', 'Podsumowanie i wysyłka']"
+      (stepSelected)="prevStep()"
+    ></app-reservation-stepper>
 
-    <!-- Steps progress -->
-    <div class="steps-container">
-      <div
-        *ngFor="let step of [1, 2]; let i = index"
-        class="step"
-        [class.active]="isStepActive(step)"
-        [class.completed]="isStepCompleted(step)"
-        [class.accessible]="isStepCompleted(step)"
-        (click)="isStepCompleted(step) ? prevStep() : null"
-      >
-        <div class="step-number">
-          <span *ngIf="!isStepCompleted(step)">{{ step }}</span>
-          <svg *ngIf="isStepCompleted(step)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-        </div>
-        <span class="step-label">{{ step === 1 ? 'Dane rezerwacji' : 'Podsumowanie i wysyłka' }}</span>
-      </div>
-      <div class="step-connectors">
-        <div class="step-connector" [class.completed]="isStepCompleted(1)"></div>
-      </div>
-    </div>
+    <!-- ===== KROK 1: formularz ===== -->
+    <div *ngIf="store.currentStep === 1" class="reservation-layout">
+      <div class="reservation-main">
 
-    <!-- ===== STEP 1: Reservation Form ===== -->
-    <div *ngIf="currentStep === 1" class="reservation-layout">
-     <div class="reservation-main">
+        <app-reservation-bikes
+          [store]="store"
+          infoHint="Chcesz pakiet? Wpisz jego nazwę z cennika powyżej."
+          infoPlaceholder="Np. Pakiet Podstawowy, skrzypiące przednie hamulce, nie wchodzi bieg 3 i 4, przebita dętka w tylnym kole..."
+        ></app-reservation-bikes>
 
-      <form [formGroup]="reservationForm">
+        <app-reservation-date-picker
+          [store]="store"
+          [cardNumber]="store.bikesArray.length + 1"
+        ></app-reservation-date-picker>
 
-        <!-- Bicycle cards -->
-        <div
-          *ngFor="let bikeGroup of bikeControls; let i = index"
-          class="form-card bike-card"
-          [formGroup]="bikeGroup"
-        >
-          <div class="bike-card-header">
-            <h3 class="card-title">
-            <span class="card-num">{{ i + 1 }}</span>
-            Rower {{ i + 1 }}
-          </h3>
-            <button
-              *ngIf="bikesArray.length > 1"
-              type="button"
-              class="bike-remove-btn"
-              (click)="removeBike(i)"
-              title="Usuń rower"
-            >✕</button>
-          </div>
-
-          <div class="form-group" *ngIf="clientMode">
-            <label class="form-label">Wybierz rower</label>
-            <select
-              class="form-input"
-              [value]="bikeGroup.get('selectedBicycleId')?.value ?? 'OTHER'"
-              (change)="onBicycleSelectChange($event, i)"
-            >
-              <option value="OTHER">Inny</option>
-              <option *ngFor="let bike of availableBicyclesFor(i)" [value]="bike.id">
-                {{ bike.brand }}{{ bike.model ? ' ' + bike.model : '' }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group brand-group">
-              <label class="form-label">Marka roweru <span class="required">*</span></label>
-              <div class="brand-input-wrapper">
-                <input
-                  type="text"
-                  formControlName="brand"
-                  class="form-input"
-                  [class.invalid]="isBikeFieldInvalid(i, 'brand')"
-                  placeholder="np. Trek, Giant, Specialized..."
-                  (input)="onBrandInput($event, i)"
-                  (focus)="onBrandFocus(i)"
-                  (blur)="onBrandBlur(i)"
-                  autocomplete="off"
-                />
-                <button
-                  type="button"
-                  class="brand-toggle-btn"
-                  *ngIf="!bikeGroup.get('selectedBicycleId')?.value"
-                  (click)="expandAllBrands(i)"
-                  tabindex="-1"
-                  title="Pokaż wszystkie marki"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <div *ngIf="bikeBrandStates[i]?.showDropdown" class="brand-dropdown">
-                  <div
-                    *ngFor="let brand of bikeBrandStates[i].filtered"
-                    class="brand-option"
-                    (mousedown)="selectBrand(brand, i)"
-                  >{{ brand }}</div>
-                </div>
-              </div>
-              <span *ngIf="isBikeFieldInvalid(i, 'brand')" class="field-error">Marka roweru jest wymagana</span>
-              <span class="field-hint">Nie znasz marki? Wpisz np. „górski", „kolarzówka" albo „nie wiem".</span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Model roweru <span class="optional-label">(opcjonalnie)</span></label>
-              <input
-                type="text"
-                formControlName="model"
-                class="form-input"
-                placeholder="np. Talon, Marlin, Rockhopper..."
-              />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Opis problemu / zlecone usługi <span class="required">*</span></label>
-            <textarea
-              formControlName="additionalInfo"
-              class="form-textarea"
-              rows="3"
-              [class.invalid]="isBikeFieldInvalid(i, 'additionalInfo')"
-              maxlength="2000"
-              placeholder="Np. Pakiet Podstawowy, skrzypiące przednie hamulce, nie wchodzi bieg 3 i 4, przebita dętka w tylnym kole..."
-            ></textarea>
-            <div class="field-hint-row">
-              <span class="field-hint">Chcesz pakiet? Wpisz jego nazwę z cennika powyżej.</span>
-              <span class="field-counter">{{ (bikeGroup.get('additionalInfo')?.value?.length ?? 0) }} / 2000</span>
-            </div>
-            <span *ngIf="isBikeFieldInvalid(i, 'additionalInfo')" class="field-error">Opis problemu / zlecone usługi jest wymagany</span>
-          </div>
-        </div>
-
-        <!-- Add bike button -->
-        <button type="button" class="add-bike-btn" (click)="addBike()" [disabled]="!canAddBike">
-          <span class="add-bike-icon">+</span>
-          Dodaj kolejny rower
-        </button>
-        <p class="bikes-limit-info" *ngIf="!canAddBike && maxBikesPerReservation > 0">
-          W jednym zleceniu możesz dodać maksymalnie {{ maxBikesPerReservation }} {{ maxBikesPerReservation === 1 ? 'rower' : maxBikesPerReservation < 5 ? 'rowery' : 'rowerów' }}.
-        </p>
-
-        <!-- Date -->
-        <div class="form-card">
+        <!-- Transport (jeśli serwis go oferuje) -->
+        <div class="form-card" *ngIf="serviceInfo.transportAvailable">
           <h3 class="card-title">
-            <span class="card-num">{{ bikesArray.length + 1 }}</span>
-            Termin
-          </h3>
-
-          <div class="form-group">
-            <label class="form-label form-label--static">Wybierz dzień serwisu <span class="required">*</span></label>
-            <div class="calendar-row" [class.invalid]="isFieldInvalid('plannedDate')">
-              <mat-calendar
-                class="reservation-calendar"
-                [selected]="selectedDateObj"
-                [startAt]="selectedDateObj ?? minDateObj"
-                [minDate]="minDateObj"
-                [maxDate]="maxDateObj"
-                [dateFilter]="calendarFilter"
-                (selectedChange)="onCalendarDateSelected($event)"
-              ></mat-calendar>
-              <div class="selected-day-card" *ngIf="reservationForm.value.plannedDate">
-                <span class="selected-day-label">Wybrany dzień</span>
-                <strong class="selected-day-value">{{ formatWeekdayDate(reservationForm.value.plannedDate, true) }}</strong>
-              </div>
-            </div>
-            <span class="field-hint">{{ acceptedDaysHint }}</span>
-            <div *ngIf="checkingAvailability" class="availability-checking">
-              <span class="availability-spinner"></span> Sprawdzanie dostępności...
-            </div>
-            <div *ngIf="availabilityError && !checkingAvailability" class="availability-error">
-              {{ availabilityError }}
-            </div>
-            <div *ngIf="availableSlotsForDate !== null && !availabilityError && !checkingAvailability" class="availability-ok">
-              Wolne miejsca w tym dniu: <strong>{{ availableSlotsForDate }}</strong>
-            </div>
-            <span *ngIf="isFieldInvalid('plannedDate') && reservationForm.get('plannedDate')?.errors?.['required']" class="field-error">
-              Data serwisu jest wymagana
-            </span>
-            <span *ngIf="isFieldInvalid('plannedDate') && reservationForm.get('plannedDate')?.errors?.['notAcceptedDay']" class="field-error">
-              Wybierz jeden z dostępnych dni: {{ acceptedDaysHint.replace('Dostępne dni: ', '') }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Transport section (shown if service has transport) -->
-        <div class="form-card transport-section" *ngIf="serviceInfo.transportAvailable">
-          <h3 class="card-title">
-            <span class="card-num">{{ bikesArray.length + 2 }}</span>
+            <span class="card-num">{{ transportCardNumber }}</span>
             Transport roweru
             <span class="card-title-aside">dostępny w tym serwisie</span>
           </h3>
 
-          <div class="delivery-cards">
-            <!-- Card: Self delivery -->
-            <div class="delivery-card"
-                 [class.selected]="deliveryType === 'SELF'"
-                 (click)="setDeliveryType('SELF')">
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1 1v5.5H5.5l3-5.5m7.5 0H17m-5 0H9"/></svg>
-              <div class="delivery-card-content">
-                <span class="delivery-card-title">Przywiozę rower sam</span>
-                <span class="delivery-card-desc">Dostarczam rower osobiście do serwisu</span>
-              </div>
-            </div>
-            <!-- Card: Transport door-to-door -->
-            <div class="delivery-card delivery-card--transport"
-                 [class.selected]="deliveryType === 'DOOR_TO_DOOR'"
-                 (click)="setDeliveryType('DOOR_TO_DOOR')">
-              <span class="delivery-card-badge">&#9733; Polecane</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-              <div class="delivery-card-content">
-                <span class="delivery-card-title">Transport door-to-door
-                  <span class="transport-cost-badge">{{ serviceInfo.transportCost ?? transportPricing.partnerCost }} zł</span>
-                </span>
-                <span class="delivery-card-desc">Odbierzemy rower spod domu, 18:00–22:00</span>
-              </div>
-            </div>
-            <!-- Card: Transport spod biurowca -->
-            <div class="delivery-card delivery-card--office"
-                 [class.selected]="deliveryType === 'OFFICE'"
-                 (click)="setDeliveryType('OFFICE')">
-              <span class="delivery-card-badge delivery-card-badge--office">Biurowce</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h2M7 12h2M11 8h2M11 12h2M15 8h2M15 12h2"/></svg>
-              <div class="delivery-card-content">
-                <span class="delivery-card-title">Transport spod biurowca
-                  <span class="transport-cost-badge">{{ serviceInfo.transportCost ?? transportPricing.partnerCost }} zł</span>
-                </span>
-                <span class="delivery-card-desc">Odbierzemy rower spod pracy, 10:00–16:00</span>
-              </div>
-            </div>
-          </div>
-          <div *ngIf="weekendTransportError" class="availability-error weekend-transport-error">
-            {{ weekendTransportError }}
-          </div>
-          <p class="transport-toggle-hint" *ngIf="withTransport">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span *ngIf="!isOfficePick">Odbiór dzień przed serwisem<ng-container *ngIf="transportDate">: <strong>{{ formatWeekdayDate(transportDate, false) }}, 18:00–22:00</strong></ng-container>. Zwrot w tych samych godzinach.</span>
-            <span *ngIf="isOfficePick">Odbiór w dniu serwisu<ng-container *ngIf="transportDate">: <strong>{{ formatWeekdayDate(transportDate, false) }}, 10:00–16:00</strong></ng-container>. Zwrot w tych samych godzinach.</span>
-          </p>
+          <app-delivery-selector
+            [store]="store"
+            [options]="deliveryOptions"
+            areaNote="Transport obsługujemy w granicach IV obwodnicy Krakowa. Adres poza tym obszarem — tylko po wcześniejszym uzgodnieniu z nami."
+          ></app-delivery-selector>
 
-          <!-- Transport address section (shown when transport selected) -->
-          <div class="transport-address-section" *ngIf="withTransport" [formGroup]="transportForm">
-            <!-- Office autocomplete (only for OFFICE type) -->
-            <div class="office-autocomplete-section" *ngIf="isOfficePick">
-              <h4 class="transport-address-title">Nazwa kompleksu biurowego <span class="required">*</span></h4>
-              <div class="brand-input-wrapper">
-                <input
-                  type="text"
-                  [formControl]="officeNameControl"
-                  class="form-input"
-                  [class.invalid]="!officeNameControl.value?.trim() && officeNameControl.dirty"
-                  [class.input-readonly]="!!selectedOffice"
-                  [readonly]="!!selectedOffice"
-                  placeholder="Wpisz lub wybierz kompleks biurowy..."
-                  (input)="onOfficeInput($event)"
-                  (focus)="onOfficeFocus()"
-                  (blur)="onOfficeBlur()"
-                  autocomplete="off"
-                />
-                <button
-                  *ngIf="!selectedOffice"
-                  type="button"
-                  class="brand-toggle-btn"
-                  (click)="expandAllOffices()"
-                  tabindex="-1"
-                  title="Pokaż wszystkie kompleksy"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <button
-                  *ngIf="selectedOffice"
-                  type="button"
-                  class="office-clear-btn"
-                  (click)="clearOfficeSelection()"
-                  title="Zmień kompleks"
-                >✕</button>
-                <div *ngIf="showOfficeDropdown" class="office-dropdown">
-                  <div
-                    *ngFor="let office of filteredOffices"
-                    class="office-option"
-                    (mousedown)="selectOffice(office)"
-                  >
-                    <span class="office-option-name">{{ office.name }}</span>
-                    <span class="office-option-addr">{{ office.street }} {{ office.building }}, {{ office.city }}</span>
-                  </div>
-                </div>
-              </div>
-              <span class="field-hint">Wpisz min. 3 znaki lub kliknij ▾ aby zobaczyć wszystkie</span>
-            </div>
-
-            <h4 class="transport-address-title">
-              {{ isOfficePick ? 'Adres biurowca' : 'Adres odbioru roweru' }}
-              <span *ngIf="isOfficePick && selectedOffice" class="address-from-list-badge">z listy</span>
-            </h4>
-
-            <div class="address-grid">
-              <div class="form-group addr-street">
-                <label class="form-label">Ulica <span class="required">*</span></label>
-                <input
-                  type="text"
-                  formControlName="pickupStreet"
-                  class="form-input"
-                  [class.invalid]="isFieldInvalid('pickupStreet', transportForm)"
-                  [readonly]="isOfficePick && !!selectedOffice"
-                  [class.input-readonly]="isOfficePick && !!selectedOffice"
-                  placeholder="ul. Kwiatowa"
-                />
-                <span *ngIf="isFieldInvalid('pickupStreet', transportForm)" class="field-error">Ulica jest wymagana</span>
-              </div>
-              <div class="form-group addr-nr">
-                <label class="form-label">Nr budynku <span class="required">*</span></label>
-                <input
-                  type="text"
-                  formControlName="pickupBuildingNumber"
-                  class="form-input"
-                  [class.invalid]="isFieldInvalid('pickupBuildingNumber', transportForm)"
-                  [readonly]="isOfficePick && !!selectedOffice"
-                  [class.input-readonly]="isOfficePick && !!selectedOffice"
-                  placeholder="12a"
-                />
-                <span *ngIf="isFieldInvalid('pickupBuildingNumber', transportForm)" class="field-error">Numer wymagany</span>
-              </div>
-              <div class="form-group addr-post">
-                <label class="form-label">Kod pocztowy</label>
-                <input
-                  type="text"
-                  formControlName="pickupPostalCode"
-                  class="form-input"
-                  [class.invalid]="isFieldInvalid('pickupPostalCode', transportForm)"
-                  [readonly]="isOfficePick && !!selectedOffice"
-                  [class.input-readonly]="isOfficePick && !!selectedOffice"
-                  placeholder="00-000"
-                  maxlength="6"
-                />
-                <span *ngIf="isFieldInvalid('pickupPostalCode', transportForm)" class="field-error">Format: XX-XXX</span>
-              </div>
-              <div class="form-group addr-city">
-                <label class="form-label">Miasto <span class="required">*</span></label>
-                <ng-container *ngIf="!(isOfficePick && !!selectedOffice)">
-                  <select
-                    formControlName="pickupCity"
-                    class="form-input"
-                    [class.invalid]="isFieldInvalid('pickupCity', transportForm)"
-                    [attr.disabled]="loadingCities ? '' : null"
-                  >
-                    <option value="" disabled selected>-- Wybierz miasto --</option>
-                    <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
-                    <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
-                  </select>
-                </ng-container>
-                <input
-                  *ngIf="isOfficePick && !!selectedOffice"
-                  type="text"
-                  formControlName="pickupCity"
-                  class="form-input input-readonly"
-                  readonly
-                />
-                <span *ngIf="isFieldInvalid('pickupCity', transportForm)" class="field-error">Wybierz miasto z listy</span>
-              </div>
-            </div>
-
-            <!-- Uwagi dotyczące transportu -->
-            <div class="transport-notes-section">
-              <h4 class="transport-address-title">Uwagi dotyczące transportu <span class="optional-label">(opcjonalnie)</span></h4>
-              <textarea
-                formControlName="transportNotes"
-                class="form-input form-textarea"
-                rows="3"
-                placeholder="Np. kod do domofonu, preferowana godzina, jak dojechać..."
-              ></textarea>
-            </div>
-
-            <!-- Kupon rabatowy — ukryty gdy transport już darmowy (kupon nie ma nic do obniżenia) -->
-            <div class="coupon-section" *ngIf="serviceInfo?.transportCost">
-              <h4 class="transport-address-title">Kupon rabatowy <span class="optional-label">(opcjonalnie)</span></h4>
-              <div class="coupon-row">
-                <input
-                  type="text"
-                  [formControl]="couponControl"
-                  class="form-input coupon-input"
-                  placeholder="Wpisz kod kuponu..."
-                />
-                <button
-                  type="button"
-                  class="coupon-apply-btn"
-                  (click)="applyDiscountCoupon()"
-                  [disabled]="isApplyingCoupon || !couponControl.value"
-                >
-                  <div *ngIf="isApplyingCoupon" class="btn-spinner btn-spinner--sm"></div>
-                  {{ isApplyingCoupon ? '...' : 'Zastosuj' }}
-                </button>
-              </div>
-              <div
-                *ngIf="couponMessage"
-                class="coupon-message"
-                [class.coupon-message--error]="isCouponInvalid"
-                [class.coupon-message--success]="!isCouponInvalid"
-              >
-                {{ couponMessage }}
-              </div>
-            </div>
-          </div>
+          <app-pickup-address
+            *ngIf="store.withTransport"
+            [store]="store"
+            [cities]="cities"
+            [loadingCities]="loadingCities"
+          ></app-pickup-address>
         </div>
 
-        <!-- Contact data -->
-        <div class="form-card" *ngIf="!clientMode">
-          <h3 class="card-title">
-            <span class="card-num">{{ bikesArray.length + 2 + (serviceInfo.transportAvailable ? 1 : 0) }}</span>
-            Dane kontaktowe
-          </h3>
+        <app-contact-fields
+          *ngIf="!store.clientMode"
+          [form]="store.reservationForm"
+          [cardNumber]="contactCardNumber"
+        ></app-contact-fields>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Imię <span class="required">*</span></label>
-              <input
-                type="text"
-                formControlName="firstName"
-                class="form-input"
-                [class.invalid]="isFieldInvalid('firstName')"
-                placeholder="Jan"
-              />
-              <span *ngIf="isFieldInvalid('firstName')" class="field-error">Imię jest wymagane (min. 2 znaki)</span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Nazwisko <span class="required">*</span></label>
-              <input
-                type="text"
-                formControlName="lastName"
-                class="form-input"
-                [class.invalid]="isFieldInvalid('lastName')"
-                placeholder="Kowalski"
-              />
-              <span *ngIf="isFieldInvalid('lastName')" class="field-error">Nazwisko jest wymagane (min. 2 znaki)</span>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">E-mail <span class="required">*</span></label>
-              <input
-                type="email"
-                formControlName="email"
-                class="form-input"
-                [class.invalid]="isFieldInvalid('email')"
-                placeholder="jan.kowalski@email.com"
-              />
-              <span *ngIf="isFieldInvalid('email')" class="field-error">Podaj poprawny adres email</span>
-              <span class="field-hint">Na ten adres serwis wyśle odpowiedź.</span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Telefon <span class="required">*</span></label>
-              <input
-                type="tel"
-                formControlName="phone"
-                class="form-input"
-                [class.invalid]="isFieldInvalid('phone')"
-                placeholder="600123456"
-                maxlength="9"
-              />
-              <span *ngIf="isFieldInvalid('phone')" class="field-error">Podaj 9-cyfrowy numer telefonu</span>
-            </div>
-          </div>
-        </div>
-
-      </form>
-
-      <!-- Navigation -->
-      <div class="form-actions">
-        <button class="btn-primary form-actions-next" (click)="nextStep()">
-          Przejdź do podsumowania
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-      </div>
-     </div>
-
-      <aside class="reservation-aside">
-        <div class="aside-card">
-          <div class="aside-summary">
-            <h3 class="aside-title">Twoja rezerwacja</h3>
-            <dl class="aside-list">
-              <div class="aside-row">
-                <dt>Serwis</dt>
-                <dd>{{ serviceInfo.name }}</dd>
-              </div>
-              <div class="aside-row">
-                <dt>{{ summaryBikes.length > 1 ? 'Rowery' : 'Rower' }}</dt>
-                <dd *ngIf="summaryBikes.length === 0" class="aside-placeholder">uzupełnij dane roweru</dd>
-                <dd *ngFor="let b of summaryBikes">{{ b }}</dd>
-              </div>
-              <div class="aside-row">
-                <dt>Termin</dt>
-                <dd *ngIf="reservationForm.value.plannedDate">{{ formatWeekdayDate(reservationForm.value.plannedDate, true) }}</dd>
-                <dd *ngIf="!reservationForm.value.plannedDate" class="aside-placeholder">wybierz termin</dd>
-              </div>
-              <div class="aside-row" *ngIf="serviceInfo.transportAvailable">
-                <dt>Transport</dt>
-                <dd *ngIf="!withTransport">Przywiozę rower sam</dd>
-                <dd *ngIf="withTransport">{{ isOfficePick ? 'Spod biurowca' : 'Door-to-door' }} · {{ effectiveTransportPrice }} zł
-                  <small *ngIf="transportDate">odbiór {{ formatWeekdayShort(transportDate) }}, {{ isOfficePick ? '10:00–16:00' : '18:00–22:00' }}</small>
-                </dd>
-              </div>
-              <div class="aside-row" *ngIf="!clientMode">
-                <dt>Kontakt</dt>
-                <dd *ngIf="summaryContactName">{{ summaryContactName }}</dd>
-                <dd *ngIf="!summaryContactName" class="aside-placeholder">uzupełnij dane</dd>
-              </div>
-            </dl>
-          </div>
-
-          <div class="pricing-info-banner">
-            <p>Cena pakietu obejmuje robociznę, części liczone są osobno. Dodatkowe naprawy serwis wykona tylko po Twojej akceptacji.</p>
-          </div>
-
-          <button type="button" class="btn-primary aside-submit" (click)="nextStep()">
+        <div class="form-actions">
+          <button type="button" class="btn-primary form-actions-next" (click)="nextStep()">
             Przejdź do podsumowania
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
-          <p class="aside-note">Nic jeszcze nie wysyłasz – sprawdzisz wszystko w kroku 2.</p>
         </div>
-      </aside>
+      </div>
+
+      <app-reservation-aside [rows]="asideRows" (next)="nextStep()">
+        <div class="pricing-info-banner">
+          <p>Cena pakietu obejmuje robociznę, części liczone są osobno. Dodatkowe naprawy serwis wykona tylko po Twojej akceptacji.</p>
+        </div>
+      </app-reservation-aside>
     </div>
 
-    <!-- ===== STEP 2: Summary ===== -->
-        <div *ngIf="currentStep === 2" class="step2-wrap">
-      <div class="step-header">
-        <h2>Podsumowanie rezerwacji</h2>
-        <p class="step-description">Sprawdź dane przed złożeniem rezerwacji</p>
-      </div>
-
-      <div class="summary-grid">
-
-        <!-- Personal data summary -->
-        <div class="summary-card" *ngIf="!clientMode">
-          <h3 class="summary-card-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Dane kontaktowe
-          </h3>
-          <div class="summary-row">
-            <span class="summary-label">Imię i nazwisko:</span>
-            <span class="summary-value">{{ reservationForm.value.firstName }} {{ reservationForm.value.lastName }}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Email:</span>
-            <span class="summary-value">{{ reservationForm.value.email }}</span>
-          </div>
-          <div class="summary-row" *ngIf="reservationForm.value.phone">
-            <span class="summary-label">Telefon:</span>
-            <span class="summary-value">{{ reservationForm.value.phone }}</span>
-          </div>
-        </div>
-
-        <!-- Bicycle summary -->
-        <div class="summary-card">
-          <h3 class="summary-card-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1 1v5.5H5.5l3-5.5m7.5 0H17m-5 0H9"/></svg>
-            Rowery ({{ bikesArray.length }})
-          </h3>
-          <div *ngFor="let bike of bikesArray.getRawValue(); let i = index" class="summary-bike-block">
-            <div class="summary-bike-label">Rower {{ i + 1 }}</div>
-            <div class="summary-row">
-              <span class="summary-label">Marka:</span>
-              <span class="summary-value">{{ bike.brand }}</span>
-            </div>
-            <div class="summary-row" *ngIf="bike.model">
-              <span class="summary-label">Model:</span>
-              <span class="summary-value">{{ bike.model }}</span>
-            </div>
-            <div class="summary-row" *ngIf="bike.additionalInfo">
-              <span class="summary-label">Uwagi:</span>
-              <span class="summary-value">{{ bike.additionalInfo }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Date summary -->
-        <div class="summary-card">
-          <h3 class="summary-card-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Termin serwisu
-          </h3>
-          <div class="summary-row">
-            <span class="summary-label">Data serwisu:</span>
-            <span class="summary-value highlight-date">{{ formatDatePL(reservationForm.value.plannedDate) }}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Serwis:</span>
-            <span class="summary-value">{{ serviceInfo.name }}</span>
-          </div>
-        </div>
-
-        <!-- Transport summary (if ordered) -->
-        <div class="summary-card transport-summary-card" *ngIf="withTransport">
-          <h3 class="summary-card-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-            Transport roweru
-          </h3>
-          <div class="summary-row" *ngIf="isOfficePick && selectedOffice">
-            <span class="summary-label">Kompleks biurowy:</span>
-            <span class="summary-value">{{ selectedOffice.name }}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Data odbioru:</span>
-            <span class="summary-value highlight-date">{{ formatDatePL(transportDate) }}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Adres odbioru:</span>
-            <span class="summary-value">
-              {{ transportForm.value.pickupStreet }} {{ transportForm.value.pickupBuildingNumber }},
-              {{ transportForm.value.pickupCity }}
-              {{ transportForm.value.pickupPostalCode }}
-            </span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Koszt transportu:</span>
-            <span class="summary-value">
-              <span *ngIf="serviceInfo.transportCost && finalTransportPrice !== null" class="summary-price-original">{{ serviceInfo.transportCost }} PLN</span>
-              <span class="summary-price">{{ effectiveTransportPrice }} PLN</span>
-            </span>
-          </div>
-          <div class="summary-row" *ngIf="transportForm.value.transportNotes?.trim()">
-            <span class="summary-label">Uwagi:</span>
-            <span class="summary-value">{{ transportForm.value.transportNotes }}</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Cost summary -->
-      <div class="cost-summary-card">
-        <h3 class="cost-summary-title">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Podsumowanie kosztów
-        </h3>
-        <div class="cost-row">
-          <span class="cost-label">Koszt serwisu:</span>
-          <span class="cost-value cost-value--neutral">Płatność w serwisie</span>
-        </div>
-        <div class="cost-row" *ngIf="withTransport">
-          <span class="cost-label">Koszt transportu:</span>
-          <span class="cost-value">
-            <span *ngIf="serviceInfo!.transportCost && finalTransportPrice !== null" class="cost-original">{{ serviceInfo!.transportCost }} PLN</span>
-            {{ effectiveTransportPrice }} PLN
-          </span>
-        </div>
-        <div class="cost-row cost-row--total">
-          <span class="cost-label">Łącznie do zapłaty teraz:</span>
-          <span class="cost-value cost-value--total">
-            {{ withTransport ? effectiveTransportPrice + ' PLN' : '0 PLN' }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Terms acceptance -->
-      <div class="terms-section">
-        <label class="terms-label">
-          <input type="checkbox" [formControl]="termsControl" class="terms-checkbox" />
-          <span class="terms-text">
-            Akceptuję
-            <a [href]="links.termsOfService" target="_blank">regulamin</a>
-            i
-            <a [href]="links.privacyPolicy" target="_blank">politykę prywatności</a>
-            serwisu. Wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji rezerwacji.
-            Rozumiem, że moje dane (imię, numer telefonu, adres e-mail oraz dane roweru) zostaną przekazane wybranemu
-            serwisowi rowerowemu, aby mógł mnie obsłużyć.
-          </span>
-        </label>
-        <span *ngIf="termsControl.invalid && termsControl.touched" class="field-error">
-          Musisz zaakceptować regulamin aby złożyć rezerwację
-        </span>
-      </div>
-
-      <!-- Navigation -->
-      <div class="form-actions">
-        <button class="btn-secondary" (click)="prevStep()" [disabled]="submitting">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          Wróć i edytuj
-        </button>
-        <button
-          class="btn-submit"
-          (click)="onSubmit()"
-          [disabled]="submitting"
-        >
-          <div *ngIf="submitting" class="btn-spinner"></div>
-          <svg *ngIf="!submitting" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          {{ submitting ? 'Rezerwowanie...' : 'Złóż rezerwację' }}
-        </button>
-      </div>
-    </div>
+    <!-- ===== KROK 2: podsumowanie ===== -->
+    <app-reservation-summary
+      *ngIf="store.currentStep === 2"
+      heading="Podsumowanie rezerwacji"
+      description="Sprawdź dane przed złożeniem rezerwacji"
+      [cards]="summaryCards"
+      [costs]="costLines"
+      [termsControl]="store.termsControl"
+      [submitting]="store.submitting"
+      submitLabel="Złóż rezerwację"
+      submittingLabel="Rezerwowanie..."
+      (back)="prevStep()"
+      (submitted)="onSubmit()"
+    >
+      <app-coupon-input
+        *ngIf="showCoupon"
+        [control]="store.couponControl"
+        [applying]="store.coupon.applying"
+        [message]="store.coupon.message"
+        [invalid]="store.coupon.invalid"
+        (apply)="applyDiscountCoupon()"
+      ></app-coupon-input>
+    </app-reservation-summary>
 
   </ng-container>
 </div>

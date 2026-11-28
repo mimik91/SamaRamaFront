@@ -1,0 +1,23 @@
+<aside class="reservation-aside">
+  <div class="aside-card">
+    <div class="aside-summary">
+      <h3 class="aside-title">{{ title }}</h3>
+      <dl class="aside-list">
+        <div class="aside-row" *ngFor="let row of rows">
+          <dt>{{ row.label }}</dt>
+          <dd *ngIf="row.values.length === 0" class="aside-placeholder">{{ row.placeholder }}</dd>
+          <dd *ngFor="let value of row.values">{{ value }}</dd>
+          <dd *ngIf="row.note && row.values.length > 0"><small>{{ row.note }}</small></dd>
+        </div>
+      </dl>
+    </div>
+
+    <ng-content></ng-content>
+
+    <button type="button" class="btn-primary aside-submit" (click)="next.emit()">
+      {{ submitLabel }}
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <p class="aside-note">{{ note }}</p>
+  </div>
+</aside>

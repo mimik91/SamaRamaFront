@@ -1,0 +1,77 @@
+.office-autocomplete-section {
+  margin-bottom: var(--spacing-5);
+  padding-bottom: var(--spacing-5);
+  border-bottom: 1px dashed var(--color-success-border);
+}
+
+.office-input-wrapper { position: relative; }
+
+/* To pole nie ma pływającej etykiety — zwykłe wypełnienie */
+.office-input { padding-right: 44px; padding-top: 10px; padding-bottom: 10px; }
+
+.office-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.office-toggle-btn:hover { color: var(--color-primary); }
+
+.office-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-secondary);
+  border: none;
+  border-radius: 50%;
+  color: var(--color-white);
+  font-size: 11px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.office-clear-btn:hover { opacity: 0.85; }
+
+.office-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--color-white);
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+}
+
+.office-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.office-option:hover { background: var(--color-primary-alpha-08); }
+
+.office-option-name { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
+.office-option-addr { font-size: 0.8rem; color: var(--text-muted); }
+
+.not-found-hint { margin: var(--spacing-2) 0 0; }

@@ -1,0 +1,123 @@
+.delivery-cards {
+  display: grid;
+  grid-template-columns: repeat(var(--delivery-columns, 3), 1fr);
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-4);
+  margin-bottom: var(--spacing-2);
+}
+
+.delivery-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-5) var(--spacing-3) var(--spacing-3);
+  background: var(--color-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  user-select: none;
+  font: inherit;
+  color: inherit;
+}
+
+.delivery-card:hover { border-color: var(--color-primary); box-shadow: 0 2px 12px var(--color-primary-alpha-10); }
+.delivery-card:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.delivery-card.selected {
+  border-width: 2px;
+  border-color: var(--color-primary);
+  background: var(--color-success-mint);
+  box-shadow: none;
+}
+
+.delivery-card-icon {
+  font-size: 1.9rem;
+  line-height: 1;
+  filter: grayscale(0.6);
+  opacity: 0.8;
+  transition: filter 0.2s, opacity 0.2s;
+}
+
+.delivery-card:hover .delivery-card-icon,
+.delivery-card.selected .delivery-card-icon { filter: none; opacity: 1; }
+
+.delivery-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.delivery-card-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.delivery-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.delivery-card-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-accent-orange);
+  color: var(--color-white);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.delivery-card-badge--info { background: var(--color-navy); }
+
+.transport-cost-badge {
+  background: var(--color-success-bg);
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 1px 10px;
+  border-radius: 12px;
+}
+
+.weekend-transport-error { margin-top: var(--spacing-3); }
+
+.transport-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  margin: var(--spacing-3) 0 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.transport-hint svg { flex-shrink: 0; margin-top: 3px; color: var(--text-muted); }
+.transport-hint strong { color: var(--text-primary); }
+
+@media (max-width: 640px) {
+  .delivery-cards { grid-template-columns: 1fr; }
+
+  .delivery-card {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+
+  .delivery-card-content { flex: 1; min-width: 0; }
+  .delivery-card-title { flex-direction: row; justify-content: space-between; }
+  .delivery-card-badge { font-size: 0.65rem; padding: 2px 7px; }
+}

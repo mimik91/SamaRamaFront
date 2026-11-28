@@ -1,20 +1,9 @@
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener, ViewChild } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { CommonModule } from '@angular/common';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  FormControl,
-  Validators,
-  AbstractControl,
-  ValidationErrors
-} from '@angular/forms';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, NavigationStart, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { Subscription, forkJoin, of } from 'rxjs';
-import { filter, switchMap, distinctUntilChanged, catchError } from 'rxjs/operators';
+import { filter, catchError } from 'rxjs/operators';
 import {
   ServicePackagesConfigDto,
   ServicePackageDto,
@@ -26,19 +15,42 @@ import { SessionSyncService } from '../core/session-sync.service';
 import { SeoService } from '../core/seo.service';
 import { SchemaOrgHelper, BikeRepairShopData } from '../core/schema-org.helper';
 import { SSR_RESPONSE } from '../core/ssr-tokens';
-import { MatCalendar, MatDatepickerModule } from '@angular/material/datepicker';
-import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { NotificationService } from '../core/notification.service';
 import { EnumerationService } from '../core/enumeration.service';
 import { environment } from '../environments/environments';
-import { OfficeAddressDto } from '../shared/models/office-address.model';
 import { TRANSPORT_PRICING } from '../shared/constants/transport-pricing.constants';
 import { DiscountService } from '../shared/services/discount.service';
 import { formatServiceDurationBucket, getServiceDurationBucket, ServiceDurationBucket } from '../service-records/service-duration.util';
 import { AuthService } from '../auth/auth.service';
 import { BicycleService } from '../pages/client-panel/bicycle.service';
-import { Bicycle } from '../shared/models/bicycle.model';
 import { ReservationSuccessData, storeReservationSuccess } from '../pages/reservation-success/reservation-success.model';
+import { PaymentNavigationState, PaymentSummaryDetails } from '../shared/models/payment.models';
+import { ReservationApiService, PublicServiceDetails } from './shared/reservation-api.service';
+import { ReservationDraftService } from './shared/reservation-draft.service';
+import { ReservationFormStore } from './shared/reservation-form.store';
+import {
+  AsideRowView,
+  CostLineView,
+  DeliveryType,
+  ReservationDraft,
+  ReservationFormConfig,
+  SummaryCardView
+} from './shared/reservation-form.models';
+import {
+  formatDatePL,
+  formatWeekdayDate,
+  formatWeekdayShort
+} from './shared/reservation-form.utils';
+import { ReservationStepperComponent } from './shared/components/reservation-stepper/reservation-stepper.component';
+import { ReservationBikesComponent } from './shared/components/reservation-bikes/reservation-bikes.component';
+import { ReservationDatePickerComponent } from './shared/components/reservation-date-picker/reservation-date-picker.component';
+import { DeliverySelectorComponent, DeliveryOption, deliveryOptions } from './shared/components/delivery-selector/delivery-selector.component';
+import { PickupAddressComponent } from './shared/components/pickup-address/pickup-address.component';
+import { ContactFieldsComponent } from './shared/components/contact-fields/contact-fields.component';
+import { ReservationAsideComponent } from './shared/components/reservation-aside/reservation-aside.component';
+import { ReservationSummaryComponent } from './shared/components/reservation-summary/reservation-summary.component';
+import { CouponInputComponent } from './shared/components/coupon-input/coupon-input.component';
+import { PackageCardComponent } from './shared/components/package-card/package-card.component';
 
 interface ServiceInfo {
   id: number;
@@ -52,37 +64,41 @@ interface ServiceInfo {
   medianServiceDurationHours: number | null;
 }
 
-interface ReservationSettings {
-  acceptedDays: string[];
-  estimatedReservationDay?: string | null;
-  maxBikesPerDay?: number | null;
-  fullyBookedDates?: string[];
-}
-
-type DeliveryType = 'SELF' | 'DOOR_TO_DOOR' | 'OFFICE';
-
-const DAY_KEYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-const DAY_LABELS: { [key: string]: string } = {
-  MONDAY: 'poniedziałek', TUESDAY: 'wtorek', WEDNESDAY: 'środa',
-  THURSDAY: 'czwartek', FRIDAY: 'piątek', SATURDAY: 'sobota', SUNDAY: 'niedziela'
+const GUEST_FORM_CONFIG: ReservationFormConfig = {
+  allowedDeliveryTypes: ['SELF', 'DOOR_TO_DOOR', 'OFFICE'],
+  defaultDelivery: 'DOOR_TO_DOOR',
+  additionalInfoRequired: true,
+  weekendsAlwaysBlocked: false,
+  clampPickupToToday: false
 };
 
 @Component({
   selector: 'app-guest-reservation-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule, RouterModule],
-  providers: [
-    provideNativeDateAdapter(),
-    { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' }
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ReservationStepperComponent,
+    ReservationBikesComponent,
+    ReservationDatePickerComponent,
+    DeliverySelectorComponent,
+    PickupAddressComponent,
+    ContactFieldsComponent,
+    ReservationAsideComponent,
+    ReservationSummaryComponent,
+    CouponInputComponent,
+    PackageCardComponent
   ],
   templateUrl: './guest-reservation-form.component.html',
-  styleUrls: ['./guest-reservation-form.component.css']
+  styleUrls: ['./shared/reservation-form.shared.css', './guest-reservation-form.component.css']
 })
 export class GuestReservationFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private http = inject(HttpClient);
+  private api = inject(ReservationApiService);
+  private draftService = inject(ReservationDraftService);
   private notificationService = inject(NotificationService);
   private discountService = inject(DiscountService);
   private enumerationService = inject(EnumerationService);
@@ -95,10 +111,19 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   private routerSub: Subscription | null = null;
   private sessionSyncSent = false;
+  private pendingDraft: ReservationDraft | null = null;
 
-  currentStep = 1;
+  readonly store = new ReservationFormStore({
+    fb: this.fb,
+    api: this.api,
+    bicycleService: this.bicycleService,
+    enumerationService: this.enumerationService,
+    config: GUEST_FORM_CONFIG,
+    clientMode: this.authService.isClient(),
+    defaultMaxBikes: 0
+  });
+
   loading = false;
-  submitting = false;
   serviceSuffix: string | null = null;
 
   serviceInfo: ServiceInfo | null = null;
@@ -106,85 +131,17 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   reservationUnavailable = false;
   unavailableServiceName = '';
   servicePhone: string | null = null;
-  reservationSettings: ReservationSettings | null = null;
 
-  minDate: string;
-  maxDate: string;
-  minDateObj: Date;
-  maxDateObj: Date;
-
-  readonly dateFilter = (date: Date | null): boolean => {
-    if (!date) return false;
-    const dateStr = this.dateToStr(date);
-    if (this.reservationSettings?.fullyBookedDates?.includes(dateStr)) return false;
-    const day = date.getDay();
-    if (this.withTransport && (day === 0 || day === 6)) return false;
-    const dayKey = DAY_KEYS[day];
-    const accepted = this.reservationSettings?.acceptedDays;
-    if (accepted && accepted.length > 0) return accepted.includes(dayKey);
-    return true;
-  };
-
-  /** Nowa referencja wymusza przerysowanie dni w kalendarzu (np. po zmianie typu transportu). */
-  calendarFilter: (date: Date | null) => boolean = (d) => this.dateFilter(d);
-
-  @ViewChild(MatCalendar) private calendar?: MatCalendar<Date>;
-
-  /** Zaznacza w kalendarzu najbliższy dostępny dzień (o ile klient nie wybrał jeszcze żadnego). */
-  private preselectNearestAvailableDate(): void {
-    const ctrl = this.reservationForm.get('plannedDate');
-    if (!ctrl || ctrl.value) return;
-    const d = new Date(this.minDateObj);
-    d.setHours(0, 0, 0, 0);
-    const max = new Date(this.maxDateObj);
-    max.setHours(0, 0, 0, 0);
-    while (d <= max) {
-      if (this.dateFilter(d)) {
-        const picked = new Date(d);
-        ctrl.setValue(picked);
-        Promise.resolve().then(() => { if (this.calendar) this.calendar.activeDate = picked; });
-        return;
-      }
-      d.setDate(d.getDate() + 1);
-    }
-  }
-
-  get selectedDateObj(): Date | null {
-    return this.toDate(this.reservationForm.get('plannedDate')?.value);
-  }
-
-  onCalendarDateSelected(date: Date | null): void {
-    if (!date) return;
-    const ctrl = this.reservationForm.get('plannedDate');
-    ctrl?.setValue(date);
-    ctrl?.markAsDirty();
-    ctrl?.markAsTouched();
-  }
-
-  brands: string[] = [];
   cities: string[] = [];
   loadingCities = true;
 
-  // Per-bike brand autocomplete state
-  bikeBrandStates: { filtered: string[]; showDropdown: boolean }[] = [];
-
-  // Availability for selected date
-  availableSlotsForDate: number | null = null;
-  checkingAvailability = false;
-  availabilityError: string | null = null;
-  weekendTransportError: string | null = null;
-
-  // Discount coupon (transport)
-  couponControl = new FormControl('');
-  isApplyingCoupon = false;
-  couponMessage: string | null = null;
-  isCouponInvalid = false;
+  // Kupon (transport)
   finalTransportPrice: number | null = null;
-  // Cena JEDNEJ dodatkowej roweru po rabacie — domyślnie = bez rabatu (transportPricing.additionalBikeCost),
+  // Cena JEDNEGO dodatkowego roweru po rabacie — domyślnie = bez rabatu (transportPricing.additionalBikeCost),
   // ale kupon WHOLE_ORDER może ją obniżyć (patrz effectiveTransportPrice).
   discountedAdditionalBikePrice: number | null = null;
 
-  // Packages pricelist panel
+  // Cennik pakietów
   packagesConfig: ServicePackagesConfigDto | null = null;
   packages: ServicePackageDto[] = [];
   bikeTypes: string[] = [];
@@ -193,380 +150,23 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   packagesExpanded = false;
   readonly packageLevels = ALL_PACKAGE_LEVELS;
 
-  // Office address autocomplete
-  officeAddresses: OfficeAddressDto[] = [];
-  filteredOffices: OfficeAddressDto[] = [];
-  showOfficeDropdown = false;
-  selectedOffice: OfficeAddressDto | null = null;
-  officeNameControl = new FormControl('');
-
-  readonly links = environment.links;
   readonly transportPricing = TRANSPORT_PRICING;
 
-  reservationForm!: FormGroup;
-  bikesArray!: FormArray;
-  transportForm!: FormGroup;
-  termsControl = new FormControl(false, [Validators.requiredTrue]);
+  readonly formatWeekdayDate = formatWeekdayDate;
+  readonly formatDatePL = formatDatePL;
 
-  // Tryb klienta: zalogowany klient nie wypełnia danych kontaktowych (biorą się z konta) i wybiera
-  // rower z listy swoich rowerów zamiast wpisywać markę/model ręcznie.
-  clientMode = false;
-  myBicycles: Bicycle[] = [];
-  loadingMyBicycles = false;
-
-  constructor() {
-    this.clientMode = this.authService.isClient();
-
-    const minD = new Date();
-    minD.setDate(minD.getDate() + 2);
-    this.minDateObj = minD;
-    this.minDate = this.dateToStr(minD);
-
-    const maxD = new Date();
-    maxD.setDate(maxD.getDate() + 30);
-    this.maxDateObj = maxD;
-    this.maxDate = this.dateToStr(maxD);
-
-    this.bikesArray = this.fb.array([this.createBikeGroup()]);
-    this.bikeBrandStates = [{ filtered: [], showDropdown: false }];
-
-    this.reservationForm = this.fb.group({
-      firstName: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.minLength(2)]],
-      lastName: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.minLength(2)]],
-      email: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.email]],
-      phone: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.pattern(/^\d{9}$/)]],
-      plannedDate: ['', [Validators.required, this.acceptedDayValidator.bind(this)]],
-      deliveryType: ['DOOR_TO_DOOR' as DeliveryType]
-    });
-
-    this.transportForm = this.fb.group({
-      pickupStreet: ['', Validators.required],
-      pickupBuildingNumber: ['', Validators.required],
-      pickupCity: ['', Validators.required],
-      pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]],
-      transportNotes: ['']
-    });
-
-    if (this.clientMode) {
-      this.loadMyBicycles();
-    }
-  }
-
-  // ===== Tryb klienta: wybór własnego roweru =====
-
-  private loadMyBicycles(): void {
-    this.loadingMyBicycles = true;
-    this.bicycleService.getUserBicycles().subscribe({
-      next: (bikes) => {
-        this.myBicycles = bikes;
-        this.loadingMyBicycles = false;
-        this.applyOriginatingBicycleDefault();
-      },
-      error: () => {
-        this.myBicycles = [];
-        this.loadingMyBicycles = false;
-      }
-    });
-  }
-
-  // Ustawiane tylko gdy przyszliśmy z modala "Umów serwis" w szczegółach roweru (patrz
-  // BookServiceModalComponent) — router state z bicycleId. Wejście z listy serwisów/mapy nie
-  // ustawia tego state, więc żaden rower nie jest wtedy domyślnie wybrany.
-  private applyOriginatingBicycleDefault(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const bicycleId = window.history.state?.bicycleId as number | undefined;
-    if (!bicycleId) return;
-    const bike = this.myBicycles.find(b => b.id === bicycleId);
-    if (!bike) return;
-    this.onBicycleSelected(0, bicycleId);
-  }
-
-  availableBicyclesFor(index: number): Bicycle[] {
-    const chosenElsewhere = new Set(
-      this.bikesArray.controls
-        .filter((_, i) => i !== index)
-        .map(c => c.get('selectedBicycleId')?.value)
-        .filter((id): id is number => id != null)
-    );
-    return this.myBicycles.filter(b => !chosenElsewhere.has(b.id));
-  }
-
-  onBicycleSelectChange(event: Event, index: number): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.onBicycleSelected(index, value === 'OTHER' ? 'OTHER' : +value);
-  }
-
-  onBicycleSelected(index: number, bicycleId: number | 'OTHER'): void {
-    const group = this.bikesArray.at(index) as FormGroup;
-    if (bicycleId === 'OTHER') {
-      group.get('selectedBicycleId')?.setValue(null);
-      group.get('brand')?.enable();
-      group.get('model')?.enable();
-      group.get('brand')?.setValue('');
-      group.get('model')?.setValue('');
-      return;
-    }
-    const bike = this.myBicycles.find(b => b.id === bicycleId);
-    if (!bike) return;
-    group.get('selectedBicycleId')?.setValue(bicycleId);
-    group.get('brand')?.setValue(bike.brand);
-    group.get('model')?.setValue(bike.model ?? '');
-    group.get('brand')?.disable();
-    group.get('model')?.disable();
-  }
-
-  // ===== Bike FormArray =====
-
-  createBikeGroup(): FormGroup {
-    return this.fb.group({
-      selectedBicycleId: [null as number | null],
-      brand: ['', Validators.required],
-      model: [''],
-      additionalInfo: ['', Validators.required]
-    });
-  }
-
-  get bikeControls(): FormGroup[] {
-    return this.bikesArray.controls as FormGroup[];
-  }
-
-  get maxBikesPerReservation(): number {
-    if (this.availableSlotsForDate !== null) return this.availableSlotsForDate;
-    const max = this.reservationSettings?.maxBikesPerDay;
-    return max && max > 0 ? Math.ceil(max / 2) : 0;
-  }
-
-  get canAddBike(): boolean {
-    const limit = this.maxBikesPerReservation;
-    return limit === 0 || this.bikesArray.length < limit;
-  }
-
-  private checkDateAvailability(date: Date): void {
-    if (!this.serviceInfo?.id) return;
-    const dateStr = this.dateToStr(date);
-    const url = environment.endpoints.guestOrders.serviceAvailability
-      .replace(':serviceId', String(this.serviceInfo.id));
-    this.checkingAvailability = true;
-    this.availabilityError = null;
-    this.availableSlotsForDate = null;
-    this.http.get<{ date: string; available: boolean; availableSlots: number }[]>(
-      `${environment.apiUrl}${url}`,
-      { params: { startDate: dateStr, endDate: dateStr } }
-    ).subscribe({
-      next: (days) => {
-        this.checkingAvailability = false;
-        const day = days[0];
-        if (!day) return;
-        const slots = day.availableSlots ?? 0;
-        if (!day.available || slots <= 0) {
-          this.availabilityError = 'Ten dzień jest już w pełni zarezerwowany. Wybierz inną datę.';
-          this.reservationForm.get('plannedDate')?.setValue(null);
-          this.availableSlotsForDate = null;
-          return;
-        }
-        this.availableSlotsForDate = slots;
-        if (this.bikesArray.length > slots) {
-          this.availabilityError = `Na ten dzień pozostało ${slots} wolne${slots === 1 ? '' : slots < 5 ? ' miejsca' : ' miejsc'}. Usuń rower lub wybierz inną datę.`;
-          this.reservationForm.get('plannedDate')?.setValue(null);
-          this.availableSlotsForDate = null;
-        }
-      },
-      error: () => {
-        this.checkingAvailability = false;
-      }
-    });
-  }
-
-  addBike(): void {
-    if (!this.canAddBike) return;
-    this.bikesArray.push(this.createBikeGroup());
-    this.bikeBrandStates.push({ filtered: [], showDropdown: false });
-  }
-
-  removeBike(index: number): void {
-    if (this.bikesArray.length <= 1) return;
-    this.bikesArray.removeAt(index);
-    this.bikeBrandStates.splice(index, 1);
-  }
-
-  isBikeFieldInvalid(index: number, field: string): boolean {
-    const ctrl = this.bikesArray.at(index).get(field);
-    return !!(ctrl?.invalid && (ctrl.dirty || ctrl.touched));
-  }
-
-  // ===== Per-bike brand autocomplete =====
-
-  onBrandInput(event: Event, index: number): void {
-    const q = (event.target as HTMLInputElement).value;
-    this.bikesArray.at(index).get('brand')?.setValue(q, { emitEvent: false });
-    if (q.length >= 3) {
-      this.bikeBrandStates[index].filtered = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
-      this.bikeBrandStates[index].showDropdown = this.bikeBrandStates[index].filtered.length > 0;
-    } else {
-      this.bikeBrandStates[index].showDropdown = false;
-    }
-  }
-
-  onBrandFocus(index: number): void {
-    const q = this.bikesArray.at(index).get('brand')?.value || '';
-    if (q.length >= 3) {
-      this.bikeBrandStates[index].filtered = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
-      this.bikeBrandStates[index].showDropdown = this.bikeBrandStates[index].filtered.length > 0;
-    }
-  }
-
-  onBrandBlur(index: number): void {
-    setTimeout(() => { this.bikeBrandStates[index].showDropdown = false; }, 200);
-  }
-
-  selectBrand(brand: string, index: number): void {
-    this.bikesArray.at(index).get('brand')?.setValue(brand);
-    this.bikeBrandStates[index].showDropdown = false;
-  }
-
-  expandAllBrands(index: number): void {
-    this.bikeBrandStates[index].filtered = [...this.brands];
-    this.bikeBrandStates[index].showDropdown = true;
-  }
-
-  // ===== Office autocomplete =====
-
-  onOfficeInput(event: Event): void {
-    const q = (event.target as HTMLInputElement).value;
-    this.officeNameControl.setValue(q, { emitEvent: false });
-    if (q.length >= 3) {
-      this.filteredOffices = this.officeAddresses.filter(o =>
-        o.name.toLowerCase().includes(q.toLowerCase())
-      );
-      this.showOfficeDropdown = this.filteredOffices.length > 0;
-    } else {
-      this.showOfficeDropdown = false;
-      this.filteredOffices = [];
-    }
-    if (this.selectedOffice) {
-      this.selectedOffice = null;
-      this.transportForm.get('pickupStreet')?.setValue('');
-      this.transportForm.get('pickupBuildingNumber')?.setValue('');
-      this.transportForm.get('pickupCity')?.setValue('');
-      this.transportForm.get('pickupPostalCode')?.setValue('');
-    }
-  }
-
-  onOfficeFocus(): void {
-    const q = this.officeNameControl.value || '';
-    if (q.length >= 3) {
-      this.filteredOffices = this.officeAddresses.filter(o =>
-        o.name.toLowerCase().includes(q.toLowerCase())
-      );
-      this.showOfficeDropdown = this.filteredOffices.length > 0;
-    }
-  }
-
-  expandAllOffices(): void {
-    this.filteredOffices = [...this.officeAddresses];
-    this.showOfficeDropdown = this.filteredOffices.length > 0;
-  }
-
-  onOfficeBlur(): void {
-    setTimeout(() => { this.showOfficeDropdown = false; }, 200);
-  }
-
-  clearOfficeSelection(): void {
-    this.selectedOffice = null;
-    this.officeNameControl.setValue('');
-    this.showOfficeDropdown = false;
-    this.filteredOffices = [];
-    this.transportForm.get('pickupStreet')?.setValue('');
-    this.transportForm.get('pickupBuildingNumber')?.setValue('');
-    this.transportForm.get('pickupCity')?.setValue('');
-    this.transportForm.get('pickupPostalCode')?.setValue('');
-  }
-
-  selectOffice(office: OfficeAddressDto): void {
-    this.selectedOffice = office;
-    this.officeNameControl.setValue(office.name);
-    this.transportForm.get('pickupStreet')?.setValue(office.street);
-    this.transportForm.get('pickupBuildingNumber')?.setValue(office.building);
-    this.transportForm.get('pickupCity')?.setValue(office.city);
-    this.transportForm.get('pickupPostalCode')?.setValue(office.postalCode || '');
-    this.showOfficeDropdown = false;
-  }
-
-  // ===== Validators =====
-
-  acceptedDayValidator(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) return null;
-    const date: Date = control.value instanceof Date ? control.value : new Date(control.value + 'T00:00:00');
-    const dayKey = DAY_KEYS[date.getDay()];
-    const accepted = this.reservationSettings?.acceptedDays;
-    if (accepted && accepted.length > 0) {
-      if (!accepted.includes(dayKey)) return { notAcceptedDay: true };
-    }
-    return null;
-  }
-
-  private dateToStr(d: Date): string {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-
-  get acceptedDaysHint(): string {
-    const accepted = this.reservationSettings?.acceptedDays;
-    if (!accepted || accepted.length === 0) return 'Dostępne terminy: wszystkie dni tygodnia';
-    return 'Dostępne dni: ' + accepted.map(d => DAY_LABELS[d] || d).join(', ');
-  }
-
-  get deliveryType(): DeliveryType {
-    return this.reservationForm.get('deliveryType')?.value as DeliveryType;
-  }
-
-  get withTransport(): boolean {
-    return this.deliveryType !== 'SELF';
-  }
-
-  get isOfficePick(): boolean {
-    return this.deliveryType === 'OFFICE';
-  }
-
-  setDeliveryType(type: DeliveryType): void {
-    if (type !== 'SELF') {
-      const planned = this.reservationForm.get('plannedDate')?.value;
-      if (planned) {
-        const date = planned instanceof Date ? planned : new Date(planned + 'T00:00:00');
-        const day = date.getDay();
-        if (day === 0 || day === 6) {
-          this.weekendTransportError = 'Transport możliwy tylko do rezerwacji od poniedziałku do piątku.';
-          return;
-        }
-      }
-    }
-    this.weekendTransportError = null;
-    this.reservationForm.get('deliveryType')?.setValue(type);
-    this.calendarFilter = (d) => this.dateFilter(d);
-    // Reset office selection and clear address when switching type
-    this.selectedOffice = null;
-    this.officeNameControl.setValue('');
-    this.showOfficeDropdown = false;
-    this.transportForm.get('pickupStreet')?.setValue('');
-    this.transportForm.get('pickupBuildingNumber')?.setValue('');
-    this.transportForm.get('pickupCity')?.setValue('');
-    this.transportForm.get('pickupPostalCode')?.setValue('');
-  }
-
-  get transportDate(): string {
-    const planned = this.reservationForm.get('plannedDate')?.value;
-    if (!planned) return '';
-    const d = planned instanceof Date ? new Date(planned) : new Date(planned + 'T00:00:00');
-    if (!this.isOfficePick) {
-      d.setDate(d.getDate() - 1);
-    }
-    return this.dateToStr(d);
-  }
+  // ===== Cykl życia =====
 
   ngOnInit(): void {
-    this.loadBrands();
+    this.store.loadBrands();
     this.loadCities();
-    this.loadOfficeAddresses();
+    this.store.loadOffices();
     this.loadServiceInfo();
+    this.store.start();
+
+    if (this.store.clientMode) {
+      this.store.loadMyBicycles(this.originatingBicycleId());
+    }
 
     if (isPlatformBrowser(this.platformId)) {
       this.routerSub = this.router.events.pipe(
@@ -574,43 +174,35 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       ).subscribe(() => this.sendSessionSync());
     }
 
-    this.reservationForm.get('plannedDate')?.valueChanges.pipe(
-      distinctUntilChanged((a, b) => this.dateToStr(a instanceof Date ? a : new Date(a + 'T00:00:00')) === this.dateToStr(b instanceof Date ? b : new Date(b + 'T00:00:00')))
-    ).subscribe((val) => {
-      this.availableSlotsForDate = null;
-      this.availabilityError = null;
-      if (val) {
-        const date = val instanceof Date ? val : new Date(val + 'T00:00:00');
-        if (!isNaN(date.getTime())) {
-          const day = date.getDay();
-          if (day !== 0 && day !== 6) this.weekendTransportError = null;
-          this.checkDateAvailability(date);
-        }
-      }
-    });
-
-    this.reservationForm.get('deliveryType')?.valueChanges.subscribe((val: DeliveryType) => {
-      if (val !== 'SELF') {
-        this.transportForm.enable();
-      } else {
-        this.transportForm.disable();
-        this.couponControl.setValue('');
-        this.couponMessage = null;
-        this.isCouponInvalid = false;
+    // Bez transportu kupon nie ma nic do obniżenia — czyścimy wyliczone ceny.
+    this.store.reservationForm.get('deliveryType')?.valueChanges.subscribe((val: DeliveryType) => {
+      if (val === 'SELF') {
         this.finalTransportPrice = null;
         this.discountedAdditionalBikePrice = null;
       }
     });
-
-    this.transportForm.enable();
   }
 
-  private loadBrands(): void {
-    this.enumerationService.getEnumeration('BRAND').subscribe({
-      next: (brands) => { this.brands = brands; },
-      error: () => { this.brands = environment.settings.fallback.brands; }
-    });
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    this.sendSessionSync();
   }
+
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
+    this.store.destroy();
+    this.seoService.removeStructuredData();
+  }
+
+  // Ustawiane tylko gdy przyszliśmy z modala "Umów serwis" w szczegółach roweru (patrz
+  // BookServiceModalComponent) — router state z bicycleId. Wejście z listy serwisów/mapy nie
+  // ustawia tego state, więc żaden rower nie jest wtedy domyślnie wybrany.
+  private originatingBicycleId(): number | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    return (window.history.state?.bicycleId as number | undefined) ?? null;
+  }
+
+  // ===== Ładowanie danych serwisu =====
 
   private loadCities(): void {
     this.loadingCities = true;
@@ -623,14 +215,6 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         this.cities = this.sortCitiesKrakowFirst(environment.settings.fallback.cities);
         this.loadingCities = false;
       }
-    });
-  }
-
-  private loadOfficeAddresses(): void {
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.officeAddresses}`;
-    this.http.get<OfficeAddressDto[]>(url).subscribe({
-      next: (offices) => { this.officeAddresses = offices; },
-      error: () => { this.officeAddresses = []; }
     });
   }
 
@@ -657,13 +241,13 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         return;
       }
       this.serviceSuffix = suffix;
+      this.pendingDraft = this.draftService.consume(this.draftKey);
       const stateServiceId = isPlatformBrowser(this.platformId) ? window.history.state?.serviceId : null;
       if (stateServiceId) {
         this.loadServiceDetails(+stateServiceId);
       } else {
         this.loading = true;
-        const url = `${environment.apiUrl}${environment.endpoints.bikeServices.bySuffix}/${suffix}`;
-        this.http.get<{ id: number }>(url).subscribe({
+        this.api.getServiceIdBySuffix(suffix).subscribe({
           next: (res) => {
             if (res.id) {
               this.loadServiceDetails(res.id);
@@ -691,8 +275,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       this.route.queryParams.subscribe(params => {
         const serviceId = params['serviceId'];
         if (serviceId) {
-          const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/get-suffix`;
-          this.http.get<{ suffix: string }>(url, { params: { serviceId } }).subscribe({
+          this.api.getSuffixByServiceId(serviceId).subscribe({
             next: (response) => {
               if (response.suffix) {
                 this.router.navigate(['/', response.suffix, 'zarezerwuj'], { replaceUrl: true });
@@ -716,8 +299,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
 
   private loadServiceDetails(serviceId: number): void {
     this.loading = true;
-    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/${serviceId}`;
-    this.http.get<any>(url).subscribe({
+    this.api.getServiceDetails(serviceId).subscribe({
       next: (d) => {
         if (d.reservationAvailable === false) {
           if (d.transportAvailable) {
@@ -750,17 +332,20 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
           medianServiceDurationHours: null
         };
 
+        this.store.availabilityFetcher = (dateStr) => this.api.getServiceDayAvailability(serviceId, dateStr);
+
         if (!d.transportAvailable) {
-          this.reservationForm.get('deliveryType')?.setValue('SELF' as DeliveryType);
+          this.store.reservationForm.get('deliveryType')?.setValue('SELF' as DeliveryType);
         }
 
         this.injectReservationSchema(d);
-        this.updateReservationSeo(d.name, d.city);
+        this.updateReservationSeo(d.name, d.city ?? '');
 
         // id znamy z żądania — GET /bike-services/{id} go już nie zwraca
         this.loadReservationSettings(serviceId);
         this.loadPackages(serviceId);
         this.loadServiceStats(serviceId);
+        this.restoreDraft();
         this.loading = false;
       },
       error: () => {
@@ -773,8 +358,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   }
 
   private loadServiceStats(serviceId: number): void {
-    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.publicInfo.replace(':id', String(serviceId))}`;
-    this.http.get<{ averageRating: number | null; reviewCount: number; medianServiceDurationHours: number | null }>(url).subscribe({
+    this.api.getServicePublicInfo(serviceId).subscribe({
       next: (info) => {
         if (!this.serviceInfo) return;
         this.serviceInfo = {
@@ -788,6 +372,16 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadReservationSettings(serviceId: number): void {
+    this.api.getReservationSettings(serviceId).subscribe({
+      next: (settings) => {
+        this.store.applySettings(settings);
+        this.store.preselectNearestAvailableDate();
+      },
+      error: () => {}
+    });
+  }
+
   get waitingTimeLabel(): string {
     return formatServiceDurationBucket(this.serviceInfo?.medianServiceDurationHours);
   }
@@ -796,138 +390,99 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     return getServiceDurationBucket(this.serviceInfo?.medianServiceDurationHours);
   }
 
-  private loadReservationSettings(serviceId: number): void {
-    const url = `${environment.apiUrl}${environment.endpoints.bikeServices.base}/${serviceId}/reservation-settings`;
-    this.http.get<ReservationSettings>(url).subscribe({
-      next: (settings) => {
-        this.reservationSettings = settings;
-        this.updateMinDate(settings);
-        this.calendarFilter = (d) => this.dateFilter(d);
-        this.preselectNearestAvailableDate();
-        this.reservationForm.get('plannedDate')?.updateValueAndValidity();
-      },
-      error: () => {}
-    });
+  // ===== Powrót z płatności (wersja robocza) =====
+
+  private get draftKey(): string {
+    return 'guest:' + (this.serviceSuffix ?? '');
   }
 
-  private updateMinDate(settings: ReservationSettings): void {
-    const dayAfterTomorrow = new Date();
-    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-    const dayAfterTomorrowStr = this.dateToStr(dayAfterTomorrow);
-
-    if (settings.estimatedReservationDay && settings.estimatedReservationDay > dayAfterTomorrowStr) {
-      this.minDate = settings.estimatedReservationDay;
-      this.minDateObj = new Date(settings.estimatedReservationDay + 'T00:00:00');
-    } else {
-      this.minDate = dayAfterTomorrowStr;
-      this.minDateObj = dayAfterTomorrow;
+  private restoreDraft(): void {
+    const draft = this.pendingDraft;
+    if (!draft) return;
+    this.pendingDraft = null;
+    this.store.applyDraft(draft);
+    // kupon wpisany przed płatnością — przeliczamy cenę od nowa
+    if (this.store.withTransport && draft.coupon?.trim()) {
+      this.applyDiscountCoupon();
     }
   }
 
-  // ===== Navigation =====
+  // ===== Nawigacja po krokach =====
 
   nextStep(): void {
-    if (this.isStep1Valid()) {
-      this.currentStep = 2;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (this.store.isStep1Valid()) {
+      this.store.currentStep = 2;
+      this.scrollTop();
     } else {
-      this.markAllTouched(this.reservationForm);
-      this.bikesArray.controls.forEach(c => this.markAllTouched(c as FormGroup));
-      if (this.withTransport) this.markAllTouched(this.transportForm);
+      this.store.markStep1Touched();
       this.notificationService.warning('Wypełnij wszystkie wymagane pola poprawnie.');
     }
   }
 
   prevStep(): void {
-    this.currentStep = 1;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.store.currentStep = 1;
+    this.scrollTop();
   }
 
-  isStep1Valid(): boolean {
-    const officeNameFilled = !this.isOfficePick || !!this.officeNameControl.value?.trim();
-    const transportValid = !this.withTransport || (this.transportForm.valid && officeNameFilled);
-    return this.reservationForm.valid && this.bikesArray.valid && transportValid;
+  private scrollTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
-  isStepCompleted(step: number): boolean {
-    return this.currentStep > step;
-  }
-
-  isStepActive(step: number): boolean {
-    return this.currentStep === step;
-  }
-
-  private markAllTouched(group: FormGroup): void {
-    Object.values(group.controls).forEach(c => c.markAsTouched());
-  }
-
-  isFieldInvalid(fieldName: string, form: FormGroup = this.reservationForm): boolean {
-    const f = form.get(fieldName);
-    return !!(f?.invalid && (f.dirty || f.touched));
-  }
-
-  // ===== Submission =====
+  // ===== Wysyłka =====
 
   onSubmit(): void {
-    if (!this.isStep1Valid() || !this.termsControl.valid || !this.serviceInfo) {
-      this.termsControl.markAsTouched();
+    const store = this.store;
+    if (!store.isStep1Valid() || !store.termsControl.valid || !this.serviceInfo) {
+      store.termsControl.markAsTouched();
       this.notificationService.warning('Zaakceptuj regulamin aby kontynuować.');
       return;
     }
 
-    this.submitting = true;
-    const rv = this.reservationForm.value;
+    const rv = store.reservationForm.value;
 
     // Płatny transport: NIE twórz rezerwacji od razu (POST /service-reservation) — backend utworzy
     // ją dopiero po opłaceniu transportu (TransportPaymentHandler.onPaymentCompleted →
     // createGuestTransportOrder, warunkowo, na podstawie plannedDate w payloadzie transportu).
     // Zapobiega to zajętym, nieopłaconym terminom gdy klient porzuci płatność.
-    if (this.withTransport && this.effectiveTransportPrice > 0) {
-      this.submitting = false;
+    if (store.withTransport && this.effectiveTransportPrice > 0) {
       const orderData = this.buildTransportPayload(rv, []);
       // Po powrocie z PayU pokazujemy ekran /sukces (podsumowanie rezerwacji) zamiast ogólnego
       // "transport opłacony" — dane czekają w sessionStorage (patrz PaymentReturnComponent).
       if (isPlatformBrowser(this.platformId)) {
         storeReservationSuccess(this.buildReservationSuccessData());
       }
-      this.router.navigate(['/platnosc/podsumowanie'], {
-        state: {
-          orderType: 'TRANSPORT',
-          orderData,
-          totalPrice: this.effectiveTransportPrice,
-          bikeCount: this.bikesArray.length
-        }
-      });
+      this.draftService.save(this.draftKey, store.toDraft());
+      const state: PaymentNavigationState & { orderType: 'TRANSPORT' } = {
+        orderType: 'TRANSPORT',
+        orderData,
+        totalPrice: this.effectiveTransportPrice,
+        bikeCount: store.bikesArray.length,
+        details: this.buildSummaryDetails(),
+        returnTo: { url: `/${this.serviceSuffix}/zarezerwuj`, label: 'Wróć do zamówienia' }
+      };
+      this.router.navigate(['/platnosc/podsumowanie'], { state });
       return;
     }
 
-    const plannedDateVal = rv.plannedDate;
-    const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
-
-    const bikesPayload = this.bikesArray.getRawValue().map((b: { brand: string; model: string; additionalInfo: string; selectedBicycleId: number | null }) => ({
-      brand: b.brand.trim(),
-      model: b.model?.trim() || null,
-      additionalInfo: b.additionalInfo?.trim() || null,
-      bicycleId: b.selectedBicycleId ?? undefined
-    }));
+    store.submitting = true;
 
     const reservationPayload = {
       firstName: (rv.firstName ?? '').trim() || null,
       lastName: (rv.lastName ?? '').trim() || null,
       email: (rv.email ?? '').trim() || null,
       phone: (rv.phone ?? '').trim() || null,
-      bicycles: bikesPayload,
-      plannedDate: plannedDateStr,
-      description: bikesPayload[0]?.additionalInfo || null
+      bicycles: store.bikesPayload(null),
+      plannedDate: store.plannedDateStr,
+      description: store.bikesPayload(null)[0]?.additionalInfo || null
     };
 
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.serviceReservation}?serviceId=${this.serviceInfo.id}`;
+    this.api.sendDebugReport('reservation', reservationPayload);
 
-    this.sendDebugReport('reservation', reservationPayload);
-
-    this.http.post<{ message: string; orderIds: number[] }>(url, reservationPayload).subscribe({
+    this.api.createReservation(this.serviceInfo.id, reservationPayload).subscribe({
       next: (res) => {
-        if (this.withTransport) {
+        if (store.withTransport) {
           // effectiveTransportPrice tutaj zawsze === 0 — płatny transport obsłużony wyżej, przed
           // utworzeniem rezerwacji.
           this.submitTransport(rv, res.orderIds);
@@ -936,31 +491,114 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        this.submitting = false;
+        store.submitting = false;
         const msg = err.error?.message || 'Nie udało się złożyć rezerwacji. Spróbuj ponownie.';
         this.notificationService.error(msg);
       }
     });
   }
 
+  /** Podsumowanie wybranych opcji na ekran płatności (tylko do wyświetlenia). */
+  private buildSummaryDetails(): PaymentSummaryDetails {
+    const store = this.store;
+    return {
+      ...store.paymentDetailsBase(),
+      serviceName: this.serviceInfo?.name,
+      discountCoupon: this.finalTransportPrice !== null ? (store.couponControl.value ?? undefined) : undefined
+    };
+  }
+
+  private submitTransport(rv: Record<string, unknown>, serviceOrderIds: number[]): void {
+    const payload = this.buildTransportPayload(rv, serviceOrderIds);
+    this.api.sendDebugReport('transport', payload);
+
+    this.api.createTransport(payload).subscribe({
+      next: () => this.onSuccess(),
+      error: (err) => {
+        this.api.sendDebugReport('transport-error', {
+          status: err?.status,
+          message: err?.error?.message || err?.message,
+          error: err?.error,
+          sentPayload: payload
+        });
+        this.store.submitting = false;
+        const msg = err.error?.message ||
+          'Rezerwacja serwisu złożona, ale nie udało się zarezerwować transportu. Skontaktuj się z serwisem.';
+        this.notificationService.error(msg);
+      }
+    });
+  }
+
+  private buildTransportPayload(rv: Record<string, unknown>, serviceOrderIds: number[]): Record<string, unknown> {
+    const store = this.store;
+    const tv = store.transportForm.value;
+
+    // plannedDate — data rezerwacji u serwisu (inna niż pickupDate, data odbioru przez kuriera).
+    // Backend tworzy rezerwację "przy okazji" transportu tylko gdy serviceOrderIds jest puste —
+    // dla ścieżek gdzie rezerwacja już powstała (serviceOrderIds niepuste) pole jest ignorowane,
+    // więc bezpiecznie wysyłamy je zawsze.
+    return {
+      serviceOrderIds,
+      bicycles: store.bikesPayload(''),
+      email: String(rv['email'] ?? '').trim(),
+      phone: String(rv['phone'] ?? '').trim(),
+      firstName: String(rv['firstName'] ?? '').trim(),
+      lastName: String(rv['lastName'] ?? '').trim(),
+      pickupStreet: tv.pickupStreet,
+      pickupBuildingNumber: tv.pickupBuildingNumber,
+      pickupCity: tv.pickupCity,
+      pickupPostalCode: tv.pickupPostalCode || '',
+      pickupDate: store.transportDate,
+      plannedDate: store.plannedDateStr,
+      targetServiceId: this.serviceInfo!.id,
+      transportPrice: this.effectiveTransportPrice,
+      transportNotes: store.courierNotes,
+      additionalNotes: '',
+      discountCoupon: this.finalTransportPrice !== null ? store.couponControl.value : null,
+      pickupOfficeName: store.officeLabel
+    };
+  }
+
+  private onSuccess(): void {
+    this.store.submitting = false;
+    const reservation = this.buildReservationSuccessData();
+    if (isPlatformBrowser(this.platformId)) {
+      storeReservationSuccess(reservation);
+    }
+    this.router.navigate(['/sukces'], { replaceUrl: true, state: { reservation } });
+  }
+
+  /** Dane do ekranu /sukces. Wołane po udanym wysłaniu, gdy formularz nadal ma wartości. */
+  private buildReservationSuccessData(): ReservationSuccessData {
+    return {
+      ...this.store.successBase(this.authService.getCurrentUserEmail()),
+      serviceName: this.serviceInfo?.name ?? '',
+      serviceAddress: this.serviceInfo?.address ?? '',
+      logoUrl: this.serviceInfo?.logoUrl ?? null,
+      suffix: this.serviceSuffix,
+      withTransport: this.store.withTransport
+    };
+  }
+
+  // ===== Kupon i cena transportu =====
+
   applyDiscountCoupon(): void {
-    const coupon = this.couponControl.value?.trim();
+    const store = this.store;
+    const coupon = store.couponControl.value?.trim();
     // !this.serviceInfo?.transportCost celowo odrzuca też transportCost === 0 (transport już
     // darmowy dla wszystkich rowerów — kupon nie ma nic do obniżenia).
-    if (!coupon || this.isApplyingCoupon || !this.serviceInfo?.transportCost) return;
+    if (!coupon || store.coupon.applying || !this.serviceInfo?.transportCost) return;
 
-    this.isApplyingCoupon = true;
-    this.couponMessage = null;
-    this.isCouponInvalid = false;
-
-    const plannedDate = this.reservationForm.get('plannedDate')?.value;
-    if (!plannedDate) {
+    if (!store.reservationForm.get('plannedDate')?.value) {
       this.notificationService.warning('Wybierz najpierw datę serwisu.');
-      this.isApplyingCoupon = false;
       return;
     }
 
-    const additionalBikes = Math.max(0, this.bikesArray.length - 1);
+    store.coupon.applying = true;
+    store.coupon.message = null;
+    store.coupon.invalid = false;
+
+    const additionalBikes = Math.max(0, store.bikesArray.length - 1);
     const remainderPrice = additionalBikes * this.transportPricing.additionalBikeCost;
 
     this.discountService.applyDiscount({
@@ -968,21 +606,21 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       scope: 'TRANSPORT',
       firstUnitPrice: this.serviceInfo.transportCost,
       remainderPrice,
-      orderDate: this.transportDate
+      orderDate: store.transportDate
     }).subscribe({
       next: (res) => {
         this.finalTransportPrice = res.firstUnitPrice;
         this.discountedAdditionalBikePrice = additionalBikes > 0 ? res.remainderPrice / additionalBikes : null;
-        this.couponMessage = `Kupon zastosowany! Nowa cena: ${res.totalPrice} PLN`;
-        this.isCouponInvalid = false;
-        this.isApplyingCoupon = false;
+        store.coupon.message = `Kupon zastosowany! Nowa cena: ${res.totalPrice} PLN`;
+        store.coupon.invalid = false;
+        store.coupon.applying = false;
       },
       error: (err) => {
         this.finalTransportPrice = null;
         this.discountedAdditionalBikePrice = null;
-        this.couponMessage = err.error?.message || 'Kupon jest nieprawidłowy lub już wygasł.';
-        this.isCouponInvalid = true;
-        this.isApplyingCoupon = false;
+        store.coupon.message = err.error?.message || 'Kupon jest nieprawidłowy lub już wygasł.';
+        store.coupon.invalid = true;
+        store.coupon.applying = false;
       }
     });
   }
@@ -994,118 +632,132 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
       return 0;
     }
     const basePrice = this.finalTransportPrice ?? this.serviceInfo?.transportCost ?? this.transportPricing.partnerCost;
-    const additionalBikes = Math.max(0, this.bikesArray.length - 1);
+    const additionalBikes = Math.max(0, this.store.bikesArray.length - 1);
     // Kupon WHOLE_ORDER może obniżyć też cenę dodatkowych rowerów — jeśli tak, discountedAdditionalBikePrice
     // jest ustawione (per sztuka); w przeciwnym razie dodatkowe rowery kosztują tyle co bez kuponu.
     const additionalBikeUnitPrice = this.discountedAdditionalBikePrice ?? this.transportPricing.additionalBikeCost;
     return basePrice + additionalBikes * additionalBikeUnitPrice;
   }
 
-  private buildTransportPayload(rv: any, serviceOrderIds: number[]): Record<string, unknown> {
-    const tv = this.transportForm.value;
-    const bikesPayload = this.bikesArray.getRawValue().map((b: { brand: string; model: string; additionalInfo: string; selectedBicycleId: number | null }) => ({
-      brand: b.brand.trim(),
-      model: b.model?.trim() || '',
-      additionalInfo: b.additionalInfo?.trim() || '',
-      bicycleId: b.selectedBicycleId ?? undefined
-    }));
-
-    const officeLabel = this.isOfficePick ? this.officeNameControl.value?.trim() : null;
-    const userNotes = tv.transportNotes?.trim() || '';
-    const officePrefix = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
-    const transportNotes = [officePrefix, userNotes].filter(Boolean).join('\n');
-
-    // plannedDate — data rezerwacji u serwisu (inna niż pickupDate, data odbioru przez kuriera).
-    // Backend tworzy rezerwację "przy okazji" transportu tylko gdy serviceOrderIds jest puste —
-    // dla ścieżek gdzie rezerwacja już powstała (serviceOrderIds niepuste) pole jest ignorowane,
-    // więc bezpiecznie wysyłamy je zawsze.
-    const plannedDateVal = rv.plannedDate;
-    const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
-
-    return {
-      serviceOrderIds,
-      bicycles: bikesPayload,
-      email: (rv.email ?? '').trim(),
-      phone: (rv.phone ?? '').trim(),
-      firstName: (rv.firstName ?? '').trim(),
-      lastName: (rv.lastName ?? '').trim(),
-      pickupStreet: tv.pickupStreet,
-      pickupBuildingNumber: tv.pickupBuildingNumber,
-      pickupCity: tv.pickupCity,
-      pickupPostalCode: tv.pickupPostalCode || '',
-      pickupDate: this.transportDate,
-      plannedDate: plannedDateStr,
-      targetServiceId: this.serviceInfo!.id,
-      transportPrice: this.effectiveTransportPrice,
-      transportNotes,
-      additionalNotes: '',
-      discountCoupon: this.finalTransportPrice !== null ? this.couponControl.value : null,
-      pickupOfficeName: officeLabel || null
-    };
+  get transportCostLabel(): string {
+    return `${this.serviceInfo?.transportCost ?? this.transportPricing.partnerCost} zł`;
   }
 
-  private submitTransport(rv: any, serviceOrderIds: number[]): void {
-    const payload = this.buildTransportPayload(rv, serviceOrderIds);
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.transport}`;
+  // ===== Widoki (modele dla klocków) =====
 
-    this.sendDebugReport('transport', payload);
+  get deliveryOptions(): DeliveryOption[] {
+    return deliveryOptions(this.store.config.allowedDeliveryTypes, this.transportCostLabel);
+  }
 
-    this.http.post(url, payload).subscribe({
-      next: () => this.onSuccess(),
-      error: (err) => {
-        this.sendDebugReport('transport-error', {
-          status: err?.status,
-          message: err?.error?.message || err?.message,
-          error: err?.error,
-          sentPayload: payload
-        });
-        this.submitting = false;
-        const msg = err.error?.message ||
-          'Rezerwacja serwisu złożona, ale nie udało się zarezerwować transportu. Skontaktuj się z serwisem.';
-        this.notificationService.error(msg);
+  get asideRows(): AsideRowView[] {
+    const store = this.store;
+    const rows: AsideRowView[] = [
+      { label: 'Serwis', values: [this.serviceInfo?.name ?? ''] },
+      {
+        label: store.summaryBikes.length > 1 ? 'Rowery' : 'Rower',
+        values: store.summaryBikes,
+        placeholder: 'uzupełnij dane roweru'
+      },
+      {
+        label: 'Termin',
+        values: store.selectedDateObj ? [formatWeekdayDate(store.selectedDateObj, true)] : [],
+        placeholder: 'wybierz termin'
       }
-    });
-  }
-
-  private sendDebugReport(type: string, data: object): void {
-    const reportUrl = `${environment.apiUrl}${environment.endpoints.guestOrders.report}`;
-    const body = { type, timestamp: new Date().toISOString(), ...data };
-    this.http.post(reportUrl, body).subscribe({ error: () => {} });
-  }
-
-  private onSuccess(): void {
-    this.submitting = false;
-    const reservation = this.buildReservationSuccessData();
-    if (isPlatformBrowser(this.platformId)) {
-      storeReservationSuccess(reservation);
+    ];
+    if (this.serviceInfo?.transportAvailable) {
+      rows.push(store.withTransport
+        ? {
+            label: 'Transport',
+            values: [`${store.isOfficePick ? 'Spod biurowca' : 'Door-to-door'} · ${this.effectiveTransportPrice} zł`],
+            note: store.transportDate
+              ? `odbiór ${formatWeekdayShort(store.transportDate)}, ${store.pickupWindow}`
+              : undefined
+          }
+        : { label: 'Transport', values: ['Przywiozę rower sam'] });
     }
-    this.router.navigate(['/sukces'], { replaceUrl: true, state: { reservation } });
+    if (!store.clientMode) {
+      rows.push({
+        label: 'Kontakt',
+        values: store.summaryContactName ? [store.summaryContactName] : [],
+        placeholder: 'uzupełnij dane'
+      });
+    }
+    return rows;
   }
 
-  /** Dane do ekranu /sukces. Wołane po udanym wysłaniu, gdy formularz nadal ma wartości. */
-  private buildReservationSuccessData(): ReservationSuccessData {
-    const rawDate = this.reservationForm.get('plannedDate')?.value;
-    const bikes = this.bikesArray.getRawValue() as { brand: string; model: string; additionalInfo: string }[];
-    const typedEmail = (this.reservationForm.get('email')?.value ?? '').trim();
+  get summaryCards(): SummaryCardView[] {
+    const store = this.store;
+    const tv = store.transportForm.getRawValue();
+    const contact = store.contactSummaryCard();
+    const cards: SummaryCardView[] = contact ? [contact] : [];
+    cards.push(store.bikesSummaryCard());
 
-    return {
-      serviceName: this.serviceInfo?.name ?? '',
-      serviceAddress: this.serviceInfo?.address ?? '',
-      logoUrl: this.serviceInfo?.logoUrl ?? null,
-      suffix: this.serviceSuffix,
-      plannedDate: rawDate instanceof Date ? this.dateToStr(rawDate) : (rawDate || null),
-      bikes: bikes.map(b => ({ brand: (b.brand ?? '').trim(), model: (b.model ?? '').trim() })),
-      workDescription: bikes[0]?.additionalInfo?.trim() || null,
-      // zalogowany klient ma pole e-mail wyłączone - bierzemy adres z sesji
-      email: typedEmail || this.authService.getCurrentUserEmail() || null
-    };
+    cards.push({
+      title: 'Termin serwisu',
+      icon: 'calendar',
+      rows: [
+        { label: 'Data serwisu:', value: formatDatePL(store.plannedDateStr), highlight: true },
+        { label: 'Serwis:', value: this.serviceInfo?.name ?? '' }
+      ]
+    });
+
+    if (store.withTransport) {
+      const rows = [] as { label: string; value: string; highlight?: boolean }[];
+      if (store.isOfficePick && store.selectedOffice) {
+        rows.push({ label: 'Kompleks biurowy:', value: store.selectedOffice.name });
+      }
+      rows.push(
+        { label: 'Data odbioru:', value: formatDatePL(store.transportDate), highlight: true },
+        {
+          label: 'Adres odbioru:',
+          value: `${tv.pickupStreet} ${tv.pickupBuildingNumber}, ${tv.pickupCity} ${tv.pickupPostalCode ?? ''}`.trim()
+        }
+      );
+      if (tv.transportNotes?.trim()) rows.push({ label: 'Uwagi:', value: tv.transportNotes });
+      cards.push({ title: 'Transport roweru', icon: 'truck', rows, wide: true });
+    }
+    return cards;
+  }
+
+  get costLines(): CostLineView[] {
+    const store = this.store;
+    const lines: CostLineView[] = [{ label: 'Koszt serwisu:', value: 'Płatność w serwisie', neutral: true }];
+    if (store.withTransport) {
+      const original = this.serviceInfo?.transportCost && this.finalTransportPrice !== null
+        ? `${this.serviceInfo.transportCost} PLN` : undefined;
+      lines.push({ label: 'Koszt transportu:', value: `${this.effectiveTransportPrice} PLN`, original });
+    }
+    lines.push({
+      label: 'Łącznie do zapłaty teraz:',
+      value: store.withTransport ? `${this.effectiveTransportPrice} PLN` : '0 PLN',
+      total: true
+    });
+    return lines;
+  }
+
+  get showCoupon(): boolean {
+    // ukryty gdy transport darmowy lub niewybrany — kupon nie ma nic do obniżenia
+    return this.store.withTransport && !!this.serviceInfo?.transportCost;
+  }
+
+  get transportCardNumber(): number {
+    return this.store.bikesArray.length + 2;
+  }
+
+  get contactCardNumber(): number {
+    return this.store.bikesArray.length + 2 + (this.serviceInfo?.transportAvailable ? 1 : 0);
+  }
+
+  get pickupHint(): string {
+    const date = this.store.transportDate;
+    return date ? formatWeekdayDate(date, false) : '';
   }
 
   goBack(): void {
     this.router.navigate([environment.links.servicesMap]);
   }
 
-  // ===== Packages pricelist panel =====
+  // ===== Cennik pakietów =====
 
   togglePackages(): void {
     this.packagesExpanded = !this.packagesExpanded;
@@ -1125,12 +777,9 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   }
 
   private loadPackages(serviceId: number): void {
-    const configUrl = `${environment.apiUrl}${environment.endpoints.bikeServices.packagesConfig}?serviceId=${serviceId}`;
-    const bikeTypesUrl = `${environment.apiUrl}${environment.endpoints.bikeServices.bikeTypes}/${serviceId}`;
-
     forkJoin({
-      config: this.http.get<ServicePackagesConfigDto>(configUrl).pipe(catchError(() => of(null))),
-      bikeTypes: this.http.get<string[]>(bikeTypesUrl).pipe(catchError(() => of([])))
+      config: this.api.getPackagesConfig(serviceId).pipe(catchError(() => of(null))),
+      bikeTypes: this.api.getBikeTypes(serviceId).pipe(catchError(() => of([] as string[])))
     }).subscribe({
       next: ({ config, bikeTypes }) => {
         if (!config?.packages?.some(p => p.active)) return;
@@ -1149,65 +798,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  private toDate(val: string | Date): Date | null {
-    if (!val) return null;
-    const d = val instanceof Date ? val : new Date(val + 'T00:00:00');
-    return isNaN(d.getTime()) ? null : d;
-  }
-
-  /** "czwartek, 29.10.2026" (withYear) lub "środa, 28.10" */
-  formatWeekdayDate(val: string | Date, withYear: boolean): string {
-    const d = this.toDate(val);
-    if (!d) return '';
-    const weekday = d.toLocaleDateString('pl-PL', { weekday: 'long' });
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    return `${weekday}, ${dd}.${mm}${withYear ? '.' + d.getFullYear() : ''}`;
-  }
-
-  /** "śr. 28.10" */
-  formatWeekdayShort(val: string | Date): string {
-    const d = this.toDate(val);
-    if (!d) return '';
-    const weekday = d.toLocaleDateString('pl-PL', { weekday: 'short' });
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    return `${weekday} ${dd}.${mm}`;
-  }
-
-  /** Rowery do panelu bocznego "Twoja rezerwacja" (marka + model). */
-  get summaryBikes(): string[] {
-    return this.bikesArray.getRawValue()
-      .map((b: { brand: string | null; model: string | null }) =>
-        [b.brand?.trim(), b.model?.trim()].filter(Boolean).join(' '))
-      .filter((s: string) => !!s);
-  }
-
-  get summaryContactName(): string {
-    const v = this.reservationForm.getRawValue();
-    return [v.firstName?.trim(), v.lastName?.trim()].filter(Boolean).join(' ');
-  }
-
-  formatDatePL(val: string | Date): string {
-    if (!val) return '';
-    const date = val instanceof Date ? val : new Date(val + 'T00:00:00');
-    return date.toLocaleDateString('pl-PL', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
-
-  @HostListener('window:beforeunload')
-  onBeforeUnload(): void {
-    this.sendSessionSync();
-  }
-
-  ngOnDestroy(): void {
-    this.routerSub?.unsubscribe();
-    this.seoService.removeStructuredData();
-  }
+  // ===== SEO / SSR =====
 
   private send404(): void {
     if (this.serverResponse) {
@@ -1230,7 +821,7 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
     );
   }
 
-  private injectReservationSchema(d: any): void {
+  private injectReservationSchema(d: PublicServiceDetails): void {
     if (!this.serviceSuffix) return;
 
     const serviceUrl = `${environment.siteUrl}/${this.serviceSuffix}`;
@@ -1259,10 +850,10 @@ export class GuestReservationFormComponent implements OnInit, OnDestroy {
   private sendSessionSync(): void {
     if (this.sessionSyncSent) return;
     if (!isPlatformBrowser(this.platformId)) return;
-    if (this.clientMode) return; // zalogowany klient nie ma sensu "odzyskiwać" mailem — ma konto
+    if (this.store.clientMode) return; // zalogowany klient nie ma sensu "odzyskiwać" mailem — ma konto
     this.sessionSyncSent = true;
 
-    const rv = this.reservationForm.value;
+    const rv = this.store.reservationForm.value;
     this.sessionSyncService.send({
       firstName: rv.firstName?.trim() || '',
       lastName: rv.lastName?.trim() || '',

@@ -1,0 +1,55 @@
+<div class="transport-address-section" [formGroup]="store.transportForm">
+  <app-office-autocomplete *ngIf="store.isOfficePick" [store]="store"></app-office-autocomplete>
+
+  <h4 class="card-sub-title">
+    {{ store.isOfficePick ? 'Adres biurowca' : 'Adres odbioru roweru' }}
+    <span *ngIf="store.isOfficePick && store.selectedOffice" class="address-from-list-badge">z listy</span>
+  </h4>
+
+  <div class="address-grid">
+    <div class="form-group addr-street">
+      <label class="form-label" for="rsv-pickupStreet">Ulica <span class="required">*</span></label>
+      <input id="rsv-pickupStreet" type="text" formControlName="pickupStreet" class="form-input"
+             [class.invalid]="isInvalid('pickupStreet')"
+             [readonly]="lockedByOffice" [class.input-readonly]="lockedByOffice"
+             placeholder="ul. Kwiatowa" />
+      <span *ngIf="isInvalid('pickupStreet')" class="field-error">Ulica jest wymagana</span>
+    </div>
+    <div class="form-group addr-nr">
+      <label class="form-label" for="rsv-pickupBuilding">Nr budynku <span class="required">*</span></label>
+      <input id="rsv-pickupBuilding" type="text" formControlName="pickupBuildingNumber" class="form-input"
+             [class.invalid]="isInvalid('pickupBuildingNumber')"
+             [readonly]="lockedByOffice" [class.input-readonly]="lockedByOffice"
+             placeholder="12a" />
+      <span *ngIf="isInvalid('pickupBuildingNumber')" class="field-error">Numer wymagany</span>
+    </div>
+    <div class="form-group addr-post">
+      <label class="form-label" for="rsv-pickupPostal">Kod pocztowy</label>
+      <input id="rsv-pickupPostal" type="text" formControlName="pickupPostalCode" class="form-input"
+             [class.invalid]="isInvalid('pickupPostalCode')"
+             [readonly]="lockedByOffice" [class.input-readonly]="lockedByOffice"
+             placeholder="00-000" maxlength="6" />
+      <span *ngIf="isInvalid('pickupPostalCode')" class="field-error">Format: XX-XXX</span>
+    </div>
+    <div class="form-group addr-city">
+      <label class="form-label" for="rsv-pickupCity">Miasto <span class="required">*</span></label>
+      <select *ngIf="cities && !lockedByOffice" id="rsv-pickupCity" formControlName="pickupCity" class="form-input"
+              [class.invalid]="isInvalid('pickupCity')" [attr.disabled]="loadingCities ? '' : null">
+        <option value="" disabled selected>-- Wybierz miasto --</option>
+        <option *ngIf="loadingCities" value="" disabled>Ładowanie miast...</option>
+        <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+      </select>
+      <input *ngIf="!cities || lockedByOffice" id="rsv-pickupCity" type="text" formControlName="pickupCity" class="form-input"
+             [class.invalid]="isInvalid('pickupCity')"
+             [readonly]="lockedByOffice" [class.input-readonly]="lockedByOffice"
+             placeholder="Kraków" />
+      <span *ngIf="isInvalid('pickupCity')" class="field-error">{{ cities ? 'Wybierz miasto z listy' : 'Podaj miasto' }}</span>
+    </div>
+  </div>
+
+  <div class="transport-notes-section form-group">
+    <label class="form-label" for="rsv-transportNotes">Uwagi dla kuriera <span class="optional-label">(opcjonalnie)</span></label>
+    <textarea id="rsv-transportNotes" formControlName="transportNotes" class="form-textarea" rows="3"
+              placeholder="Np. kod do domofonu, wejście od ul. Bocznej, portier poinformowany..."></textarea>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+.transport-address-section {
+  margin-top: var(--spacing-5);
+  padding-top: var(--spacing-5);
+  border-top: 1px solid var(--border-color);
+}
+
+.address-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  grid-template-areas:
+    "street nr"
+    "city post";
+  gap: var(--spacing-3);
+}
+
+.addr-street { grid-area: street; }
+.addr-nr { grid-area: nr; }
+.addr-post { grid-area: post; }
+.addr-city { grid-area: city; }
+
+.transport-notes-section { margin-top: var(--spacing-4); }
+
+.address-from-list-badge {
+  display: inline-block;
+  background: var(--color-success-bg);
+  color: var(--color-primary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 8px;
+  margin-left: 8px;
+  vertical-align: middle;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 640px) {
+  .address-grid {
+    display: flex;
+    flex-wrap: wrap;
+    grid-template-areas: none;
+  }
+
+  .address-grid > .form-group { min-width: 0; }
+  .addr-street { flex: 0 0 calc((100% - var(--spacing-3)) * 5 / 7); }
+  .addr-nr { flex: 0 0 calc((100% - var(--spacing-3)) * 2 / 7); }
+  .addr-city { flex: 0 0 calc((100% - var(--spacing-3)) * 3 / 5); order: 3; }
+  .addr-post { flex: 0 0 calc((100% - var(--spacing-3)) * 2 / 5); order: 4; }
+}

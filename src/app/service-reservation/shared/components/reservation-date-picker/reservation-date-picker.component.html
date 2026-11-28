@@ -1,0 +1,39 @@
+<div class="form-card">
+  <h3 class="card-title">
+    <span class="card-num" *ngIf="cardNumber !== null">{{ cardNumber }}</span>
+    {{ title }}
+  </h3>
+
+  <div class="form-group">
+    <span class="form-label form-label--static">{{ label }} <span class="required">*</span></span>
+    <div class="calendar-row" [class.invalid]="invalid">
+      <mat-calendar
+        class="reservation-calendar"
+        [selected]="store.selectedDateObj"
+        [startAt]="store.selectedDateObj ?? store.minDateObj"
+        [minDate]="store.minDateObj"
+        [maxDate]="store.maxDateObj"
+        [dateFilter]="store.calendarFilter"
+        (selectedChange)="store.selectDate($event)"
+      ></mat-calendar>
+      <div class="selected-day-card" *ngIf="store.selectedDateObj">
+        <span class="selected-day-label">Wybrany dzień</span>
+        <strong class="selected-day-value">{{ formatWeekdayDate(store.selectedDateObj, true) }}</strong>
+      </div>
+    </div>
+    <span class="field-hint">{{ store.acceptedDaysHint }}</span>
+    <div *ngIf="store.checkingAvailability" class="availability-checking">
+      <span class="availability-spinner"></span> Sprawdzanie dostępności...
+    </div>
+    <div *ngIf="store.availabilityError && !store.checkingAvailability" class="availability-error">
+      {{ store.availabilityError }}
+    </div>
+    <div *ngIf="store.availableSlotsForDate !== null && !store.availabilityError && !store.checkingAvailability" class="availability-ok">
+      Wolne miejsca w tym dniu: <strong>{{ store.availableSlotsForDate }}</strong>
+    </div>
+    <span *ngIf="invalid && errors?.['required']" class="field-error">Data serwisu jest wymagana</span>
+    <span *ngIf="invalid && errors?.['notAcceptedDay']" class="field-error">
+      Wybierz jeden z dostępnych dni: {{ acceptedDaysList }}
+    </span>
+  </div>
+</div>

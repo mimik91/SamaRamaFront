@@ -15,24 +15,38 @@
       </ng-template>
     </ng-container>
 
-    <div class="rs-icon" aria-hidden="true">
+    <div class="rs-icon" [class.rs-icon--success]="isPaidExpress" aria-hidden="true">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/>
-        <polyline points="12 7 12 12 15.5 14"/>
+        <ng-container *ngIf="!isPaidExpress; else paidIcon">
+          <circle cx="12" cy="12" r="9"/>
+          <polyline points="12 7 12 12 15.5 14"/>
+        </ng-container>
+        <ng-template #paidIcon><polyline points="20 6 9 17 4 12"/></ng-template>
       </svg>
     </div>
 
-    <span class="rs-badge"><span class="rs-badge-dot"></span>Czeka na potwierdzenie serwisu</span>
-    <h1 class="rs-title">Prośba o rezerwację wysłana</h1>
-    <p class="rs-lead rs-hide-mobile">
-      To jeszcze <strong>nie jest potwierdzona wizyta</strong>. Serwis sprawdzi, czy termin jest wolny, i odpowie
-      <ng-container *ngIf="data?.email; else byEmail">na <strong class="rs-email">{{ data?.email }}</strong></ng-container>
-      <ng-template #byEmail>e-mailem</ng-template>.
-    </p>
+    <ng-container *ngIf="!isPaidExpress; else paidHeader">
+      <span class="rs-badge"><span class="rs-badge-dot"></span>Czeka na potwierdzenie serwisu</span>
+      <h1 class="rs-title">Prośba o rezerwację wysłana</h1>
+      <p class="rs-lead rs-hide-mobile">
+        To jeszcze <strong>nie jest potwierdzona wizyta</strong>. Serwis sprawdzi, czy termin jest wolny, i odpowie
+        <ng-container *ngIf="data?.email; else byEmail">na <strong class="rs-email">{{ data?.email }}</strong></ng-container>
+        <ng-template #byEmail>e-mailem</ng-template>.
+      </p>
+    </ng-container>
+    <ng-template #paidHeader>
+      <span class="rs-badge rs-badge--success"><span class="rs-badge-dot"></span>Płatność potwierdzona</span>
+      <h1 class="rs-title">Rezerwacja przyjęta!</h1>
+      <p class="rs-lead rs-hide-mobile">
+        Twoja płatność została zaksięgowana, a rezerwacja serwisu ekspresowego jest zarejestrowana. Potwierdzenie wysłaliśmy
+        <ng-container *ngIf="data?.email; else paidByEmail">na <strong class="rs-email">{{ data?.email }}</strong></ng-container>
+        <ng-template #paidByEmail>e-mailem</ng-template>.
+      </p>
+    </ng-template>
 
     <div class="rs-details" *ngIf="data">
-      <div class="rs-row">
+      <div class="rs-row" *ngIf="!isPaidExpress">
         <span class="rs-label">Serwis</span>
         <div class="rs-value">
           <a *ngIf="data.suffix; else serviceStatic" class="rs-service-link" [routerLink]="['/', data.suffix]">
@@ -56,11 +70,24 @@
         </div>
       </div>
 
+      <div class="rs-row" *ngIf="isPaidExpress && data.packageName">
+        <span class="rs-label">Pakiet</span>
+        <div class="rs-value"><strong>{{ data.packageName }}</strong></div>
+      </div>
+
       <div class="rs-row" *ngIf="plannedDateLabel">
         <span class="rs-label">Termin</span>
         <div class="rs-value">
           <strong>{{ plannedDateLabel }}</strong>
-          <small class="rs-hide-mobile">wybrany przez Ciebie – serwis może zaproponować inny</small>
+          <small class="rs-hide-mobile" *ngIf="!isPaidExpress">wybrany przez Ciebie – serwis może zaproponować inny</small>
+        </div>
+      </div>
+
+      <div class="rs-row" *ngIf="isPaidExpress && pickupDateLabel">
+        <span class="rs-label">Odbiór roweru</span>
+        <div class="rs-value">
+          <strong>{{ pickupDateLabel }}</strong>
+          <small class="rs-hide-mobile" *ngIf="data.pickupPlace">{{ data.pickupPlace }}</small>
         </div>
       </div>
 
@@ -79,7 +106,7 @@
 
     <div class="rs-next">
     <h2 class="rs-subtitle">Co dalej?</h2>
-    <ol class="rs-steps">
+    <ol class="rs-steps" *ngIf="!isPaidExpress; else paidSteps">
       <li class="rs-step rs-step--active">
         <span class="rs-step-no">1</span>
         <div>
@@ -97,11 +124,42 @@
       <li class="rs-step">
         <span class="rs-step-no">3</span>
         <div>
-          <strong>Przywozisz rower w potwierdzonym terminie</strong>
-          <p>Dopiero po potwierdzeniu wizyta jest umówiona.</p>
+          <ng-container *ngIf="data?.withTransport; else bringBike">
+            <strong>Kurier odbiera rower w potwierdzonym terminie</strong>
+            <p>Wcześniej otrzymasz przybliżone godziny odbioru roweru.</p>
+          </ng-container>
+          <ng-template #bringBike>
+            <strong>Przywozisz rower w potwierdzonym terminie</strong>
+            <p>Dopiero po potwierdzeniu wizyta jest umówiona.</p>
+          </ng-template>
         </div>
       </li>
     </ol>
+    <ng-template #paidSteps>
+      <ol class="rs-steps">
+        <li class="rs-step rs-step--active">
+          <span class="rs-step-no">1</span>
+          <div>
+            <strong>Znajdziemy odpowiedni serwis dla Twojego roweru</strong>
+            <p>Przypiszemy do niego Twoje zlecenie — nic więcej nie musisz robić.</p>
+          </div>
+        </li>
+        <li class="rs-step">
+          <span class="rs-step-no">2</span>
+          <div>
+            <strong>W dniu odbioru informujemy o przybliżonym czasie odbioru</strong>
+            <p>Skontaktuje się z Tobą kierowca.</p>
+          </div>
+        </li>
+        <li class="rs-step">
+          <span class="rs-step-no">3</span>
+          <div>
+            <strong>Odbieramy rower</strong>
+            <p>Kierowca poda dokładną godzinę minimum 15 minut przed przyjazdem.</p>
+          </div>
+        </li>
+      </ol>
+    </ng-template>
     </div>
 
     <div class="rs-note">

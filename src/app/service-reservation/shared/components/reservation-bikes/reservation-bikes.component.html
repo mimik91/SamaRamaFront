@@ -1,0 +1,112 @@
+<div
+  *ngFor="let bikeGroup of store.bikeControls; let i = index"
+  class="form-card bike-card"
+  [formGroup]="bikeGroup"
+>
+  <div class="bike-card-header">
+    <h3 class="card-title">
+      <span class="card-num">{{ i + 1 }}</span>
+      Rower {{ i + 1 }}
+    </h3>
+    <button
+      *ngIf="store.bikesArray.length > 1"
+      type="button"
+      class="bike-remove-btn"
+      (click)="removeBike(i)"
+      title="Usuń rower"
+      aria-label="Usuń rower"
+    >✕</button>
+  </div>
+
+  <div class="form-group select-group" *ngIf="store.clientMode">
+    <label class="form-label" [for]="'rsv-select-bike-' + i">Wybierz rower</label>
+    <select
+      [id]="'rsv-select-bike-' + i"
+      class="form-input"
+      [value]="bikeGroup.get('selectedBicycleId')?.value ?? 'OTHER'"
+      (change)="onBicycleSelectChange($event, i)"
+    >
+      <option value="OTHER">Inny</option>
+      <option *ngFor="let bike of store.availableBicyclesFor(i)" [value]="bike.id">
+        {{ bike.brand }}{{ bike.model ? ' ' + bike.model : '' }}
+      </option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group brand-group">
+      <label class="form-label" [for]="'rsv-brand-' + i">Marka roweru <span class="required">*</span></label>
+      <div class="brand-input-wrapper">
+        <input
+          [id]="'rsv-brand-' + i"
+          type="text"
+          formControlName="brand"
+          class="form-input"
+          [class.invalid]="isInvalid(i, 'brand')"
+          placeholder="np. Trek, Giant, Specialized..."
+          (input)="onBrandInput($event, i)"
+          (focus)="onBrandFocus(i)"
+          (blur)="onBrandBlur(i)"
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          class="brand-toggle-btn"
+          *ngIf="!bikeGroup.get('selectedBicycleId')?.value"
+          (click)="expandAllBrands(i)"
+          tabindex="-1"
+          title="Pokaż wszystkie marki"
+          aria-label="Pokaż wszystkie marki"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div *ngIf="state(i).showDropdown" class="brand-dropdown">
+          <div
+            *ngFor="let brand of state(i).filtered"
+            class="brand-option"
+            (mousedown)="selectBrand(brand, i)"
+          >{{ brand }}</div>
+        </div>
+      </div>
+      <span *ngIf="isInvalid(i, 'brand')" class="field-error">Marka roweru jest wymagana</span>
+      <span class="field-hint">Nie znasz marki? Wpisz np. „górski", „kolarzówka" albo „nie wiem".</span>
+    </div>
+    <div class="form-group">
+      <label class="form-label" [for]="'rsv-model-' + i">Model roweru <span class="optional-label">(opcjonalnie)</span></label>
+      <input
+        [id]="'rsv-model-' + i"
+        type="text"
+        formControlName="model"
+        class="form-input"
+        placeholder="np. Talon, Marlin, Rockhopper..."
+      />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" [for]="'rsv-info-' + i">
+      <ng-container *ngIf="store.config.additionalInfoRequired; else optionalInfo">Opis problemu / zlecone usługi <span class="required">*</span></ng-container>
+      <ng-template #optionalInfo>Zauważone usterki <span class="optional-label">(opcjonalnie)</span></ng-template>
+    </label>
+    <textarea
+      [id]="'rsv-info-' + i"
+      formControlName="additionalInfo"
+      class="form-textarea"
+      rows="3"
+      [class.invalid]="isInvalid(i, 'additionalInfo')"
+      maxlength="2000"
+      [placeholder]="infoPlaceholder"
+    ></textarea>
+    <div class="field-hint-row">
+      <span class="field-hint">{{ infoHint }}</span>
+      <span class="field-counter">{{ (bikeGroup.get('additionalInfo')?.value?.length ?? 0) }} / 2000</span>
+    </div>
+    <span *ngIf="isInvalid(i, 'additionalInfo')" class="field-error">Opis problemu / zlecone usługi jest wymagany</span>
+  </div>
+</div>
+
+<button type="button" class="add-bike-btn" (click)="addBike()" [disabled]="!store.canAddBike">
+  <span class="add-bike-icon">+</span>
+  Dodaj kolejny rower
+</button>
+<p class="bikes-limit-info" *ngIf="!store.canAddBike && store.maxBikes > 0">{{ limitText() }}</p>

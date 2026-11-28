@@ -9,6 +9,17 @@ export interface ReservationSuccessData {
   bikes: { brand: string; model: string }[];
   workDescription: string | null;
   email: string | null;
+  /**
+   * 'paid-express' — serwis ekspresowy po opłaceniu: rezerwacja jest potwierdzona, serwis nie jest jeszcze
+   * znany (wybiera go CycloPick). Brak wartości — zwykła prośba o rezerwację czekająca na serwis.
+   */
+  variant?: 'paid-express';
+  /** Rezerwacja z transportem (kurier odbiera rower) — zmienia treść ostatniego kroku „Co dalej?". */
+  withTransport?: boolean;
+  packageName?: string | null;
+  /** Dzień odbioru roweru (YYYY-MM-DD) i miejsce odbioru — tylko wariant 'paid-express'. */
+  pickupDate?: string | null;
+  pickupPlace?: string | null;
 }
 
 export const RESERVATION_SUCCESS_STORAGE_KEY = 'reservation_success';

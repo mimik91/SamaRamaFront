@@ -1,88 +1,79 @@
 import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, HostListener } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { CommonModule } from '@angular/common';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  FormControl,
-  Validators,
-  AbstractControl,
-  ValidationErrors
-} from '@angular/forms';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, NavigationStart, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { Subscription, forkJoin, of } from 'rxjs';
-import { filter, distinctUntilChanged, catchError } from 'rxjs/operators';
-import {
-  ServicePackagesConfigDto,
-  ServicePackageDto
-} from '../../shared/models/service-packages.models';
+import { Subscription, of } from 'rxjs';
+import { filter, catchError } from 'rxjs/operators';
+import { ServicePackageDto } from '../../shared/models/service-packages.models';
 import { SessionSyncService } from '../../core/session-sync.service';
 import { SeoService } from '../../core/seo.service';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { NotificationService } from '../../core/notification.service';
 import { EnumerationService } from '../../core/enumeration.service';
-import { environment } from '../../environments/environments';
 import { DiscountService } from '../../shared/services/discount.service';
-import { OfficeAddressDto } from '../../shared/models/office-address.model';
 import { AuthService } from '../../auth/auth.service';
 import { BicycleService } from '../../pages/client-panel/bicycle.service';
-import { Bicycle } from '../../shared/models/bicycle.model';
-import { PaymentSummaryDetails } from '../../shared/models/payment.models';
+import { PaymentNavigationState, PaymentSummaryDetails } from '../../shared/models/payment.models';
+import { ReservationSuccessData, storeReservationSuccess } from '../../pages/reservation-success/reservation-success.model';
+import { ReservationApiService } from '../shared/reservation-api.service';
+import { ReservationDraftService } from '../shared/reservation-draft.service';
+import { ReservationFormStore } from '../shared/reservation-form.store';
+import {
+  AsideRowView,
+  CostLineView,
+  DeliveryType,
+  ReservationFormConfig,
+  SummaryCardView
+} from '../shared/reservation-form.models';
+import { dateToStr, formatDatePL, formatWeekdayDate } from '../shared/reservation-form.utils';
+import { ReservationStepperComponent } from '../shared/components/reservation-stepper/reservation-stepper.component';
+import { ReservationBikesComponent } from '../shared/components/reservation-bikes/reservation-bikes.component';
+import { ReservationDatePickerComponent } from '../shared/components/reservation-date-picker/reservation-date-picker.component';
+import { DeliverySelectorComponent, DeliveryOption, deliveryOptions } from '../shared/components/delivery-selector/delivery-selector.component';
+import { PickupAddressComponent } from '../shared/components/pickup-address/pickup-address.component';
+import { ContactFieldsComponent } from '../shared/components/contact-fields/contact-fields.component';
+import { ReservationAsideComponent } from '../shared/components/reservation-aside/reservation-aside.component';
+import { ReservationSummaryComponent } from '../shared/components/reservation-summary/reservation-summary.component';
+import { CouponInputComponent } from '../shared/components/coupon-input/coupon-input.component';
+import { PackageCardComponent } from '../shared/components/package-card/package-card.component';
 
-interface ReservationSettings {
-  acceptedDays: string[];
-  estimatedReservationDay?: string | null;
-  fullyBookedDates?: string[];
-}
-
-type DeliveryType = 'DOOR_TO_DOOR' | 'OFFICE';
-
-/**
- * Wypełniony formularz zapamiętany przy przejściu do podsumowania — pozwala wrócić z podsumowania
- * (np. po kupon) bez ponownego wpisywania danych. Trzymany w sessionStorage, odczytywany jednorazowo.
- */
-const DRAFT_KEY = 'expressReservationDraft';
-
-interface ExpressReservationDraft {
-  contact: { firstName: string; lastName: string; email: string; phone: string };
-  plannedDate: string;
-  deliveryType: DeliveryType;
-  bikes: { selectedBicycleId: number | null; brand: string; model: string; additionalInfo: string }[];
-  transport: { pickupStreet: string; pickupBuildingNumber: string; pickupCity: string; pickupPostalCode: string; transportNotes: string };
-  officeName: string;
-  packageId: number | null;
-  coupon: string;
-  termsAccepted: boolean;
-}
-
-const DAY_KEYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-const DAY_LABELS: { [key: string]: string } = {
-  MONDAY: 'poniedziałek', TUESDAY: 'wtorek', WEDNESDAY: 'środa',
-  THURSDAY: 'czwartek', FRIDAY: 'piątek', SATURDAY: 'sobota', SUNDAY: 'niedziela'
+const EXPRESS_FORM_CONFIG: ReservationFormConfig = {
+  allowedDeliveryTypes: ['OFFICE', 'DOOR_TO_DOOR'],
+  defaultDelivery: 'OFFICE',
+  additionalInfoRequired: false,
+  weekendsAlwaysBlocked: true,
+  clampPickupToToday: true
 };
+
+const DRAFT_KEY = 'express';
+const FORM_URL = '/krakow/zarezerwuj';
 
 @Component({
   selector: 'app-express-reservation-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule, MatFormFieldModule, MatInputModule, RouterModule],
-  providers: [
-    provideNativeDateAdapter(),
-    { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' }
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ReservationStepperComponent,
+    ReservationBikesComponent,
+    ReservationDatePickerComponent,
+    DeliverySelectorComponent,
+    PickupAddressComponent,
+    ContactFieldsComponent,
+    ReservationAsideComponent,
+    ReservationSummaryComponent,
+    CouponInputComponent,
+    PackageCardComponent
   ],
   templateUrl: './express-reservation-form.component.html',
-  styleUrls: ['./express-reservation-form.component.css']
+  styleUrls: ['../shared/reservation-form.shared.css', './express-reservation-form.component.css']
 })
 export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private http = inject(HttpClient);
+  private api = inject(ReservationApiService);
+  private draftService = inject(ReservationDraftService);
   private notificationService = inject(NotificationService);
   private enumerationService = inject(EnumerationService);
   private sessionSyncService = inject(SessionSyncService);
@@ -95,39 +86,15 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   private routerSub: Subscription | null = null;
   private sessionSyncSent = false;
 
-  currentStep = 1;
-  loading = false;
-  submitting = false;
-
-  reservationSettings: ReservationSettings | null = null;
-
-  minDate: string;
-  maxDate: string;
-  minDateObj: Date;
-  maxDateObj: Date;
-
-  readonly dateFilter = (date: Date | null): boolean => {
-    if (!date) return false;
-    const dateStr = this.dateToStr(date);
-    if (this.reservationSettings?.fullyBookedDates?.includes(dateStr)) return false;
-    const day = date.getDay();
-    // Express always with transport — no weekends
-    if (day === 0 || day === 6) return false;
-    const dayKey = DAY_KEYS[day];
-    const accepted = this.reservationSettings?.acceptedDays;
-    if (accepted && accepted.length > 0) return accepted.includes(dayKey);
-    return true;
-  };
-
-  brands: string[] = [];
-
-  // Per-bike brand autocomplete state
-  bikeBrandStates: { filtered: string[]; showDropdown: boolean }[] = [];
-
-  // Availability for selected date
-  availableSlotsForDate: number | null = null;
-  checkingAvailability = false;
-  availabilityError: string | null = null;
+  readonly store = new ReservationFormStore({
+    fb: this.fb,
+    api: this.api,
+    bicycleService: this.bicycleService,
+    enumerationService: this.enumerationService,
+    config: EXPRESS_FORM_CONFIG,
+    clientMode: this.authService.isClient(),
+    defaultMaxBikes: 5
+  });
 
   // Wybór pakietu serwisowego (wymagany — jeden pakiet dla całej rezerwacji)
   packagesLoaded = false;
@@ -135,380 +102,32 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   selectedPackage: ServicePackageDto | null = null;
   packageSelectionAttempted = false;
 
-  // Kupon rabatowy — tylko podgląd/UX przed submitem; realna cena i tak liczona na backendzie
-  // w quoteExpressReservation (onSubmit).
-  couponControl = new FormControl('');
-  isApplyingCoupon = false;
-  couponMessage: string | null = null;
-  isCouponInvalid = false;
+  /** Cena zamówienia po kuponie (tylko podgląd — realną cenę liczy backend w quote). */
+  discountedTotal: number | null = null;
 
-  // Office address autocomplete
-  officeAddresses: OfficeAddressDto[] = [];
-  filteredOffices: OfficeAddressDto[] = [];
-  showOfficeDropdown = false;
-  selectedOffice: OfficeAddressDto | null = null;
-  officeNameControl = new FormControl('');
+  private draftPackageId: number | null = null;
 
-  readonly links = environment.links;
-
-  reservationForm!: FormGroup;
-  bikesArray!: FormArray;
-  transportForm!: FormGroup;
-  termsControl = new FormControl(false, [Validators.requiredTrue]);
-
-  // Tryb klienta: zalogowany klient nie wypełnia danych kontaktowych (biorą się z konta) i wybiera
-  // rower z listy swoich rowerów zamiast wpisywać markę/model ręcznie.
-  clientMode = false;
-  myBicycles: Bicycle[] = [];
-  loadingMyBicycles = false;
-
-  constructor() {
-    this.clientMode = this.authService.isClient();
-
-    const minD = this.computeDefaultMinDate();
-    this.minDateObj = minD;
-    this.minDate = this.dateToStr(minD);
-
-    const maxD = new Date();
-    maxD.setDate(maxD.getDate() + 30);
-    this.maxDateObj = maxD;
-    this.maxDate = this.dateToStr(maxD);
-
-    this.bikesArray = this.fb.array([this.createBikeGroup()]);
-    this.bikeBrandStates = [{ filtered: [], showDropdown: false }];
-
-    this.reservationForm = this.fb.group({
-      firstName: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.minLength(2)]],
-      lastName: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.minLength(2)]],
-      email: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.email]],
-      phone: [{ value: '', disabled: this.clientMode }, this.clientMode ? [] : [Validators.required, Validators.pattern(/^\d{9}$/)]],
-      plannedDate: ['', [Validators.required, this.acceptedDayValidator.bind(this)]],
-      deliveryType: ['OFFICE' as DeliveryType]
-    });
-
-    this.transportForm = this.fb.group({
-      pickupStreet: ['', Validators.required],
-      pickupBuildingNumber: ['', Validators.required],
-      pickupCity: ['', Validators.required],
-      pickupPostalCode: ['', [Validators.pattern(/^\d{2}-\d{3}$/)]],
-      transportNotes: ['']
-    });
-
-    if (this.clientMode) {
-      this.loadMyBicycles();
-    }
-  }
-
-  // ===== Tryb klienta: wybór własnego roweru =====
-
-  private loadMyBicycles(): void {
-    this.loadingMyBicycles = true;
-    this.bicycleService.getUserBicycles().subscribe({
-      next: (bikes) => {
-        this.myBicycles = bikes;
-        this.loadingMyBicycles = false;
-        if (this.draft) {
-          this.applyDraftBikes(this.draft);
-        } else {
-          this.applyOriginatingBicycleDefault();
-        }
-      },
-      error: () => {
-        this.myBicycles = [];
-        this.loadingMyBicycles = false;
-      }
-    });
-  }
-
-  // Ustawiane tylko gdy przyszliśmy z modala "Umów serwis" w szczegółach roweru (patrz
-  // BookServiceModalComponent) — router state z bicycleId. Wejście z listy serwisów/mapy nie
-  // ustawia tego state, więc żaden rower nie jest wtedy domyślnie wybrany.
-  private applyOriginatingBicycleDefault(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const bicycleId = window.history.state?.bicycleId as number | undefined;
-    if (!bicycleId) return;
-    const bike = this.myBicycles.find(b => b.id === bicycleId);
-    if (!bike) return;
-    this.onBicycleSelected(0, bicycleId);
-  }
-
-  availableBicyclesFor(index: number): Bicycle[] {
-    const chosenElsewhere = new Set(
-      this.bikesArray.controls
-        .filter((_, i) => i !== index)
-        .map(c => c.get('selectedBicycleId')?.value)
-        .filter((id): id is number => id != null)
-    );
-    return this.myBicycles.filter(b => !chosenElsewhere.has(b.id));
-  }
-
-  onBicycleSelectChange(event: Event, index: number): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.onBicycleSelected(index, value === 'OTHER' ? 'OTHER' : +value);
-  }
-
-  onBicycleSelected(index: number, bicycleId: number | 'OTHER'): void {
-    const group = this.bikesArray.at(index) as FormGroup;
-    if (bicycleId === 'OTHER') {
-      group.get('selectedBicycleId')?.setValue(null);
-      group.get('brand')?.enable();
-      group.get('model')?.enable();
-      group.get('brand')?.setValue('');
-      group.get('model')?.setValue('');
-      return;
-    }
-    const bike = this.myBicycles.find(b => b.id === bicycleId);
-    if (!bike) return;
-    group.get('selectedBicycleId')?.setValue(bicycleId);
-    group.get('brand')?.setValue(bike.brand);
-    group.get('model')?.setValue(bike.model ?? '');
-    group.get('brand')?.disable();
-    group.get('model')?.disable();
-  }
-
-  // ===== Bike FormArray =====
-
-  createBikeGroup(): FormGroup {
-    return this.fb.group({
-      selectedBicycleId: [null as number | null],
-      brand: ['', Validators.required],
-      model: [''],
-      additionalInfo: ['']
-    });
-  }
-
-  get bikeControls(): FormGroup[] {
-    return this.bikesArray.controls as FormGroup[];
-  }
-
-  get maxBikesAllowed(): number {
-    if (this.availableSlotsForDate !== null) return this.availableSlotsForDate;
-    return 5;
-  }
-
-  get canAddBike(): boolean {
-    return this.bikesArray.length < this.maxBikesAllowed;
-  }
-
-  private checkDateAvailability(date: Date): void {
-    const dateStr = this.dateToStr(date);
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.expressAvailability}`;
-    this.checkingAvailability = true;
-    this.availabilityError = null;
-    this.availableSlotsForDate = null;
-    this.http.get<{ date: string; available: boolean; availableSlots: number }[]>(
-      url,
-      { params: { startDate: dateStr, endDate: dateStr } }
-    ).subscribe({
-      next: (days) => {
-        this.checkingAvailability = false;
-        const day = days[0];
-        if (!day) return;
-        const slots = day.availableSlots ?? 0;
-        if (!day.available || slots <= 0) {
-          this.availabilityError = 'Ten dzień jest już w pełni zarezerwowany. Wybierz inną datę.';
-          this.reservationForm.get('plannedDate')?.setValue(null);
-          this.availableSlotsForDate = null;
-          return;
-        }
-        this.availableSlotsForDate = slots;
-        if (this.bikesArray.length > slots) {
-          this.availabilityError = `Na ten dzień pozostało ${slots} wolne${slots === 1 ? '' : slots < 5 ? ' miejsca' : ' miejsc'}. Usuń rower lub wybierz inną datę.`;
-          this.reservationForm.get('plannedDate')?.setValue(null);
-          this.availableSlotsForDate = null;
-        }
-      },
-      error: () => { this.checkingAvailability = false; }
-    });
-  }
-
-  addBike(): void {
-    if (!this.canAddBike) return;
-    this.bikesArray.push(this.createBikeGroup());
-    this.bikeBrandStates.push({ filtered: [], showDropdown: false });
-  }
-
-  removeBike(index: number): void {
-    if (this.bikesArray.length <= 1) return;
-    this.bikesArray.removeAt(index);
-    this.bikeBrandStates.splice(index, 1);
-  }
-
-  isBikeFieldInvalid(index: number, field: string): boolean {
-    const ctrl = this.bikesArray.at(index).get(field);
-    return !!(ctrl?.invalid && (ctrl.dirty || ctrl.touched));
-  }
-
-  // ===== Per-bike brand autocomplete =====
-
-  onBrandInput(event: Event, index: number): void {
-    const q = (event.target as HTMLInputElement).value;
-    this.bikesArray.at(index).get('brand')?.setValue(q, { emitEvent: false });
-    if (q.length >= 3) {
-      this.bikeBrandStates[index].filtered = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
-      this.bikeBrandStates[index].showDropdown = this.bikeBrandStates[index].filtered.length > 0;
-    } else {
-      this.bikeBrandStates[index].showDropdown = false;
-    }
-  }
-
-  onBrandFocus(index: number): void {
-    const q = this.bikesArray.at(index).get('brand')?.value || '';
-    if (q.length >= 3) {
-      this.bikeBrandStates[index].filtered = this.brands.filter(b => b.toLowerCase().includes(q.toLowerCase()));
-      this.bikeBrandStates[index].showDropdown = this.bikeBrandStates[index].filtered.length > 0;
-    }
-  }
-
-  onBrandBlur(index: number): void {
-    setTimeout(() => { this.bikeBrandStates[index].showDropdown = false; }, 200);
-  }
-
-  selectBrand(brand: string, index: number): void {
-    this.bikesArray.at(index).get('brand')?.setValue(brand);
-    this.bikeBrandStates[index].showDropdown = false;
-  }
-
-  expandAllBrands(index: number): void {
-    this.bikeBrandStates[index].filtered = [...this.brands];
-    this.bikeBrandStates[index].showDropdown = true;
-  }
-
-  // ===== Office autocomplete =====
-
-  onOfficeInput(event: Event): void {
-    const q = (event.target as HTMLInputElement).value;
-    this.officeNameControl.setValue(q, { emitEvent: false });
-    if (q.length >= 3) {
-      this.filteredOffices = this.officeAddresses.filter(o =>
-        o.name.toLowerCase().includes(q.toLowerCase())
-      );
-      this.showOfficeDropdown = this.filteredOffices.length > 0;
-    } else {
-      this.showOfficeDropdown = false;
-      this.filteredOffices = [];
-    }
-    if (this.selectedOffice) {
-      this.selectedOffice = null;
-      this.clearOfficeFields();
-    }
-  }
-
-  onOfficeFocus(): void {
-    const q = this.officeNameControl.value || '';
-    if (q.length >= 3) {
-      this.filteredOffices = this.officeAddresses.filter(o =>
-        o.name.toLowerCase().includes(q.toLowerCase())
-      );
-      this.showOfficeDropdown = this.filteredOffices.length > 0;
-    }
-  }
-
-  expandAllOffices(): void {
-    this.filteredOffices = [...this.officeAddresses];
-    this.showOfficeDropdown = this.filteredOffices.length > 0;
-  }
-
-  onOfficeBlur(): void {
-    setTimeout(() => { this.showOfficeDropdown = false; }, 200);
-  }
-
-  clearOfficeSelection(): void {
-    this.selectedOffice = null;
-    this.officeNameControl.setValue('');
-    this.showOfficeDropdown = false;
-    this.filteredOffices = [];
-    this.clearOfficeFields();
-  }
-
-  private clearOfficeFields(): void {
-    this.transportForm.get('pickupStreet')?.setValue('');
-    this.transportForm.get('pickupBuildingNumber')?.setValue('');
-    this.transportForm.get('pickupCity')?.setValue('');
-    this.transportForm.get('pickupPostalCode')?.setValue('');
-  }
-
-  selectOffice(office: OfficeAddressDto): void {
-    this.selectedOffice = office;
-    this.officeNameControl.setValue(office.name);
-    this.transportForm.get('pickupStreet')?.setValue(office.street);
-    this.transportForm.get('pickupBuildingNumber')?.setValue(office.building);
-    this.transportForm.get('pickupCity')?.setValue(office.city);
-    this.transportForm.get('pickupPostalCode')?.setValue(office.postalCode || '');
-    this.showOfficeDropdown = false;
-  }
-
-  // ===== Validators =====
-
-  acceptedDayValidator(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) return null;
-    const date: Date = control.value instanceof Date ? control.value : new Date(control.value + 'T00:00:00');
-    const day = date.getDay();
-    if (day === 0 || day === 6) return { weekendNotAllowed: true };
-    const dayKey = DAY_KEYS[day];
-    const accepted = this.reservationSettings?.acceptedDays;
-    if (accepted && accepted.length > 0) {
-      if (!accepted.includes(dayKey)) return { notAcceptedDay: true };
-    }
-    return null;
-  }
-
-  private dateToStr(d: Date): string {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-
-  get acceptedDaysHint(): string {
-    const accepted = this.reservationSettings?.acceptedDays;
-    if (!accepted || accepted.length === 0) return 'Dostępne dni: poniedziałek–piątek';
-    return 'Dostępne dni: ' + accepted.filter(d => d !== 'SATURDAY' && d !== 'SUNDAY').map(d => DAY_LABELS[d] || d).join(', ');
-  }
-
-  get deliveryType(): DeliveryType {
-    return this.reservationForm.get('deliveryType')?.value as DeliveryType;
-  }
-
-  get isOfficePick(): boolean {
-    return this.deliveryType === 'OFFICE';
-  }
-
-  setDeliveryType(type: DeliveryType): void {
-    this.reservationForm.get('deliveryType')?.setValue(type);
-    this.updateMinDate();
-    const planned = this.reservationForm.get('plannedDate')?.value;
-    if (planned) {
-      const plannedDate: Date = planned instanceof Date ? planned : new Date(planned + 'T00:00:00');
-      if (plannedDate < this.minDateObj) {
-        this.reservationForm.get('plannedDate')?.setValue(null);
-      }
-    }
-    this.selectedOffice = null;
-    this.officeNameControl.setValue('');
-    this.showOfficeDropdown = false;
-    this.clearOfficeFields();
-  }
-
-  get transportDate(): string {
-    const planned = this.reservationForm.get('plannedDate')?.value;
-    if (!planned) return '';
-    const d = planned instanceof Date ? new Date(planned) : new Date(planned + 'T00:00:00');
-    if (!this.isOfficePick) {
-      d.setDate(d.getDate() - 1);
-    }
-    // Wariant domowy liczy odbiór jako dzień przed terminem serwisu — przy rezerwacji
-    // na dziś wyszłaby data z przeszłości. Dzień odbioru nie może cofnąć się przed dziś.
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (d < today) return this.dateToStr(today);
-    return this.dateToStr(d);
-  }
+  // ===== Cykl życia =====
 
   ngOnInit(): void {
-    this.draft = this.consumeDraft();
+    const store = this.store;
+    store.availabilityFetcher = (dateStr) => this.api.getExpressAvailability(dateStr, dateStr);
 
-    this.loadBrands();
-    this.loadOfficeAddresses();
+    const draft = this.draftService.consume(DRAFT_KEY);
+    if (draft) {
+      this.draftPackageId = (draft.extra?.['packageId'] as number | null | undefined) ?? null;
+      store.applyDraft(draft);
+    }
+
+    store.loadBrands();
+    store.loadOffices();
     this.loadReservationSettings();
     this.loadPackages();
+    store.start();
+
+    if (store.clientMode) {
+      store.loadMyBicycles(draft ? null : this.originatingBicycleId());
+    }
 
     this.seoService.updateFullSeoTags(
       {
@@ -517,7 +136,7 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
         type: 'website',
         keywords: ['serwis rowerowy Kraków', 'wymiana dętki Kraków', 'serwis rowerowy na dziś', 'cyclopick serwis']
       },
-      '/krakow/zarezerwuj'
+      FORM_URL
     );
 
     if (isPlatformBrowser(this.platformId)) {
@@ -525,382 +144,43 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
         filter(e => e instanceof NavigationStart)
       ).subscribe(() => this.sendSessionSync());
     }
-
-    this.reservationForm.get('plannedDate')?.valueChanges.pipe(
-      distinctUntilChanged((a, b) => {
-        const sa = a instanceof Date ? this.dateToStr(a) : (a ? this.dateToStr(new Date(a + 'T00:00:00')) : '');
-        const sb = b instanceof Date ? this.dateToStr(b) : (b ? this.dateToStr(new Date(b + 'T00:00:00')) : '');
-        return sa === sb;
-      })
-    ).subscribe((val) => {
-      this.availableSlotsForDate = null;
-      this.availabilityError = null;
-      if (val) {
-        const date = val instanceof Date ? val : new Date(val + 'T00:00:00');
-        if (!isNaN(date.getTime())) {
-          this.checkDateAvailability(date);
-        }
-      }
-    });
-
-    this.transportForm.enable();
-
-    if (this.draft) {
-      this.applyDraft(this.draft);
-    }
   }
 
-  // ===== Powrót z podsumowania (zapamiętany formularz) =====
-
-  private draft: ExpressReservationDraft | null = null;
-
-  private saveDraft(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const rv = this.reservationForm.getRawValue();
-    const planned = rv.plannedDate;
-    const draft: ExpressReservationDraft = {
-      contact: { firstName: rv.firstName ?? '', lastName: rv.lastName ?? '', email: rv.email ?? '', phone: rv.phone ?? '' },
-      plannedDate: planned instanceof Date ? this.dateToStr(planned) : (planned ?? ''),
-      deliveryType: this.deliveryType,
-      bikes: this.bikesArray.getRawValue().map((b: { selectedBicycleId: number | null; brand: string; model: string; additionalInfo: string }) => ({
-        selectedBicycleId: b.selectedBicycleId ?? null,
-        brand: b.brand ?? '',
-        model: b.model ?? '',
-        additionalInfo: b.additionalInfo ?? ''
-      })),
-      transport: this.transportForm.getRawValue(),
-      officeName: this.officeNameControl.value ?? '',
-      packageId: this.selectedPackage?.id ?? null,
-      coupon: this.couponControl.value ?? '',
-      termsAccepted: !!this.termsControl.value
-    };
-    try {
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    } catch {
-      // brak miejsca/zablokowany storage — wtedy po prostu nie da się wrócić z wypełnionymi polami
-    }
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    this.sendSessionSync();
   }
 
-  /** Odczyt jednorazowy i tylko po wejściu z podsumowania (state.restoreDraft) — świeże wejście zawsze startuje z pustym formularzem. */
-  private consumeDraft(): ExpressReservationDraft | null {
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
+    this.store.destroy();
+    this.seoService.removeStructuredData();
+  }
+
+  private originatingBicycleId(): number | null {
     if (!isPlatformBrowser(this.platformId)) return null;
-    const wantsRestore = window.history.state?.restoreDraft === true;
-    let raw: string | null = null;
-    try {
-      raw = sessionStorage.getItem(DRAFT_KEY);
-      sessionStorage.removeItem(DRAFT_KEY);
-    } catch {
-      return null;
-    }
-    if (!wantsRestore || !raw) return null;
-    try {
-      return JSON.parse(raw) as ExpressReservationDraft;
-    } catch {
-      return null;
-    }
-  }
-
-  private applyDraft(draft: ExpressReservationDraft): void {
-    if (!this.clientMode) {
-      this.reservationForm.patchValue(draft.contact);
-    }
-
-    this.reservationForm.get('deliveryType')?.setValue(draft.deliveryType);
-    this.updateMinDate();
-    this.reservationForm.get('plannedDate')?.setValue(draft.plannedDate || '');
-
-    this.transportForm.patchValue(draft.transport);
-    this.officeNameControl.setValue(draft.officeName);
-    this.couponControl.setValue(draft.coupon);
-    this.termsControl.setValue(draft.termsAccepted);
-
-    // tryb klienta wybiera rowery z listy — uzupełniamy je dopiero po jej załadowaniu (loadMyBicycles)
-    if (!this.clientMode) {
-      this.applyDraftBikes(draft);
-    }
-
-    // wracamy od razu do kroku z kuponem i regulaminem
-    this.currentStep = 2;
-  }
-
-  private applyDraftBikes(draft: ExpressReservationDraft): void {
-    while (this.bikesArray.length < draft.bikes.length) {
-      this.bikesArray.push(this.createBikeGroup());
-      this.bikeBrandStates.push({ filtered: [], showDropdown: false });
-    }
-    draft.bikes.forEach((bike, i) => {
-      const group = this.bikesArray.at(i) as FormGroup;
-      if (this.clientMode && bike.selectedBicycleId) {
-        this.onBicycleSelected(i, bike.selectedBicycleId);
-      } else {
-        group.patchValue({ brand: bike.brand, model: bike.model });
-      }
-      group.patchValue({ additionalInfo: bike.additionalInfo });
-    });
-  }
-
-  private loadBrands(): void {
-    this.enumerationService.getEnumeration('BRAND').subscribe({
-      next: (brands) => { this.brands = brands; },
-      error: () => { this.brands = environment.settings.fallback.brands; }
-    });
-  }
-
-  private loadOfficeAddresses(): void {
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.officeAddresses}`;
-    this.http.get<OfficeAddressDto[]>(url).subscribe({
-      next: (offices) => {
-        this.officeAddresses = offices;
-        // powrót z podsumowania: odtwórz wybrane biuro (pola adresu są już uzupełnione z zapamiętanego formularza)
-        if (this.draft?.officeName) {
-          this.selectedOffice = offices.find(o => o.name === this.draft!.officeName) ?? null;
-        }
-      },
-      error: () => { this.officeAddresses = []; }
-    });
+    return (window.history.state?.bicycleId as number | undefined) ?? null;
   }
 
   private loadReservationSettings(): void {
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.expressAvailability}`;
     const today = new Date();
-    const startDate = this.dateToStr(today);
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 60);
-    const endDate = this.dateToStr(futureDate);
+    const future = new Date();
+    future.setDate(future.getDate() + 60);
 
-    this.http.get<{ date: string; available: boolean }[]>(url, { params: { startDate, endDate } }).subscribe({
+    this.api.getExpressAvailability(dateToStr(today), dateToStr(future)).subscribe({
       next: (days) => {
         const bookedDates = days.filter(d => !d.available).map(d => d.date);
-        this.reservationSettings = { acceptedDays: [], fullyBookedDates: bookedDates };
-        this.updateMinDate();
-        this.reservationForm.get('plannedDate')?.updateValueAndValidity();
+        this.store.applySettings({ acceptedDays: [], fullyBookedDates: bookedDates });
+        this.store.preselectNearestAvailableDate();
       },
       error: () => {
-        this.reservationSettings = { acceptedDays: [] };
-        this.updateMinDate();
+        this.store.applySettings({ acceptedDays: [] });
+        this.store.preselectNearestAvailableDate();
       }
     });
   }
 
-  private updateMinDate(): void {
-    const defaultMin = this.computeDefaultMinDate();
-    const estimated = this.reservationSettings?.estimatedReservationDay;
-    const estimatedStr = estimated ?? '';
-    if (estimatedStr && estimatedStr > this.dateToStr(defaultMin)) {
-      this.minDate = estimatedStr;
-      this.minDateObj = new Date(estimatedStr + 'T00:00:00');
-    } else {
-      this.minDate = this.dateToStr(defaultMin);
-      this.minDateObj = defaultMin;
-    }
-  }
-
-  /**
-   * Najwcześniejszy dzień do wyboru: dziś, dopóki kurierzy jeszcze jeżdżą (do 22:00) — po tej
-   * godzinie "dziś" przestaje mieć sens jako wybór i najwcześniejszym dniem staje się jutro.
-   */
-  private computeDefaultMinDate(): Date {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const min = new Date(today);
-    if (now.getHours() >= 22) min.setDate(min.getDate() + 1);
-
-    // Backend wymaga, by dzień odbioru był PO dzisiejszym. Odbiór spod domu wypada dzień przed terminem
-    // serwisu (termin = jutro → odbiór dziś → odrzucone), spod biura — w dniu terminu.
-    const home = this.reservationForm?.get('deliveryType')?.value === 'DOOR_TO_DOOR';
-    const earliestForPickup = new Date(today);
-    earliestForPickup.setDate(earliestForPickup.getDate() + (home ? 2 : 1));
-    return earliestForPickup > min ? earliestForPickup : min;
-  }
-
-  // ===== Navigation =====
-
-  nextStep(): void {
-    if (this.isStep1Valid()) {
-      this.currentStep = 2;
-      if (isPlatformBrowser(this.platformId)) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    } else {
-      this.markAllTouched(this.reservationForm);
-      this.bikesArray.controls.forEach(c => this.markAllTouched(c as FormGroup));
-      this.markAllTouched(this.transportForm);
-      this.packageSelectionAttempted = true;
-      this.notificationService.warning(
-        !this.selectedPackage ? 'Wybierz pakiet serwisowy.' : 'Wypełnij wszystkie wymagane pola poprawnie.'
-      );
-    }
-  }
-
-  prevStep(): void {
-    this.currentStep = 1;
-    if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  isStep1Valid(): boolean {
-    const officeNameFilled = !this.isOfficePick || !!this.officeNameControl.value?.trim();
-    const transportValid = this.transportForm.valid && officeNameFilled;
-    return this.reservationForm.valid && this.bikesArray.valid && transportValid && !!this.selectedPackage;
-  }
-
-  isStepCompleted(step: number): boolean {
-    return this.currentStep > step;
-  }
-
-  isStepActive(step: number): boolean {
-    return this.currentStep === step;
-  }
-
-  private markAllTouched(group: FormGroup): void {
-    Object.values(group.controls).forEach(c => c.markAsTouched());
-  }
-
-  isFieldInvalid(fieldName: string, form: FormGroup = this.reservationForm): boolean {
-    const f = form.get(fieldName);
-    return !!(f?.invalid && (f.dirty || f.touched));
-  }
-
-  // ===== Submission =====
-
-  onSubmit(): void {
-    if (!this.isStep1Valid() || !this.termsControl.valid) {
-      this.termsControl.markAsTouched();
-      this.packageSelectionAttempted = true;
-      this.notificationService.warning(
-        !this.selectedPackage ? 'Wybierz pakiet serwisowy.' : 'Zaakceptuj regulamin aby kontynuować.'
-      );
-      return;
-    }
-
-    this.submitting = true;
-    const orderData = this.buildServiceOrderPayload();
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.expressReservationQuote}`;
-
-    this.http.post<{ expressServiceId: number; totalPrice: number }>(url, orderData).subscribe({
-      next: (res) => {
-        this.submitting = false;
-        const finalOrderData = { ...orderData, serviceId: res.expressServiceId };
-        this.saveDraft();
-        this.router.navigate(['/platnosc/podsumowanie'], {
-          state: {
-            orderType: 'SERVICE_ORDER',
-            orderData: finalOrderData,
-            totalPrice: res.totalPrice,
-            bikeCount: this.bikesArray.length,
-            details: this.buildSummaryDetails(orderData)
-          }
-        });
-      },
-      error: (err) => {
-        this.submitting = false;
-        const msg = err.error?.message || 'Nie udało się wycenić rezerwacji. Spróbuj ponownie.';
-        this.notificationService.error(msg);
-      }
-    });
-  }
-
-  /** Podsumowanie wybranych opcji na ekran potwierdzenia (tylko do wyświetlenia). */
-  private buildSummaryDetails(orderData: Record<string, unknown>): PaymentSummaryDetails {
-    const bikes = (orderData['bicycles'] as { brand: string; model: string | null }[])
-      .map(b => [b.brand, b.model].filter(Boolean).join(' '));
-    const street = [orderData['pickupStreet'], orderData['pickupBuildingNumber']].filter(Boolean).join(' ');
-    const address = [street, orderData['pickupCity']].filter(Boolean).join(', ');
-    const office = orderData['pickupOfficeName'] as string | null;
-    return {
-      packageName: this.selectedPackage?.displayName,
-      packagePrice: this.selectedPackage?.price,
-      plannedDate: orderData['plannedDate'] as string,
-      pickupDate: orderData['pickupDate'] as string,
-      pickupPlace: office ? `${office}, ${address}` : address,
-      bikes,
-      discountCoupon: (orderData['discountCoupon'] as string | null) ?? undefined
-    };
-  }
-
-  /**
-   * Buduje pełny payload rezerwacji + odbioru — nic jeszcze nie zapisuje w bazie.
-   * ServiceOrder i powiązany (bezpłatny) TransportOrder powstają dopiero po opłaceniu.
-   */
-  private buildServiceOrderPayload(): Record<string, unknown> {
-    const rv = this.reservationForm.value;
-    const tv = this.transportForm.value;
-
-    const plannedDateVal = rv.plannedDate;
-    const plannedDateStr = plannedDateVal instanceof Date ? this.dateToStr(plannedDateVal) : plannedDateVal;
-
-    const bikesPayload = this.bikesArray.getRawValue().map((b: { brand: string; model: string; additionalInfo: string; selectedBicycleId: number | null }) => ({
-      brand: b.brand.trim(),
-      model: b.model?.trim() || null,
-      additionalInfo: b.additionalInfo?.trim() || null,
-      bicycleId: b.selectedBicycleId ?? undefined
-    }));
-
-    const officeLabel = this.isOfficePick ? this.officeNameControl.value?.trim() : null;
-    const userNotes = tv['transportNotes']?.trim() || '';
-    const officePrefix = officeLabel ? `***** ${officeLabel.toUpperCase()} *****` : '';
-    const transportNotes = [officePrefix, userNotes].filter(Boolean).join('\n');
-
-    return {
-      firstName: (rv.firstName ?? '').trim() || null,
-      lastName: (rv.lastName ?? '').trim() || null,
-      email: (rv.email ?? '').trim() || null,
-      phone: (rv.phone ?? '').trim() || null,
-      bicycles: bikesPayload,
-      plannedDate: plannedDateStr,
-      description: bikesPayload[0]?.additionalInfo || null,
-      packageId: this.selectedPackage!.id,
-      pickupStreet: tv['pickupStreet'],
-      pickupBuildingNumber: tv['pickupBuildingNumber'],
-      pickupApartmentNumber: null,
-      pickupCity: tv['pickupCity'],
-      pickupPostalCode: tv['pickupPostalCode'] || '',
-      pickupOfficeName: officeLabel || null,
-      pickupDate: this.transportDate,
-      transportNotes,
-      discountCoupon: this.isCouponInvalid ? null : (this.couponControl.value?.trim() || null)
-    };
-  }
-
-  applyDiscountCoupon(): void {
-    const coupon = this.couponControl.value?.trim();
-    if (!coupon || this.isApplyingCoupon || !this.selectedPackage) return;
-
-    const plannedDate = this.reservationForm.get('plannedDate')?.value;
-    if (!plannedDate) {
-      this.notificationService.warning('Wybierz najpierw datę serwisu.');
-      return;
-    }
-
-    this.isApplyingCoupon = true;
-    this.couponMessage = null;
-    this.isCouponInvalid = false;
-
-    const plannedDateStr = plannedDate instanceof Date ? this.dateToStr(plannedDate) : plannedDate;
-    const additionalBikes = Math.max(0, this.bikesArray.length - 1);
-
-    this.discountService.applyDiscount({
-      coupon,
-      scope: 'SERVICE_ORDER',
-      firstUnitPrice: this.selectedPackage.price,
-      remainderPrice: this.selectedPackage.price * additionalBikes,
-      orderDate: plannedDateStr
-    }).subscribe({
-      next: (res) => {
-        this.couponMessage = `Kupon zastosowany! Nowa cena: ${res.totalPrice} PLN`;
-        this.isCouponInvalid = false;
-        this.isApplyingCoupon = false;
-      },
-      error: (err) => {
-        this.couponMessage = err.error?.message || 'Kupon jest nieprawidłowy lub już wygasł.';
-        this.isCouponInvalid = true;
-        this.isApplyingCoupon = false;
-      }
-    });
-  }
-
-  // ===== Packages =====
+  // ===== Pakiety =====
 
   get noPackagesAvailable(): boolean {
     return this.packagesLoaded && this.packages.length === 0;
@@ -909,11 +189,11 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
   selectPackage(pkg: ServicePackageDto): void {
     this.selectedPackage = pkg;
     this.packageSelectionAttempted = false;
+    this.discountedTotal = null;
   }
 
   private loadPackages(): void {
-    const url = `${environment.apiUrl}${environment.endpoints.guestOrders.expressPackages}`;
-    this.http.get<ServicePackagesConfigDto>(url).pipe(catchError(() => of(null))).subscribe({
+    this.api.getExpressPackages().pipe(catchError(() => of(null))).subscribe({
       next: (config) => {
         this.packages = (config?.active && config.packages) ? config.packages.filter(p => p.active) : [];
         this.packagesLoaded = true;
@@ -923,8 +203,8 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
         // Bez dopasowania — domyślnie najtańszy pakiet, klient może zmienić wybór ręcznie.
         const preselect = this.route.snapshot.queryParamMap.get('pakiet');
         const matched = preselect ? this.findPackageByHint(preselect) : null;
-        const fromDraft = this.draft?.packageId != null
-          ? this.packages.find(p => p.id === this.draft!.packageId) ?? null
+        const fromDraft = this.draftPackageId != null
+          ? this.packages.find(p => p.id === this.draftPackageId) ?? null
           : null;
         this.selectedPackage = fromDraft
           ?? matched
@@ -943,30 +223,280 @@ export class ExpressReservationFormComponent implements OnInit, OnDestroy {
     return this.packages.find(p => normalize(p.displayName).includes(needle)) ?? null;
   }
 
-  formatDatePL(val: string | Date): string {
-    if (!val) return '';
-    const date = val instanceof Date ? val : new Date(val + 'T00:00:00');
-    return date.toLocaleDateString('pl-PL', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  // ===== Kroki =====
+
+  nextStep(): void {
+    const store = this.store;
+    if (store.isStep1Valid() && this.selectedPackage) {
+      store.currentStep = 2;
+      this.scrollTop();
+    } else {
+      store.markStep1Touched();
+      this.packageSelectionAttempted = true;
+      this.notificationService.warning(
+        !this.selectedPackage ? 'Wybierz pakiet serwisowy.' : 'Wypełnij wszystkie wymagane pola poprawnie.'
+      );
+    }
+  }
+
+  prevStep(): void {
+    this.store.currentStep = 1;
+    this.discountedTotal = null;
+    this.scrollTop();
+  }
+
+  private scrollTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  // ===== Wysyłka =====
+
+  onSubmit(): void {
+    const store = this.store;
+    if (!store.isStep1Valid() || !this.selectedPackage || !store.termsControl.valid) {
+      store.termsControl.markAsTouched();
+      this.packageSelectionAttempted = true;
+      this.notificationService.warning(
+        !this.selectedPackage ? 'Wybierz pakiet serwisowy.' : 'Zaakceptuj regulamin aby kontynuować.'
+      );
+      return;
+    }
+
+    store.submitting = true;
+    const orderData = this.buildServiceOrderPayload();
+
+    this.api.quoteExpress(orderData).subscribe({
+      next: (res) => {
+        store.submitting = false;
+        const finalOrderData = { ...orderData, serviceId: res.expressServiceId };
+        this.draftService.save(DRAFT_KEY, store.toDraft({ packageId: this.selectedPackage?.id ?? null }));
+        // Po opłaceniu pokażemy wspólny ekran /sukces (serwis dobiera CycloPick, więc bez nazwy serwisu).
+        if (isPlatformBrowser(this.platformId)) {
+          storeReservationSuccess(this.buildSuccessData());
+        }
+        const state: PaymentNavigationState = {
+          orderType: 'SERVICE_ORDER',
+          orderData: finalOrderData,
+          totalPrice: res.totalPrice,
+          bikeCount: store.bikesArray.length,
+          details: this.buildSummaryDetails(orderData),
+          returnTo: { url: FORM_URL, label: 'Wróć do zamówienia' }
+        };
+        this.router.navigate(['/platnosc/podsumowanie'], { state });
+      },
+      error: (err) => {
+        store.submitting = false;
+        const msg = err.error?.message || 'Nie udało się wycenić rezerwacji. Spróbuj ponownie.';
+        this.notificationService.error(msg);
+      }
     });
   }
 
-  @HostListener('window:beforeunload')
-  onBeforeUnload(): void {
-    this.sendSessionSync();
+  /** Dane ekranu /sukces po opłaceniu — wariant „paid-express" (rezerwacja potwierdzona, serwis jeszcze nieznany). */
+  private buildSuccessData(): ReservationSuccessData {
+    return {
+      ...this.store.successBase(this.authService.getCurrentUserEmail()),
+      variant: 'paid-express',
+      serviceName: '',
+      serviceAddress: '',
+      logoUrl: null,
+      suffix: null,
+      packageName: this.selectedPackage?.displayName ?? null,
+      pickupDate: this.store.transportDate,
+      pickupPlace: this.store.pickupPlace || null
+    };
   }
 
-  ngOnDestroy(): void {
-    this.routerSub?.unsubscribe();
-    this.seoService.removeStructuredData();
+  /** Podsumowanie wybranych opcji na ekran potwierdzenia (tylko do wyświetlenia). */
+  private buildSummaryDetails(orderData: Record<string, unknown>): PaymentSummaryDetails {
+    return {
+      ...this.store.paymentDetailsBase(),
+      packageName: this.selectedPackage?.displayName,
+      packagePrice: this.selectedPackage?.price,
+      discountCoupon: (orderData['discountCoupon'] as string | null) ?? undefined
+    };
+  }
+
+  /**
+   * Buduje pełny payload rezerwacji + odbioru — nic jeszcze nie zapisuje w bazie.
+   * ServiceOrder i powiązany (bezpłatny) TransportOrder powstają dopiero po opłaceniu.
+   */
+  private buildServiceOrderPayload(): Record<string, unknown> {
+    const store = this.store;
+    const rv = store.reservationForm.value;
+    const tv = store.transportForm.value;
+
+    const bikesPayload = store.bikesPayload(null);
+
+    return {
+      firstName: (rv.firstName ?? '').trim() || null,
+      lastName: (rv.lastName ?? '').trim() || null,
+      email: (rv.email ?? '').trim() || null,
+      phone: (rv.phone ?? '').trim() || null,
+      bicycles: bikesPayload,
+      plannedDate: store.plannedDateStr,
+      description: bikesPayload[0]?.additionalInfo || null,
+      packageId: this.selectedPackage!.id,
+      pickupStreet: tv['pickupStreet'],
+      pickupBuildingNumber: tv['pickupBuildingNumber'],
+      pickupApartmentNumber: null,
+      pickupCity: tv['pickupCity'],
+      pickupPostalCode: tv['pickupPostalCode'] || '',
+      pickupOfficeName: store.officeLabel,
+      pickupDate: store.transportDate,
+      transportNotes: store.courierNotes,
+      discountCoupon: store.coupon.invalid ? null : (store.couponControl.value?.trim() || null)
+    };
+  }
+
+  // ===== Kupon =====
+
+  applyDiscountCoupon(): void {
+    const store = this.store;
+    const coupon = store.couponControl.value?.trim();
+    if (!coupon || store.coupon.applying || !this.selectedPackage) return;
+
+    if (!store.reservationForm.get('plannedDate')?.value) {
+      this.notificationService.warning('Wybierz najpierw datę serwisu.');
+      return;
+    }
+
+    store.coupon.applying = true;
+    store.coupon.message = null;
+    store.coupon.invalid = false;
+
+    const additionalBikes = Math.max(0, store.bikesArray.length - 1);
+
+    this.discountService.applyDiscount({
+      coupon,
+      scope: 'SERVICE_ORDER',
+      firstUnitPrice: this.selectedPackage.price,
+      remainderPrice: this.selectedPackage.price * additionalBikes,
+      orderDate: store.plannedDateStr
+    }).subscribe({
+      next: (res) => {
+        this.discountedTotal = res.totalPrice;
+        store.coupon.message = `Kupon zastosowany! Nowa cena: ${res.totalPrice} PLN`;
+        store.coupon.invalid = false;
+        store.coupon.applying = false;
+      },
+      error: (err) => {
+        this.discountedTotal = null;
+        store.coupon.message = err.error?.message || 'Kupon jest nieprawidłowy lub już wygasł.';
+        store.coupon.invalid = true;
+        store.coupon.applying = false;
+      }
+    });
+  }
+
+  // ===== Widoki (modele dla klocków) =====
+
+  get deliveryOptions(): DeliveryOption[] {
+    return deliveryOptions(this.store.config.allowedDeliveryTypes, 'w cenie');
+  }
+
+  get pickupLabel(): string {
+    return formatDatePL(this.store.transportDate);
+  }
+
+  private get packageTotal(): number {
+    return (this.selectedPackage?.price ?? 0) * this.store.bikesArray.length;
+  }
+
+  get asideRows(): AsideRowView[] {
+    const store = this.store;
+    const rows: AsideRowView[] = [
+      { label: 'Usługa', values: ['Serwis ekspresowy z odbiorem'], note: 'w partnerskim warsztacie w Krakowie' },
+      {
+        label: 'Pakiet',
+        values: this.selectedPackage ? [`${this.selectedPackage.displayName} · ${this.selectedPackage.price} zł`] : [],
+        placeholder: 'wybierz pakiet'
+      },
+      {
+        label: store.summaryBikes.length > 1 ? 'Rowery' : 'Rower',
+        values: store.summaryBikes,
+        placeholder: 'uzupełnij dane roweru'
+      },
+      {
+        label: 'Termin',
+        values: store.selectedDateObj ? [formatWeekdayDate(store.selectedDateObj, true)] : [],
+        placeholder: 'wybierz termin'
+      },
+      {
+        label: 'Odbiór',
+        values: store.transportDate ? [formatWeekdayDate(store.transportDate, false)] : [],
+        placeholder: 'po wyborze terminu',
+        note: this.store.pickupPlace || undefined
+      }
+    ];
+    if (!store.clientMode) {
+      rows.push({
+        label: 'Kontakt',
+        values: store.summaryContactName ? [store.summaryContactName] : [],
+        placeholder: 'uzupełnij dane'
+      });
+    }
+    return rows;
+  }
+
+  get summaryCards(): SummaryCardView[] {
+    const store = this.store;
+    const contact = store.contactSummaryCard();
+    const cards: SummaryCardView[] = contact ? [contact] : [];
+
+    cards.push({
+      title: 'Pakiet',
+      icon: 'package',
+      rows: [
+        { label: 'Usługa:', value: 'Serwis ekspresowy z odbiorem i zwrotem roweru' },
+        { label: 'Pakiet:', value: this.selectedPackage?.displayName ?? '' },
+        { label: 'Warsztat:', value: 'partnerski serwis w Krakowie, wybierzemy go dla Ciebie' }
+      ]
+    });
+
+    cards.push(store.bikesSummaryCard());
+
+    cards.push({
+      title: 'Termin i odbiór',
+      icon: 'truck',
+      wide: true,
+      rows: [
+        { label: 'Data serwisu:', value: formatDatePL(store.plannedDateStr), highlight: true },
+        { label: 'Odbiór roweru:', value: formatDatePL(store.transportDate), highlight: true },
+        { label: 'Miejsce odbioru:', value: this.store.pickupPlace }
+      ]
+    });
+    return cards;
+  }
+
+  get costLines(): CostLineView[] {
+    const bikes = this.store.bikesArray.length;
+    const price = this.selectedPackage?.price ?? 0;
+    const total = this.packageTotal;
+    const discounted = this.discountedTotal !== null && this.discountedTotal !== total;
+    return [
+      {
+        label: `Pakiet${bikes > 1 ? ` (${bikes} × ${price} PLN)` : ''}:`,
+        value: `${total} PLN`
+      },
+      { label: 'Transport:', value: 'wliczony w cenę', neutral: true },
+      {
+        label: 'Do zapłaty:',
+        value: `${discounted ? this.discountedTotal : total} PLN`,
+        original: discounted ? `${total} PLN` : undefined,
+        total: true
+      }
+    ];
   }
 
   private sendSessionSync(): void {
     if (this.sessionSyncSent) return;
     if (!isPlatformBrowser(this.platformId)) return;
-    if (this.clientMode) return; // zalogowany klient nie ma sensu "odzyskiwać" mailem — ma konto
+    if (this.store.clientMode) return; // zalogowany klient nie ma sensu "odzyskiwać" mailem — ma konto
     this.sessionSyncSent = true;
-    const rv = this.reservationForm.value;
+    const rv = this.store.reservationForm.value;
     this.sessionSyncService.send({
       firstName: rv.firstName?.trim() || '',
       lastName: rv.lastName?.trim() || '',

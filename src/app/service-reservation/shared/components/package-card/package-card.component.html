@@ -1,0 +1,18 @@
+<div
+  class="package-card"
+  [class.selectable]="selectable"
+  [class.selected]="selected"
+  [attr.role]="selectable ? 'radio' : null"
+  [attr.aria-checked]="selectable ? selected : null"
+  [attr.tabindex]="selectable ? 0 : null"
+  (click)="onClick()"
+  (keydown.enter)="onClick()"
+  (keydown.space)="$event.preventDefault(); onClick()"
+>
+  <h3 class="package-title">{{ title }}</h3>
+  <p *ngIf="description" class="package-desc">{{ description }}</p>
+  <div class="package-price">
+    <span class="price-amount">{{ price }}</span>
+    <span class="price-currency">zł</span>
+  </div>
+</div>
